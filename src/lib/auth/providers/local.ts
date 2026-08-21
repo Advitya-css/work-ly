@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail, getUserById } from "@/lib/db/users";
 import {
@@ -8,6 +9,7 @@ import {
   setSessionCookie,
   verifySessionToken,
 } from "@/lib/auth/session";
+import { sendVerificationEmail } from "@/lib/email";
 import type { AuthProvider, AuthResult, AuthUser } from "@/lib/auth/types";
 
 function toAuthUser(user: {
@@ -16,6 +18,7 @@ function toAuthUser(user: {
   name: string | null;
   avatarUrl: string | null;
   onboardedAt: Date | null;
+  emailVerified?: boolean;
 }): AuthUser {
   return {
     id: user.id,
@@ -23,23 +26,39 @@ function toAuthUser(user: {
     name: user.name,
     avatarUrl: user.avatarUrl,
     onboardedAt: user.onboardedAt,
+    emailVerified: user.emailVerified ?? false,
   };
 }
 
 export const localAuthProvider: AuthProvider = {
-  async signUp({ email, password, name }): Promise<AuthResult> {
+  async signUp({ email, password, name, rememberMe }): Promise<AuthResult> {
     const existing = await getUserByEmail(email);
     if (existing) {
       return { error: "An account with this email already exists." };
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await createUser({ email, passwordHash, name: name ?? null });
-    const token = await createSessionToken({ sub: user.id, email: user.email });
-    await setSessionCookie(token);
+    const verificationToken = randomUUID();
+    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    const user = await createUser({
+      email,
+      passwordHash,
+      name: name ?? null,
+      verificationToken,
+      verificationTokenExpiresAt,
+    });
+
+    // Send verification email (non-blocking - don't fail signup if email fails)
+    sendVerificationEmail(user.email, verificationToken).catch((err) => {
+      console.error("[workly:email] Failed to send verification email:", err);
+    });
+
+    const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
+    await setSessionCookie(token, rememberMe);
     return { user: toAuthUser(user) };
   },
 
-  async signIn({ email, password }): Promise<AuthResult> {
+  async signIn({ email, password, rememberMe }): Promise<AuthResult> {
     const user = await getUserByEmail(email);
     if (!user || !user.passwordHash) {
       return { error: "Invalid email or password." };
@@ -48,8 +67,8 @@ export const localAuthProvider: AuthProvider = {
     if (!valid) {
       return { error: "Invalid email or password." };
     }
-    const token = await createSessionToken({ sub: user.id, email: user.email });
-    await setSessionCookie(token);
+    const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
+    await setSessionCookie(token, rememberMe);
     return { user: toAuthUser(user) };
   },
 

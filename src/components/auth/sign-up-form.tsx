@@ -50,8 +50,20 @@ export function SignUpForm() {
         {state.fieldErrors?.password ? (
           <p className="text-xs text-destructive">{state.fieldErrors.password}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+          <p className="text-xs text-muted-foreground">At least 12 characters, mixed case and numbers.</p>
         )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="rememberMe"
+          name="rememberMe"
+          className="size-4 rounded border-border accent-primary"
+        />
+        <Label htmlFor="rememberMe" className="text-sm font-normal text-muted-foreground cursor-pointer">
+          Remember me
+        </Label>
       </div>
 
       <Button type="submit" className="mt-1 w-full" disabled={pending}>

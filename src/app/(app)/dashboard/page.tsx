@@ -22,6 +22,8 @@ import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { listCareerGoalsByUserId } from "@/lib/db/career-goals";
 import { listOpportunitiesByUserId } from "@/lib/db/opportunities";
 import { listApplicationsByUserId } from "@/lib/db/applications";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
+import { calculateProfileCompleteness } from "@/lib/career/completeness";
 import { getActiveFullPathway } from "@/lib/pathway/get-full-pathway";
 import { summarize } from "@/lib/applications/analytics";
 import { listDiscoveredJobsByUserId, getLatestRun } from "@/lib/db/discovery";
@@ -33,15 +35,18 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const [profile, goals, opportunities, pathway, applications] = user
+  const [profile, goals, opportunities, pathway, applications, fullProfile] = user
     ? await Promise.all([
         getCareerProfileByUserId(user.id),
         listCareerGoalsByUserId(user.id),
         listOpportunitiesByUserId(user.id),
         getActiveFullPathway(user.id),
         listApplicationsByUserId(user.id),
+        getFullCareerProfile(user.id),
       ])
-    : [null, [], [], null, []];
+    : [null, [], [], null, [], { profile: null, educations: [], experiences: [], projects: [], skills: [], achievements: [], certifications: [], documents: [] }];
+
+  const profileCompleteness = calculateProfileCompleteness(fullProfile, goals);
 
   const applicationSummary = summarize(applications);
 
@@ -133,7 +138,7 @@ export default async function DashboardPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <ProfileCompletenessCard profile={profile} />
+        <ProfileCompletenessCard completeness={profileCompleteness} />
 
         <Card>
           <CardHeader>

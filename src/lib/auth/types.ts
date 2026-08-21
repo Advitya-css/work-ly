@@ -21,6 +21,7 @@ export interface AuthUser {
   name: string | null;
   avatarUrl: string | null;
   onboardedAt: Date | null;
+  emailVerified?: boolean;
 }
 
 export interface AuthResult {
@@ -29,8 +30,8 @@ export interface AuthResult {
 }
 
 export interface AuthProvider {
-  signUp(input: { email: string; password: string; name?: string }): Promise<AuthResult>;
-  signIn(input: { email: string; password: string }): Promise<AuthResult>;
+  signUp(input: { email: string; password: string; name?: string; rememberMe?: boolean }): Promise<AuthResult>;
+  signIn(input: { email: string; password: string; rememberMe?: boolean }): Promise<AuthResult>;
   signOut(): Promise<void>;
   /** Reads the current session server-side. Read-only - safe in Server Components. */
   getCurrentUser(): Promise<AuthUser | null>;

@@ -33,7 +33,8 @@ export async function signUpAction(
     return { fieldErrors };
   }
 
-  const result = await authProvider.signUp(parsed.data);
+  const rememberMe = formData.get("rememberMe") === "on";
+  const result = await authProvider.signUp({ ...parsed.data, rememberMe });
   if (result.error) {
     return { error: result.error };
   }
@@ -62,7 +63,8 @@ export async function signInAction(
     return { fieldErrors };
   }
 
-  const result = await authProvider.signIn(parsed.data);
+  const rememberMe = formData.get("rememberMe") === "on";
+  const result = await authProvider.signIn({ ...parsed.data, rememberMe });
   if (result.error) {
     return { error: result.error };
   }

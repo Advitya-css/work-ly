@@ -1,7 +1,7 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME, SESSION_TTL_SECONDS } from "@/lib/auth/constants";
+import { SESSION_COOKIE_NAME, SESSION_TTL_SECONDS, REMEMBER_ME_TTL_SECONDS } from "@/lib/auth/constants";
 
 export { SESSION_COOKIE_NAME };
 
@@ -20,12 +20,16 @@ export interface SessionPayload {
   email: string;
 }
 
-export async function createSessionToken(payload: SessionPayload): Promise<string> {
+export async function createSessionToken(
+  payload: SessionPayload,
+  rememberMe?: boolean,
+): Promise<string> {
+  const ttl = rememberMe ? REMEMBER_ME_TTL_SECONDS : SESSION_TTL_SECONDS;
   return new SignJWT({ email: payload.email })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_TTL_SECONDS}s`)
+    .setExpirationTime(`${ttl}s`)
     .sign(getSecretKey());
 }
 
@@ -40,15 +44,20 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 }
 
 /** Sets the session cookie. Only callable from a Server Action or Route Handler. */
-export async function setSessionCookie(token: string) {
+export async function setSessionCookie(token: string, rememberMe?: boolean) {
   const store = await cookies();
-  store.set(SESSION_COOKIE_NAME, token, {
+  const options: Record<string, unknown> = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_TTL_SECONDS,
-  });
+  };
+  if (rememberMe) {
+    options.maxAge = REMEMBER_ME_TTL_SECONDS;
+  }
+  // When rememberMe is false/undefined, omit maxAge → session cookie that
+  // expires when the browser closes.
+  store.set(SESSION_COOKIE_NAME, token, options);
 }
 
 /** Clears the session cookie. Only callable from a Server Action or Route Handler. */

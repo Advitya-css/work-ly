@@ -29,6 +29,9 @@ export interface User {
   name: string | null;
   avatarUrl: string | null;
   onboardedAt: Date | null;
+  emailVerified: boolean;
+  verificationToken: string | null;
+  verificationTokenExpiresAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

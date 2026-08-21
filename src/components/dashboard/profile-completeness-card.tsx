@@ -4,30 +4,11 @@ import { ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import type { CareerProfile } from "@/lib/db/types";
+import type { ProfileCompleteness } from "@/lib/career/completeness";
 
-const FIELDS: (keyof CareerProfile)[] = [
-  "headline",
-  "summary",
-  "location",
-  "currentRole",
-  "currentCompany",
-  "yearsExperience",
-  "skills",
-];
-
-function completeness(profile: CareerProfile | null): number {
-  if (!profile) return 0;
-  const filled = FIELDS.filter((field) => {
-    const value = profile[field];
-    if (Array.isArray(value)) return value.length > 0;
-    return value !== null && value !== undefined && value !== "";
-  }).length;
-  return Math.round((filled / FIELDS.length) * 100);
-}
-
-export function ProfileCompletenessCard({ profile }: { profile: CareerProfile | null }) {
-  const percent = completeness(profile);
+export function ProfileCompletenessCard({ completeness }: { completeness: ProfileCompleteness }) {
+  const percent = completeness.percentage;
+  const topMissing = completeness.missing.slice(0, 3);
 
   return (
     <Card>
@@ -42,9 +23,18 @@ export function ProfileCompletenessCard({ profile }: { profile: CareerProfile | 
           </div>
           <Progress value={percent} label="Career profile completeness" />
         </div>
+        {topMissing.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {topMissing.map((check) => (
+              <li key={check.key} className="text-xs text-muted-foreground">
+                • {check.hint}
+              </li>
+            ))}
+          </ul>
+        )}
         <Button asChild variant="outline" size="sm" className="w-fit">
           <Link href="/career-profile">
-            {profile ? "Update profile" : "Build your profile"}
+            {percent > 0 ? "Update profile" : "Build your profile"}
             <ArrowRight />
           </Link>
         </Button>

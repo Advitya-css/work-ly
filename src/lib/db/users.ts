@@ -11,6 +11,9 @@ function mapRow(row: Record<string, unknown>): User {
     name: (row.name as string | null) ?? null,
     avatarUrl: (row.avatarUrl as string | null) ?? null,
     onboardedAt: (row.onboardedAt as Date | null) ?? null,
+    emailVerified: (row.emailVerified as boolean) ?? false,
+    verificationToken: (row.verificationToken as string | null) ?? null,
+    verificationTokenExpiresAt: (row.verificationTokenExpiresAt as Date | null) ?? null,
     createdAt: row.createdAt as Date,
     updatedAt: row.updatedAt as Date,
   };
@@ -33,13 +36,22 @@ export async function createUser(input: {
   email: string;
   passwordHash: string;
   name?: string | null;
+  verificationToken?: string | null;
+  verificationTokenExpiresAt?: Date | null;
 }): Promise<User> {
   const id = randomUUID();
   const { rows } = await pool.query(
-    `INSERT INTO users (id, email, "passwordHash", name, "updatedAt")
-     VALUES ($1, $2, $3, $4, now())
+    `INSERT INTO users (id, email, "passwordHash", name, "verificationToken", "verificationTokenExpiresAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, now())
      RETURNING *`,
-    [id, input.email.toLowerCase().trim(), input.passwordHash, input.name ?? null],
+    [
+      id,
+      input.email.toLowerCase().trim(),
+      input.passwordHash,
+      input.name ?? null,
+      input.verificationToken ?? null,
+      input.verificationTokenExpiresAt ?? null,
+    ],
   );
   return mapRow(rows[0]);
 }
@@ -65,4 +77,26 @@ export async function updateUserProfile(
     [id, input.name ?? null, input.avatarUrl ?? null],
   );
   return mapRow(rows[0]);
+}
+
+export async function setEmailVerified(userId: string): Promise<void> {
+  await pool.query(
+    `UPDATE users SET "emailVerified" = true, "verificationToken" = NULL, "verificationTokenExpiresAt" = NULL, "updatedAt" = now() WHERE id = $1`,
+    [userId],
+  );
+}
+
+export async function findUserByVerificationToken(token: string): Promise<User | null> {
+  const { rows } = await pool.query(
+    `SELECT * FROM users WHERE "verificationToken" = $1 AND "verificationTokenExpiresAt" > now() LIMIT 1`,
+    [token],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function setVerificationToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+  await pool.query(
+    `UPDATE users SET "verificationToken" = $2, "verificationTokenExpiresAt" = $3, "updatedAt" = now() WHERE id = $1`,
+    [userId, token, expiresAt],
+  );
 }

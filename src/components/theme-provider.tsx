@@ -2,7 +2,19 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "midnight" | "lavender" | "rose" | "sunset";
+
+const DARK_THEMES: Theme[] = ["dark", "midnight", "sunset"];
+const THEME_CLASSES: Record<Theme, string[]> = {
+  light: [],
+  dark: ["dark"],
+  midnight: ["dark", "theme-midnight"],
+  lavender: ["theme-lavender"],
+  rose: ["theme-rose"],
+  sunset: ["dark", "theme-sunset"],
+};
+
+const ALL_CLASSES = ["dark", "theme-midnight", "theme-lavender", "theme-rose", "theme-sunset"];
 
 interface ThemeContextType {
   theme: Theme;
@@ -16,19 +28,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored === "dark" || stored === "light") {
+    if (stored && stored in THEME_CLASSES) {
       setThemeState(stored);
-      document.documentElement.classList.toggle("dark", stored === "dark");
+      applyThemeClasses(stored);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       setThemeState("dark");
-      document.documentElement.classList.toggle("dark", true);
+      applyThemeClasses("dark");
     }
   }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    applyThemeClasses(newTheme);
   };
 
   return (
@@ -36,6 +48,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
+}
+
+function applyThemeClasses(theme: Theme) {
+  const el = document.documentElement;
+  el.classList.remove(...ALL_CLASSES);
+  const classes = THEME_CLASSES[theme];
+  if (classes.length > 0) {
+    el.classList.add(...classes);
+  }
 }
 
 export function useTheme() {
