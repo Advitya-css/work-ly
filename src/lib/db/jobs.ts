@@ -58,7 +58,7 @@ export async function listJobsByUserId(userId: string): Promise<Job[]> {
 }
 
 export async function getJobById(userId: string, id: string): Promise<Job | null> {
-  const { rows } = await pool.query(`SELECT * FROM jobs WHERE id = $1 AND user_id = $2 LIMIT 1`, [id, userId]);
+  const { rows } = await pool.query(`SELECT * FROM jobs WHERE id = $1 AND "userId" = $2 LIMIT 1`, [id, userId]);
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
