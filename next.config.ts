@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // Marking it external tells Next.js to leave it to Node's own module
   // resolution instead, which handles the dynamic import correctly.
   serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
+  outputFileTracingIncludes: {
+    "/**/*": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
 };
 
 export default nextConfig;
