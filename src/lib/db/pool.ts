@@ -36,6 +36,7 @@ const globalForPg = globalThis as unknown as { pgPool?: Pool };
 function createPool(): Pool {
   const pool = new Pool({
     connectionString: process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL,
+    ssl: (process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').includes('supabase') ? { rejectUnauthorized: false } : undefined,
 
     /** Give up acquiring a connection rather than queueing indefinitely. */
     connectionTimeoutMillis: 5_000,
