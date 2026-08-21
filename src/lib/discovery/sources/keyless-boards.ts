@@ -77,3 +77,72 @@ export const arbeitnowSource: JobSourceAdapter = {
     }));
   },
 };
+
+// --- REMOTIVE ---
+export const remotiveSource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "remotive",
+  name: "Remotive",
+  legalBasis: "Remotive publishes an open, keyless JSON API (remotive.com/api/remote-jobs) for public consumption.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim() || "";
+    const url = keyword ? `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(keyword)}` : "https://remotive.com/api/remote-jobs?limit=100";
+    const body = await fetchWithGuards(url);
+    const parsed = JSON.parse(body);
+    const jobs = parsed.jobs ?? [];
+    return jobs.slice(0, context.limit).map((job: any) => ({
+      externalId: `remotive:${job.id}`,
+      title: asString(job.title) ?? "Untitled role",
+      company: asString(job.company_name),
+      location: asString(job.candidate_required_location),
+      description: job.description ? stripTags(job.description) : null,
+      url: asString(job.url),
+      postedAt: job.publication_date ? new Date(job.publication_date) : null,
+      employmentTypeRaw: asString(job.job_type),
+      workModeRaw: "REMOTE",
+      industry: asString(job.category),
+    }));
+  },
+};
+
+// --- JOBICY ---
+export const jobicySource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "jobicy",
+  name: "Jobicy",
+  legalBasis: "Jobicy publishes an open, keyless JSON API (jobicy.com/api/v2/remote-jobs) for public consumption.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim() || "";
+    const url = `https://jobicy.com/api/v2/remote-jobs?count=${Math.min(context.limit, 50)}`;
+    const body = await fetchWithGuards(url);
+    const parsed = JSON.parse(body);
+    let jobs = parsed.jobs ?? [];
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      jobs = jobs.filter((j: any) => 
+        (j.jobTitle || "").toLowerCase().includes(kw) || 
+        (j.companyName || "").toLowerCase().includes(kw) ||
+        (j.jobIndustry || "").toLowerCase().includes(kw)
+      );
+    }
+    return jobs.map((job: any) => ({
+      externalId: `jobicy:${job.id}`,
+      title: asString(job.jobTitle) ?? "Untitled role",
+      company: asString(job.companyName),
+      location: asString(job.jobGeo),
+      description: job.jobDescription ? stripTags(job.jobDescription) : null,
+      url: asString(job.url),
+      postedAt: job.pubDate ? new Date(job.pubDate) : null,
+      salaryMin: job.annualSalaryMin ? parseInt(job.annualSalaryMin, 10) : null,
+      salaryMax: job.annualSalaryMax ? parseInt(job.annualSalaryMax, 10) : null,
+      salaryCurrency: asString(job.salaryCurrency),
+      employmentTypeRaw: asString(job.jobType),
+      workModeRaw: "REMOTE",
+      industry: asString(job.jobIndustry),
+    }));
+  },
+};

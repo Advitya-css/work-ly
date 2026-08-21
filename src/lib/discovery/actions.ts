@@ -80,6 +80,29 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
     }
   }
 
+
+  const hasRemotive = existing.some((s) => s.config?.adapterId === "remotive");
+  if (!hasRemotive) {
+    const adapter = getAdapter("remotive")!;
+    await createSource(user.id, {
+      kind: "PUBLIC_JOB_BOARD",
+      name: adapter.name,
+      config: { adapterId: adapter.id },
+      legalBasis: adapter.legalBasis,
+    });
+  }
+
+  const hasJobicy = existing.some((s) => s.config?.adapterId === "jobicy");
+  if (!hasJobicy) {
+    const adapter = getAdapter("jobicy")!;
+    await createSource(user.id, {
+      kind: "PUBLIC_JOB_BOARD",
+      name: adapter.name,
+      config: { adapterId: adapter.id },
+      legalBasis: adapter.legalBasis,
+    });
+  }
+
   if (!hasArbeitnow) {
     const adapter = getAdapter("arbeitnow")!;
     await createSource(user.id, {
