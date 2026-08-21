@@ -30,12 +30,12 @@ export async function seedDemoOpportunitiesAction(): Promise<{ created: number; 
   for (const demoJob of DEMO_JOBS) {
     const key = `${demoJob.title.toLowerCase()}::${demoJob.company.toLowerCase()}`;
     if (existingKeys.has(key)) {
-      console.error("Seed error for", demoJob.title, ":", result.error); skipped += 1;
+      skipped += 1;
       continue;
     }
     const result = await submitParseAndAnalyzeJob(user.id, { inputMethod: "PASTED_TEXT", text: demoJob.text });
     if ("error" in result) {
-      console.error("Seed error for", demoJob.title, ":", result.error); skipped += 1;
+      skipped += 1;
       continue;
     }
     created += 1;
