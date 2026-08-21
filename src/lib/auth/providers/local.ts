@@ -53,7 +53,8 @@ export const localAuthProvider: AuthProvider = {
       console.error("[workly:email] Failed to send verification email:", err);
     });
 
-    // Do NOT log the user in immediately. They must verify their email.
+    const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
+    await setSessionCookie(token, rememberMe);
     return { user: toAuthUser(user) };
   },
 
@@ -66,9 +67,7 @@ export const localAuthProvider: AuthProvider = {
     if (!valid) {
       return { error: "Invalid email or password." };
     }
-    if (!user.emailVerified) {
-      return { error: "Please verify your email address to sign in." };
-    }
+    
     const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
     await setSessionCookie(token, rememberMe);
     return { user: toAuthUser(user) };

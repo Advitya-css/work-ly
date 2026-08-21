@@ -20,26 +20,7 @@ export function SignInForm() {
       {state.error && (
         <Alert variant="destructive">
           <AlertCircle className="size-4" />
-          <AlertDescription className="flex flex-col gap-2">
-            <span>{state.error}</span>
-            {state.unverifiedEmail && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-fit h-7 text-xs bg-destructive/10 hover:bg-destructive/20 border-destructive/20 text-destructive-foreground"
-                formAction={async (formData) => {
-                  const { resendVerificationAction } = await import("@/lib/auth/actions");
-                  // The email is already in the formData from the input field
-                  await resendVerificationAction({}, formData);
-                  // We can't easily update state here without a separate form, but 
-                  // alerting the user would be nice. Let's just let it trigger the network request.
-                  alert("Verification email resent. Check your inbox!");
-                }}
-              >
-                Resend verification email
-              </Button>
-            )}
-          </AlertDescription>
+          <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       )}
 

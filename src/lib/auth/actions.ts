@@ -41,7 +41,7 @@ export async function signUpAction(
     return { error: result.error };
   }
 
-  return { success: true };
+  redirect("/onboarding");
 }
 
 export async function signInAction(
@@ -68,9 +68,6 @@ export async function signInAction(
   const rememberMe = formData.get("rememberMe") === "on";
   const result = await authProvider.signIn({ ...parsed.data, rememberMe });
   if (result.error) {
-    if (result.error === "Please verify your email address to sign in.") {
-      return { error: result.error, unverifiedEmail: parsed.data.email };
-    }
     return { error: result.error };
   }
 
