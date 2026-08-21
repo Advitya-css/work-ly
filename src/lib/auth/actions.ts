@@ -10,6 +10,7 @@ export interface AuthActionState {
   error?: string;
   fieldErrors?: Record<string, string>;
   success?: boolean;
+  unverifiedEmail?: string;
 }
 
 export async function signUpAction(
@@ -67,6 +68,9 @@ export async function signInAction(
   const rememberMe = formData.get("rememberMe") === "on";
   const result = await authProvider.signIn({ ...parsed.data, rememberMe });
   if (result.error) {
+    if (result.error === "Please verify your email address to sign in.") {
+      return { error: result.error, unverifiedEmail: parsed.data.email };
+    }
     return { error: result.error };
   }
 
@@ -148,6 +152,42 @@ export async function resetPasswordAction(
   const bcrypt = await import("bcryptjs");
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   await updateUserPassword(user.id, passwordHash);
+
+  return { success: true };
+}
+
+export async function resendVerificationAction(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const ip = (await headers()).get("x-forwarded-for") || "unknown";
+  if (!checkRateLimit(`auth_${ip}`, 3, 300)) {
+    return { error: "Too many attempts. Please try again later." };
+  }
+
+  const email = formData.get("email") as string;
+  if (!email) return { error: "Invalid request." };
+
+  const { getUserByEmail, setVerificationToken } = await import("@/lib/db/users");
+  const { sendVerificationEmail } = await import("@/lib/email");
+  const { randomUUID } = await import("crypto");
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return { error: "User not found." };
+  }
+
+  if (user.emailVerified) {
+    return { error: "This email is already verified. Please log in." };
+  }
+
+  const token = randomUUID();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+  await setVerificationToken(user.id, token, expiresAt);
+  
+  sendVerificationEmail(user.email, token).catch((err) => {
+    console.error("[workly:email] Failed to resend verification email:", err);
+  });
 
   return { success: true };
 }
