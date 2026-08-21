@@ -1,0 +1,381 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   Workly design system
+
+   Cards, rounded corners, icons and filled buttons: the structure is the
+   familiar one, because it is easy to read and easy to learn. The character
+   comes from colour rather than from layout.
+
+   The idea that carries the personality is the AREA ACCENT. Every part of
+   the product owns a colour, and that colour shows up in the tinted strip at
+   the top of its cards, in its icon, and in its section markers. Opportunities
+   are amber, your career is plum, the pathway is teal, applications are rose.
+   You learn after a day or two where you are without reading the heading,
+   and no two screens feel like the same grey template.
+
+   Every colour pair here is checked against WCAG AA (4.5:1 for body text).
+   ========================================================================== */
+
+:root {
+  --radius: 0.75rem;
+
+  /* Very slightly warm white. Enough to take the clinical edge off pure
+     #ffffff without reading as beige. */
+  --background: #fffdfb;
+  --foreground: #1c1a19;
+
+  --card: #ffffff;
+  --card-foreground: #1c1a19;
+
+  --popover: #ffffff;
+  --popover-foreground: #1c1a19;
+
+  /* Warm plum. Deliberately not the indigo that ships with every component
+     library, and warm enough to sit happily beside the amber and rose
+     area accents below. */
+  --primary: #7a2e55;
+  --primary-foreground: #fffdfb;
+
+  --secondary: #f6f3f0;
+  --secondary-foreground: #1c1a19;
+
+  --muted: #f6f3f0;
+  --muted-foreground: #6b6560;
+
+  --accent: #fbf0f5;
+  --accent-foreground: #5f2342;
+
+  --destructive: #b3261e;
+  --destructive-foreground: #fffdfb;
+
+  --success: #116149;
+  --success-foreground: #fffdfb;
+  --warning: #8a5300;
+  --warning-foreground: #fffdfb;
+
+  --border: #e7e1dc;
+  --input: #ded7d1;
+  --ring: #7a2e55;
+
+  /* ---- Area accents -----------------------------------------------------
+     Each is a pair: a text/icon colour that passes AA on both the page and
+     on its own tint, and the tint itself for header washes. */
+  --area-opportunity: #8a5300;
+  --area-opportunity-tint: #fdf4e7;
+  --area-career: #7e2a66;
+  --area-career-tint: #faedf6;
+  --area-pathway: #0f6157;
+  --area-pathway-tint: #e9f5f2;
+  --area-application: #9e2a4f;
+  --area-application-tint: #fceef1;
+  --area-discover: #3a3a9e;
+  --area-discover-tint: #eeeefb;
+  --area-dream: #5b3aa6;
+  --area-dream-tint: #f2eefb;
+
+  --chart-1: #7a2e55;
+  --chart-2: #8a5300;
+  --chart-3: #0f6157;
+  --chart-4: #3a3a9e;
+  --chart-5: #9e2a4f;
+
+  --sidebar: #fbf8f6;
+  --sidebar-foreground: #2b2725;
+  --sidebar-primary: #7a2e55;
+  --sidebar-primary-foreground: #fffdfb;
+  --sidebar-accent: #f4eef1;
+  --sidebar-accent-foreground: #5f2342;
+  --sidebar-border: #ebe5e0;
+  --sidebar-ring: #7a2e55;
+}
+
+.dark {
+  --background: #161413;
+  --foreground: #f2eeec;
+
+  --card: #1f1c1b;
+  --card-foreground: #f2eeec;
+
+  --popover: #1f1c1b;
+  --popover-foreground: #f2eeec;
+
+  /* The accents lighten rather than saturate in the dark theme, so they stay
+     recognisably the same colours instead of turning neon. */
+  --primary: #e39ac0;
+  --primary-foreground: #2b0f1e;
+
+  --secondary: #2a2624;
+  --secondary-foreground: #f2eeec;
+
+  --muted: #2a2624;
+  --muted-foreground: #a89f99;
+
+  --accent: #33202b;
+  --accent-foreground: #f0c2d8;
+
+  --destructive: #f19188;
+  --destructive-foreground: #2b0b08;
+
+  --success: #6fc9a9;
+  --success-foreground: #06251b;
+  --warning: #e0a94f;
+  --warning-foreground: #2a1a02;
+
+  --border: #37312e;
+  --input: #3d3733;
+  --ring: #e39ac0;
+
+  --area-opportunity: #e6b263;
+  --area-opportunity-tint: #2d2415;
+  --area-career: #e39ac0;
+  --area-career-tint: #2f1b28;
+  --area-pathway: #6fc9b9;
+  --area-pathway-tint: #142a27;
+  --area-application: #ef93ad;
+  --area-application-tint: #2f1a20;
+  --area-discover: #9a9aec;
+  --area-discover-tint: #1f1f33;
+  --area-dream: #b49ae8;
+  --area-dream-tint: #241d33;
+
+  --chart-1: #e39ac0;
+  --chart-2: #e6b263;
+  --chart-3: #6fc9b9;
+  --chart-4: #9a9aec;
+  --chart-5: #ef93ad;
+
+  --sidebar: #1b1817;
+  --sidebar-foreground: #ebe6e3;
+  --sidebar-primary: #e39ac0;
+  --sidebar-primary-foreground: #2b0f1e;
+  --sidebar-accent: #2d2528;
+  --sidebar-accent-foreground: #f6eef2;
+  --sidebar-border: #302a28;
+  --sidebar-ring: #e39ac0;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-area-opportunity: var(--area-opportunity);
+  --color-area-opportunity-tint: var(--area-opportunity-tint);
+  --color-area-career: var(--area-career);
+  --color-area-career-tint: var(--area-career-tint);
+  --color-area-pathway: var(--area-pathway);
+  --color-area-pathway-tint: var(--area-pathway-tint);
+  --color-area-application: var(--area-application);
+  --color-area-application-tint: var(--area-application-tint);
+  --color-area-discover: var(--area-discover);
+  --color-area-discover-tint: var(--area-discover-tint);
+  --color-area-dream: var(--area-dream);
+  --color-area-dream-tint: var(--area-dream-tint);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Self-hosted, so no page ever calls out to Google for a typeface. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Any figure that gets compared to another figure. Without this, 79 and
+     100 are different widths and a column of scores visibly wobbles. */
+  table,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /**
+   * The tinted strip at the top of a card, in that area's colour. This is
+   * the main thing carrying the personality, so it lives in one place and
+   * every card gets it the same way.
+   */
+  .area-wash {
+    background: var(--area-tint, var(--muted));
+    border-bottom: 1px solid var(--border);
+  }
+
+  /** A small uppercase label. Named to avoid Tailwind's own `overline`. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /**
+   * The circular badge an area icon sits in, tinted to match. Replaces the
+   * flat grey square that every icon used to sit in.
+   */
+  .area-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--area-tint, var(--muted));
+    color: var(--area-color, var(--muted-foreground));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /**
+   * MOTION
+   * ------
+   * Content arriving all at once, fully formed, is what made this app feel
+   * abrupt: you press a nav item and the next screen simply exists. A short
+   * rise-and-fade gives the eye something to follow to the new content, and
+   * because the distance is small (6px) and the duration short (260ms) it
+   * reads as responsiveness rather than as an animation to sit through.
+   *
+   * The easing curve matters more than the duration. This one decelerates
+   * hard at the end, which is what makes movement feel like it settled
+   * rather than stopped.
+   */
+  .rise-in {
+    animation: rise-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /**
+   * Stagger for lists. Applied to a container, each child starts slightly
+   * after the one before, so a grid resolves as a sweep instead of a flash.
+   * Capped at eight: past that the last item waits long enough to feel
+   * slow, so everything from the ninth on arrives together.
+   */
+  .stagger-children > * {
+    animation: rise-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 105ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 140ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 210ms; }
+  .stagger-children > *:nth-child(n + 8) { animation-delay: 245ms; }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /** A quiet sweep for skeletons, so loading reads as busy rather than broken. */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--foreground) 6%, transparent),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/**
+ * Motion is a preference, not a decision this stylesheet gets to make.
+ *
+ * Anyone who has asked their operating system for reduced motion has often
+ * done so because movement makes them ill, so this is not a nicety. The
+ * rule is deliberately broad and uses !important: it has to beat every
+ * utility and component animation in the app, including ones coming from
+ * dependencies, and a partially-honoured setting is worse than none
+ * because it is unpredictable.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

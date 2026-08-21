@@ -1,0 +1,491 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import {
+  ArrowLeft,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Lightbulb,
+  MapPin,
+  Building2,
+  Calendar,
+  ExternalLink,
+  Flame,
+  HelpCircle,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/shared/page-header";
+import { ScoreReadout } from "@/components/shared/score-readout";
+import { coverageOf, unassessedIn } from "@/lib/scoring/coverage";
+import { DeleteJobButton } from "@/components/jobs/delete-job-button";
+import { OpportunityStatusControls } from "@/components/opportunities/opportunity-status-controls";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth";
+import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
+import { formatSalaryRange } from "@/lib/format";
+import {
+  RECOMMENDATION_LABEL,
+  RECOMMENDATION_VARIANT,
+  GAP_TYPE_LABEL,
+  WORK_MODE_LABEL,
+  EMPLOYMENT_TYPE_LABEL,
+  SENIORITY_LABEL,
+  SCORE_COMPONENT_ORDER,
+  SCORE_COMPONENT_LABEL,
+  PRIORITY_COMPONENT_ORDER,
+  PRIORITY_COMPONENT_LABEL,
+  COMPETITIVENESS_VARIANT,
+  OPPORTUNITY_STATUS_LABEL,
+  OPPORTUNITY_STATUS_VARIANT,
+} from "@/lib/jobs/labels";
+import type { ScoreBreakdown } from "@/lib/db/types";
+
+export const metadata: Metadata = { title: "Opportunity" };
+
+function scoreColor(score: number): string {
+  if (score >= 75) return "text-success";
+  if (score >= 50) return "text-warning";
+  return "text-destructive";
+}
+
+export default async function OpportunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const opportunity = await getOpportunityWithJobById(id);
+  if (!opportunity || opportunity.userId !== user.id) notFound();
+
+  const { job, analysis } = opportunity;
+  if (!analysis) notFound();
+
+  const jobDetailLine = [job.company, job.location, job.country].filter(Boolean).join(" · ");
+  const fitBreakdown = analysis.scoreBreakdown as ScoreBreakdown;
+  const priorityBreakdown = opportunity.priorityBreakdown;
+  const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button asChild variant="ghost" size="sm" className="w-fit text-muted-foreground">
+          <Link href="/opportunities">
+            <ArrowLeft />
+            Back to Opportunities
+          </Link>
+        </Button>
+        <div className="flex items-center gap-2">
+          <OpportunityStatusControls opportunity={opportunity} />
+          <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
+        </div>
+      </div>
+
+      <PageHeader
+        title={job.title ?? "Untitled role"}
+        description={jobDetailLine || undefined}
+        action={
+          opportunity.status !== "DISCOVERED" ? (
+            <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]} className="text-sm">
+              {OPPORTUNITY_STATUS_LABEL[opportunity.status]}
+            </Badge>
+          ) : undefined
+        }
+      />
+
+      {/* Headline: Candidate Fit, Priority, Competitiveness, Recommendation */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardContent className="px-5 py-6">
+            <ScoreReadout
+              label="Candidate Fit"
+              value={analysis.fitScore}
+              coverage={coverageOf(analysis.scoreBreakdown)}
+              unassessed={unassessedIn(analysis.scoreBreakdown)}
+              caption="How well you match this role. Not a hiring guarantee."
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="px-5 py-6">
+            <ScoreReadout
+              label="Priority"
+              value={opportunity.priorityScore}
+              coverage={
+                opportunity.priorityBreakdown
+                  ? coverageOf(opportunity.priorityBreakdown)
+                  : 1
+              }
+              unassessed={
+                opportunity.priorityBreakdown
+                  ? unassessedIn(opportunity.priorityBreakdown)
+                  : []
+              }
+              caption="What this role is worth your time. Not the same as Fit."
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Competitiveness</p>
+            <Badge variant={COMPETITIVENESS_VARIANT[analysis.competitiveness]} className="text-sm">
+              {analysis.competitiveness}
+            </Badge>
+            <p className="text-xs text-muted-foreground">Relative to the role&apos;s likely requirements bar.</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Recommendation</p>
+            <Badge variant={RECOMMENDATION_VARIANT[analysis.recommendation]} className="text-sm">
+              {analysis.recommendation === "APPLY_NOW" && <Flame className="size-3 fill-current" />}
+              {RECOMMENDATION_LABEL[analysis.recommendation]}
+            </Badge>
+            <p className="text-xs text-muted-foreground">{analysis.recommendationReasoning}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          {/* Why you're a match / strengths */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Why you&apos;re a match
+              </CardTitle>
+              <CardDescription>Your strengths for this specific role.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analysis.strengths.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No strong matches were found for this role.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {analysis.strengths.map((s, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Gaps */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Your gaps
+              </CardTitle>
+              <CardDescription>Where your profile falls short, and why.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analysis.gaps.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+              ) : (
+                <ul className="flex flex-col gap-3">
+                  {analysis.gaps.map((gap, i) => (
+                    <li key={i} className="flex flex-col gap-0.5 rounded-lg border border-border px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="warning">{GAP_TYPE_LABEL[gap.type] ?? gap.type}</Badge>
+                        <span className="text-sm font-medium text-foreground">{gap.title}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{gap.description}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mandatory requirements */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Mandatory requirements
+              </CardTitle>
+              <CardDescription>What this role requires, and whether your profile shows it.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analysis.mandatoryRequirements.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No mandatory requirements were extracted.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {analysis.mandatoryRequirements.map((req, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      {req.status === "met" ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      ) : req.status === "not-met" ? (
+                        <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+                      ) : (
+                        /* Unknown is not a failure. A requirement Workly could
+                           not verify must never be drawn as a red cross. */
+                        <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      )}
+                      <span>
+                        <span className="text-foreground">{req.text}</span>
+                        {req.detail && <span className="text-muted-foreground">, {req.detail}</span>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Preferred requirements */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Preferred requirements
+              </CardTitle>
+              <CardDescription>Nice-to-haves: these don&apos;t block a match.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analysis.preferredRequirements.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No preferred requirements were extracted.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {analysis.preferredRequirements.map((req, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      {req.status === "met" ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      ) : req.status === "not-met" ? (
+                        <XCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      ) : (
+                        <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      )}
+                      <span>
+                        <span className="text-foreground">{req.text}</span>
+                        {req.detail && <span className="text-muted-foreground">, {req.detail}</span>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Risks */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                What could hurt your application
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analysis.risks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No specific risks identified.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {analysis.risks.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Improvements */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                What to improve
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analysis.improvements.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nothing specific to improve for this role.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {analysis.improvements.map((imp, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                      <Lightbulb className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <span>{imp}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {/* Priority breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Priority breakdown
+              </CardTitle>
+              <CardDescription>
+                What should you spend your time on. Weighs career value, competitiveness, effort, salary, location,
+                progression and your own preferences alongside Fit.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {PRIORITY_COMPONENT_ORDER.map((key) => {
+                const c = priorityBreakdown[key];
+                if (!c) return null;
+                const pct = c.maxScore > 0 ? Math.round((c.score / c.maxScore) * 100) : 0;
+                return (
+                  <div key={key} className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-foreground">{PRIORITY_COMPONENT_LABEL[key]}</span>
+                      <span className="text-muted-foreground">
+                        {c.score}/{c.maxScore} · {c.weight}% weight
+                      </span>
+                    </div>
+                    <Progress value={pct} label={`${PRIORITY_COMPONENT_LABEL[key]}: ${c.score} of ${c.maxScore}`} />
+                    <p className="text-xs text-muted-foreground">{c.reasoning}</p>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Fit score breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Fit score breakdown</CardTitle>
+              <CardDescription>Each component is weighted toward the overall Candidate Fit score.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {SCORE_COMPONENT_ORDER.map((key) => {
+                const c = fitBreakdown[key];
+                if (!c) return null;
+                const pct = c.maxScore > 0 ? Math.round((c.score / c.maxScore) * 100) : 0;
+                return (
+                  <div key={key} className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-foreground">{SCORE_COMPONENT_LABEL[key]}</span>
+                      <span className="text-muted-foreground">
+                        {c.score}/{c.maxScore} · {c.weight}% weight
+                      </span>
+                    </div>
+                    <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${c.score} of ${c.maxScore}`} />
+                    <p className="text-xs text-muted-foreground">{c.reasoning}</p>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Job details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Job details</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2.5 text-sm">
+              {job.company && (
+                <p className="flex items-center gap-2 text-foreground">
+                  <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
+                  {job.company}
+                </p>
+              )}
+              {(job.location || job.country) && (
+                <p className="flex items-center gap-2 text-foreground">
+                  <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
+                  {[job.location, job.country].filter(Boolean).join(", ")}
+                </p>
+              )}
+              {job.deadline && (
+                <p className="flex items-center gap-2 text-foreground">
+                  <Calendar className="size-3.5 shrink-0 text-muted-foreground" />
+                  Apply by {new Date(job.deadline).toLocaleDateString()}
+                </p>
+              )}
+              {job.datePosted && (
+                <p className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="size-3.5 shrink-0" />
+                  Posted {new Date(job.datePosted).toLocaleDateString()}
+                </p>
+              )}
+
+              <Separator className="my-1" />
+
+              <div className="flex flex-wrap gap-1.5">
+                {job.workMode && <Badge variant="outline">{WORK_MODE_LABEL[job.workMode]}</Badge>}
+                {job.employmentType && <Badge variant="outline">{EMPLOYMENT_TYPE_LABEL[job.employmentType]}</Badge>}
+                {job.seniority && <Badge variant="outline">{SENIORITY_LABEL[job.seniority]}</Badge>}
+                {job.industry && <Badge variant="secondary">{job.industry}</Badge>}
+                {salary && <Badge variant="outline">{salary}</Badge>}
+              </div>
+
+              {(job.requiredExperienceYears || job.preferredExperienceYears) && (
+                <p className="text-muted-foreground">
+                  {job.requiredExperienceYears ? `${job.requiredExperienceYears}+ yrs required` : ""}
+                  {job.requiredExperienceYears && job.preferredExperienceYears ? " · " : ""}
+                  {job.preferredExperienceYears ? `${job.preferredExperienceYears}+ yrs preferred` : ""}
+                </p>
+              )}
+              {job.education && <p className="text-muted-foreground">Education: {job.education}</p>}
+              {job.source && <p className="text-muted-foreground">Source: {job.source}</p>}
+
+              {job.url && (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex items-center gap-1.5 text-primary underline underline-offset-2"
+                >
+                  <ExternalLink className="size-3.5" />
+                  View original posting
+                </a>
+              )}
+
+              {job.requiredSkills.length > 0 && (
+                <>
+                  <Separator className="my-1" />
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Required skills
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.requiredSkills.map((s) => (
+                      <Badge key={s} variant="secondary">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
+              {job.preferredSkills.length > 0 && (
+                <>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Preferred skills
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {job.preferredSkills.map((s) => (
+                      <Badge key={s} variant="outline">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Description */}
+          {job.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">{job.description}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
