@@ -59,8 +59,8 @@ export async function listApplicationsByUserId(userId: string): Promise<Applicat
   return rows.map(mapRow);
 }
 
-export async function getApplicationById(id: string): Promise<Application | null> {
-  const { rows } = await pool.query(`SELECT * FROM applications WHERE id = $1 LIMIT 1`, [id]);
+export async function getApplicationById(userId: string, id: string): Promise<Application | null> {
+  const { rows } = await pool.query(`SELECT * FROM applications WHERE id = $1 AND user_id = $2 LIMIT 1`, [id, userId]);
   return rows[0] ? mapRow(rows[0]) : null;
 }
 

@@ -11,12 +11,12 @@ import type { ApplicationWithJob } from "@/lib/db/types";
  * opportunity - all optional, because those rows can be deleted while the
  * application (and its outcome, which is the valuable part) survives.
  */
-export async function getApplicationWithJobById(id: string): Promise<ApplicationWithJob | null> {
-  const application = await getApplicationById(id);
+export async function getApplicationWithJobById(userId: string, id: string): Promise<ApplicationWithJob | null> {
+  const application = await getApplicationById(userId, id);
   if (!application) return null;
 
   const [job, analysis, opportunity] = await Promise.all([
-    application.jobId ? getJobById(application.jobId) : null,
+    application.jobId ? getJobById(userId, application.jobId) : null,
     application.jobAnalysisId ? getJobAnalysisById(application.jobAnalysisId) : null,
     application.opportunityId ? getOpportunityById(application.opportunityId) : null,
   ]);

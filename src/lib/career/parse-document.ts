@@ -49,7 +49,7 @@ export async function parseDocumentAndBuildProfile(
   userId: string,
   options: { force?: boolean } = {},
 ): Promise<ParseDocumentResult> {
-  const document = await getDocumentById(documentId);
+  const document = await getDocumentById(userId, documentId);
   if (!document || document.userId !== userId) {
     throw new Error("Document not found.");
   }

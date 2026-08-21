@@ -8,6 +8,8 @@ import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { findKnowledge, knowledgeById } from "@/lib/chat/knowledge";
 import { safeMessage } from "@/lib/errors";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 /**
  * The "Ask Workly" helper.
@@ -67,6 +69,10 @@ export async function askWorklyAction(
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const ip = (await headers()).get("x-forwarded-for") || "unknown";
+  if (!checkRateLimit(`chat_${ip}`, 20, 60)) {
+    return { answer: "You've asked too many questions recently. Please try again later.", source: "workly" };
+  }
   const trimmed = question.trim();
   if (!trimmed) {
     return { answer: "Ask me anything about your job search.", source: "workly" };

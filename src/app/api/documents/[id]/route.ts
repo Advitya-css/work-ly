@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 import { getCurrentUser } from "@/lib/auth";
 import { deleteDocument, getDocumentById } from "@/lib/db/documents";
@@ -17,7 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const document = await getDocumentById(id);
+  const document = await getDocumentById(user.id, id);
   if (!document || document.userId !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -37,7 +38,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const document = await getDocumentById(id);
+  const document = await getDocumentById(user.id, id);
   if (!document || document.userId !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

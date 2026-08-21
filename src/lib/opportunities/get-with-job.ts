@@ -16,7 +16,7 @@ export async function listOpportunitiesWithJobByUserId(userId: string): Promise<
   const opportunities = await listOpportunitiesByUserId(userId);
   const withJobs = await Promise.all(
     opportunities.map(async (opportunity) => {
-      const job = await getJobById(opportunity.jobId);
+      const job = await getJobById(userId, opportunity.jobId);
       if (!job) return null;
       const analysis = opportunity.jobAnalysisId ? await getJobAnalysisById(opportunity.jobAnalysisId) : null;
       return { ...opportunity, job, analysis };
@@ -25,10 +25,10 @@ export async function listOpportunitiesWithJobByUserId(userId: string): Promise<
   return withJobs.filter((o): o is OpportunityWithJob => o !== null);
 }
 
-export async function getOpportunityWithJobById(id: string): Promise<OpportunityWithJob | null> {
+export async function getOpportunityWithJobById(userId: string, id: string): Promise<OpportunityWithJob | null> {
   const opportunity = await getOpportunityById(id);
   if (!opportunity) return null;
-  const job = await getJobById(opportunity.jobId);
+  const job = await getJobById(userId, opportunity.jobId);
   if (!job) return null;
   const analysis = opportunity.jobAnalysisId ? await getJobAnalysisById(opportunity.jobAnalysisId) : null;
   return { ...opportunity, job, analysis };

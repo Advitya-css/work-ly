@@ -35,8 +35,8 @@ export async function createDocument(input: {
   return mapRow(rows[0]);
 }
 
-export async function getDocumentById(id: string): Promise<Document | null> {
-  const { rows } = await pool.query(`SELECT * FROM documents WHERE id = $1 LIMIT 1`, [id]);
+export async function getDocumentById(userId: string, id: string): Promise<Document | null> {
+  const { rows } = await pool.query(`SELECT * FROM documents WHERE id = $1 AND user_id = $2 LIMIT 1`, [id, userId]);
   return rows[0] ? mapRow(rows[0]) : null;
 }
 

@@ -60,7 +60,7 @@ export default async function ApplicationDetailPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const application = await getApplicationWithJobById(id);
+  const application = await getApplicationWithJobById(user.id, id);
   if (!application || application.userId !== user.id) notFound();
 
   const { job, opportunity } = application;

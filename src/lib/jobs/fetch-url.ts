@@ -1,5 +1,6 @@
 import "server-only";
 import * as cheerio from "cheerio";
+import { isSafeUrl } from "@/lib/ssrf";
 
 /**
  * Retrieves a publicly accessible job posting URL and extracts its visible
@@ -31,13 +32,18 @@ export async function fetchJobPostingText(url: string): Promise<FetchJobUrlResul
     return { ok: false, error: "Only http(s) URLs are supported." };
   }
 
+  const safe = await isSafeUrl(parsed.toString());
+  if (!safe) {
+    return { ok: false, error: "That URL is not allowed (internal or private IP blocked)." };
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
     const response = await fetch(parsed.toString(), {
       method: "GET",
-      redirect: "follow",
+      redirect: "manual", // Prevent redirecting to local IPs
       signal: controller.signal,
       headers: {
         "User-Agent":

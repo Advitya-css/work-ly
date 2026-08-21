@@ -63,7 +63,7 @@ export async function deleteJobAction(id: string): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const existing = await getJobById(id);
+  const existing = await getJobById(user.id, id);
   if (!existing || existing.userId !== user.id) return;
 
   await deleteJob(id);

@@ -144,14 +144,12 @@ dbDescribe("cross-user data isolation (database)", () => {
     expect(a?.id).not.toBe(b?.id);
   });
 
-  it("stamps every fetch-by-id row with its owner, so callers can check it", async () => {
-    // Fetch-by-id is intentionally unfiltered; what it must always give the
-    // caller is the userId to compare against. A row without one would make
-    // the ownership guard silently unenforceable.
-    const application = await db.getApplicationById(owned.bApp);
-    const document = await db.getDocumentById(owned.bDoc);
-    expect(application?.userId).toBe(users.b);
-    expect(document?.userId).toBe(users.b);
+  it("enforces ownership at the query level for fetch-by-id", async () => {
+    // Fetch-by-id must now filter by owner directly in the query
+    const application = await db.getApplicationById(users.a, owned.bApp);
+    const document = await db.getDocumentById(users.a, owned.bDoc);
+    expect(application).toBeNull();
+    expect(document).toBeNull();
   });
 
   it("removes a user's data with the user", async () => {

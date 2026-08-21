@@ -3,6 +3,9 @@ import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 
 const PROTECTED_PATHS = [
+  "/discover",
+  "/analyze-job",
+  "/student",
   "/dashboard",
   "/opportunities",
   "/career-profile",
@@ -59,6 +62,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/discover/:path*",
+    "/analyze-job/:path*",
+    "/student/:path*",
     "/dashboard/:path*",
     "/opportunities/:path*",
     "/career-profile/:path*",

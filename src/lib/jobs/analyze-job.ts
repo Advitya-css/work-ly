@@ -77,7 +77,7 @@ export async function submitJob(userId: string, input: SubmitJobInput): Promise<
 
 /** Step 2: parse the raw text into structured fields (AI or heuristic - see lib/ai/job-parser.ts). */
 export async function parseJob(jobId: string, userId: string): Promise<Job> {
-  const job = await getJobById(jobId);
+  const job = await getJobById(userId, jobId);
   if (!job || job.userId !== userId) throw new Error("Job not found.");
 
   try {
@@ -130,7 +130,7 @@ export async function parseJob(jobId: string, userId: string): Promise<Job> {
 
 /** Step 3: compare the parsed Job against the user's CareerProfile + primary CareerGoal and persist the analysis. */
 export async function analyzeJob(jobId: string, userId: string): Promise<JobAnalysis> {
-  const job = await getJobById(jobId);
+  const job = await getJobById(userId, jobId);
   if (!job || job.userId !== userId) throw new Error("Job not found.");
   if (job.status !== "PARSED") throw new Error("This job hasn't finished parsing yet.");
 
@@ -152,7 +152,7 @@ export async function analyzeJob(jobId: string, userId: string): Promise<JobAnal
  * sort/filter without re-deriving either score per request.
  */
 export async function syncOpportunityForJob(jobId: string, userId: string): Promise<Opportunity> {
-  const job = await getJobById(jobId);
+  const job = await getJobById(userId, jobId);
   if (!job || job.userId !== userId) throw new Error("Job not found.");
 
   const [profile, careerGoal] = await Promise.all([

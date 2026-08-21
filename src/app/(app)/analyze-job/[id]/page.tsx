@@ -59,7 +59,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const job = await getJobById(id);
+  const job = await getJobById(user.id, id);
   if (!job || job.userId !== user.id) notFound();
 
   const jobDetailLine = [job.company, job.location, job.country].filter(Boolean).join(" · ");

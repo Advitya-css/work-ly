@@ -24,7 +24,7 @@ import type {
 async function requireOwnedApplication(id: string): Promise<Application | null> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const application = await getApplicationById(id);
+  const application = await getApplicationById(user.id, id);
   if (!application || application.userId !== user.id) return null;
   return application;
 }
@@ -60,7 +60,7 @@ export async function createApplicationFromOpportunityAction(
     return { applicationId: existing.id };
   }
 
-  const job = await getJobById(opportunity.jobId);
+  const job = await getJobById(user.id, opportunity.jobId);
 
   const application = await createApplication(user.id, {
     opportunityId: opportunity.id,

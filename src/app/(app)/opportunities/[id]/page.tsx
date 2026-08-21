@@ -59,7 +59,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const opportunity = await getOpportunityWithJobById(id);
+  const opportunity = await getOpportunityWithJobById(user.id, id);
   if (!opportunity || opportunity.userId !== user.id) notFound();
 
   const { job, analysis } = opportunity;

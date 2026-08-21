@@ -145,6 +145,7 @@ export function DiscoveryBoard({
             </AlertDescription>
           </Alert>
         )}
+        <AddFeedForm />
 
       {/* Bucket summary: the whole point of the page */}
       <div>
@@ -363,6 +364,8 @@ function DiscoveryCard({
     </Card>
   );
 }
+
+import { AddFeedForm } from "@/components/discovery/add-feed-form";
 
 export function DiscoverySourcesCard({
   sources,

@@ -1,5 +1,6 @@
 import { fetchWithGuards, sourceDefaults, asString, asDate } from "@/lib/discovery/sources/base";
 import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discovery/types";
+import { XMLParser } from "fast-xml-parser";
 
 /**
  * FEED-BASED SOURCES - employer feeds, university vacancy feeds, and

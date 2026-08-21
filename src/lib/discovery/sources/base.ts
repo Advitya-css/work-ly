@@ -1,3 +1,4 @@
+import { isSafeUrl } from "@/lib/ssrf";
 import { deduplicateBatch } from "@/lib/discovery/dedupe";
 import { normalizeListing } from "@/lib/discovery/normalize";
 import type {
@@ -78,11 +79,15 @@ export async function fetchWithGuards(
   init: RequestInit = {},
   { timeoutMs = 10_000, maxBytes = 5_000_000 } = {},
 ): Promise<string> {
+  const safe = await isSafeUrl(url);
+  if (!safe) throw new Error("URL is not allowed (internal or private IP blocked).");
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       ...init,
+      redirect: "manual",
       signal: controller.signal,
       headers: {
         "User-Agent": "Workly/0.1 (+career-intelligence; contact via app owner)",
@@ -93,11 +98,25 @@ export async function fetchWithGuards(
     if (!response.ok) {
       throw new Error(`Source returned HTTP ${response.status}`);
     }
-    const text = await response.text();
-    if (text.length > maxBytes) {
-      throw new Error("Source response was unexpectedly large; refusing to process it.");
+    
+    const reader = response.body?.getReader();
+    let received = 0;
+    const chunks: Uint8Array[] = [];
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          received += value.byteLength;
+          chunks.push(value);
+          if (received > maxBytes) {
+            await reader.cancel();
+            throw new Error("Source response was unexpectedly large; refusing to process it.");
+          }
+        }
+      }
     }
-    return text;
+    return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf-8");
   } finally {
     clearTimeout(timer);
   }
