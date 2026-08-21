@@ -46,7 +46,7 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
     await deleteSource(demo.id);
   }
   // Delete any fictional jobs that were already imported
-  await pool.query("DELETE FROM discovered_jobs WHERE source_kind = 'DEMO' AND user_id = $1", [user.id]);
+  await pool.query("DELETE FROM discovered_jobs WHERE "sourceKind" = 'DEMO' AND "userId" = $1", [user.id]);
 
   const hasArbeitnow = existing.some(
     (source) => source.kind === "PUBLIC_JOB_BOARD" && source.config?.adapterId === "arbeitnow",
