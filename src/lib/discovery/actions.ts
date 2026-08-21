@@ -52,6 +52,34 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
   const hasArbeitnow = existing.some(
     (source) => source.kind === "PUBLIC_JOB_BOARD" && source.config?.adapterId === "arbeitnow",
   );
+
+  const hasAdzuna = existing.some((s) => s.config?.adapterId === "adzuna");
+  if (!hasAdzuna) {
+    const adapter = getAdapter("adzuna");
+    if (adapter && adapter.isConfigured({})) {
+      await createSource(user.id, {
+        kind: adapter.kind,
+        name: adapter.name,
+        config: { adapterId: adapter.id },
+        legalBasis: adapter.legalBasis,
+      });
+    }
+  }
+
+
+  const hasUsaJobs = existing.some((s) => s.config?.adapterId === "usajobs");
+  if (!hasUsaJobs) {
+    const adapter = getAdapter("usajobs");
+    if (adapter && adapter.isConfigured({})) {
+      await createSource(user.id, {
+        kind: adapter.kind,
+        name: adapter.name,
+        config: { adapterId: adapter.id },
+        legalBasis: adapter.legalBasis,
+      });
+    }
+  }
+
   if (!hasArbeitnow) {
     const adapter = getAdapter("arbeitnow")!;
     await createSource(user.id, {
