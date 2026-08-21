@@ -37,16 +37,16 @@ function createPool(): Pool {
   const pool = new Pool({
     connectionString: (() => {
       try {
-        const urlStr = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
+        const urlStr = process.env.SUPABASE_POOLER_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
         if (!urlStr) return '';
         const u = new URL(urlStr);
         u.searchParams.delete('sslmode');
         return u.toString();
       } catch (e) {
-        return process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
+        return process.env.SUPABASE_POOLER_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
       }
     })(),
-    ssl: (process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').includes('supabase') ? { rejectUnauthorized: false } : undefined,
+    ssl: (process.env.SUPABASE_POOLER_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').includes('supabase') ? { rejectUnauthorized: false } : undefined,
 
     /** Give up acquiring a connection rather than queueing indefinitely. */
     connectionTimeoutMillis: 5_000,
