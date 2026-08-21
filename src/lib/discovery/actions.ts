@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { getCurrentUser } from "@/lib/auth";
+import { pool } from "@/lib/db/pool";
 import {
   createSource,
   deleteSource,
@@ -39,15 +40,13 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
   const existing = await listSourcesByUserId(user.id);
   const existingKinds = new Set(existing.map((source) => source.kind));
 
-  if (!existingKinds.has("DEMO")) {
-    const adapter = getAdapter("demo-feed")!;
-    await createSource(user.id, {
-      kind: "DEMO",
-      name: adapter.name,
-      config: { adapterId: adapter.id },
-      legalBasis: adapter.legalBasis,
-    });
+// Clean up any existing Demo feeds since we now have real sources
+  const demoSources = existing.filter((s) => s.kind === "DEMO");
+  for (const demo of demoSources) {
+    await deleteSource(demo.id);
   }
+  // Delete any fictional jobs that were already imported
+  await pool.query("DELETE FROM discovered_jobs WHERE source_kind = 'DEMO' AND user_id = $1", [user.id]);
 
   const hasArbeitnow = existing.some(
     (source) => source.kind === "PUBLIC_JOB_BOARD" && source.config?.adapterId === "arbeitnow",
