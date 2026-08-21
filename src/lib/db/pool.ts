@@ -35,7 +35,7 @@ const globalForPg = globalThis as unknown as { pgPool?: Pool };
 
 function createPool(): Pool {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL,
 
     /** Give up acquiring a connection rather than queueing indefinitely. */
     connectionTimeoutMillis: 5_000,
