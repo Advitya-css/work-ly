@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
-import { EmailVerificationBanner } from "@/components/auth/email-verification-banner";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
@@ -31,7 +30,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <AppShell user={user} student={profile?.isStudent ?? false}>
-      {user.emailVerified === false && <EmailVerificationBanner />}
       {children}
     </AppShell>
   );

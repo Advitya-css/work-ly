@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { signUpAction, type AuthActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,28 @@ const initialState: AuthActionState = {};
 export function SignUpForm() {
   const [state, formAction, pending] = useActionState(signUpAction, initialState);
 
+  if (state.success) {
+    return (
+      <div className="flex flex-col items-center gap-4 text-center py-6">
+        <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <CheckCircle2 className="size-6" />
+        </div>
+        <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
+        <p className="text-sm text-muted-foreground">
+          We&apos;ve sent a verification link to your email address. Click the link to verify your account and get started.
+        </p>
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <Link href="/login">Return to login</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.error && (
         <Alert variant="destructive">
-          <AlertCircle />
+          <AlertCircle className="size-4" />
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       )}

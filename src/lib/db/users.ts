@@ -14,6 +14,8 @@ function mapRow(row: Record<string, unknown>): User {
     emailVerified: (row.emailVerified as boolean) ?? false,
     verificationToken: (row.verificationToken as string | null) ?? null,
     verificationTokenExpiresAt: (row.verificationTokenExpiresAt as Date | null) ?? null,
+    resetPasswordToken: (row.resetPasswordToken as string | null) ?? null,
+    resetPasswordTokenExpiresAt: (row.resetPasswordTokenExpiresAt as Date | null) ?? null,
     createdAt: row.createdAt as Date,
     updatedAt: row.updatedAt as Date,
   };
@@ -98,5 +100,27 @@ export async function setVerificationToken(userId: string, token: string, expire
   await pool.query(
     `UPDATE users SET "verificationToken" = $2, "verificationTokenExpiresAt" = $3, "updatedAt" = now() WHERE id = $1`,
     [userId, token, expiresAt],
+  );
+}
+
+export async function setResetPasswordToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+  await pool.query(
+    `UPDATE users SET "resetPasswordToken" = $2, "resetPasswordTokenExpiresAt" = $3, "updatedAt" = now() WHERE id = $1`,
+    [userId, token, expiresAt],
+  );
+}
+
+export async function findUserByResetPasswordToken(token: string): Promise<User | null> {
+  const { rows } = await pool.query(
+    `SELECT * FROM users WHERE "resetPasswordToken" = $1 AND "resetPasswordTokenExpiresAt" > now() LIMIT 1`,
+    [token],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+  await pool.query(
+    `UPDATE users SET "passwordHash" = $2, "resetPasswordToken" = NULL, "resetPasswordTokenExpiresAt" = NULL, "updatedAt" = now() WHERE id = $1`,
+    [userId, passwordHash],
   );
 }
