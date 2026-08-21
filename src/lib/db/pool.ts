@@ -35,7 +35,17 @@ const globalForPg = globalThis as unknown as { pgPool?: Pool };
 
 function createPool(): Pool {
   const pool = new Pool({
-    connectionString: (process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').replace(/\?sslmode=[^&]+&?|&sslmode=[^&]+/g, '').replace(/\?$/, ''),
+    connectionString: (() => {
+      try {
+        const urlStr = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
+        if (!urlStr) return '';
+        const u = new URL(urlStr);
+        u.searchParams.delete('sslmode');
+        return u.toString();
+      } catch (e) {
+        return process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
+      }
+    })(),
     ssl: (process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').includes('supabase') ? { rejectUnauthorized: false } : undefined,
 
     /** Give up acquiring a connection rather than queueing indefinitely. */
