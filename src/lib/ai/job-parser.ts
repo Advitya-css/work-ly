@@ -13,7 +13,10 @@ export type * from "@/lib/ai/job-parser-types";
  * no model call) so /analyze-job works out of the box without an API key.
  */
 function resolveProvider() {
-  return process.env.AI_PROVIDER === "openai-compatible" && process.env.AI_API_KEY
+  const provider = process.env.AI_PROVIDER?.toLowerCase();
+  const hasKey = !!(process.env.AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+  
+  return (provider === "openai-compatible" || provider === "google" || provider === "gemini") && hasKey
     ? aiJobParsingProvider
     : heuristicJobParsingProvider;
 }

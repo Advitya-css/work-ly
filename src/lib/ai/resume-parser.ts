@@ -29,7 +29,10 @@ export type * from "@/lib/ai/resume-parser-types";
  * "heuristic"` so the UI can say so honestly.
  */
 function resolveProvider() {
-  return process.env.AI_PROVIDER === "openai-compatible" && process.env.AI_API_KEY
+  const provider = process.env.AI_PROVIDER?.toLowerCase();
+  const hasKey = !!(process.env.AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+  
+  return (provider === "openai-compatible" || provider === "google" || provider === "gemini") && hasKey
     ? aiResumeParsingProvider
     : heuristicResumeParsingProvider;
 }
