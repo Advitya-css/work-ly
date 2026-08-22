@@ -180,7 +180,7 @@ export function buildPathway(input: BuildPathwayInput): NewPathway {
       (p) => normalize(p.why).includes(normalize(gap.title)) || normalize(p.project).includes(normalize(stripRequirementPrefix(gap.title))),
     ) ?? null;
 
-  const steps: NewPathwayStep[] = gaps.slice(0, 6).map((gap, index) => {
+  const steps: NewPathwayStep[] = gaps.slice(0, 8).map((gap, index) => {
     const unlocked = countUnlockedOpportunities(gap, opportunities, profile);
     return {
       order: index + 1,

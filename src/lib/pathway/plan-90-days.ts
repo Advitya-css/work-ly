@@ -102,10 +102,20 @@ export function buildNinetyDayPlan(input: NinetyDayPlanInput): NewPathwayAction[
   }
 
   // --- One or more actions per real step -----------------------------------
+  // We want to distribute the steps evenly across the 3 windows based on
+  // their logical order, rather than dumping all "hard" tasks into month 3.
+  const numSteps = steps.length;
   steps.forEach((step, stepIndex) => {
     const gap = gaps.find((g) => g.title === step.relatedSkill) ?? gaps[stepIndex] ?? null;
-    const window = gap ? (DIFFICULTY_TO_WINDOW[gap.difficulty] ?? "DAYS_31_60") : "DAYS_61_90";
     const targetJobs = relatedJobTitles(step.relatedSkill, opportunities);
+
+    // Distribute sequentially: first third in window 1, middle in window 2, etc.
+    let window: Window = "DAYS_0_30";
+    if (numSteps > 0) {
+      const progress = stepIndex / numSteps;
+      if (progress >= 0.66) window = "DAYS_61_90";
+      else if (progress >= 0.33) window = "DAYS_31_60";
+    }
 
     // The final "apply to X roles" step belongs at the end by definition.
     const isApplyStep = step.title.startsWith("Apply to");

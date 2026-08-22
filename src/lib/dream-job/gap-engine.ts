@@ -26,17 +26,21 @@ import { normalize, skillsMatch } from "@/lib/scoring/shared";
 const HIGH_DIFFICULTY_SKILL_KEYWORDS = [
   "cloud", "aws", "azure", "gcp", "kubernetes", "docker", "terraform", "devops",
   "machine learning", "deep learning", "distributed systems", "security", "infrastructure",
-  "ci cd", "microservices", "data engineering", "system design",
+  "ci cd", "microservices", "data engineering", "system design", "c++", "rust", "go", "golang",
+  "web3", "blockchain", "smart contract", "artificial intelligence", "data science",
+  "quantitative", "accounting", "compliance", "legal", "financial modeling", "actuarial"
 ];
 const LOW_DIFFICULTY_SKILL_KEYWORDS = [
   "communication", "leadership", "presentation", "collaboration", "stakeholder",
-  "mentoring", "time management", "organization", "teamwork", "writing",
+  "mentoring", "time management", "organization", "teamwork", "writing", "interpersonal",
+  "problem solving", "adaptability", "critical thinking", "work ethic", "attention to detail",
+  "empathy", "customer service", "fast learner", "microsoft office", "word", "excel", "powerpoint", "google workspace"
 ];
 
 function estimateSkillDifficulty(skillName: string): { difficulty: GapDifficulty; estimatedTime: string } {
   const n = normalize(skillName);
   if (HIGH_DIFFICULTY_SKILL_KEYWORDS.some((k) => n.includes(k))) {
-    return { difficulty: "HIGH", estimatedTime: "3–4 weeks of focused, hands-on practice" };
+    return { difficulty: "HIGH", estimatedTime: "3–6 weeks of focused, hands-on practice or coursework" };
   }
   if (LOW_DIFFICULTY_SKILL_KEYWORDS.some((k) => n.includes(k))) {
     return { difficulty: "LOW", estimatedTime: "Ongoing. Demonstrate it in your next few work samples" };
@@ -69,8 +73,11 @@ function buildSkillGapPriorities(
 ): GapPriority[] {
   const confirmed = profile.skills.filter((s) => !s.isTransferable);
   const priorities: GapPriority[] = [];
+  const seenSkills = new Set<string>();
 
   for (const skillName of dreamJobLike.requiredSkills) {
+    if (seenSkills.has(normalize(skillName))) continue;
+    seenSkills.add(normalize(skillName));
     if (confirmed.some((s) => skillsMatch(s.name, skillName))) continue;
     const affected = opportunities.filter((o) => skillAppearsIn(skillName, o.job));
     const { difficulty, estimatedTime } = estimateSkillDifficulty(skillName);
@@ -87,8 +94,10 @@ function buildSkillGapPriorities(
   }
 
   for (const skillName of dreamJobLike.preferredSkills) {
+    if (seenSkills.has(normalize(skillName))) continue;
+    seenSkills.add(normalize(skillName));
     if (confirmed.some((s) => skillsMatch(s.name, skillName))) continue;
-    if (dreamJobLike.requiredSkills.some((r) => skillsMatch(skillName, r))) continue;
+    // Don't need the previous dreamJobLike.requiredSkills.some(...) check because of seenSkills!
     const affected = opportunities.filter((o) => skillAppearsIn(skillName, o.job));
     const { difficulty, estimatedTime } = estimateSkillDifficulty(skillName);
     priorities.push({
@@ -200,6 +209,27 @@ function buildCvImprovements(dreamJobLike: Job, profile: FullCareerProfile, fit:
       area: "unquantified_achievements",
       issue: `${unquantified.length} experience entr${unquantified.length === 1 ? "y has" : "ies have"} no numbers. Scope, scale, or outcome isn't quantified.`,
       suggestion: "Add a metric if you can substantiate one. Team size, percentage improvement, time saved, revenue, users, anything concrete.",
+    });
+  }
+
+  const WEAK_VERBS = ["helped", "assisted", "worked on", "was responsible for", "tasked with", "handled", "participated in"];
+  const weakExperiences = profile.experiences.filter((e) => 
+    e.description && WEAK_VERBS.some(v => normalize(e.description!).startsWith(v) || normalize(e.description!).includes(` ${v} `))
+  );
+  if (weakExperiences.length > 0) {
+    improvements.push({
+      area: "generic_language",
+      issue: `${weakExperiences.length} experience entr${weakExperiences.length === 1 ? "y relies" : "ies rely"} on passive or weak verbs (e.g., "helped", "assisted", "worked on").`,
+      suggestion: "Start bullet points with strong action verbs (e.g., 'Architected', 'Spearheaded', 'Delivered', 'Optimized') to claim ownership of the outcome.",
+    });
+  }
+
+  const briefExperiences = profile.experiences.filter((e) => e.description && e.description.trim().length < 50);
+  if (briefExperiences.length > 0) {
+    improvements.push({
+      area: "missing_information",
+      issue: `${briefExperiences.length} experience entr${briefExperiences.length === 1 ? "y is" : "ies are"} extremely brief, lacking context about what you actually delivered.`,
+      suggestion: "Expand your bullet points using the XYZ formula: 'Accomplished [X] as measured by [Y], by doing [Z]'.",
     });
   }
 
@@ -346,7 +376,7 @@ function buildImprovementPlan(
   const fromCv: ImprovementPlanItem[] = cvImprovements.slice(0, 4).map((imp) => ({
     tier: imp.area === "missing_information" || imp.area === "missing_experience" ? "MEDIUM" : "LOW",
     title: imp.issue,
-    why: "A stronger CV changes how every application. Not just this dream role ,  reads.",
+    why: "A stronger CV changes how every application reads, not just this dream role.",
     impact: "Improves how competitive every application looks, not just this one.",
     effort: "Low effort: this is editing, not new work.",
     relevantJobs: [],
@@ -369,26 +399,79 @@ function skillLabelForProjectTitle(skillName: string): string {
   return skillName.replace(/^(strong |proven |demonstrated )?(experience (with|in|building)|proficiency in|knowledge of)\s+/i, "").trim() || skillName;
 }
 
-function projectTemplateFor(skillName: string): { project: string; deliverables: string[]; skillsDemonstrated: string[] } {
+function projectTemplateFor(skillName: string, industry: string, roleTitle: string): { project: string; deliverables: string[]; skillsDemonstrated: string[] } {
   const label = skillLabelForProjectTitle(skillName);
   const n = normalize(skillName);
-  if (["cloud", "aws", "azure", "gcp", "kubernetes", "docker", "terraform", "devops", "ci cd"].some((k) => n.includes(k))) {
+  const ind = industry ? industry.toLowerCase() : "the industry";
+  const role = roleTitle ? roleTitle.toLowerCase() : "your target role";
+
+  // Cloud & DevOps
+  if (["cloud", "aws", "azure", "gcp", "kubernetes", "docker", "terraform", "devops", "ci cd", "pipeline"].some((k) => n.includes(k))) {
     return {
-      project: `Deploy a small full-stack app using ${label}`,
-      deliverables: ["A live, publicly accessible deployment", "A README documenting the deployment pipeline", "A short write-up of the architecture and trade-offs"],
-      skillsDemonstrated: [skillName, "Deployment", "Infrastructure basics"],
+      project: `Build and deploy a scalable infrastructure for a ${ind} application using ${label}`,
+      deliverables: [`A live, publicly accessible deployment simulating a ${ind} workload`, "A README documenting the deployment pipeline and security choices", "A short write-up on architecture trade-offs"],
+      skillsDemonstrated: [skillName, "Deployment pipelines", "Infrastructure as code"],
     };
   }
-  if (["machine learning", "deep learning", "data science", "data engineering", "python", "sql"].some((k) => n.includes(k))) {
+  
+  // Data Science & ML
+  if (["machine learning", "deep learning", "data science", "nlp", "computer vision", "llm", "ai", "pandas", "pytorch", "tensorflow"].some((k) => n.includes(k))) {
     return {
-      project: `Build an end-to-end data project using ${label}`,
-      deliverables: ["A working notebook or repo with clean, documented code", "A short report on the approach and results", "A public repo link for your portfolio"],
-      skillsDemonstrated: [skillName, "Data analysis", "Technical communication"],
+      project: `Analyze a ${ind} dataset or build a predictive model using ${label}`,
+      deliverables: [`A working Jupyter notebook or repo analyzing ${ind} trends`, "A short executive summary reporting the business impact of the results", "A public repo link for your portfolio"],
+      skillsDemonstrated: [skillName, "Data modeling", "Technical communication"],
     };
   }
+  
+  // Data Engineering & Backend
+  if (["data engineering", "sql", "postgresql", "mongodb", "database", "api", "node.js", "django", "spring", "microservices", "kafka"].some((k) => n.includes(k))) {
+    return {
+      project: `Design a high-throughput backend service or data pipeline for a ${ind} platform using ${label}`,
+      deliverables: [`A GitHub repo with a working API or pipeline handling mock ${ind} data`, "Documentation covering the schema design and performance considerations", "A postman collection or test suite"],
+      skillsDemonstrated: [skillName, "System architecture", "Data handling"],
+    };
+  }
+
+  // Frontend & UI/UX
+  if (["react", "vue", "angular", "css", "tailwind", "figma", "ui", "ux", "frontend", "web development", "typescript", "javascript"].some((k) => n.includes(k))) {
+    return {
+      project: `Build a responsive user interface for a ${ind} product using ${label}`,
+      deliverables: [`A live Vercel/Netlify link to a functional ${ind} dashboard or app`, "A GitHub repo with clean, componentized code", "A short write-up on accessibility and state management"],
+      skillsDemonstrated: [skillName, "Component design", "User experience"],
+    };
+  }
+  
+  // Product & Agile
+  if (["product management", "agile", "scrum", "jira", "roadmap", "user research", "stakeholder"].some((k) => n.includes(k))) {
+    return {
+      project: `Develop a product teardown and feature roadmap for a leading ${ind} tool focusing on ${label}`,
+      deliverables: [`A presentation or Notion doc outlining a 6-month roadmap for a ${ind} product`, "User personas and prioritized feature backlog", "A defined success metric framework"],
+      skillsDemonstrated: [skillName, "Product strategy", "Prioritization"],
+    };
+  }
+
+  // Marketing & Growth
+  if (["marketing", "seo", "content", "growth", "campaign", "social media", "analytics", "hubspot", "google ads"].some((k) => n.includes(k))) {
+    return {
+      project: `Design a go-to-market strategy or campaign for a ${ind} brand using ${label}`,
+      deliverables: [`A detailed campaign brief tailored to the ${ind} audience`, "Mock creative assets or copy drafts", "A proposed metrics dashboard tracking conversion"],
+      skillsDemonstrated: [skillName, "Campaign strategy", "Audience targeting"],
+    };
+  }
+
+  // Sales & Account Management
+  if (["sales", "account management", "b2b", "crm", "salesforce", "negotiation", "lead generation"].some((k) => n.includes(k))) {
+    return {
+      project: `Create a comprehensive outreach and account plan for a ${ind} enterprise prospect demonstrating ${label}`,
+      deliverables: [`A simulated account map and outreach sequence for a ${ind} client`, "A mock discovery call script", "A CRM pipeline structure"],
+      skillsDemonstrated: [skillName, "Account strategy", "Client communication"],
+    };
+  }
+
+  // Generic fallback with industry contextualization
   return {
-    project: `Build and ship a small project demonstrating ${label}`,
-    deliverables: ["A working, publicly shared deliverable", "A short write-up of what it does and why", "A portfolio entry with screenshots or a demo link"],
+    project: `Build a small portfolio asset demonstrating ${label} applied to the ${ind} sector`,
+    deliverables: ["A working, publicly shared deliverable", `A short write-up of how this solves a problem in ${ind}`, "A portfolio entry with screenshots or a demo link"],
     skillsDemonstrated: [skillName],
   };
 }
@@ -396,6 +479,7 @@ function projectTemplateFor(skillName: string): { project: string; deliverables:
 function buildProjectRecommendations(
   gapPriorities: GapPriority[],
   opportunities: OpportunityWithJob[],
+  dreamJobLike: Job,
 ): ProjectRecommendation[] {
   const jobTitleFor = (opportunityId: string) => {
     const o = opportunities.find((op) => op.id === opportunityId);
@@ -407,7 +491,7 @@ function buildProjectRecommendations(
   );
 
   return candidates.slice(0, 3).map((gap) => {
-    const template = projectTemplateFor(gap.title);
+    const template = projectTemplateFor(gap.title, dreamJobLike.industry ?? "", dreamJobLike.title ?? "");
     return {
       project: template.project,
       why: `Closes: ${gap.title}. ${gap.description}`,
@@ -450,7 +534,7 @@ export function buildGapAnalysis(params: {
   const cvImprovements = buildCvImprovements(dreamJobLike, profile, fit);
   const keepAsIs = buildKeepAsIs(dreamJobLike, profile, fit);
   const improvementPlan = buildImprovementPlan(gapPriorities, cvImprovements, opportunities);
-  const projectRecommendations = buildProjectRecommendations(gapPriorities, opportunities);
+  const projectRecommendations = buildProjectRecommendations(gapPriorities, opportunities, dreamJobLike);
 
   const biggestObstacles =
     gapPriorities.length > 0
