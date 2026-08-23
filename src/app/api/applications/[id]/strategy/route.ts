@@ -48,7 +48,7 @@ Suggest 3 specific ways the candidate should rewrite their current experience bu
 ### 2. Cover Letter Draft
 Write a concise, modern, and highly persuasive cover letter (under 200 words). Do not use generic fluff. Make it sound human, referencing their actual skills mapping to the job requirements. Use placeholders like [Your Name] where appropriate.
 
-Format as clean Markdown.`;
+Format as plain text. Do NOT use asterisks (*) for bolding or italics. Use standard dashes (-) for bullet points. Keep it clean and readable.`;
 
   try {
     const result = await googleGenAIProvider.complete({

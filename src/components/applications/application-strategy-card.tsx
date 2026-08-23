@@ -71,9 +71,7 @@ export function ApplicationStrategyCard({ applicationId }: ApplicationStrategyCa
 
         {content && !loading && (
           <div className="mt-4 rounded-lg bg-background p-6 border shadow-sm">
-            <div className="whitespace-pre-wrap text-sm text-foreground/90 leading-relaxed font-mono">
-              {content}
-            </div>
+            <div className="whitespace-pre-wrap text-sm text-foreground/90 leading-relaxed">{content}</div>
             <div className="mt-6 flex justify-end">
               <Button variant="outline" size="sm" onClick={handleGenerate} className="gap-2">
                 <PenTool className="size-4" />

@@ -36,7 +36,7 @@ Your Task:
 Generate 5 tough, highly realistic interview questions that I am likely to be asked for this specific role. Focus on the job requirements, especially testing areas where my skills might be lacking or need deep probing.
 For each question, provide a brief "How to Answer" rubric/tip.
 Do not use generic behavioral questions like "what is your biggest weakness". Make them specific to the industry/role.
-Format as clean Markdown with bolding and bullet points.`;
+Format as plain text. Do NOT use asterisks (*) for bolding or italics. Use standard dashes (-) for bullet points. Keep it clean and readable.`;
 
   try {
     const result = await googleGenAIProvider.complete({
