@@ -47,7 +47,8 @@ function splitSections(text: string): { mandatory: string[]; preferred: string[]
   let current: "mandatory" | "preferred" | "other" = "other";
 
   for (const line of lines) {
-    const bare = line.replace(/[:：]\s*$/, "");
+    // Strip markdown bold/italic/header characters and trailing colons so "**Requirements:**" matches
+    const bare = line.replace(/[:：]\s*$/, "").replace(/^[*#_-]+\s*/, "").replace(/[*_]+$/, "");
     if (bare.length < 60) {
       if (MANDATORY_HEADERS.test(bare)) {
         current = "mandatory";
@@ -62,19 +63,26 @@ function splitSections(text: string): { mandatory: string[]; preferred: string[]
         continue;
       }
     }
-    if (LABELED_METADATA_LINE.test(line)) continue;
     // Strip a single leading list marker (bullet symbol, or "1." / "2)"
     // numbering) only - not bare leading digits, which are frequently part
     // of the content itself ("5+ years", "24/7 support") and would
     // otherwise get silently truncated.
-    const cleaned = line.replace(/^(?:[•\-*●▪◦]\s*|\d+[.)]\s+)/, "").trim();
+    const cleaned = line.replace(/^(?:[•\-*●▪◦]\s*|\d+[.)]\s+)/, "").replace(/^[*_]+|[*_]+$/g, "").trim();
     if (!cleaned) continue;
+    
+    // Also test metadata lines against the cleaned version so "**Industry:** Fintech" matches
+    if (LABELED_METADATA_LINE.test(cleaned) || LABELED_METADATA_LINE.test(line.replace(/^[*_]+|[*_]+$/g, ""))) {
+      // Actually, we don't extract the value here, we just skip it so it doesn't go into requirements.
+      // But we should skip it.
+      continue;
+    }
+
     if (current === "mandatory") mandatory.push(cleaned);
     else if (current === "preferred") preferred.push(cleaned);
     else other.push(cleaned);
   }
 
-  return { mandatory, preferred, other, all: lines };
+  return { mandatory, preferred, other, all: lines.map(l => l.replace(/^[*_]+|[*_]+$/g, "")) };
 }
 
 /**
@@ -281,29 +289,30 @@ function extractEducation(lines: string[]): string | null {
 }
 
 async function run(jobText: string): Promise<ExtractedJob> {
-  const sections = splitSections(jobText);
-  const { location, country } = extractLocation(jobText);
-  const salary = extractSalary(jobText);
-  const title = extractTitle(jobText, sections.all);
+  const sanitized = jobText.replace(/^[*_]+|[*_]+$/gm, "");
+  const sections = splitSections(jobText); // splitSections now handles its own sanitation
+  const { location, country } = extractLocation(sanitized);
+  const salary = extractSalary(sanitized);
+  const title = extractTitle(sanitized, sections.all);
 
   return {
     title,
-    company: extractCompany(jobText),
+    company: extractCompany(sanitized),
     location,
     country,
     salaryMin: salary.min,
     salaryMax: salary.max,
     salaryCurrency: salary.currency,
-    employmentType: extractEmploymentType(jobText),
-    workMode: extractWorkMode(jobText),
-    seniority: extractSeniority(jobText, title),
+    employmentType: extractEmploymentType(sanitized),
+    workMode: extractWorkMode(sanitized),
+    seniority: extractSeniority(sanitized, title),
     description: sections.other.slice(0, 40).join("\n") || null,
     requiredExperienceYears: extractExperienceYears(sections.mandatory),
     preferredExperienceYears: extractExperienceYears(sections.preferred),
     education: extractEducation([...sections.mandatory, ...sections.preferred]),
-    industry: extractIndustry(jobText),
-    deadline: extractLabeledDate(jobText, /^(?:deadline|apply by|closing date)\s*:\s*(.+)$/im),
-    datePosted: extractLabeledDate(jobText, /^(?:date posted|posted(?: on)?|posting date)\s*:\s*(.+)$/im),
+    industry: extractIndustry(sanitized),
+    deadline: extractLabeledDate(sanitized, /^(?:deadline|apply by|closing date)\s*:\s*(.+)$/im),
+    datePosted: extractLabeledDate(sanitized, /^(?:date posted|posted(?: on)?|posting date)\s*:\s*(.+)$/im),
     requiredSkills: extractSkillNames(sections.mandatory),
     preferredSkills: extractSkillNames(sections.preferred),
     requirements: [...toRequirements(sections.mandatory, true), ...toRequirements(sections.preferred, false)],

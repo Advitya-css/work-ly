@@ -275,11 +275,19 @@ function buildCvImprovements(dreamJobLike: Job, profile: FullCareerProfile, fit:
   }
 
   if (improvements.length === 0 && fit.improvements.length > 0) {
-    improvements.push({
-      area: "weak_evidence",
-      issue: "Your profile is already reasonably well-aligned with this dream role.",
-      suggestion: fit.improvements[0],
-    });
+    if (fit.fitScore >= 70) {
+      improvements.push({
+        area: "weak_evidence",
+        issue: "Your profile is already reasonably well-aligned with this dream role.",
+        suggestion: fit.improvements[0],
+      });
+    } else {
+      improvements.push({
+        area: "missing_experience",
+        issue: "Your resume is well-formatted, but it lacks the core requirements for this role.",
+        suggestion: "Focus entirely on the skill gaps and project recommendations listed above to build the missing experience.",
+      });
+    }
   }
 
   return improvements;
@@ -539,15 +547,20 @@ export function buildGapAnalysis(params: {
   const biggestObstacles =
     gapPriorities.length > 0
       ? gapPriorities.slice(0, 3).map((g) => (g.gapType === "SKILL_GAP" ? `Missing: ${g.title}` : g.title))
-      : ["No significant obstacles identified. Your profile already lines up well with this dream role."];
+      : dreamJobLike.requiredSkills.length === 0 && fit.mandatoryRequirements.length === 0
+        ? ["Workly could not identify any specific requirements or skills in the pasted job description."]
+        : ["No significant obstacles identified. Your profile already lines up well with this dream role."];
 
   const topGap = gapPriorities[0];
   const topProject = projectRecommendations[0];
+  
   const highestImpactNextStep = topGap
     ? topProject
       ? `${topProject.project}. ${topProject.why}`
       : `Focus on: ${topGap.title}. ${topGap.description}`
-    : `Your profile is already well-positioned for ${dreamJobLike.title ?? "this dream role"}. A tailored application is the main lever left.`;
+    : dreamJobLike.requiredSkills.length === 0 && fit.mandatoryRequirements.length === 0
+      ? "Try pasting a more detailed job description so we can extract exact requirements to match against."
+      : `Your profile is already well-positioned for ${dreamJobLike.title ?? "this dream role"}. A tailored application is the main lever left.`;
 
   return { gapPriorities, cvImprovements, keepAsIs, improvementPlan, projectRecommendations, biggestObstacles, highestImpactNextStep };
 }

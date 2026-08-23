@@ -42,16 +42,17 @@ function splitIntoSections(text: string): Partial<Record<SectionName, string[]>>
   let current: SectionName | null = null;
 
   for (const line of lines) {
+    const bare = line.replace(/[:：]\s*$/, "").replace(/^[*#_-]+\s*/, "").replace(/[*_]+$/, "");
     const matchedSection = (Object.keys(SECTION_HEADERS) as SectionName[]).find((name) =>
-      SECTION_HEADERS[name].test(line.replace(/[:：]\s*$/, "")),
+      SECTION_HEADERS[name].test(bare),
     );
-    if (matchedSection && line.length < 40) {
+    if (matchedSection && bare.length < 40) {
       current = matchedSection;
       sections[current] ??= [];
       continue;
     }
     if (current) {
-      sections[current]!.push(line);
+      sections[current]!.push(line.replace(/^[*_]+|[*_]+$/g, ""));
     }
   }
 

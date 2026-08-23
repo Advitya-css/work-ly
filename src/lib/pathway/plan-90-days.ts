@@ -69,37 +69,8 @@ export function buildNinetyDayPlan(input: NinetyDayPlanInput): NewPathwayAction[
     actions.push({ ...action, window, order: orderIn[window]++ });
   };
 
-  // --- Profile hygiene, first window. Cheap, and it improves every
-  // --- application immediately rather than only the target role.
-  if (!profile.profile?.headline || !profile.profile?.summary) {
-    push("DAYS_0_30", {
-      stepIndex: null,
-      title: "Complete your profile headline and summary",
-      description:
-        "Your profile is missing a headline or summary. Both are the first thing a reviewer reads, and Workly uses them to judge how well you're positioned for a field.",
-      priority: 1,
-      estimatedTime: "30 minutes",
-      difficulty: "Easy",
-      expectedImpact: "Improves how every application reads, not just this target role.",
-      relatedSkill: null,
-      relatedTargetJobs: [],
-    });
-  }
-
-  const cvFixes = analysis?.cvImprovements ?? [];
-  for (const fix of cvFixes.slice(0, 3)) {
-    push("DAYS_0_30", {
-      stepIndex: null,
-      title: fix.issue,
-      description: fix.suggestion,
-      priority: 2,
-      estimatedTime: "1–2 hours",
-      difficulty: "Easy",
-      expectedImpact: "Improves how competitive every application looks.",
-      relatedSkill: null,
-      relatedTargetJobs: [],
-    });
-  }
+  // --- Removed CV/Profile fixes from the 90-day plan to ensure the pathway
+  // focuses strictly on high-impact career progression (skills, projects, experience).
 
   // --- One or more actions per real step -----------------------------------
   // We want to distribute the steps evenly across the 3 windows based on

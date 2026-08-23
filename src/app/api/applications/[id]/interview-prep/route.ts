@@ -11,7 +11,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = await context.params;
-  const app = await getApplicationWithJobById(params.id, user.id);
+  const app = await getApplicationWithJobById(user.id, params.id);
   if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
   
   const job = app.job;

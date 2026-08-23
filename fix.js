@@ -1,0 +1,4 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/lib/text-utils.ts', 'utf8');
+code = code.replace(/    return false;\n  }\n\n  \/\/ Single-char tech names/, `export function skillsMatch(candidateSkill: string, requirementSkill: string): boolean {\n  const nc = normalizeToken(candidateSkill);\n  const nr = normalizeToken(requirementSkill);\n  if (!nc || !nr) return false;\n  if (nc === nr) return true;\n\n  // Check canonical aliases\n  const cc = getCanonicalSkill(candidateSkill);\n  const cr = getCanonicalSkill(requirementSkill);\n  if (cc === cr) return true;\n\n  // Prevent distinct tech words from substring matching each other (e.g. Java vs JavaScript)\n  if (DISTINCT_TECH_WORDS.has(nc) || DISTINCT_TECH_WORDS.has(nr)) {\n    return false;\n  }\n\n  // Single-char tech names`);
+fs.writeFileSync('src/lib/text-utils.ts', code);
