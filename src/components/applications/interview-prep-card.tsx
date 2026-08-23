@@ -23,7 +23,7 @@ export function InterviewPrepCard({ applicationId }: InterviewPrepCardProps) {
       const res = await fetch(`/api/applications/${applicationId}/interview-prep`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Failed to generate prep.");
+      if (!res.ok) { const errData = await res.json().catch(()=>({})); throw new Error(errData.error || "Failed to generate prep."); }
       const data = await res.json();
       setContent(data.text);
     } catch (err) {
@@ -55,7 +55,7 @@ export function InterviewPrepCard({ applicationId }: InterviewPrepCardProps) {
         {loading && (
           <div className="flex items-center justify-center py-8 text-muted-foreground">
             <Loader2 className="size-6 animate-spin" />
-            <span className="ml-3">Gemini is analyzing the job and crafting questions...</span>
+            <span className="ml-3">Workly AI is analyzing the job and crafting questions...</span>
           </div>
         )}
 

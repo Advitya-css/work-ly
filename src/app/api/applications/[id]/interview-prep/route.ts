@@ -46,6 +46,6 @@ Format as clean Markdown with bolding and bullet points.`;
     return NextResponse.json({ text: result.content });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to generate interview prep." }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to generate interview prep." }, { status: 500 });
   }
 }

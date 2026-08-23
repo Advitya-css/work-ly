@@ -59,7 +59,8 @@ export const googleGenAIProvider: AIProvider = {
   name: "google-genai",
   async complete(request: AICompletionRequest): Promise<AICompletionResult> {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
-    const model = process.env.AI_MODEL ?? "gemini-1.5-flash";
+    let model = process.env.AI_MODEL ?? "gemini-1.5-flash";
+    if (model === "gemini-3.5-flash-lite") model = "gemini-1.5-flash";
 
     if (!apiKey) {
       throw new Error("A Google API Key (GOOGLE_GENERATIVE_AI_API_KEY, GOOGLE_API_KEY, or AI_API_KEY) is required for Google GenAI.");
