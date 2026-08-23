@@ -22,6 +22,7 @@ import {
   InterviewsEditor,
 } from "@/components/applications/application-detail-controls";
 import { DeleteApplicationButton } from "@/components/applications/delete-application-button";
+import { InterviewPrepCard } from "@/components/applications/interview-prep-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { formatSalaryRange } from "@/lib/format";
@@ -126,6 +127,10 @@ export default async function ApplicationDetailPage({
               <InterviewsEditor application={application} />
             </CardContent>
           </Card>
+
+          {application.reachedInterviewAt && (
+            <InterviewPrepCard applicationId={application.id} />
+          )}
 
           <Card>
             <CardHeader>

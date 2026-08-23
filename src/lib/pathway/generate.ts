@@ -7,6 +7,7 @@ import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getDreamJobAnalysisByDreamJobId } from "@/lib/db/dream-job-analyses";
 import { replaceActivePathway } from "@/lib/db/career-pathways";
 import { buildPathway } from "@/lib/pathway/build-pathway";
+import { enhancePathwayWithActionablePlans } from "@/lib/ai/pathway-planner";
 import type { CareerPathway } from "@/lib/db/types";
 
 /**
@@ -57,13 +58,21 @@ export async function generatePathway(
     };
   }
 
-  const input = buildPathway({
+  let input = buildPathway({
     profile,
     careerGoal,
     opportunities,
     dreamJob: dreamJob ? { id: dreamJob.id, title: dreamJob.title, dreamRole: dreamJob.dreamRole } : null,
     analysis,
   });
+
+  const target =
+    dreamJob?.title?.trim() ||
+    dreamJob?.dreamRole?.trim() ||
+    careerGoal?.primaryTargetRole?.trim() ||
+    "Your target role";
+
+  input = await enhancePathwayWithActionablePlans(input, profile, target);
 
   const pathway = await replaceActivePathway(userId, input);
   return { pathway };
