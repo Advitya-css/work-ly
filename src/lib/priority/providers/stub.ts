@@ -212,35 +212,39 @@ function scoreSalary(job: Job, careerGoal: CareerGoal | null) {
 }
 
 /** Geography + work mode against the user's stated preferences - independent of Fit's own (much smaller) location component. */
-function scoreLocation(job: Job, careerGoal: CareerGoal | null) {
+function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerGoal | null) {
   if (job.workMode === "REMOTE") {
     return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, so location is not a constraint.");
   }
-  const prefsStated =
-    careerGoal &&
-    !careerGoal.isUncertain &&
-    (careerGoal.preferredLocations.length > 0 || careerGoal.countries.length > 0 || careerGoal.workModes.length > 0);
-  if (!prefsStated) {
+
+  const preferredLocations = profile.profile?.preferredLocations?.length
+    ? profile.profile.preferredLocations
+    : (careerGoal?.preferredLocations ?? []);
+  const home = profile.profile?.location ?? null;
+  const countries = careerGoal?.countries ?? [];
+  const workModes = careerGoal?.workModes ?? [];
+
+  const anyPreference = Boolean(home) || preferredLocations.length > 0 || countries.length > 0 || workModes.length > 0;
+  
+  if (!anyPreference) {
     return unavailable(
       WEIGHTS.location,
       "You have not told Workly where you want to work, so it cannot judge this role's location.",
     );
   }
-  const goal = careerGoal!;
 
-  // Only dimensions where BOTH sides said something are compared. Treating
-  // a missing job location as satisfied produced the affirmative sentence
-  // "this lines up with your preferences" out of no data at all, and paid
-  // full marks for it.
   const checks: boolean[] = [];
-  if (job.workMode && goal.workModes.length > 0) checks.push(goal.workModes.includes(job.workMode));
-  if (job.location && goal.preferredLocations.length > 0) {
+  if (job.workMode && workModes.length > 0) checks.push(workModes.includes(job.workMode));
+  
+  if (job.location && (preferredLocations.length > 0 || home)) {
+    const candidates = [home, ...preferredLocations].filter(Boolean) as string[];
     const loc = job.location.toLowerCase();
-    checks.push(goal.preferredLocations.some((l) => loc.includes(l.toLowerCase()) || l.toLowerCase().includes(loc)));
+    checks.push(candidates.some((l) => loc.includes(l.toLowerCase()) || l.toLowerCase().includes(loc)));
   }
-  if (job.country && goal.countries.length > 0) {
+  
+  if (job.country && countries.length > 0) {
     const c = job.country.toLowerCase();
-    checks.push(goal.countries.some((x) => c.includes(x.toLowerCase()) || x.toLowerCase().includes(c)));
+    checks.push(countries.some((x) => c.includes(x.toLowerCase()) || x.toLowerCase().includes(c)));
   }
 
   if (checks.length === 0) {
@@ -349,7 +353,7 @@ function computePriority({
   const competitiveness = scoreCompetitiveness(analysis);
   const applicationEffort = scoreApplicationEffort(analysis);
   const salary = scoreSalary(job, careerGoal);
-  const location = scoreLocation(job, careerGoal);
+  const location = scoreLocation(job, profile, careerGoal);
   const careerProgression = scoreCareerProgression(job, profile, careerGoal);
   const userPreferences = scoreUserPreferences(job, careerGoal);
 

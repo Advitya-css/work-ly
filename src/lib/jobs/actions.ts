@@ -73,4 +73,6 @@ export async function deleteJobAction(id: string): Promise<void> {
   await deleteJob(id);
   revalidatePath("/analyze-job");
   revalidatePath("/opportunities");
+  revalidatePath("/applications");
+  redirect("/applications");
 }
