@@ -27,7 +27,9 @@ export function matchesLocationPreference(
 ): boolean {
   const candidates = locationCandidates(preference.homeLocation, preference.preferredLocations);
 
-  if (workMode === "REMOTE") return preference.openToRemote;
+  const isRemote = workMode === "REMOTE" || (jobLocation && jobLocation.toLowerCase().includes("remote"));
+  if (isRemote && !preference.openToRemote) return false;
+  if (workMode === "REMOTE") return true;
   if (candidates.length === 0) return true;
   if (!jobLocation?.trim()) return true;
 

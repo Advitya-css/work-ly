@@ -172,12 +172,12 @@ export function PrivacyControls() {
             </p>
           </div>
           <div>
-            <p className="font-medium text-foreground">Free AI tiers</p>
+            <p className="font-medium text-foreground">AI Processing</p>
             <p>
-              If you connect a free-tier AI provider, check its terms. Several, including Google&apos;s
-              free Gemini tier: permit the provider to read submitted content and use it for
-              training, and advise against sending personal information. A CV is personal
-              information. Paid tiers generally exclude your data from training.
+              Your data (including your CV) is processed securely by Workly AI to provide tailored
+              job recommendations, interview prep, and career insights. We do not use your personal
+              information to train underlying public AI models.
+              
             </p>
           </div>
           <div>
