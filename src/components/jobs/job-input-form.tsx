@@ -34,14 +34,24 @@ export function JobInputForm() {
           <TabsTrigger value="URL">Paste a URL</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="PASTED_TEXT" className="mt-4">
+        <TabsContent value="PASTED_TEXT" className="mt-4 flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="job-title">Job title (optional)</Label>
+              <Input id="job-title" name="jobTitle" placeholder="e.g. Product Analytics Intern" disabled={pending} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="job-company">Company (optional)</Label>
+              <Input id="job-company" name="jobCompany" placeholder="e.g. Stripe" disabled={pending} />
+            </div>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="job-text">Job description</Label>
             <Textarea
               id="job-text"
               name="text"
               rows={12}
-              placeholder="Paste the full job posting here. Title, responsibilities, requirements, everything."
+              placeholder="Paste the responsibilities, requirements, and qualifications here."
               disabled={pending}
             />
             {state.fieldErrors?.text && <p className="text-xs text-destructive">{state.fieldErrors.text}</p>}

@@ -37,7 +37,11 @@ export async function analyzeJobAction(
     // text/url isn't the active input method is absent from the FormData
     // entirely - formData.get() returns null (not undefined) for those,
     // which z.string().optional() does not accept. Normalize to "".
-    text: formData.get("text") ?? "",
+    text: [
+      formData.get("jobTitle") ? "Title: " + formData.get("jobTitle") : "",
+      formData.get("jobCompany") ? "Company: " + formData.get("jobCompany") : "",
+      formData.get("text") ?? ""
+    ].filter(Boolean).join("\n\n"),
     url: formData.get("url") ?? "",
   });
   if (!parsed.success) {

@@ -49,21 +49,9 @@ export function DreamJobForm() {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dream-company">Company (optional)</Label>
-          <Input id="dream-company" name="companyName" placeholder="e.g. a specific company you're aiming for" disabled={pending} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dream-portfolio">Portfolio link (optional)</Label>
-          <Input
-            id="dream-portfolio"
-            name="portfolio"
-            type="url"
-            placeholder="https://your-portfolio.com"
-            disabled={pending}
-          />
-        </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="dream-company">Company (optional)</Label>
+        <Input id="dream-company" name="companyName" placeholder="e.g. a specific company you're aiming for" disabled={pending} />
       </div>
 
       <Button type="submit" disabled={pending} className="w-fit">
