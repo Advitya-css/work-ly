@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { ExperienceDialog } from "@/components/career/sections/experience-dialog";
 import { DeleteExperienceButton } from "@/components/career/sections/delete-buttons";
+import { ConfirmEntityButton } from "@/components/career/sections/confirm-buttons";
 import { formatDateRange } from "@/lib/format";
 import type { Experience } from "@/lib/db/types";
 
@@ -49,6 +50,7 @@ export function ExperienceSection({ experiences }: { experiences: Experience[] }
                   <SourceBadge source={exp.source} isUncertain={exp.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {exp.isUncertain && <ConfirmEntityButton id={exp.id} type="experience" />}
                   <ExperienceDialog experience={exp} />
                   <DeleteExperienceButton id={exp.id} label={`${exp.title} at ${exp.company}`} />
                 </div>

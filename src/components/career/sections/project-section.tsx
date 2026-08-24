@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { ProjectDialog } from "@/components/career/sections/project-dialog";
 import { DeleteProjectButton } from "@/components/career/sections/delete-buttons";
+import { ConfirmEntityButton } from "@/components/career/sections/confirm-buttons";
 import { formatDateRange } from "@/lib/format";
 import type { Project } from "@/lib/db/types";
 
@@ -55,6 +56,7 @@ export function ProjectSection({ projects }: { projects: Project[] }) {
                   <SourceBadge source={project.source} isUncertain={project.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {project.isUncertain && <ConfirmEntityButton id={project.id} type="project" />}
                   <ProjectDialog project={project} />
                   <DeleteProjectButton id={project.id} label={project.name} />
                 </div>

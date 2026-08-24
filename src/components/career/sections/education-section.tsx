@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { EducationDialog } from "@/components/career/sections/education-dialog";
 import { DeleteEducationButton } from "@/components/career/sections/delete-buttons";
+import { ConfirmEntityButton } from "@/components/career/sections/confirm-buttons";
 import { formatDateRange } from "@/lib/format";
 import type { Education } from "@/lib/db/types";
 
@@ -43,6 +44,7 @@ export function EducationSection({ educations }: { educations: Education[] }) {
                   <SourceBadge source={edu.source} isUncertain={edu.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {edu.isUncertain && <ConfirmEntityButton id={edu.id} type="education" />}
                   <EducationDialog education={edu} />
                   <DeleteEducationButton id={edu.id} label={edu.institution} />
                 </div>

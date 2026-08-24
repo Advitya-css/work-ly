@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { AchievementDialog } from "@/components/career/sections/achievement-dialog";
 import { DeleteAchievementButton } from "@/components/career/sections/delete-buttons";
+import { ConfirmEntityButton } from "@/components/career/sections/confirm-buttons";
 import { formatMonthYear } from "@/lib/format";
 import type { Achievement } from "@/lib/db/types";
 
@@ -38,6 +39,7 @@ export function AchievementSection({ achievements }: { achievements: Achievement
                   <SourceBadge source={ach.source} isUncertain={ach.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {ach.isUncertain && <ConfirmEntityButton id={ach.id} type="achievement" />}
                   <AchievementDialog achievement={ach} />
                   <DeleteAchievementButton id={ach.id} label={ach.title} />
                 </div>

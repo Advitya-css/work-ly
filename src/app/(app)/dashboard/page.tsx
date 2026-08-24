@@ -13,6 +13,7 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { EnterStudentModeButton } from "@/components/student/student-mode-buttons";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
+import { StaleApplicationsCard } from "@/components/dashboard/stale-applications-card";
 import { ProfileCompletenessCard } from "@/components/dashboard/profile-completeness-card";
 import { PathwayProgressCard } from "@/components/dashboard/pathway-progress-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { CertificationDialog } from "@/components/career/sections/certification-dialog";
 import { DeleteCertificationButton } from "@/components/career/sections/delete-buttons";
+import { ConfirmEntityButton } from "@/components/career/sections/confirm-buttons";
 import { formatMonthYear } from "@/lib/format";
 import type { Certification } from "@/lib/db/types";
 
@@ -53,6 +54,7 @@ export function CertificationSection({ certifications }: { certifications: Certi
                   <SourceBadge source={cert.source} isUncertain={cert.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  {cert.isUncertain && <ConfirmEntityButton id={cert.id} type="certification" />}
                   <CertificationDialog certification={cert} />
                   <DeleteCertificationButton id={cert.id} label={cert.name} />
                 </div>
