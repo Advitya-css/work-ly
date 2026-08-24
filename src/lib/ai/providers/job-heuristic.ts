@@ -14,9 +14,8 @@ import type { EmploymentType, RequirementItem, SeniorityLevel, WorkMode } from "
 // real-world variants like "Requirements (must have):" or "Requirements -
 // Must Haves" still flip the section instead of falling through to "other"
 // (which silently emptied the mandatory/preferred requirement lists).
-const MANDATORY_HEADERS = /^(requirements?|qualifications?|must[\s-]?haves?|minimum qualifications?)\b/i;
-const PREFERRED_HEADERS =
-  /^(preferred|nice[\s-]?to[\s-]?have|bonus points?|pluses?|preferred qualifications?)\b/i;
+const MANDATORY_HEADERS = /^(requirements?|qualifications?|must[\s-]?haves?|minimum qualifications?|what you['’]?ll need|who you are|skills|what you bring|your profile|your experience|to be successful|we are looking for|what we['’]?re looking for|about you|expectations|you have|what we expect)\b/i;
+const PREFERRED_HEADERS = /^(preferred|nice[\s-]?to[\s-]?have|bonus points?|pluses?|preferred qualifications?|desirable|what would be nice|advantage|stand out)\b/i;
 /**
  * The longest a requirement bullet can be and still be read as naming a
  * skill rather than describing one. 60 was too tight - "Experience with dbt
@@ -25,7 +24,7 @@ const PREFERRED_HEADERS =
  */
 const SKILL_LINE_MAX = 80;
 
-const OTHER_HEADERS = /^(responsibilities|about the role|what you.ll do|description|about (the )?(job|company))\b/i;
+const OTHER_HEADERS = /^(responsibilities|about the role|what you.?ll do|description|about (the )?(job|company)|what you will do|the role|your impact|day to day|benefits|perks)\b/i;
 
 // Structured "Label: value" lines (salary, deadline, industry, etc.) are
 // already pulled out by their own dedicated extractors below. Without this,
@@ -82,6 +81,21 @@ function splitSections(text: string): { mandatory: string[]; preferred: string[]
     else other.push(cleaned);
   }
 
+  
+  // If we couldn't find ANY headers, the posting probably just started listing bullets.
+  // We should scan the entire text for bullets and treat them as mandatory requirements.
+  if (mandatory.length === 0 && preferred.length === 0) {
+    for (const line of lines) {
+      const bare = line.replace(/[:：]\s*$/, "").replace(/^[*#_-]+\s*/, "").replace(/[*_]+$/, "");
+      if (line.match(/^(?:[•\-*●▪◦]\s*|\d+[.)]\s+)/)) {
+        const cleaned = line.replace(/^(?:[•\-*●▪◦]\s*|\d+[.)]\s+)/, "").replace(/^[*_]+|[*_]+$/g, "").trim();
+        if (cleaned && !LABELED_METADATA_LINE.test(cleaned)) {
+          mandatory.push(cleaned);
+        }
+      }
+    }
+  }
+  
   return { mandatory, preferred, other, all: lines.map(l => l.replace(/^[*_]+|[*_]+$/g, "")) };
 }
 
