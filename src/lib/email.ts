@@ -15,7 +15,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
     return;
   }
 
-  const fromDomain = process.env.RESEND_FROM_DOMAIN || "workly.app";
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -65,7 +65,7 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
     return;
   }
 
-  const fromDomain = process.env.RESEND_FROM_DOMAIN || "workly.app";
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -114,7 +114,7 @@ export async function sendJobAlertEmail(to: string, targetRole: string, newJobsC
     return;
   }
 
-  const fromDomain = process.env.RESEND_FROM_DOMAIN || "workly.app";
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   let highlight = "";
   if (highPriorityCount > 0) {
