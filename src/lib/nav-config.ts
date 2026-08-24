@@ -9,6 +9,7 @@ import {
   IconPathway,
   IconProfile,
   IconSettings,
+  IconGuide,
   IconStudent,
   type IconProps,
 } from "@/components/icons";
@@ -56,6 +57,7 @@ export const navGroups: NavGroup[] = [
 export const primaryNavItems: NavItem[] = navGroups.flatMap((group) => group.items);
 
 export const secondaryNavItems: NavItem[] = [
+  { label: "Guide", href: "/guide", icon: IconGuide, area: "career" },
   { label: "Settings", href: "/settings", icon: IconSettings, area: "career" },
 ];
 
@@ -80,6 +82,7 @@ export const studentNavGroups: NavGroup[] = [
 ];
 
 export const studentSecondaryNavItems: NavItem[] = [
+  { label: "Guide", href: "/guide", icon: IconGuide, area: "career" },
   { label: "Settings", href: "/settings", icon: IconSettings, area: "career" },
 ];
 
