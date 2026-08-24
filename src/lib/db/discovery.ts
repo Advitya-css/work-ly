@@ -180,7 +180,7 @@ export async function deleteSource(id: string): Promise<void> {
 
 export async function listDiscoveredJobsByUserId(userId: string): Promise<DiscoveredJob[]> {
   const { rows } = await pool.query(
-    `SELECT * FROM discovered_jobs WHERE "userId" = $1 ORDER BY "discoveredAt" DESC`,
+    `SELECT * FROM discovered_jobs WHERE "userId" = $1 ORDER BY "discoveredAt" DESC LIMIT 300`,
     [userId],
   );
   return rows.map(mapJob);

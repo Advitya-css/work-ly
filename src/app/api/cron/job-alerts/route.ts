@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   const cronSecret = process.env.CRON_SECRET;
   
   // Only enforce CRON_SECRET if it's set (allows easy local testing)
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if ((process.env.NODE_ENV === "production" || cronSecret) && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
