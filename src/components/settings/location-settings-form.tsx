@@ -50,7 +50,7 @@ export function LocationSettingsForm({ profile }: { profile: CareerProfile | nul
         <LocationChipsField
           id="settings-preferred-locations"
           name="preferredLocations"
-          placeholder="Add a city or region"
+          placeholder="e.g. London, UK"
           defaultValue={profile?.preferredLocations ?? []}
         />
       </div>

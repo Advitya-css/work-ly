@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/auth";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
+import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, listSourcesByUserId, getLatestRun } from "@/lib/db/discovery";
 import { profileSearchText } from "@/lib/discovery/profile-text";
 import { buildAlert } from "@/lib/discovery/alerts";
@@ -24,13 +25,19 @@ export default async function DiscoverPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [profile, careerGoal, jobs, sources, latestRun] = await Promise.all([
+  const [profile, careerGoal, rawJobs, sources, latestRun] = await Promise.all([
     getFullCareerProfile(user.id),
     getPrimaryCareerGoal(user.id),
     listDiscoveredJobsByUserId(user.id),
     listSourcesByUserId(user.id),
     getLatestRun(user.id),
   ]);
+
+  const jobs = rawJobs.filter(job => matchesLocationPreference(job.location, job.workMode, {
+    homeLocation: profile.profile?.location ?? null,
+    preferredLocations: profile.profile?.preferredLocations ?? [],
+    openToRemote: profile.profile?.openToRemote ?? true
+  }));
 
   const profileText = profileSearchText(profile);
   const candidateYears = estimateYearsExperience(profile);

@@ -26,6 +26,7 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { calculateProfileCompleteness } from "@/lib/career/completeness";
 import { getActiveFullPathway } from "@/lib/pathway/get-full-pathway";
 import { summarize } from "@/lib/applications/analytics";
+import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, getLatestRun } from "@/lib/db/discovery";
 import { bucketJobs } from "@/lib/discovery/run";
 import { buildAlert } from "@/lib/discovery/alerts";
@@ -50,9 +51,15 @@ export default async function DashboardPage() {
 
   const applicationSummary = summarize(applications);
 
-  const [discovered, latestRun] = user
+  const [rawDiscovered, latestRun] = user
     ? await Promise.all([listDiscoveredJobsByUserId(user.id), getLatestRun(user.id)])
     : [[], null];
+    
+  const discovered = rawDiscovered.filter(job => matchesLocationPreference(job.location, job.workMode, {
+    homeLocation: fullProfile.profile?.location ?? null,
+    preferredLocations: fullProfile.profile?.preferredLocations ?? [],
+    openToRemote: fullProfile.profile?.openToRemote ?? true
+  }));
   const discoveryBuckets = bucketJobs(discovered);
   const discoveryAlert = buildAlert(latestRun, discovered);
 

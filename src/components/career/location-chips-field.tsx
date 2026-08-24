@@ -41,7 +41,7 @@ export function LocationChipsField({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter" || event.key === ",") {
+    if (event.key === "Enter") {
       event.preventDefault();
       commit();
     } else if (event.key === "Backspace" && draft === "" && locations.length > 0) {
