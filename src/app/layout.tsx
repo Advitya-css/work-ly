@@ -57,11 +57,6 @@ export const metadata: Metadata = {
   },
   description:
     "Workly is an AI-powered career intelligence platform: it understands your career profile, discovers relevant opportunities, tells you why they're worth pursuing, and builds a practical pathway to close your gaps.",
-  icons: {
-    icon: [
-      { url: "/workly-app-icon.svg?v=3", type: "image/svg+xml" }
-    ]
-  }
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
