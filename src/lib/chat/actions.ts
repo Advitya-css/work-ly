@@ -70,7 +70,7 @@ export async function askWorklyAction(
   if (!user) redirect("/login");
 
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!checkRateLimit(`chat_${ip}`, 20, 60)) {
+  if (!(await checkRateLimit)(`chat_${ip}`, 20, 60)) {
     return { answer: "You've asked too many questions recently. Please try again later.", source: "workly" };
   }
   const trimmed = question.trim();
