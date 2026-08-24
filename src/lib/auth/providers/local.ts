@@ -1,5 +1,4 @@
 import "server-only";
-import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail, getUserById } from "@/lib/db/users";
 import {
@@ -9,7 +8,7 @@ import {
   setSessionCookie,
   verifySessionToken,
 } from "@/lib/auth/session";
-import { sendVerificationEmail } from "@/lib/email";
+import { issueVerificationCode } from "@/lib/auth/verification";
 import type { AuthProvider, AuthResult, AuthUser } from "@/lib/auth/types";
 
 function toAuthUser(user: {
@@ -31,31 +30,24 @@ function toAuthUser(user: {
 }
 
 export const localAuthProvider: AuthProvider = {
-  async signUp({ email, password, name, rememberMe }): Promise<AuthResult> {
+  async signUp({ email, password, name }): Promise<AuthResult> {
     const existing = await getUserByEmail(email);
     if (existing) {
       return { error: "An account with this email already exists." };
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const verificationToken = randomUUID();
-    const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
-    const user = await createUser({
-      email,
-      passwordHash,
-      name: name ?? null,
-      verificationToken,
-      verificationTokenExpiresAt,
-    });
+    const user = await createUser({ email, passwordHash, name: name ?? null });
 
-    // Send verification email (non-blocking - don't fail signup if email fails)
-    sendVerificationEmail(user.email, verificationToken).catch((err) => {
-      console.error("[workly:email] Failed to send verification email:", err);
-    });
+    // The account row exists but is unverified, and no session is created
+    // yet - per the product requirement, the code is what actually
+    // activates the account. issueVerificationCode both stores the code's
+    // hash and sends the email; the email send itself doesn't block signup
+    // (a Resend outage shouldn't strand someone mid-signup - "resend code"
+    // covers that case).
+    await issueVerificationCode(user.id, user.email);
 
-    const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
-    await setSessionCookie(token, rememberMe);
-    return { user: toAuthUser(user) };
+    return { needsVerification: true, verificationEmail: user.email };
   },
 
   async signIn({ email, password, rememberMe }): Promise<AuthResult> {
@@ -67,7 +59,10 @@ export const localAuthProvider: AuthProvider = {
     if (!valid) {
       return { error: "Invalid email or password." };
     }
-    
+    if (!user.emailVerified) {
+      return { needsVerification: true, verificationEmail: user.email };
+    }
+
     const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
     await setSessionCookie(token, rememberMe);
     return { user: toAuthUser(user) };

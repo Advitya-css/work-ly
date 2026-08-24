@@ -14,17 +14,13 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 2) {
 }
 
 /**
- * Sends a verification email using the Resend API.
+ * Sends a 6-digit email verification code using the Resend API.
  * Falls back to console.log in dev if RESEND_API_KEY is not set.
  */
-export async function sendVerificationEmail(to: string, token: string): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const verifyUrl = `${appUrl}/verify-email?token=${token}`;
-
+export async function sendVerificationCodeEmail(to: string, code: string): Promise<void> {
   const apiKey = (process.env.RESEND_API_KEY || "").trim();
   if (!apiKey) {
-    console.log(`[workly:email] No RESEND_API_KEY set. Verification link for ${to}:`);
-    console.log(`  ${verifyUrl}`);
+    console.log(`[workly:email] No RESEND_API_KEY set. Verification code for ${to}: ${code}`);
     return;
   }
 
@@ -39,19 +35,19 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
     body: JSON.stringify({
       from: `Workly <noreply@${fromDomain}>`,
       to,
-      subject: "Verify your Workly email",
+      subject: `${code} is your Workly verification code`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
           <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">Welcome to Workly</h1>
           <p style="font-size: 16px; color: #6b6560; line-height: 1.5; margin-bottom: 24px;">
-            Click the button below to verify your email address and get started.
+            Enter this code to verify your email address and finish creating your account.
           </p>
-          <a href="${verifyUrl}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
-            Verify email
-          </a>
+          <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #1c1a19; background: #f5f3f1; border-radius: 8px; padding: 20px 24px; text-align: center; margin-bottom: 24px;">
+            ${code}
+          </div>
           <p style="font-size: 13px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
             If you didn't create a Workly account, you can safely ignore this email.
-            This link expires in 24 hours.
+            This code expires in 10 minutes.
           </p>
         </div>
       `,

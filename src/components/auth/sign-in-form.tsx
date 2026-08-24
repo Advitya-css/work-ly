@@ -20,7 +20,21 @@ export function SignInForm() {
       {state.error && (
         <Alert variant="destructive">
           <AlertCircle className="size-4" />
-          <AlertDescription>{state.error}</AlertDescription>
+          <AlertDescription>
+            {state.error}
+            {state.unverifiedEmail && (
+              <>
+                {" "}
+                <Link
+                  href={`/verify-email?email=${encodeURIComponent(state.unverifiedEmail)}`}
+                  className="font-medium underline underline-offset-4"
+                >
+                  Verify it now
+                </Link>
+                .
+              </>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 

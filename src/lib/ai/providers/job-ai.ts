@@ -3,6 +3,7 @@ import type { JobParsingProvider } from "@/lib/ai/job-parser-provider-type";
 import type { ExtractedJob } from "@/lib/ai/job-parser-types";
 import { extractedJobSchema } from "@/lib/validations/job-extraction";
 import { heuristicJobParsingProvider } from "@/lib/ai/providers/job-heuristic";
+import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 
 const SYSTEM_PROMPT = `You extract structured information from a job posting's text. Follow these rules strictly:
 
@@ -64,7 +65,9 @@ async function run(jobText: string): Promise<ExtractedJob> {
   const result = await aiProvider.complete({
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: jobText.slice(0, 20000) },
+      // Stripped only on this copy sent to the model - grounding still
+      // compares extracted claims against the original jobText.
+      { role: "user", content: stripPromptInjectionMarkers(jobText.slice(0, 20000)) },
     ],
     responseSchema: RESPONSE_SCHEMA,
     temperature: 0.1,

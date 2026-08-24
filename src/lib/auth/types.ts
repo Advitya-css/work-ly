@@ -27,6 +27,14 @@ export interface AuthUser {
 export interface AuthResult {
   user?: AuthUser;
   error?: string;
+  /**
+   * signUp: no session was created - the account exists but is unverified,
+   * and a code was just emailed to `verificationEmail`. signIn: the account
+   * exists and the password was correct, but the account is still
+   * unverified, so no session was created either.
+   */
+  needsVerification?: boolean;
+  verificationEmail?: string;
 }
 
 export interface AuthProvider {

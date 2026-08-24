@@ -32,6 +32,9 @@ export interface User {
   emailVerified: boolean;
   verificationToken: string | null;
   verificationTokenExpiresAt: Date | null;
+  verificationCodeHash: string | null;
+  verificationCodeExpiresAt: Date | null;
+  verificationAttempts: number;
   resetPasswordToken: string | null;
   resetPasswordTokenExpiresAt: Date | null;
   createdAt: Date;

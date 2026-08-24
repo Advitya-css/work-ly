@@ -326,7 +326,7 @@ function inspect(text: string): TextStats {
 /* Content signals                                                     */
 /* ------------------------------------------------------------------ */
 
-const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]{2,}/;
+const EMAIL = /[\w.+-]{1,64}@[\w-]{1,255}\.[\w.-]{2,24}/;
 const PROFILE_URL = /(?:linkedin\.com|github\.com|gitlab\.com)\/[\w%-]+/i;
 
 const MONTHS =
@@ -349,7 +349,7 @@ const EMPLOYMENT_LANGUAGE =
  * ranges and postcodes out without needing per-country formats.
  */
 function hasPhoneShapedNumber(text: string): boolean {
-  const candidates = text.match(/\+?\d[\d\s().-]{7,}\d/g);
+  const candidates = text.match(/\+?\d[\d\s().-]{7,20}\d/g);
   if (!candidates) return false;
   return candidates.some((candidate) => {
     const digits = candidate.replace(/\D/g, "").length;
@@ -649,8 +649,16 @@ function round2(value: number): number {
  * result, because the callers of this are upload and paste handlers where an
  * exception would be a worse experience than a refusal.
  */
+// A real resume or job posting is never anywhere near this long; capping
+// input before any of the regex-heavy signal detection below runs bounds
+// the worst-case work per call regardless of how any individual pattern
+// behaves on pathological input - the cheapest, most robust ReDoS defense
+// available here, and one that holds even if a future edit reintroduces an
+// unbounded quantifier somewhere in this file.
+const MAX_AUTHENTICITY_CHARS = 30_000;
+
 export function checkAuthenticity(text: string, kind: DocumentKind): AuthenticityResult {
-  const safe = typeof text === "string" ? text : "";
+  const safe = typeof text === "string" ? text.slice(0, MAX_AUTHENTICITY_CHARS) : "";
   const stats = inspect(safe);
   const signals = kind === "resume" ? resumeSignals(safe, stats) : jobSignals(safe, stats);
 

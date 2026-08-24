@@ -16,7 +16,11 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
 import { dreamJobToJobLike } from "@/lib/dream-job/to-job-like";
 import { buildGapAnalysis } from "@/lib/dream-job/gap-engine";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { DreamJob, DreamJobAnalysis } from "@/lib/db/types";
+
+const JOB_SUBMIT_LIMIT = 20;
+const JOB_SUBMIT_WINDOW_SECONDS = 600;
 
 function parseDate(value: string | null): Date | null {
   if (!value) return null;
@@ -36,6 +40,10 @@ export async function submitDreamJob(
   userId: string,
   input: SubmitDreamJobInput,
 ): Promise<{ dreamJob: DreamJob } | { error: string }> {
+  if (!(await checkRateLimit(`job_submit_${userId}`, JOB_SUBMIT_LIMIT, JOB_SUBMIT_WINDOW_SECONDS))) {
+    return { error: "You've submitted a lot of jobs recently. Please try again in a few minutes." };
+  }
+
   const dreamRole = input.dreamRole.trim();
   const description = input.description.trim();
   if (!dreamRole) return { error: "Tell us the role you're aiming for." };

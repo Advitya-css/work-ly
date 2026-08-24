@@ -164,6 +164,11 @@ function stageIndex(status: ApplicationStatus): number {
 }
 
 function statusIsAtOrPastApplied(status: ApplicationStatus): boolean {
+  // WITHDRAWN isn't in STAGE_ORDER (it's a side-exit, not a pipeline stage),
+  // so stageIndex would return -1 and this would wrongly say a withdrawn
+  // application, which by definition was applied to before being withdrawn,
+  // was never applied to at all - leaving dateApplied unset.
+  if (status === "WITHDRAWN") return true;
   const index = stageIndex(status);
   return index >= stageIndex("APPLIED") || status === "REJECTED";
 }

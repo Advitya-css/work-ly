@@ -1,4 +1,5 @@
 import "server-only";
+import { redact } from "@/lib/errors";
 import type { AICompletionRequest, AICompletionResult, AIProvider } from "@/lib/ai/types";
 
 /**
@@ -101,7 +102,9 @@ export const openAICompatibleProvider: AIProvider = {
         const responseBody = await response.text();
         console.error(
           `[workly:ai] request failed ${response.status} against ${baseUrl} (model=${model}, ` +
-            `attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`,
+            // Redacted: an error body from a misconfigured proxy or gateway
+            // can echo back the very Authorization header/key that was sent.
+            `attempt ${attempt}/${MAX_ATTEMPTS}): ${redact(responseBody.slice(0, 500))}`,
         );
         if (isRetryableStatus(response.status) && attempt < MAX_ATTEMPTS) {
           lastError = new Error(`AI provider request failed (${response.status}): ${responseBody}`);

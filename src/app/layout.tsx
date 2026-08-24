@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 import "./globals.css";
 
 /**
@@ -60,7 +61,14 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/theme-provider";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // proxy.ts mints a fresh nonce per request and puts it on both the
+  // response's CSP header and this request header. Next auto-applies it to
+  // every inline script *it* generates, but the hand-written theme-init
+  // script below is ours, so it needs the nonce set explicitly or the CSP's
+  // script-src (no 'unsafe-inline') blocks it outright.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     // suppressHydrationWarning on <html> and <body> only: browser extensions
     // (password managers, grammar checkers, dark-mode toggles) routinely
@@ -79,6 +87,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <head>
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var d=document.documentElement,t=localStorage.getItem('theme'),c=['dark','theme-midnight','theme-lavender','theme-rose','theme-sunset'],m={dark:['dark'],midnight:['dark','theme-midnight'],lavender:['theme-lavender'],rose:['theme-rose'],sunset:['dark','theme-sunset']};c.forEach(function(x){d.classList.remove(x)});if(t&&m[t]){m[t].forEach(function(x){d.classList.add(x)})}else if(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches){d.classList.add('dark')}}catch(e){}})()`
           }}

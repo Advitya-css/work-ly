@@ -82,7 +82,7 @@ const KNOWN: { test: RegExp; message: string }[] = [
  * logs are lower-risk than a browser response, but a connection string or
  * bearer token sitting in a log aggregator is still a leak.
  */
-function redact(text: string): string {
+export function redact(text: string): string {
   return text
     .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, "postgresql://[redacted]")
     .replace(/\b(sk-[A-Za-z0-9_-]{8,}|AIza[A-Za-z0-9_-]{8,})\b/g, "[redacted-key]")

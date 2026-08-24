@@ -72,8 +72,13 @@ const MONTHS =
 const DATE_TOKEN = `(?:(?:${MONTHS})\\.?\\s+)?(?:\\d{1,2}[/.-])?\\s*(?:'?\\d{2}|\\d{4})`;
 
 /** "March 2022 - Present", "July 2019 – February 2022", "2019 to 2022", "03/2022 - 06/2024". */
+// The separator class deliberately excludes a literal space: the \s* on
+// both sides already matches any whitespace, so keeping a space inside
+// [-–,] too would let the engine split the same run of whitespace between
+// the bracket alternative and the surrounding \s* in many different ways -
+// classic overlapping-quantifier ReDoS bait on a long non-matching line.
 const DATE_RANGE = new RegExp(
-  `^\\s*(${DATE_TOKEN})\\s*(?:[-–, ]|to)\\s*(present|current|now|${DATE_TOKEN})\\s*$`,
+  `^\\s*(${DATE_TOKEN})\\s*(?:[-–,]|to)\\s*(present|current|now|${DATE_TOKEN})\\s*$`,
   "i",
 );
 
@@ -300,8 +305,13 @@ function extractAchievements(lines: string[]): ExtractedAchievement[] {
   }));
 }
 
+// A real resume is never anywhere near this long; capping input before the
+// line-by-line regex matching below runs bounds the worst case regardless
+// of any individual pattern's own behavior on pathological input.
+const MAX_HEURISTIC_CHARS = 30_000;
+
 async function run(resumeText: string): Promise<ExtractedCareerProfile> {
-  const sections = splitIntoSections(resumeText);
+  const sections = splitIntoSections(resumeText.slice(0, MAX_HEURISTIC_CHARS));
 
   const skills = [
     ...extractSkills(sections.skills ?? [], "TECHNICAL"),

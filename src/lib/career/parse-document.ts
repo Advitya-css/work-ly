@@ -117,10 +117,17 @@ export async function parseDocumentAndBuildProfile(
     const extraction = groundingReport.grounded;
 
     if (groundingReport.dropped.length > 0) {
+      // Field name and length only, never the value itself: `d.value` here
+      // is the user's own resume content (a name, an employer, an email) -
+      // logging it verbatim would put PII into server logs for every CV
+      // that trips this gate.
       console.warn(
         `[workly:grounding] dropped ${groundingReport.dropped.length} unverifiable claim(s) from a CV extraction ` +
           `(grounded ${Math.round(groundingReport.groundedRatio * 100)}%): ` +
-          groundingReport.dropped.slice(0, 8).map((d) => `${d.field}="${d.value}"`).join(", "),
+          groundingReport.dropped
+            .slice(0, 8)
+            .map((d) => `${d.field}(len=${String(d.value ?? "").length})`)
+            .join(", "),
       );
     }
     const profile = await getOrCreateCareerProfile(userId);

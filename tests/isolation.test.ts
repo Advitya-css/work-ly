@@ -177,7 +177,24 @@ function walk(dir: string, match: (file: string) => boolean): string[] {
 }
 
 /** Actions that must run before anyone is signed in, and so cannot require a user. */
-const PUBLIC_ACTIONS = new Set(["signUpAction", "signInAction", "signOutAction"]);
+const PUBLIC_ACTIONS = new Set([
+  "signUpAction",
+  "signInAction",
+  "signOutAction",
+  // All three are reachable pre-login by design (forgotten password, an
+  // expired session's reset link, an unverified inbox) and are guarded a
+  // different way instead: forgotPasswordAction always returns success
+  // regardless of whether the email exists (no enumeration), resetPasswordAction
+  // requires a valid, unexpired token, and all three are now rate-limited
+  // per auth/actions.ts.
+  "forgotPasswordAction",
+  "resetPasswordAction",
+  "resendVerificationAction",
+  // Reachable pre-login too (it's what turns an unverified account into a
+  // logged-in session) - guarded instead by the code hash + expiry +
+  // attempt cap check inside it.
+  "verifyEmailCodeAction",
+]);
 const GUARD = /getCurrentUser|requireUser|requireOwned|requireAuth/;
 
 describe("server action guards", () => {

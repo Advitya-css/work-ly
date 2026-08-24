@@ -14,6 +14,9 @@ function mapRow(row: Record<string, unknown>): User {
     emailVerified: (row.emailVerified as boolean) ?? false,
     verificationToken: (row.verificationToken as string | null) ?? null,
     verificationTokenExpiresAt: (row.verificationTokenExpiresAt as Date | null) ?? null,
+    verificationCodeHash: (row.verificationCodeHash as string | null) ?? null,
+    verificationCodeExpiresAt: (row.verificationCodeExpiresAt as Date | null) ?? null,
+    verificationAttempts: (row.verificationAttempts as number) ?? 0,
     resetPasswordToken: (row.resetPasswordToken as string | null) ?? null,
     resetPasswordTokenExpiresAt: (row.resetPasswordTokenExpiresAt as Date | null) ?? null,
     createdAt: row.createdAt as Date,
@@ -38,12 +41,12 @@ export async function createUser(input: {
   email: string;
   passwordHash: string;
   name?: string | null;
-  verificationToken?: string | null;
-  verificationTokenExpiresAt?: Date | null;
+  verificationCodeHash?: string | null;
+  verificationCodeExpiresAt?: Date | null;
 }): Promise<User> {
   const id = randomUUID();
   const { rows } = await pool.query(
-    `INSERT INTO users (id, email, "passwordHash", name, "verificationToken", "verificationTokenExpiresAt", "updatedAt")
+    `INSERT INTO users (id, email, "passwordHash", name, "verificationCodeHash", "verificationCodeExpiresAt", "updatedAt")
      VALUES ($1, $2, $3, $4, $5, $6, now())
      RETURNING *`,
     [
@@ -51,8 +54,8 @@ export async function createUser(input: {
       input.email.toLowerCase().trim(),
       input.passwordHash,
       input.name ?? null,
-      input.verificationToken ?? null,
-      input.verificationTokenExpiresAt ?? null,
+      input.verificationCodeHash ?? null,
+      input.verificationCodeExpiresAt ?? null,
     ],
   );
   return mapRow(rows[0]);
@@ -83,24 +86,39 @@ export async function updateUserProfile(
 
 export async function setEmailVerified(userId: string): Promise<void> {
   await pool.query(
-    `UPDATE users SET "emailVerified" = true, "verificationToken" = NULL, "verificationTokenExpiresAt" = NULL, "updatedAt" = now() WHERE id = $1`,
+    `UPDATE users
+     SET "emailVerified" = true,
+         "verificationCodeHash" = NULL,
+         "verificationCodeExpiresAt" = NULL,
+         "verificationAttempts" = 0,
+         "updatedAt" = now()
+     WHERE id = $1`,
     [userId],
   );
 }
 
-export async function findUserByVerificationToken(token: string): Promise<User | null> {
-  const { rows } = await pool.query(
-    `SELECT * FROM users WHERE "verificationToken" = $1 AND "verificationTokenExpiresAt" > now() LIMIT 1`,
-    [token],
+/** Issues a fresh code, replacing any previous one and resetting the attempt counter. */
+export async function setVerificationCode(userId: string, codeHash: string, expiresAt: Date): Promise<void> {
+  await pool.query(
+    `UPDATE users
+     SET "verificationCodeHash" = $2,
+         "verificationCodeExpiresAt" = $3,
+         "verificationAttempts" = 0,
+         "updatedAt" = now()
+     WHERE id = $1`,
+    [userId, codeHash, expiresAt],
   );
-  return rows[0] ? mapRow(rows[0]) : null;
 }
 
-export async function setVerificationToken(userId: string, token: string, expiresAt: Date): Promise<void> {
-  await pool.query(
-    `UPDATE users SET "verificationToken" = $2, "verificationTokenExpiresAt" = $3, "updatedAt" = now() WHERE id = $1`,
-    [userId, token, expiresAt],
+/** Records one failed code guess. Returns the attempt count after this one. */
+export async function incrementVerificationAttempts(userId: string): Promise<number> {
+  const { rows } = await pool.query(
+    `UPDATE users SET "verificationAttempts" = "verificationAttempts" + 1, "updatedAt" = now()
+     WHERE id = $1
+     RETURNING "verificationAttempts"`,
+    [userId],
   );
+  return (rows[0]?.verificationAttempts as number | undefined) ?? 0;
 }
 
 export async function setResetPasswordToken(userId: string, token: string, expiresAt: Date): Promise<void> {

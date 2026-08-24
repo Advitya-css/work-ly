@@ -164,6 +164,10 @@ export async function deleteAccountAction(): Promise<PrivacyActionState> {
   const user = await requireUser();
   try {
     await deleteStoredFiles(user.id);
+    // Per-user rate-limit counters (upload_<id>, resume_parse_<id>,
+    // job_submit_<id>) key off the user's id directly, so they'd otherwise
+    // sit around until their own expiry even after the account is gone.
+    await pool.query(`DELETE FROM rate_limits WHERE key LIKE '%' || $1`, [user.id]);
     await pool.query(`DELETE FROM users WHERE id = $1`, [user.id]);
   } catch (error) {
     return { error: safeMessage(error, "deleteAccountAction", "We couldn't delete your account.") };

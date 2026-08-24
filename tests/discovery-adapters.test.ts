@@ -3,6 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { jobPostingSchemaSource } from "@/lib/discovery/sources/company-career";
 import { arbeitnowSource } from "@/lib/discovery/sources/keyless-boards";
 
+// fetchWithGuards resolves the target host via real DNS before ever
+// reaching `fetch` (lib/net/ssrf-guard.ts) - that's the point of it, it's
+// what makes the SSRF check real - but it means these tests' `.example`
+// hostnames (deliberately non-resolvable, RFC 2606) need DNS itself
+// stubbed too, not just fetch, or every one of them fails on a lookup
+// error before the mocked fetch response is ever reached. A fixed public
+// unicast address stands in for "wherever this would really resolve" -
+// the adapters under test don't care what the address is, only what the
+// mocked fetch returns for it.
+vi.mock("node:dns/promises", () => ({
+  lookup: vi.fn().mockResolvedValue([{ address: "93.184.216.34", family: 4 }]),
+}));
+
 /**
  * These two adapters are the new legally-clean sources: schema.org
  * JobPosting data any company can publish on its own careers page, and
@@ -12,12 +25,14 @@ import { arbeitnowSource } from "@/lib/discovery/sources/keyless-boards";
  * neither should ever need credentials to run.
  */
 
+// A real Response (not a hand-rolled {ok, status, text} stub): base.ts's
+// fetchWithGuards streams the body via response.body.getReader() to enforce
+// its size cap without buffering first (see its docstring), and a stub
+// missing `.body` entirely used to silently read back as an empty string
+// instead of the mocked content. The platform Response constructor gives a
+// real ReadableStream for free.
 function textResponse(body: string) {
-  return {
-    ok: true,
-    status: 200,
-    text: async () => body,
-  } as Response;
+  return new Response(body, { status: 200 });
 }
 
 describe("jobPostingSchemaSource", () => {

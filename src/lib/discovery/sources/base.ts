@@ -1,4 +1,4 @@
-import { isSafeUrl } from "@/lib/ssrf";
+import { guardedFetch } from "@/lib/net/ssrf-guard";
 import { deduplicateBatch } from "@/lib/discovery/dedupe";
 import { normalizeListing } from "@/lib/discovery/normalize";
 import type {
@@ -79,26 +79,27 @@ export async function fetchWithGuards(
   init: RequestInit = {},
   { timeoutMs = 10_000, maxBytes = 5_000_000 } = {},
 ): Promise<string> {
-  const safe = await isSafeUrl(url);
-  if (!safe) throw new Error("URL is not allowed (internal or private IP blocked).");
-
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, {
-      ...init,
-      redirect: "manual",
-      signal: controller.signal,
+    // guardedFetch resolves and pins the connection to the address it just
+    // validated (not just checks the hostname and lets a plain fetch()
+    // re-resolve it, which a DNS answer changing between the two steps
+    // slips past), and re-validates on every redirect hop rather than
+    // rejecting redirects outright.
+    const response = await guardedFetch(url, {
+      method: (init.method as string | undefined) ?? "GET",
       headers: {
         "User-Agent": "Workly/0.1 (+career-intelligence; contact via app owner)",
         Accept: "application/json, application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
-        ...(init.headers ?? {}),
+        ...(init.headers as Record<string, string> | undefined ?? {}),
       },
+      signal: controller.signal,
     });
     if (!response.ok) {
       throw new Error(`Source returned HTTP ${response.status}`);
     }
-    
+
     const reader = response.body?.getReader();
     let received = 0;
     const chunks: Uint8Array[] = [];

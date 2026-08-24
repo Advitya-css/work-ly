@@ -18,7 +18,7 @@ export async function signUpAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit)(`auth_${ip}`, 5, 60)) {
+  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
   const parsed = signUpSchema.safeParse({
@@ -41,7 +41,10 @@ export async function signUpAction(
     return { error: result.error };
   }
 
-  redirect("/onboarding");
+  // No session yet - signUp only ever creates the account and emails a
+  // code now. redirect() throws internally, so this never falls through
+  // to a state the form could render.
+  redirect(`/verify-email?email=${encodeURIComponent(result.verificationEmail ?? parsed.data.email)}`);
 }
 
 export async function signInAction(
@@ -49,7 +52,7 @@ export async function signInAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit)(`auth_${ip}`, 5, 60)) {
+  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
   const parsed = signInSchema.safeParse({
@@ -67,6 +70,12 @@ export async function signInAction(
 
   const rememberMe = formData.get("rememberMe") === "on";
   const result = await authProvider.signIn({ ...parsed.data, rememberMe });
+  if (result.needsVerification) {
+    return {
+      error: "Please verify your email before signing in.",
+      unverifiedEmail: result.verificationEmail,
+    };
+  }
   if (result.error) {
     return { error: result.error };
   }
@@ -84,7 +93,7 @@ export async function forgotPasswordAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit)(`auth_${ip}`, 3, 300)) {
+  if (!(await checkRateLimit(`auth_${ip}`, 3, 300))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
@@ -121,7 +130,7 @@ export async function resetPasswordAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit)(`auth_${ip}`, 5, 60)) {
+  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
@@ -158,33 +167,87 @@ export async function resendVerificationAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit)(`auth_${ip}`, 3, 300)) {
+  if (!(await checkRateLimit(`auth_${ip}`, 3, 300))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
   const email = formData.get("email") as string;
   if (!email) return { error: "Invalid request." };
 
-  const { getUserByEmail, setVerificationToken } = await import("@/lib/db/users");
-  const { sendVerificationEmail } = await import("@/lib/email");
-  const { randomUUID } = await import("crypto");
+  const { getUserByEmail } = await import("@/lib/db/users");
+  const { issueVerificationCode } = await import("@/lib/auth/verification");
 
   const user = await getUserByEmail(email);
   if (!user) {
-    return { error: "User not found." };
+    // Same response either way - confirming or denying an account exists
+    // for this email from an unauthenticated "resend code" form is exactly
+    // the enumeration forgotPasswordAction is careful to avoid.
+    return { success: true };
   }
 
   if (user.emailVerified) {
     return { error: "This email is already verified. Please log in." };
   }
 
-  const token = randomUUID();
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-  await setVerificationToken(user.id, token, expiresAt);
-  
-  sendVerificationEmail(user.email, token).catch((err) => {
-    console.error("[workly:email] Failed to resend verification email:", err);
-  });
+  // Issuing a fresh code also resets the attempt counter, so someone who
+  // used up their 5 guesses on the old code gets a clean slate here.
+  await issueVerificationCode(user.id, user.email);
 
   return { success: true };
+}
+
+export async function verifyEmailCodeAction(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const ip = (await headers()).get("x-forwarded-for") || "unknown";
+  if (!(await checkRateLimit(`auth_${ip}`, 10, 600))) {
+    return { error: "Too many attempts. Please try again later." };
+  }
+
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const code = ((formData.get("code") as string) || "").trim();
+  if (!email || !code) {
+    return { error: "Enter the 6-digit code from your email." };
+  }
+
+  const { getUserByEmail, incrementVerificationAttempts, setEmailVerified } = await import("@/lib/db/users");
+  const { MAX_VERIFICATION_ATTEMPTS } = await import("@/lib/auth/verification");
+  const { createSessionToken, setSessionCookie } = await import("@/lib/auth/session");
+  const bcrypt = await import("bcryptjs");
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return { error: "We couldn't find that account. Please sign up again." };
+  }
+  if (user.emailVerified) {
+    return { error: "This email is already verified. Please log in." };
+  }
+  if (!user.verificationCodeHash || !user.verificationCodeExpiresAt || user.verificationCodeExpiresAt < new Date()) {
+    return { error: "That code has expired. Request a new one below." };
+  }
+  if (user.verificationAttempts >= MAX_VERIFICATION_ATTEMPTS) {
+    return { error: "Too many incorrect attempts. Request a new code below." };
+  }
+
+  const valid = await bcrypt.compare(code, user.verificationCodeHash);
+  if (!valid) {
+    const attempts = await incrementVerificationAttempts(user.id);
+    const remaining = Math.max(0, MAX_VERIFICATION_ATTEMPTS - attempts);
+    return {
+      error:
+        remaining > 0
+          ? `That code isn't right. ${remaining} attempt${remaining === 1 ? "" : "s"} left.`
+          : "Too many incorrect attempts. Request a new code below.",
+    };
+  }
+
+  await setEmailVerified(user.id);
+
+  // Now that the email is confirmed, actually create the session - this is
+  // the moment "the account" becomes usable.
+  const token = await createSessionToken({ sub: user.id, email: user.email }, false);
+  await setSessionCookie(token, false);
+
+  redirect("/onboarding");
 }

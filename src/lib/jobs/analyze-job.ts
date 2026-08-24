@@ -19,7 +19,11 @@ import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { getOpportunityByJobId, upsertOpportunityForJob } from "@/lib/db/opportunities";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { fetchJobPostingText } from "@/lib/jobs/fetch-url";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { Job, JobAnalysis, JobInputMethod, Opportunity } from "@/lib/db/types";
+
+const JOB_SUBMIT_LIMIT = 20;
+const JOB_SUBMIT_WINDOW_SECONDS = 600;
 
 function parseDate(value: string | null): Date | null {
   if (!value) return null;
@@ -42,6 +46,12 @@ export interface SubmitJobInput {
  * paste the description instead rather than this function trying harder.
  */
 export async function submitJob(userId: string, input: SubmitJobInput): Promise<{ job: Job } | { error: string }> {
+  // Every submission runs a paid AI parse + score pipeline - without a cap,
+  // a scripted or compromised account can drive unbounded AI spend.
+  if (!(await checkRateLimit(`job_submit_${userId}`, JOB_SUBMIT_LIMIT, JOB_SUBMIT_WINDOW_SECONDS))) {
+    return { error: "You've submitted a lot of jobs recently. Please try again in a few minutes." };
+  }
+
   let rawInput: string;
   let url: string | null = null;
 
@@ -91,10 +101,16 @@ export async function parseJob(jobId: string, userId: string): Promise<Job> {
     const extracted = grounding.grounded;
 
     if (grounding.dropped.length > 0) {
+      // Field name and length only - see the identical note in
+      // career/parse-document.ts: the value itself is the user's pasted
+      // job posting content, not something to put in server logs verbatim.
       console.warn(
         `[workly:grounding] dropped ${grounding.dropped.length} unverifiable claim(s) from a job extraction ` +
           `(grounded ${Math.round(grounding.groundedRatio * 100)}%): ` +
-          grounding.dropped.slice(0, 8).map((d) => `${d.field}="${d.value}"`).join(", "),
+          grounding.dropped
+            .slice(0, 8)
+            .map((d) => `${d.field}(len=${String(d.value ?? "").length})`)
+            .join(", "),
       );
     }
 

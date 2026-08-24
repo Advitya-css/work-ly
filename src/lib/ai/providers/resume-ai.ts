@@ -2,6 +2,7 @@ import { aiProvider } from "@/lib/ai";
 import type { ResumeParsingProvider } from "@/lib/ai/resume-parser-provider-type";
 import type { ExtractedCareerProfile } from "@/lib/ai/resume-parser-types";
 import { heuristicResumeParsingProvider } from "@/lib/ai/providers/resume-heuristic";
+import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 
 const SYSTEM_PROMPT = `You extract structured career information from resume text. Follow these rules strictly:
 
@@ -137,7 +138,11 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
   const result = await aiProvider.complete({
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: resumeText.slice(0, 20000) },
+      // Stripped only on this copy sent to the model - grounding still
+      // compares extracted claims against the original resumeText below,
+      // so a real skill or project mentioning e.g. "System Administrator"
+      // is untouched there even though a role-marker-shaped line here is.
+      { role: "user", content: stripPromptInjectionMarkers(resumeText.slice(0, 20000)) },
     ],
     responseSchema: RESPONSE_SCHEMA,
     temperature: 0.1,
