@@ -29,7 +29,7 @@ export type ComponentMap = { [key: string]: ScoreComponent };
  * criteria is a precise number that means almost nothing, and precision is
  * what makes a bad number persuasive.
  */
-export const MIN_COVERAGE_FOR_SCORE = 0.6;
+export const MIN_COVERAGE_FOR_SCORE = 0.25;
 
 /**
  * Derives coverage from a stored breakdown.

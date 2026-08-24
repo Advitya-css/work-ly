@@ -340,7 +340,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-foreground">{PRIORITY_COMPONENT_LABEL[key]}</span>
                       <span className="text-muted-foreground">
-                        {c.score}/{c.maxScore} · {c.weight}% weight
+                        {Number.isInteger(c.score) ? c.score : c.score.toFixed(1)}/{c.maxScore} · {c.weight}% weight
                       </span>
                     </div>
                     <Progress value={pct} label={`${PRIORITY_COMPONENT_LABEL[key]}: ${c.score} of ${c.maxScore}`} />
@@ -367,7 +367,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-foreground">{SCORE_COMPONENT_LABEL[key]}</span>
                       <span className="text-muted-foreground">
-                        {c.score}/{c.maxScore} · {c.weight}% weight
+                        {Number.isInteger(c.score) ? c.score : c.score.toFixed(1)}/{c.maxScore} · {c.weight}% weight
                       </span>
                     </div>
                     <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${c.score} of ${c.maxScore}`} />

@@ -536,7 +536,17 @@ function buildRequirementChecklist(
     }
 
     if (item.category === "skill") {
-      const match = findMatchingSkill(item.text, profileSkills.filter((s) => !s.isTransferable));
+      const nonTransferable = profileSkills.filter((s) => !s.isTransferable);
+      let match = findMatchingSkill(item.text, nonTransferable);
+      
+      if (!match) {
+        match = nonTransferable.find((s) => {
+          const escaped = s.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const pattern = new RegExp(`\\b${escaped}\\b`, "i");
+          return pattern.test(item.text);
+        });
+      }
+
       if (match) {
         return { text: item.text, status: "met", detail: `Matched to "${match.name}" on your profile.` };
       }
