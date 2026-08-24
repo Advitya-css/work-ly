@@ -12,6 +12,7 @@ import {
 } from "@/components/icons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { EnterStudentModeButton } from "@/components/student/student-mode-buttons";
+import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 import { ProfileCompletenessCard } from "@/components/dashboard/profile-completeness-card";
 import { PathwayProgressCard } from "@/components/dashboard/pathway-progress-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -46,6 +47,10 @@ export default async function DashboardPage() {
         getFullCareerProfile(user.id),
       ])
     : [null, [], [], null, [], { profile: null, educations: [], experiences: [], projects: [], skills: [], achievements: [], certifications: [], documents: [] }];
+
+  const hasProfile = fullProfile.skills.length > 0 || fullProfile.experiences.length > 0;
+  const hasGoal = goals.length > 0;
+  const hasAnalyzedJob = opportunities.length > 0;
 
   const profileCompleteness = calculateProfileCompleteness(fullProfile, goals);
 
