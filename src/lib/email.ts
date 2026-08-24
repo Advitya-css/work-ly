@@ -1,5 +1,18 @@
 import "server-only";
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fetch(url, options);
+    } catch (err: any) {
+      if (i === retries) throw err;
+      if (err.code !== 'UND_ERR_SOCKET' && err.message !== 'fetch failed') throw err;
+      await new Promise(r => setTimeout(r, 500 * (i + 1))); // Exponential backoff
+    }
+  }
+  throw new Error("Unreachable");
+}
+
 /**
  * Sends a verification email using the Resend API.
  * Falls back to console.log in dev if RESEND_API_KEY is not set.
@@ -8,7 +21,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const verifyUrl = `${appUrl}/verify-email?token=${token}`;
 
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
   if (!apiKey) {
     console.log(`[workly:email] No RESEND_API_KEY set. Verification link for ${to}:`);
     console.log(`  ${verifyUrl}`);
@@ -17,7 +30,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
 
   const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -67,7 +80,7 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
 
   const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -121,7 +134,7 @@ export async function sendJobAlertEmail(to: string, targetRole: string, newJobsC
     highlight = `<p style="font-size: 16px; color: #7a2e55; font-weight: bold; margin-bottom: 24px;">🔥 ${highPriorityCount} of these are a Strong Match based on your profile!</p>`;
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
