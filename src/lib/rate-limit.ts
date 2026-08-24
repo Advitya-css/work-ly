@@ -12,19 +12,19 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
     const { rows } = await pool.query(
       `
       INSERT INTO rate_limits (key, count, expires_at)
-      VALUES ($1, 1, $3)
+      VALUES ($1, 1, $2)
       ON CONFLICT (key) DO UPDATE SET
         count = CASE 
           WHEN rate_limits.expires_at < now() THEN 1 
           ELSE rate_limits.count + 1 
         END,
         expires_at = CASE 
-          WHEN rate_limits.expires_at < now() THEN $3 
+          WHEN rate_limits.expires_at < now() THEN $2 
           ELSE rate_limits.expires_at 
         END
       RETURNING count, expires_at;
       `,
-      [key, limit, expiresAt]
+      [key, expiresAt]
     );
 
     const record = rows[0];
