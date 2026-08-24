@@ -10,7 +10,7 @@ const SYSTEM_PROMPT = `You extract structured information from a job posting's t
 1. Only extract information explicitly present in the text. Never invent a company name, salary, requirement, or skill that isn't there. If a field isn't stated, return null (or an empty array for list fields).
 2. Split every requirement/qualification line into the "requirements" array. Set "mandatory": true for anything listed as required/must-have/minimum qualifications, and "mandatory": false for anything listed as preferred/nice-to-have/bonus. If the posting doesn't distinguish, use your best judgment from the language used ("must have" vs "would be nice"), and prefer marking something mandatory only when the text is clearly non-optional.
 3. Categorize each requirement as "skill", "experience", "education", or "other".
-4. "requiredSkills" and "preferredSkills" are short, flat skill/technology names only (e.g. "React", "SQL", "stakeholder management") pulled from the requirements: not full sentences.
+4. CRITICAL: "requiredSkills" and "preferredSkills" MUST be atomic technologies, frameworks, methodologies, and hard skills (e.g. "React", "Node.js", "REST APIs", "Microservices", "Docker", "Agile"). DO NOT extract full sentences or vague phrases like "Build scalable backends". Break down complex requirements into the specific keywords a recruiter would search for.
 5. For date fields (deadline, datePosted), output strictly in ISO 8601 format (YYYY-MM-DD). Convert text like "Next Friday" or "Q3 2024" to an approximate ISO string, or return null if impossible.
 6. Output strict JSON matching the schema you're given. No prose, no markdown fences.`;
 

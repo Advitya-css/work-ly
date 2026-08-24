@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { ScoreReadout } from "@/components/shared/score-readout";
 import { coverageOf, unassessedIn } from "@/lib/scoring/coverage";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
+import { ShareScoreButton } from "@/components/jobs/share-score-button";
 import { OpportunityStatusControls } from "@/components/opportunities/opportunity-status-controls";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +82,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
         </Button>
         <div className="flex items-center gap-2">
           <OpportunityStatusControls opportunity={opportunity} />
+          <ShareScoreButton score={analysis.fitScore} roleTitle={job.title ?? "Untitled Role"} companyName={job.company} />
           <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
         </div>
       </div>

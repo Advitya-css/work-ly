@@ -17,6 +17,7 @@ import {
 
 import { PageHeader } from "@/components/shared/page-header";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
+import { ShareScoreButton } from "@/components/jobs/share-score-button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -138,7 +139,10 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
             Back
           </Link>
         </Button>
-        <DeleteJobButton id={job.id} label={job.title ?? "this analysis"} />
+        <div className="flex gap-2">
+          <ShareScoreButton score={analysis.fitScore} roleTitle={job.title ?? "Untitled Role"} companyName={job.company} />
+          <DeleteJobButton id={job.id} label={job.title ?? "this analysis"} />
+        </div>
       </div>
 
       <PageHeader title={job.title ?? "Untitled role"} description={jobDetailLine || undefined} />
