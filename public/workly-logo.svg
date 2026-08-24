@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 28" width="1024" height="843">
+  <defs>
+    <linearGradient id="logo-mark-gradient" x1="0" y1="28" x2="34" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4A1942" />
+      <stop offset="55%" stop-color="#7A2E55" />
+      <stop offset="100%" stop-color="#B565D8" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M2 8 L8 26 L13 13 L19 26 L30 2"
+    stroke="url(#logo-mark-gradient)"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <path
+    d="M30.85 7.34 L30 2 L25.4 4.84"
+    stroke="url(#logo-mark-gradient)"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
