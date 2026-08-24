@@ -101,6 +101,18 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
       "Your CV and profile live in your own database and are never shared with another user. Settings has controls to delete your CV, your career data, or your whole account, and deletions remove the stored files too.\n\nIf you have configured an AI provider, the text of a CV or job description you ask it to parse is sent to that provider. Everything else, including all scoring, runs locally with no network call.",
   },
   {
+    id: "how-to-location-salary",
+    triggers: ["where do i set my location", "set my location", "change my location", "add location", "where do i set my salary", "set salary", "change salary", "target salary", "preferences"],
+    question: "Where do I set my location, salary, and preferences?",
+    answer: "Your current 'Home Location' can be set in **My career > Profile**. \n\nTo set your **target salary, preferred locations, and work modes** (Remote/Hybrid), go to **My career > Goals** and click 'Add a career goal'. The Priority Engine uses these goals to score jobs for you."
+  },
+  {
+    id: "how-to-delete",
+    triggers: ["how do i delete", "delete a job", "remove a job", "delete application"],
+    question: "How do I delete a job or application?",
+    answer: "Open the specific job or application from the Opportunities or Applications board. On the detailed analysis page, look for the 'Delete' button near the top right of the page header."
+  },
+  {
     id: "accuracy",
     triggers: ["wrong", "inaccurate", "mistake", "not right", "bad parse", "misread"],
     question: "The parsed information is wrong. What do I do?",

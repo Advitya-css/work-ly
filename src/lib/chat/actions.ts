@@ -42,6 +42,9 @@ const CAREER_WORDS = [
   "cover letter", "portfolio", "promotion", "industry", "seniority", "offer", "reject",
   "discover", "search", "company", "work", "employment", "internship", "graduate",
   "reference", "linkedin", "networking", "negotiat", "notice period", "contract",
+  "location", "setting", "preference", "remote", "hybrid", "onsite", "education", 
+  "degree", "school", "university", "college", "project", "certification", "dashboard",
+  "account", "password", "email", "name", "delete", "edit", "update", "change"
 ];
 
 function looksCareerRelated(question: string): boolean {
@@ -136,6 +139,7 @@ export async function askWorklyAction(
     "- Do not promise outcomes. Give practical, concrete next steps instead.",
     "- Be brief. Two or three short paragraphs at most, and prefer a short list when the answer is a sequence of steps.",
     "- Write plainly, for someone who may be new to job hunting. No jargon without explaining it.",
+    "- If asked how to navigate the app: 'My career' contains Profile, Goals, Dream job, and Career path. 'Jobs' contains Opportunities, Discover, and Analyze. 'Settings' has account controls.",
     "",
     "About the person you are helping:",
     context,
