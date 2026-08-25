@@ -2,6 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { pool } from "@/lib/db/pool";
+import { randomUUID } from "crypto";
 
 import { getCurrentUser } from "@/lib/auth";
 import {
@@ -117,6 +120,30 @@ export async function setApplicationStatusAction(
   const application = await requireOwnedApplication(id);
   if (!application) return;
   await setApplicationStatus(id, status);
+
+  // Feature: Auto-add to resume when hired
+  if (status === "OFFER") {
+    try {
+      const profile = await getCareerProfileByUserId(application.userId);
+      if (profile && application.company) {
+        // Prevent duplicates
+        const { rows } = await pool.query(
+          `SELECT id FROM experiences WHERE "careerProfileId" = $1 AND company = $2 AND role = $3 LIMIT 1`,
+          [profile.id, application.company, application.roleTitle]
+        );
+        if (rows.length === 0) {
+          await pool.query(
+            `INSERT INTO experiences (id, "careerProfileId", company, role, "startDate", "isCurrent", "updatedAt")
+             VALUES ($1, $2, $3, $4, now(), true, now())`,
+            [randomUUID(), profile.id, application.company, application.roleTitle]
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to auto-add experience on hire", error);
+    }
+  }
+
   revalidateApplicationViews(id);
 }
 

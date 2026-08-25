@@ -24,7 +24,7 @@ export const APPLICATION_STATUS_LABEL: Record<ApplicationStatus, string> = {
   ASSESSMENT: "Assessment",
   INTERVIEW: "Interview",
   FINAL_INTERVIEW: "Final interview",
-  OFFER: "Offer",
+  OFFER: "Got the job",
   REJECTED: "Rejected",
   WITHDRAWN: "Withdrawn",
 };
@@ -47,7 +47,7 @@ export const APPLICATION_STATUS_VARIANT: Record<
 export const APPLICATION_OUTCOME_LABEL: Record<string, string> = {
   PENDING: "In progress",
   REJECTED: "Rejected",
-  OFFER: "Offer",
+  OFFER: "Got the job",
   WITHDRAWN: "Withdrawn",
 };
 
