@@ -60,6 +60,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // proxy.ts mints a fresh nonce per request and puts it on both the
@@ -95,6 +96,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body className="flex min-h-full flex-col font-sans" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
