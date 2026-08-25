@@ -29,7 +29,20 @@ export function toDateInputValue(date: Date | null): string {
 
 export function formatSalaryRange(min: number | null, max: number | null, currency: string | null): string | null {
   if (min == null && max == null) return null;
-  const fmt = (n: number) => `${currency ?? "USD"} ${n.toLocaleString()}`;
-  if (min != null && max != null) return `${fmt(min)} – ${fmt(max)}`;
+  const determineSuffix = (val: number) => {
+    if (val < 200) return "/hr";
+    if (val < 10000) return "/mo";
+    return "/yr";
+  };
+  const fmt = (n: number) => `${currency ?? "USD"} ${n.toLocaleString()}${determineSuffix(n)}`;
+  
+  if (min != null && max != null) {
+    const minSuffix = determineSuffix(min);
+    const maxSuffix = determineSuffix(max);
+    if (minSuffix === maxSuffix) {
+      return `${currency ?? "USD"} ${min.toLocaleString()} – ${max.toLocaleString()}${minSuffix}`;
+    }
+    return `${fmt(min)} – ${fmt(max)}`;
+  }
   return fmt((min ?? max)!);
 }

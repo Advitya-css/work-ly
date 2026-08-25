@@ -32,6 +32,7 @@ const HIGH_DIFFICULTY_SKILL_KEYWORDS = [
 ];
 const LOW_DIFFICULTY_SKILL_KEYWORDS = [
   "communication", "leadership", "presentation", "collaboration", "stakeholder",
+  "customer service", "retail", "cashier", "cash handling", "barista", "point of sale", "pos", "merchandising", "inventory",
   "mentoring", "time management", "organization", "teamwork", "writing", "interpersonal",
   "problem solving", "adaptability", "critical thinking", "work ethic", "attention to detail",
   "empathy", "customer service", "fast learner", "microsoft office", "word", "excel", "powerpoint", "google workspace"
