@@ -90,6 +90,7 @@ function buildMatchReasons(
   fitStrengths: string[],
   expansionRole: string | null,
   sourceName: string,
+  openToRemote: boolean = true,
 ): MatchReason[] {
   const reasons: MatchReason[] = [];
 
@@ -103,7 +104,11 @@ function buildMatchReasons(
     reasons.push({ kind: "skill", text: strength });
   }
   if (listing.workMode === "REMOTE") {
-    reasons.push({ kind: "location", text: "Remote, so location isn't a constraint." });
+    if (openToRemote) {
+      reasons.push({ kind: "location", text: "Remote, so location isn't a constraint." });
+    } else {
+      reasons.push({ kind: "location", text: "Remote job (Note: you are not currently open to remote)." });
+    }
   }
   reasons.push({ kind: "source", text: `Found via ${sourceName}.` });
 
@@ -288,6 +293,7 @@ export async function runDiscovery(
           fit?.strengths ?? [],
           matchedExpansion?.role ?? null,
           sourceName,
+          profile.profile?.openToRemote ?? true,
         ),
         discoveryReason,
       });
