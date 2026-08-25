@@ -84,5 +84,11 @@
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.7"
+  },
+  "allowScripts": {
+    "@prisma/engines": true,
+    "esbuild": true,
+    "prisma": true,
+    "unrs-resolver": true
   }
 }
