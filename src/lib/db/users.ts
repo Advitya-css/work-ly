@@ -39,23 +39,27 @@ export async function getUserById(id: string): Promise<User | null> {
 
 export async function createUser(input: {
   email: string;
-  passwordHash: string;
+  passwordHash?: string | null;
   name?: string | null;
+  avatarUrl?: string | null;
   verificationCodeHash?: string | null;
   verificationCodeExpiresAt?: Date | null;
+  emailVerified?: boolean;
 }): Promise<User> {
   const id = randomUUID();
   const { rows } = await pool.query(
-    `INSERT INTO users (id, email, "passwordHash", name, "verificationCodeHash", "verificationCodeExpiresAt", "updatedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, now())
+    `INSERT INTO users (id, email, "passwordHash", name, "avatarUrl", "verificationCodeHash", "verificationCodeExpiresAt", "emailVerified", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
      RETURNING *`,
     [
       id,
       input.email.toLowerCase().trim(),
-      input.passwordHash,
+      input.passwordHash ?? null,
       input.name ?? null,
+      input.avatarUrl ?? null,
       input.verificationCodeHash ?? null,
       input.verificationCodeExpiresAt ?? null,
+      input.emailVerified ?? false,
     ],
   );
   return mapRow(rows[0]);

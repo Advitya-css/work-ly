@@ -43,4 +43,5 @@ export interface AuthProvider {
   signOut(): Promise<void>;
   /** Reads the current session server-side. Read-only - safe in Server Components. */
   getCurrentUser(): Promise<AuthUser | null>;
+  signInWithOAuth?(input: { provider: "google"; providerId: string; email: string; name?: string; avatarUrl?: string }): Promise<AuthResult>;
 }

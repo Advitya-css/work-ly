@@ -1,6 +1,6 @@
 import "server-only";
 import bcrypt from "bcryptjs";
-import { createUser, getUserByEmail, getUserById } from "@/lib/db/users";
+import { createUser, getUserByEmail, getUserById, updateUserProfile } from "@/lib/db/users";
 import {
   createSessionToken,
   clearSessionCookie,
@@ -80,4 +80,30 @@ export const localAuthProvider: AuthProvider = {
     const user = await getUserById(payload.sub);
     return user ? toAuthUser(user) : null;
   },
+
+  async signInWithOAuth(input: { provider: "google"; providerId: string; email: string; name?: string; avatarUrl?: string }): Promise<import("../types").AuthResult> {
+    let user = await getUserByEmail(input.email);
+    
+    if (user) {
+      // Update name/avatar if empty, but don't overwrite user's custom changes
+      const updates: { name?: string; avatarUrl?: string } = {};
+      if (!user.name && input.name) updates.name = input.name;
+      if (!user.avatarUrl && input.avatarUrl) updates.avatarUrl = input.avatarUrl;
+      if (Object.keys(updates).length > 0) {
+        user = await updateUserProfile(user.id, updates);
+      }
+    } else {
+      user = await createUser({
+        email: input.email,
+        name: input.name || null,
+        emailVerified: true,
+        avatarUrl: input.avatarUrl || null,
+      }); // Implicitly passwordHash is null
+    }
+
+    const token = await createSessionToken({ sub: user.id, email: user.email }, true);
+    await setSessionCookie(token, true);
+
+    return { user: toAuthUser(user) };
+  }
 };
