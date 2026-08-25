@@ -240,6 +240,7 @@ export async function trackDiscoveredJobAction(
   const result = await submitParseAndAnalyzeJob(user.id, {
     inputMethod: "PASTED_TEXT",
     text: `${header}\n\n${job.description}`,
+    skipAuthenticityCheck: true,
   });
 
   if ("error" in result) return { error: result.error };

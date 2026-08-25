@@ -212,7 +212,7 @@ export function PrivacyControls() {
 
           <DangerAction
             title="Delete all career data"
-            description="Removes your career profile, goals, analysed jobs, opportunities, dream jobs, pathways, applications and discovered listings. Your login stays."
+            description="Removes your career profile, goals, analyzed jobs, opportunities, dream jobs, pathways, applications and discovered listings. Your login stays."
             buttonLabel="Delete career data"
             confirmTitle="Delete all career data?"
             confirmBody="Everything Workly knows about your career will be permanently deleted, including your application history and its outcomes. Your account will remain, empty, as if newly created."

@@ -632,7 +632,7 @@ function buildMessage(
   const found = missing ? ` Workly couldn't find ${missing} in it.` : "";
   return kind === "resume"
     ? `This doesn't look like a ${noun}.${found} Upload the document you'd actually send to an employer.`
-    : `This doesn't look like a ${noun}.${found} Paste the advert as it appears on the employer's site, including the requirements.`;
+    : `This doesn't look like a ${noun}.${found} Paste the job description as it appears on the employer's site, including the requirements.`;
 }
 
 /* ------------------------------------------------------------------ */

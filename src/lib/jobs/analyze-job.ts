@@ -36,6 +36,7 @@ export interface SubmitJobInput {
   /** Raw pasted text (PASTED_TEXT) or the URL to fetch (URL). */
   text?: string;
   url?: string;
+  skipAuthenticityCheck?: boolean;
 }
 
 /**
@@ -76,9 +77,11 @@ export async function submitJob(userId: string, input: SubmitJobInput): Promise<
   // from a URL, or an accidental paste would otherwise be parsed into a
   // job with no requirements, and every profile then scored against it
   // would produce confident numbers about nothing.
-  const authenticity = checkAuthenticity(rawInput, "job-posting");
-  if (authenticity.verdict === "reject") {
-    return { error: authenticity.message };
+  if (!input.skipAuthenticityCheck) {
+    const authenticity = checkAuthenticity(rawInput, "job-posting");
+    if (authenticity.verdict === "reject") {
+      return { error: authenticity.message };
+    }
   }
 
   const job = await createJob(userId, { inputMethod: input.inputMethod, url, rawInput });

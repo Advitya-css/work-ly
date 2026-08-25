@@ -152,7 +152,7 @@ export function DiscoveryBoard({
         <p className="mb-2 text-sm text-muted-foreground">
           <span className="text-lg font-bold text-foreground">{searchResult.results.length}</span>{" "}
           {query ? "matching " : ""}opportunit
-          {searchResult.results.length === 1 ? "y" : "ies"} discovered. Organised so you don&apos;t
+          {searchResult.results.length === 1 ? "y" : "ies"} discovered. Organized so you don&apos;t
           have to read them all.
         </p>
         <div className="flex flex-wrap gap-2">
