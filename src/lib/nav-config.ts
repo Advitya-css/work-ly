@@ -75,6 +75,7 @@ export const studentNavGroups: NavGroup[] = [
       { label: "Student home", href: "/student", icon: IconStudent, area: "opportunity" },
       { label: "Campus jobs", href: "/student/jobs", icon: IconOpportunity, area: "opportunity" },
       { label: "Internships", href: "/student/internships", icon: IconDream, area: "dream" },
+      { label: "New Grad", href: "/student/new-grad", icon: IconPathway, area: "pathway" },
       { label: "Applications", href: "/applications", icon: IconApplication, area: "application" },
       { label: "My profile", href: "/career-profile", icon: IconProfile, area: "career" },
     ],
