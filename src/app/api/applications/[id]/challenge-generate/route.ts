@@ -18,21 +18,26 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   const params = await context.params;
   const app = await getApplicationWithJobById(user.id, params.id);
   
-  const jobDetails = app?.job?.description || app?.job?.title || "software engineer";
+  const roleTitle = app?.job?.title ?? app?.roleTitle ?? "Professional";
+  const jobDetails = app?.job?.description || roleTitle;
+  
+  const isTechnical = /engineer|developer|software|data|programmer|frontend|backend|fullstack|tech|it|cloud|security/i.test(roleTitle);
 
-  const prompt = `Act as a Staff Software Engineer at ${app?.company || 'a top tech company'}.
-You need to create a realistic, domain-specific coding challenge for a candidate applying for: ${app?.job?.title ?? "Software Engineer"}.
+  const prompt = `Act as a Hiring Manager at ${app?.company || 'a top company'}.
+You need to create a realistic, domain-specific take-home assignment or scenario for a candidate applying for: ${roleTitle}.
 
 Context from the job description:
 ${jobDetails.substring(0, 1500)}
 
-Generate a coding problem that is directly relevant to what this company actually does (e.g., if it's Stripe, make it about payments; if it's Airbnb, make it about bookings).
-Do not ask generic LeetCode questions (no "reverse a linked list"). Make it a real-world business logic problem.
+Instructions based on role type:
+${isTechnical 
+  ? "This is a technical role. Generate a realistic coding challenge relevant to this company's business model (e.g. designing a specific API, writing a specific algorithm). Do not use generic LeetCode."
+  : "This is a non-technical role (e.g. Hospitality, Marketing, Sales). Generate a realistic, difficult on-the-job scenario they must resolve in writing. For example, for a Waitress, a scenario handling a furious customer and a kitchen delay simultaneously."}
 
 Return the result as a strict JSON object with NO markdown formatting, NO comments. Format:
 {
-  "title": "String (Name of the challenge)",
-  "description": "String (Detailed markdown description of the problem, constraints, and an example input/output)"
+  "title": "String (Name of the challenge/scenario)",
+  "description": "String (Detailed markdown description of the problem, constraints, and what you expect from their answer)"
 }`;
 
   try {
@@ -41,7 +46,7 @@ Return the result as a strict JSON object with NO markdown formatting, NO commen
       temperature: 0.7,
     });
     
-    let challenge = { title: "Custom Challenge", description: "Write a function to solve a core business problem." };
+    let challenge = { title: "Custom Scenario", description: "Read the scenario and provide your solution." };
     try {
        const raw = result.content.replace(/```json/g, "").replace(/```/g, "").trim();
        challenge = JSON.parse(raw);

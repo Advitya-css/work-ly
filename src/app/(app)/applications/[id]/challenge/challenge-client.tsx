@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Code2, Play, CheckCircle2, RefreshCw } from "lucide-react";
+import { Loader2, Code2, Play, CheckCircle2, RefreshCw, BriefcaseBusiness } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
-export function ChallengeClient({ applicationId }: { applicationId: string }) {
+export function ChallengeClient({ applicationId, isTechnical }: { applicationId: string, isTechnical: boolean }) {
   const [loading, setLoading] = useState(false);
   const [challenge, setChallenge] = useState<{ title: string; description: string } | null>(null);
   const [code, setCode] = useState("");
@@ -18,7 +18,7 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
     setLoading(true);
     setChallenge(null);
     setFeedback(null);
-    setCode("// Write your solution here...\n");
+    setCode(isTechnical ? "// Write your solution here...\n" : "Type your response here...\n");
     try {
       const res = await fetch(`/api/applications/${applicationId}/challenge-generate`, { method: "POST" });
       const data = await res.json();
@@ -53,17 +53,19 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Code2 className="size-5 text-primary" />
-            Domain-Specific Code Challenge
+            {isTechnical ? <Code2 className="size-5 text-primary" /> : <BriefcaseBusiness className="size-5 text-primary" />}
+            {isTechnical ? "Domain-Specific Code Challenge" : "On-the-Job Scenario Sandbox"}
           </CardTitle>
           <CardDescription>
-            We will read the job description and generate a real-world coding problem relevant to this company's business model. No generic LeetCode algorithms.
+            {isTechnical 
+              ? "We will read the job description and generate a real-world coding problem relevant to this company's business model. No generic LeetCode algorithms."
+              : "We will generate a difficult, realistic scenario you would face in this exact role. You will practice how you would handle it to prove your competence."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={generateChallenge} className="gap-2">
-            <Code2 className="size-4" />
-            Generate Challenge
+            {isTechnical ? <Code2 className="size-4" /> : <BriefcaseBusiness className="size-4" />}
+            {isTechnical ? "Generate Code Challenge" : "Generate Scenario"}
           </Button>
         </CardContent>
       </Card>
@@ -74,7 +76,7 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
         <Loader2 className="size-8 animate-spin" />
-        <p>Analyzing job description and writing code challenge...</p>
+        <p>Analyzing job description and writing custom scenario...</p>
       </div>
     );
   }
@@ -83,12 +85,12 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
       {/* Left side: Problem Description */}
       <div className="flex flex-col gap-6">
-        <Card className="h-full border-primary/20">
-          <CardHeader className="bg-muted/50 border-b flex flex-row items-center justify-between pb-4">
+        <Card className="h-full border-border">
+          <CardHeader className="bg-muted/30 border-b flex flex-row items-center justify-between pb-4">
             <div>
               <CardTitle className="text-xl">{challenge?.title}</CardTitle>
             </div>
-            <Button variant="ghost" size="icon" onClick={generateChallenge} title="Generate New Problem">
+            <Button variant="ghost" size="icon" onClick={generateChallenge} title="Generate New Scenario">
               <RefreshCw className="size-4" />
             </Button>
           </CardHeader>
@@ -98,12 +100,14 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
         </Card>
       </div>
 
-      {/* Right side: Code Editor & Feedback */}
+      {/* Right side: Editor & Feedback */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col border rounded-lg overflow-hidden shadow-sm h-[500px]">
-          <div className="bg-zinc-900 px-4 py-2 border-b border-zinc-800 flex items-center justify-between">
-            <span className="text-xs font-mono text-zinc-400">solution.ts</span>
-            <Button size="sm" onClick={submitCode} disabled={evaluating} className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white">
+          <div className="bg-muted/50 px-4 py-2 border-b flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">
+              {isTechnical ? "solution.ts" : "Your Response"}
+            </span>
+            <Button size="sm" onClick={submitCode} disabled={evaluating} className="h-7 text-xs">
               {evaluating ? <Loader2 className="size-3 animate-spin mr-2" /> : <Play className="size-3 mr-2" />}
               Submit for Review
             </Button>
@@ -111,18 +115,22 @@ export function ChallengeClient({ applicationId }: { applicationId: string }) {
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="flex-1 w-full p-4 bg-zinc-950 text-green-400 font-mono text-sm focus:outline-none resize-none leading-relaxed"
-            spellCheck={false}
+            className={`flex-1 w-full p-4 focus:outline-none resize-none leading-relaxed ${
+              isTechnical 
+                ? "bg-zinc-950 text-zinc-300 font-mono text-sm selection:bg-zinc-800" 
+                : "bg-background text-foreground font-sans text-base"
+            }`}
+            spellCheck={!isTechnical}
           />
         </div>
 
         {feedback && (
           <div className="animate-in fade-in slide-in-from-bottom-4">
-            <Card className="border-green-500/30 bg-green-500/5">
+            <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2 text-green-600 dark:text-green-400">
+                <CardTitle className="text-base flex items-center gap-2 text-primary">
                   <CheckCircle2 className="size-5" />
-                  Code Review
+                  AI Evaluation
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm prose dark:prose-invert max-w-none">

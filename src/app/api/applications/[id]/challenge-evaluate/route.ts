@@ -20,32 +20,32 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   const params = await context.params;
   const app = await getApplicationWithJobById(user.id, params.id);
   
-  const prompt = `Act as a Staff Software Engineer at ${app?.company || 'a top tech company'}.
-You are doing a code review on a candidate's submission for a take-home challenge.
+  const roleTitle = app?.job?.title ?? app?.roleTitle ?? "Professional";
+  const isTechnical = /engineer|developer|software|data|programmer|frontend|backend|fullstack|tech|it|cloud|security/i.test(roleTitle);
 
-Challenge Title: ${title}
-Challenge Description: ${description}
+  const prompt = `Act as a Hiring Manager at ${app?.company || 'a top company'}.
+You are reviewing a candidate's submission for a scenario/take-home assignment for the role of ${roleTitle}.
 
-Candidate's Code Submission:
+Scenario Title: ${title}
+Scenario Description: ${description}
+
+Candidate's Submission:
 \`\`\`
 ${code}
 \`\`\`
 
-Review this code ruthlessly but fairly. Format your response exactly like this in markdown:
+Review this submission ruthlessly but fairly. Format your response exactly like this in markdown:
 
-### Code Review Score: [X]/10
+### Score: [X]/10
 
-**1. Correctness & Edge Cases:**
-[Did they solve the problem? What edge cases did they miss?]
+${isTechnical ? 
+  "**1. Correctness & Edge Cases:**\n[Did they solve the problem? What edge cases did they miss?]\n\n**2. Time & Space Complexity:**\n[Analyze their Big O time and space complexity.]\n\n**3. Readability & Best Practices:**\n[Are variables named well? Is it clean?]" 
+  : 
+  "**1. Problem Solving & Judgment:**\n[Did they handle the situation correctly? Was their judgment sound?]\n\n**2. Communication & Tone:**\n[Is their response professional, empathetic, or appropriate for the context?]\n\n**3. What They Missed:**\n[Identify any blind spots or better ways to handle the scenario.]"
+}
 
-**2. Time & Space Complexity:**
-[Analyze their Big O time and space complexity. Could it be optimized?]
-
-**3. Readability & Best Practices:**
-[Are variables named well? Is it clean?]
-
-**How to Write it Like a Senior Engineer:**
-[Provide a small, optimized code snippet showing the ideal way to solve it]`;
+**How to do it perfectly:**
+[Provide a concise example of the ideal way to handle this scenario or write the code.]`;
 
   try {
     const result = await googleGenAIProvider.complete({
