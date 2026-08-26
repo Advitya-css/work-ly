@@ -19,30 +19,33 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   // Null when the account was created via an external auth provider
   // (e.g. Supabase Auth / OAuth) that owns the credential instead of us.
-  passwordHash  String?
-  name          String?
-  avatarUrl     String?
-  onboardedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  passwordHash String?
+  name         String?
+  avatarUrl    String?
+  onboardedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  careerProfile CareerProfile?
-  careerGoals   CareerGoal[]
-  documents     Document[]
-  jobs          Job[]
-  jobAnalyses   JobAnalysis[]
-  opportunities Opportunity[]
-  dreamJobs         DreamJob[]
-  dreamJobAnalyses  DreamJobAnalysis[]
-  careerPathways    CareerPathway[]
-  applications      Application[]
-  jobSourceConfigs  JobSourceConfig[]
-  discoveredJobs    DiscoveredJob[]
-  discoveryRuns     DiscoveryRun[]
+  isPro           Boolean   @default(false)
+  lastAlertSentAt DateTime?
+
+  careerProfile    CareerProfile?
+  careerGoals      CareerGoal[]
+  documents        Document[]
+  jobs             Job[]
+  jobAnalyses      JobAnalysis[]
+  opportunities    Opportunity[]
+  dreamJobs        DreamJob[]
+  dreamJobAnalyses DreamJobAnalysis[]
+  careerPathways   CareerPathway[]
+  applications     Application[]
+  jobSourceConfigs JobSourceConfig[]
+  discoveredJobs   DiscoveredJob[]
+  discoveryRuns    DiscoveryRun[]
 
   @@map("users")
 }
@@ -53,20 +56,20 @@ model User {
 /// Stored privately — see StorageProvider in src/lib/storage — never under
 /// the public/ directory, and only ever served back to its owner.
 model Document {
-  id           String         @id @default(uuid())
-  userId       String
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  fileName     String
-  fileType     DocumentType
+  fileName      String
+  fileType      DocumentType
   fileSizeBytes Int
-  storageKey   String
+  storageKey    String
 
   status       DocumentStatus @default(UPLOADED)
   errorMessage String?
 
-  uploadedAt   DateTime       @default(now())
-  parsedAt     DateTime?
+  uploadedAt DateTime  @default(now())
+  parsedAt   DateTime?
 
   @@index([userId])
   @@map("documents")
@@ -96,27 +99,27 @@ enum DataSource {
 }
 
 model CareerProfile {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // --- Facts the user directly provided (never AI-invented) ---
-  headline         String?
-  summary          String?
-  location         String?
-  currentRole      String?
-  currentCompany   String?
-  yearsExperience  Int?
+  headline        String?
+  summary         String?
+  location        String?
+  currentRole     String?
+  currentCompany  String?
+  yearsExperience Int?
   // --- Part-Time & Student Settings ---
-  isPartTimeMode   Boolean  @default(false)
-  isFreelanceMode  Boolean  @default(false)
-  availability     String?  // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
+  isPartTimeMode  Boolean @default(false)
+  isFreelanceMode Boolean @default(false)
+  availability    String? // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
 
   // Deprecated as of Phase 2 — superseded by the structured Skill model
   // below (name/category/proficiency/evidence/source/recency). Left in
   // place so Phase 1 data already saved isn't dropped; no longer written
   // to by the UI.
-  skills           String[] @default([])
+  skills String[] @default([])
 
   // --- Uploaded source document, via the storage abstraction ---
   resumeFileName   String?
@@ -128,7 +131,7 @@ model CareerProfile {
   // Education/Experience/Project/Skill/etc. rows below, which each carry
   // their own `source` and `isUncertain` markers — this JSON blob is kept
   // only as an audit trail of the last raw extraction.
-  parsedData       Json?
+  parsedData Json?
 
   // --- Student mode ---
   // Being a student changes what the whole product should surface, so it
@@ -148,81 +151,81 @@ model CareerProfile {
   preferredLocations String[] @default([])
   openToRemote       Boolean  @default(true)
 
-  educations       Education[]
-  experiences      Experience[]
-  projects         Project[]
-  skillEntries     Skill[]
-  achievements     Achievement[]
-  certifications   Certification[]
+  educations     Education[]
+  experiences    Experience[]
+  projects       Project[]
+  skillEntries   Skill[]
+  achievements   Achievement[]
+  certifications Certification[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("career_profiles")
 }
 
 model Education {
-  id            String     @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
-  institution   String
-  degree        String?
-  fieldOfStudy  String?
-  startDate     DateTime?
-  endDate       DateTime?
-  description   String?
+  institution  String
+  degree       String?
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  description  String?
 
-  source        DataSource @default(USER)
-  isUncertain   Boolean    @default(false)
+  source      DataSource @default(USER)
+  isUncertain Boolean    @default(false)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("educations")
 }
 
 model Experience {
-  id            String     @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
-  company       String
-  title         String
-  location      String?
-  startDate     DateTime?
-  endDate       DateTime?
-  isCurrent     Boolean    @default(false)
-  description   String?
+  company     String
+  title       String
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isCurrent   Boolean   @default(false)
+  description String?
 
-  source        DataSource @default(USER)
-  isUncertain   Boolean    @default(false)
+  source      DataSource @default(USER)
+  isUncertain Boolean    @default(false)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("experiences")
 }
 
 model Project {
-  id            String     @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
-  name          String
-  role          String?
-  description   String?
-  url           String?
-  startDate     DateTime?
-  endDate       DateTime?
+  name        String
+  role        String?
+  description String?
+  url         String?
+  startDate   DateTime?
+  endDate     DateTime?
 
-  source        DataSource @default(USER)
-  isUncertain   Boolean    @default(false)
+  source      DataSource @default(USER)
+  isUncertain Boolean    @default(false)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("projects")
@@ -232,27 +235,27 @@ model Project {
 /// field here exists so the UI can show *how well-supported* a skill is,
 /// not just that it was mentioned somewhere.
 model Skill {
-  id              String              @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile   CareerProfile       @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
   name            String
-  category        SkillCategory       @default(OTHER)
+  category        SkillCategory         @default(OTHER)
   proficiency     SkillProficiency?
   experienceLevel SkillExperienceLevel?
-  evidenceLevel   SkillEvidenceLevel  @default(STATED)
-  source          DataSource          @default(USER)
-  recency         SkillRecency        @default(UNKNOWN)
+  evidenceLevel   SkillEvidenceLevel    @default(STATED)
+  source          DataSource            @default(USER)
+  recency         SkillRecency          @default(UNKNOWN)
 
   /// True only for AI-surfaced transferable competencies (e.g. "President
   /// of Economics Club" -> Leadership). Never set true for a directly
   /// stated or CV-listed skill. The UI must render these as "Potential
   /// transferable skill", never as a proven fact.
-  isTransferable       Boolean @default(false)
+  isTransferable        Boolean @default(false)
   transferableRationale String?
 
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("skills")
@@ -300,28 +303,28 @@ enum SkillRecency {
 }
 
 model Achievement {
-  id            String     @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
-  title         String
-  description   String?
-  date          DateTime?
+  title       String
+  description String?
+  date        DateTime?
 
-  source        DataSource @default(USER)
-  isUncertain   Boolean    @default(false)
+  source      DataSource @default(USER)
+  isUncertain Boolean    @default(false)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("achievements")
 }
 
 model Certification {
-  id            String     @id @default(uuid())
+  id              String        @id @default(uuid())
   careerProfileId String
-  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
 
   name          String
   issuer        String?
@@ -329,11 +332,11 @@ model Certification {
   expiryDate    DateTime?
   credentialUrl String?
 
-  source        DataSource @default(USER)
-  isUncertain   Boolean    @default(false)
+  source      DataSource @default(USER)
+  isUncertain Boolean    @default(false)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([careerProfileId])
   @@map("certifications")
@@ -344,38 +347,38 @@ model Certification {
 /// several of these fields directly (seniority, industries, locations) to
 /// judge eligibility/relevance, not just skills.
 model CareerGoal {
-  id             String           @id @default(uuid())
-  userId         String
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title          String
-  targetRole     String?
+  title      String
+  targetRole String?
 
   // --- Phase 3: structured targeting ---------------------------------
   primaryTargetRole    String?
-  secondaryTargetRoles String[]        @default([])
-  industries           String[]        @default([])
-  preferredLocations   String[]        @default([])
-  countries            String[]        @default([])
-  workModes            WorkMode[]      @default([])
+  secondaryTargetRoles String[]         @default([])
+  industries           String[]         @default([])
+  preferredLocations   String[]         @default([])
+  countries            String[]         @default([])
+  workModes            WorkMode[]       @default([])
   employmentTypes      EmploymentType[] @default([])
   seniority            SeniorityLevel?
   salaryMin            Int?
   salaryMax            Int?
-  salaryCurrency       String?         @default("USD")
+  salaryCurrency       String?          @default("USD")
   /// "I'm not sure yet" — an explicit, first-class uncertainty flag rather
   /// than inferring it from blank fields, so the UI and any downstream
   /// matching logic can tell "hasn't decided" apart from "decided on
   /// nothing in particular".
-  isUncertain          Boolean         @default(false)
+  isUncertain          Boolean          @default(false)
 
   targetIndustry String?
   timeframe      String?
   notes          String?
   status         CareerGoalStatus @default(ACTIVE)
 
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("career_goals")
@@ -431,39 +434,39 @@ enum JobStatus {
 /// what the user gave us (or what a plain, unauthenticated fetch of their
 /// URL returned) so extraction is always re-checkable against the source.
 model Job {
-  id          String    @id @default(uuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   inputMethod JobInputMethod
   url         String?
   rawInput    String
 
-  status        JobStatus @default(PARSING)
-  errorMessage  String?
+  status       JobStatus @default(PARSING)
+  errorMessage String?
 
   // --- Extracted fields (nullable until/unless parsing finds them) ----
-  title               String?
-  company             String?
-  location            String?
-  country             String?
-  salaryMin            Int?
-  salaryMax            Int?
-  salaryCurrency       String?
-  employmentType       EmploymentType?
-  workMode             WorkMode?
-  seniority            SeniorityLevel?
-  description          String?
+  title                    String?
+  company                  String?
+  location                 String?
+  country                  String?
+  salaryMin                Int?
+  salaryMax                Int?
+  salaryCurrency           String?
+  employmentType           EmploymentType?
+  workMode                 WorkMode?
+  seniority                SeniorityLevel?
+  description              String?
   requiredExperienceYears  Int?
   preferredExperienceYears Int?
-  education            String?
-  industry             String?
-  deadline             DateTime?
-  datePosted           DateTime?
-  source               String?
+  education                String?
+  industry                 String?
+  deadline                 DateTime?
+  datePosted               DateTime?
+  source                   String?
 
   /// Flat, directly-matchable skill name lists — used by fit scoring.
-  requiredSkills String[] @default([])
+  requiredSkills  String[] @default([])
   preferredSkills String[] @default([])
 
   /// The full requirements checklist as extracted, each item tagged
@@ -474,12 +477,12 @@ model Job {
   /// "experience" | "education" | "other" }[]
   requirements Json @default("[]")
 
-  analysis    JobAnalysis?
-  opportunity Opportunity?
+  analysis     JobAnalysis?
+  opportunity  Opportunity?
   applications Application[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("jobs")
@@ -511,15 +514,15 @@ enum GapType {
 /// profile + job data so it's consistent and fully explainable; nothing
 /// here is generated by an unconstrained model call.
 model JobAnalysis {
-  id      String @id @default(uuid())
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobId   String @unique
-  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId  String @unique
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  fitScore       Int // 0-100, "Candidate Fit" — see lib/jobs/fit-score.ts
-  competitiveness String // Low | Moderate | High — derived label, not a probability
-  recommendation RecommendationType
+  fitScore                Int // 0-100, "Candidate Fit" — see lib/jobs/fit-score.ts
+  competitiveness         String // Low | Moderate | High — derived label, not a probability
+  recommendation          RecommendationType
   recommendationReasoning String
 
   /// Per-component breakdown backing the overall score. Shape: {
@@ -530,7 +533,7 @@ model JobAnalysis {
 
   /// string[] — every claim traces back to a computed fact (a matched
   /// skill, a met requirement), never AI-invented.
-  strengths Json @default("[]")
+  strengths  Json @default("[]")
   weaknesses Json @default("[]")
 
   /// { type: GapType; title: string; description: string }[]
@@ -541,17 +544,17 @@ model JobAnalysis {
   preferredRequirements Json @default("[]")
 
   /// string[] — "what could hurt your application" / "what to improve"
-  risks Json @default("[]")
+  risks        Json @default("[]")
   improvements Json @default("[]")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@map("job_analyses")
-
   opportunity  Opportunity?
   applications Application[]
+
+  @@index([userId])
+  @@map("job_analyses")
 }
 
 enum OpportunityStatus {
@@ -572,13 +575,13 @@ enum OpportunityStatus {
 /// Priority asks "what should I spend my time on?" — the two are
 /// deliberately kept distinct (see lib/priority).
 model Opportunity {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  jobId         String   @unique
-  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobAnalysisId String?  @unique
+  jobId         String       @unique
+  job           Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobAnalysisId String?      @unique
   jobAnalysis   JobAnalysis? @relation(fields: [jobAnalysisId], references: [id], onDelete: SetNull)
 
   /// Snapshot of JobAnalysis.fitScore at lastAnalyzedAt — denormalized so
@@ -600,7 +603,7 @@ model Opportunity {
   /// weight, reasoning }.
   priorityBreakdown Json @default("{}")
 
-  isSaved Boolean @default(false)
+  isSaved Boolean           @default(false)
   status  OpportunityStatus @default(DISCOVERED)
 
   discoveredAt   DateTime @default(now())
@@ -634,47 +637,47 @@ enum DreamJobStatus {
 /// "Readiness" the same way Fit is computed for a real posting — see
 /// lib/dream-job/to-job-like.ts.
 model DreamJob {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   dreamRole   String
   companyName String?
   portfolio   String?
   rawInput    String
 
-  status        DreamJobStatus @default(PARSING)
-  errorMessage  String?
+  status       DreamJobStatus @default(PARSING)
+  errorMessage String?
 
   // --- Extracted fields (nullable until/unless parsing finds them) ----
-  title               String?
-  company             String?
-  location            String?
-  country             String?
-  salaryMin            Int?
-  salaryMax            Int?
-  salaryCurrency       String?
-  employmentType       EmploymentType?
-  workMode             WorkMode?
-  seniority            SeniorityLevel?
-  description          String?
+  title                    String?
+  company                  String?
+  location                 String?
+  country                  String?
+  salaryMin                Int?
+  salaryMax                Int?
+  salaryCurrency           String?
+  employmentType           EmploymentType?
+  workMode                 WorkMode?
+  seniority                SeniorityLevel?
+  description              String?
   requiredExperienceYears  Int?
   preferredExperienceYears Int?
-  education            String?
-  industry             String?
-  deadline             DateTime?
-  datePosted           DateTime?
-  source               String?
+  education                String?
+  industry                 String?
+  deadline                 DateTime?
+  datePosted               DateTime?
+  source                   String?
 
-  requiredSkills String[] @default([])
+  requiredSkills  String[] @default([])
   preferredSkills String[] @default([])
-  requirements Json @default("[]")
+  requirements    Json     @default("[]")
 
-  analysis    DreamJobAnalysis?
-  pathways    CareerPathway[]
+  analysis DreamJobAnalysis?
+  pathways CareerPathway[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("dream_jobs")
@@ -699,7 +702,7 @@ model DreamJobAnalysis {
   competitiveness String
   scoreBreakdown  Json
 
-  strengths Json @default("[]")
+  strengths  Json @default("[]")
   weaknesses Json @default("[]")
   gaps       Json @default("[]")
 
@@ -734,7 +737,7 @@ model DreamJobAnalysis {
   /// portfolioPresentation: string }[]
   projectRecommendations Json @default("[]")
 
-  biggestObstacles Json @default("[]")
+  biggestObstacles      Json   @default("[]")
   highestImpactNextStep String
 
   createdAt DateTime @default(now())
@@ -874,7 +877,7 @@ model PathwayAction {
 
   relatedSkill      String?
   /// string[] — job titles from the user's own tracked opportunities.
-  relatedTargetJobs Json @default("[]")
+  relatedTargetJobs Json    @default("[]")
 
   status PathwayItemStatus @default(PENDING)
   note   String?
@@ -976,7 +979,7 @@ model Application {
   notes       String?
 
   /// { name: string; role?: string; email?: string; notes?: string }[]
-  contacts Json @default("[]")
+  contacts   Json @default("[]")
   /// { date: string; kind: string; notes?: string }[]
   interviews Json @default("[]")
 
@@ -1050,20 +1053,20 @@ model JobSourceConfig {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  kind        JobSourceKind
-  name        String
+  kind         JobSourceKind
+  name         String
   /// Adapter-specific settings: board token, feed URL, query terms.
   /// Never holds a secret — API keys come from environment variables.
-  config      Json            @default("{}")
-  status      JobSourceStatus @default(ACTIVE)
+  config       Json            @default("{}")
+  status       JobSourceStatus @default(ACTIVE)
   errorMessage String?
 
   /// Written down, per source, so the basis for ingesting from it is
   /// auditable rather than assumed.
   legalBasis String
 
-  lastRunAt      DateTime?
-  lastRunFoundCount Int @default(0)
+  lastRunAt         DateTime?
+  lastRunFoundCount Int       @default(0)
 
   discoveredJobs DiscoveredJob[]
 
@@ -1088,29 +1091,29 @@ model DiscoveredJob {
 
   // --- Provenance. Non-negotiable: the UI always shows where a listing
   // --- came from and when, and never invents any of it.
-  sourceKind  JobSourceKind
-  sourceName  String
-  sourceUrl   String?
-  externalId  String
-  discoveredAt DateTime @default(now())
+  sourceKind   JobSourceKind
+  sourceName   String
+  sourceUrl    String?
+  externalId   String
+  discoveredAt DateTime      @default(now())
   postedAt     DateTime?
 
   // --- Normalized fields ---------------------------------------------
-  title       String
-  company     String?
-  location    String?
-  country     String?
-  salaryMin      Int?
-  salaryMax      Int?
-  salaryCurrency String?
-  employmentType EmploymentType?
-  workMode       WorkMode?
-  seniority      SeniorityLevel?
-  industry       String?
-  description    String?
-  requiredSkills  String[] @default([])
-  preferredSkills String[] @default([])
-  requirements    Json     @default("[]")
+  title           String
+  company         String?
+  location        String?
+  country         String?
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryCurrency  String?
+  employmentType  EmploymentType?
+  workMode        WorkMode?
+  seniority       SeniorityLevel?
+  industry        String?
+  description     String?
+  requiredSkills  String[]        @default([])
+  preferredSkills String[]        @default([])
+  requirements    Json            @default("[]")
 
   /// Stable hash over company + title + location, used as the first-pass
   /// duplicate bucket. Two listings sharing it are compared in detail
@@ -1131,19 +1134,19 @@ model DiscoveredJob {
   // --- Cached scoring -------------------------------------------------
   // Computed once during the discovery run, not per request. A discovery
   // page showing 173 listings must not run 173 fit analyses to render.
-  fitScore       Int?
+  fitScore        Int?
   /// 0-1 coverage ratio behind fitScore (see lib/scoring/coverage.ts). Lets
   /// the UI withhold the score badge when there wasn't enough data to
   /// measure it, instead of showing a collapsed "0/100" as if it were real.
-  fitCoverage    Float?
-  recommendation RecommendationType?
-  matchReasons   Json @default("[]")
+  fitCoverage     Float?
+  recommendation  RecommendationType?
+  matchReasons    Json                @default("[]")
   /// Why this listing surfaced at all — the search term, the expanded role
   /// relationship, or the source being watched.
   discoveryReason String?
 
   /// The user dismissed it; kept so it isn't re-surfaced next run.
-  isDismissed Boolean @default(false)
+  isDismissed            Boolean @default(false)
   /// Promoted into a tracked Opportunity.
   convertedOpportunityId String?
 
@@ -1169,13 +1172,13 @@ model DiscoveryRun {
   /// Free-text query the run was seeded with, when user-initiated.
   query  String?
 
-  sourcesRun     Int @default(0)
-  rawFound       Int @default(0)
+  sourcesRun       Int @default(0)
+  rawFound         Int @default(0)
   duplicatesFolded Int @default(0)
-  newJobs        Int @default(0)
+  newJobs          Int @default(0)
   /// Count of newly-discovered jobs that scored APPLY_NOW or APPLY —
   /// the number a future alert would announce.
-  newHighPriority Int @default(0)
+  newHighPriority  Int @default(0)
 
   errorMessage String?
 
