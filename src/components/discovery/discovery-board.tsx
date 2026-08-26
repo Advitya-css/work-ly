@@ -87,7 +87,7 @@ export function DiscoveryBoard({
         result.error
           ? result.error
           : result.found === 0
-            ? "No new listings this time. Everything found was already in your feed."
+            ? "No new listings. Anything found was either already saved, or hidden by your location filters."
             : `Discovered ${result.found} new listing${result.found === 1 ? "" : "s"}.`,
       );
     });

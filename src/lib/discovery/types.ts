@@ -93,6 +93,7 @@ export interface IngestContext {
   limit: number;
   isPartTimeMode?: boolean;
   isFreelanceMode?: boolean;
+  homeLocation?: string | null;
 }
 
 export interface SourceStatusUpdate {

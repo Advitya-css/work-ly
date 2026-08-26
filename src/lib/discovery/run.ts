@@ -176,6 +176,7 @@ export async function runDiscovery(
           // but nothing ever passed it in - so turning on Gig & Musician
           // Mode had zero effect on what discovery actually searched for.
           isFreelanceMode: profile.profile?.isFreelanceMode,
+          homeLocation: profile.profile?.location,
         });
         rawFound += raw.length;
         sourcesRun++;

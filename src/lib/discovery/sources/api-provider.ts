@@ -64,7 +64,7 @@ export const apiProviderSource: JobSourceAdapter = {
       "content-type": "application/json",
     });
     if (what) params.set("what", what);
-    const where = asString(context.config.locationName);
+    const where = asString(context.config.locationName) || context.homeLocation;
     if (where) params.set("where", where);
     if (context.isPartTimeMode) {
       params.set("part_time", "1");
