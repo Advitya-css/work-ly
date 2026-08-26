@@ -107,6 +107,10 @@ model CareerProfile {
   currentRole      String?
   currentCompany   String?
   yearsExperience  Int?
+  // --- Part-Time & Student Settings ---
+  isPartTimeMode   Boolean  @default(false)
+  availability     String?  // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
+
   // Deprecated as of Phase 2 — superseded by the structured Skill model
   // below (name/category/proficiency/evidence/source/recency). Left in
   // place so Phase 1 data already saved isn't dropped; no longer written

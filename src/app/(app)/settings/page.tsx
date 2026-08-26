@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { LocationSettingsForm } from "@/components/settings/location-settings-form";
+import { PartTimeSettingsForm } from "@/components/settings/part-time-settings-form";
 import { ThemeSettingsForm } from "@/components/settings/theme-settings-form";
 import { PrivacyControls } from "@/components/settings/privacy-controls";
 import {
@@ -47,6 +48,18 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <ThemeSettingsForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Part-Time Preferences</CardTitle>
+          <CardDescription>
+            Optimize the discovery and scoring engines for part-time, hourly, and shift work.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PartTimeSettingsForm profile={profile} />
         </CardContent>
       </Card>
 
