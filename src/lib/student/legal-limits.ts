@@ -157,7 +157,84 @@ const UNITED_KINGDOM: CountryRules = {
   },
 };
 
-export const COUNTRY_RULES: CountryRules[] = [UNITED_STATES, UNITED_KINGDOM];
+
+const CANADA: CountryRules = {
+  code: "CA",
+  label: "Canada",
+  unverified: false,
+  limits: {
+    "on-campus": [
+      {
+        headline: "No hour limits on campus",
+        detail:
+          "You can work on your school's campus without a work permit and without a restriction on hours, provided you are a full-time student and have a valid study permit. However, your specific institution may have its own policies restricting hours.",
+        confirmWith: "Your institution's student employment office for internal policies.",
+        sourceName: "IRCC, Work on campus",
+        sourceUrl: "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/work-on-campus.html",
+      }
+    ],
+    "off-campus": [
+      {
+        headline: "Up to 24 hours per week off-campus during terms",
+        detail:
+          "As of late 2024, the limit for off-campus work during regular academic sessions is 24 hours per week. During scheduled breaks (like summer or winter holidays), you can work full-time.",
+        confirmWith: "Your study permit conditions.",
+        sourceName: "IRCC, Work off campus as an international student",
+        sourceUrl: "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/work-off-campus.html",
+      }
+    ],
+    internship: [
+      {
+        headline: "Requires a Co-op Work Permit",
+        detail:
+          "If your internship or work placement is an essential part of your study program, you must apply for a co-op or intern work permit. You cannot use your standard off-campus work hours for a required co-op placement.",
+        confirmWith: "Your international student advisor and IRCC.",
+        sourceName: "IRCC, Co-op and internship programs",
+        sourceUrl: "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/intern.html",
+      }
+    ]
+  }
+};
+
+const AUSTRALIA: CountryRules = {
+  code: "AU",
+  label: "Australia",
+  unverified: false,
+  limits: {
+    "on-campus": [
+      {
+        headline: "Included in your 48-hour fortnightly limit",
+        detail:
+          "Unlike some countries, Australia does not distinguish between on-campus and off-campus work for hour limits. Both count towards your limit of 48 hours per fortnight during study sessions.",
+        confirmWith: "The Department of Home Affairs.",
+        sourceName: "Department of Home Affairs, Work restrictions",
+        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/temporary-relaxation-of-working-hours-for-student-visa-holders",
+      }
+    ],
+    "off-campus": [
+      {
+        headline: "Up to 48 hours per fortnight during term",
+        detail:
+          "You can work up to 48 hours every 2 weeks (a fortnight) while your course is in session. During recognised school holidays and breaks, there are no restrictions on the number of hours you can work.",
+        confirmWith: "The Department of Home Affairs.",
+        sourceName: "Department of Home Affairs, Work restrictions",
+        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/temporary-relaxation-of-working-hours-for-student-visa-holders",
+      }
+    ],
+    internship: [
+      {
+        headline: "Registered course requirements don't count towards the limit",
+        detail:
+          "If an internship or work placement is a registered, mandatory part of your course, the hours do not count towards your 48-hour fortnightly limit.",
+        confirmWith: "Your course coordinator.",
+        sourceName: "Department of Home Affairs, Work restrictions",
+        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/temporary-relaxation-of-working-hours-for-student-visa-holders",
+      }
+    ]
+  }
+};
+
+export const COUNTRY_RULES: CountryRules[] = [UNITED_STATES, UNITED_KINGDOM, CANADA, AUSTRALIA];
 
 export function rulesForCountry(code: string | null): CountryRules | null {
   if (!code) return null;
@@ -173,8 +250,42 @@ export const LEGAL_DISCLAIMER =
   "These are general rules for the country you selected, not advice about your situation. Workly does not know your immigration status and never asks for it. Confirm anything that affects your visa with your school before you accept work.";
 
 const UNIVERSITY_ALIASES: Record<string, string[]> = {
-  nyu: ["new york university"],
-  uw: ["university of washington"],
+  "nyu": ["new york university"],
+  "uw": ["university of washington"],
+  "uoft": ["university of toronto"],
+  "uwaterloo": ["university of waterloo"],
+  "waterloo": ["university of waterloo"],
+  "ubc": ["university of british columbia"],
+  "mcgill": ["mcgill university"],
+  "usyd": ["university of sydney"],
+  "unsw": ["university of new south wales"],
+  "unimelb": ["university of melbourne"],
+  "ucl": ["university college london"],
+  "lse": ["london school of economics"],
+  "mit": ["massachusetts institute of technology"],
+  "ucla": ["university of california los angeles"],
+  "berkeley": ["university of california berkeley", "uc berkeley"],
+};
+
+const UNIVERSITY_LOCATIONS: Record<string, string[]> = {
+  "new york university": ["new york", "ny", "nyc", "manhattan", "brooklyn"],
+  "columbia university": ["new york", "ny", "nyc", "manhattan"],
+  "university of washington": ["seattle", "wa", "washington", "bellevue", "redmond"],
+  "university of toronto": ["toronto", "on", "ontario", "gta", "mississauga"],
+  "university of waterloo": ["waterloo", "on", "ontario", "kitchener", "cambridge"],
+  "university of british columbia": ["vancouver", "bc", "british columbia", "burnaby"],
+  "mcgill university": ["montreal", "qc", "quebec"],
+  "university of sydney": ["sydney", "nsw", "new south wales"],
+  "university of new south wales": ["sydney", "nsw", "new south wales"],
+  "university of melbourne": ["melbourne", "vic", "victoria"],
+  "university college london": ["london", "uk", "united kingdom"],
+  "imperial college london": ["london", "uk", "united kingdom"],
+  "london school of economics": ["london", "uk", "united kingdom"],
+  "massachusetts institute of technology": ["boston", "cambridge", "ma", "massachusetts"],
+  "harvard university": ["boston", "cambridge", "ma", "massachusetts"],
+  "stanford university": ["stanford", "palo alto", "san francisco", "ca", "california", "bay area"],
+  "university of california berkeley": ["berkeley", "san francisco", "ca", "california", "bay area"],
+  "university of california los angeles": ["los angeles", "la", "ca", "california", "santa monica"],
 };
 
 export function classifyStudentJob(input: {
@@ -189,6 +300,14 @@ export function classifyStudentJob(input: {
   
   if (UNIVERSITY_ALIASES[university]) {
     university = UNIVERSITY_ALIASES[university][0];
+  } else {
+    // Check if the user typed something that is an alias value (e.g. "uc berkeley")
+    for (const aliases of Object.values(UNIVERSITY_ALIASES)) {
+      if (aliases.includes(university)) {
+        university = aliases[0]; // standardize to the primary name
+        break;
+      }
+    }
   }
 
   let kind: StudentJobKind = "off-campus";
@@ -200,7 +319,6 @@ export function classifyStudentJob(input: {
     else {
       const company = (input.company ?? "").toLowerCase();
 
-      // The employer being the user's own university is the strongest signal.
       if (university && company.includes(university)) kind = "on-campus";
       else {
         const campusEmployer =
@@ -215,13 +333,14 @@ export function classifyStudentJob(input: {
   }
 
   // Enforce location matching for off-campus and internships if we know the university's location
-  if (kind !== "on-campus" && input.location) {
-    const loc = input.location.toLowerCase();
-    if (university === "new york university" && !loc.includes("new york") && !loc.includes("ny")) {
-      return "wrong-location";
-    }
-    if (university === "university of washington" && !loc.includes("seattle") && !loc.includes("wa")) {
-      return "wrong-location";
+  if (kind !== "on-campus" && input.location && university) {
+    const validLocations = UNIVERSITY_LOCATIONS[university];
+    if (validLocations) {
+      const loc = input.location.toLowerCase();
+      const isMatch = validLocations.some(v => loc.includes(v));
+      if (!isMatch) {
+        return "wrong-location";
+      }
     }
   }
 
