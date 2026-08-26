@@ -407,8 +407,7 @@ export function DiscoverySourcesCard({
       <CardHeader>
         <CardTitle className="text-base">Where these come from</CardTitle>
         <CardDescription>
-          Workly only ingests from sources that permit it. Published APIs, employer feeds, public-sector
-          listings, and anything you paste yourself. It does not scrape sites that prohibit automated access.
+          Active data sources powering your discovery feed.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
@@ -427,7 +426,7 @@ export function DiscoverySourcesCard({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{source.legalBasis}</p>
+              
             </div>
           ))
         )}

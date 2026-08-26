@@ -37,7 +37,7 @@ export const apiProviderSource: JobSourceAdapter = {
   ...sourceDefaults,
   kind: "API_PROVIDER",
   id: "adzuna",
-  name: "Adzuna (licensed API)",
+  name: "Adzuna",
   legalBasis:
     "A commercial job-data API consumed under the user's own issued credentials and the provider's API terms. No scraping; the provider licenses this data for exactly this purpose.",
   requires: "ADZUNA_APP_ID and ADZUNA_APP_KEY environment variables from your own Adzuna account",

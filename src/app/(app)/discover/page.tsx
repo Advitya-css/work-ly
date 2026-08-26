@@ -72,7 +72,7 @@ export default async function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Discover"
-        description="Opportunities pulled from sources that permit it, scored against your profile, and sorted so the shortlist is obvious."
+        description="Opportunities curated from across the web, automatically scored against your profile."
       />
 
       <SectionTabs section="jobs" />
