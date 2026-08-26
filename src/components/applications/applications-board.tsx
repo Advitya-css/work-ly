@@ -97,7 +97,7 @@ export function ApplicationsBoard({ applications }: { applications: Application[
               value={filters.dateRange ?? "ALL"}
               onValueChange={(v) => setFilters((p) => ({ ...p, dateRange: v as DateRangeKey }))}
             >
-              <SelectTrigger size="sm" className="w-[150px]">
+              <SelectTrigger size="sm" className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -260,7 +260,7 @@ export function ApplicationsBoard({ applications }: { applications: Application[
                         <td className="px-4 py-3 font-medium text-foreground max-w-[200px] truncate">
                           {application.roleTitle}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">
+                        <td className="px-4 py-3 text-muted-foreground max-w-[140px] truncate">
                           {application.company ?? "-"}
                         </td>
                         <td className="px-4 py-3">
@@ -339,7 +339,7 @@ function FilterSelect({
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs">{label}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger size="sm" className="w-[150px]">
+        <SelectTrigger size="sm" className="w-[140px]">
           <SelectValue placeholder={`All ${label.toLowerCase()}s`} />
         </SelectTrigger>
         <SelectContent>
