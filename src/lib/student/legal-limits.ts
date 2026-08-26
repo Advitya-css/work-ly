@@ -337,7 +337,10 @@ export function classifyStudentJob(input: {
     const validLocations = UNIVERSITY_LOCATIONS[university];
     if (validLocations) {
       const loc = input.location.toLowerCase();
-      const isMatch = validLocations.some(v => loc.includes(v));
+      const isMatch = validLocations.some(v => {
+        const regex = new RegExp(`\\b${v}\\b`, "i");
+        return regex.test(loc);
+      });
       if (!isMatch) {
         return "wrong-location";
       }
