@@ -64,6 +64,8 @@ export interface CareerProfile {
   /** Account-level location preferences. `location` above is the home base. */
   preferredLocations: string[];
   openToRemote: boolean;
+  isPartTimeMode?: boolean;
+  availability?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

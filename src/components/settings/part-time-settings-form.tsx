@@ -19,8 +19,8 @@ export function PartTimeSettingsForm({ profile }: { profile: CareerProfile | nul
   const [state, action, isPending] = useActionState(savePartTimePreferencesAction, initialState);
   
   // Cast since we added these locally to types but they might not be generated yet
-  const typedProfile = profile as any;
-  const [isPartTimeMode, setIsPartTimeMode] = useState(typedProfile?.isPartTimeMode ?? false);
+  
+  const [isPartTimeMode, setIsPartTimeMode] = useState(profile?.isPartTimeMode ?? false);
 
   return (
     <form action={action} className="flex flex-col gap-6">
@@ -48,7 +48,7 @@ export function PartTimeSettingsForm({ profile }: { profile: CareerProfile | nul
             <Input
               id="availability"
               name="availability"
-              defaultValue={typedProfile?.availability ?? ""}
+              defaultValue={profile?.availability ?? ""}
               placeholder="e.g. Weekends only, Evenings after 5pm, MWF mornings"
             />
             <p className="text-xs text-muted-foreground">

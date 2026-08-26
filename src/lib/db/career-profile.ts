@@ -26,6 +26,8 @@ function mapRow(row: Record<string, unknown>): CareerProfile {
     studentCountry: (row.studentCountry as string | null) ?? null,
     preferredLocations: toArray<string>(row.preferredLocations),
     openToRemote: row.openToRemote == null ? true : Boolean(row.openToRemote),
+    isPartTimeMode: Boolean(row.isPartTimeMode),
+    availability: (row.availability as string | null) ?? null,
     createdAt: row.createdAt as Date,
     updatedAt: row.updatedAt as Date,
   };
