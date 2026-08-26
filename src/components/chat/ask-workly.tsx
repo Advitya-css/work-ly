@@ -1,4 +1,5 @@
 "use client";
+import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
@@ -179,13 +180,13 @@ export function AskWorkly() {
                   >
                     <div
                       className={cn(
-                        "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
+                        "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-sm",
                         message.role === "user"
                           ? "rounded-br-md bg-primary text-primary-foreground"
                           : "rounded-bl-md bg-muted text-foreground",
                       )}
                     >
-                      {message.text}
+                      <MarkdownRenderer content={message.text} />
                     </div>
                     {message.role === "workly" && message.source && (
                       <span className="px-1 text-[11px] text-muted-foreground">
