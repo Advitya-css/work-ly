@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { setApplicationStatusAction } from "@/lib/applications/actions";
 import {
   PIPELINE_COLUMNS,
+  getApplicationStatusLabel,
   APPLICATION_STATUS_LABEL,
   APPLICATION_STATUS_VARIANT,
   DATE_RANGE_LABEL,
@@ -34,7 +35,7 @@ import type { Application, ApplicationStatus } from "@/lib/db/types";
 
 const ALL = "__all__";
 
-export function ApplicationsBoard({ applications }: { applications: Application[] }) {
+export function ApplicationsBoard({ applications, isFreelanceMode = false }: { applications: Application[]; isFreelanceMode?: boolean }) {
   const [view, setView] = useState<"kanban" | "table">("kanban");
   const [filters, setFilters] = useState<AnalyticsFilters>({ dateRange: "ALL" });
   const [sort, setSort] = useState<"recent" | "fit">("recent");
@@ -157,7 +158,7 @@ export function ApplicationsBoard({ applications }: { applications: Application[
               >
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs font-semibold text-foreground">
-                    {APPLICATION_STATUS_LABEL[column]}
+                    {getApplicationStatusLabel(column, isFreelanceMode)}
                   </span>
                   <span className="text-xs tabular-nums text-muted-foreground">{items.length}</span>
                 </div>
@@ -218,7 +219,7 @@ export function ApplicationsBoard({ applications }: { applications: Application[
                           <SelectContent>
                             {PIPELINE_COLUMNS.map((s) => (
                               <SelectItem key={s} value={s}>
-                                {APPLICATION_STATUS_LABEL[s]}
+                                {getApplicationStatusLabel(s, isFreelanceMode)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -278,7 +279,7 @@ export function ApplicationsBoard({ applications }: { applications: Application[
                             <SelectContent>
                               {PIPELINE_COLUMNS.map((s) => (
                                 <SelectItem key={s} value={s}>
-                                  {APPLICATION_STATUS_LABEL[s]}
+                                  {getApplicationStatusLabel(s, isFreelanceMode)}
                                 </SelectItem>
                               ))}
                             </SelectContent>

@@ -1,0 +1,64 @@
+"use client";
+
+import { useTransition, useState } from "react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { updateFreelanceModeAction } from "@/lib/settings/freelance-actions";
+
+export function FreelanceSettingsForm({
+  isFreelanceMode,
+}: {
+  isFreelanceMode: boolean;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  function onToggle(checked: boolean) {
+    setError(null);
+    setSuccess(false);
+    startTransition(async () => {
+      const res = await updateFreelanceModeAction(checked);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="freelance-mode" className="text-base font-semibold">
+            Gig Economy & Musician Mode
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Switch terminology from traditional corporate roles (Applied, Interview, Offer) to Gig work (Pitched, Audition, Booked) and tailor the AI coaching to freelancers.
+          </p>
+        </div>
+        <Switch
+          id="freelance-mode"
+          checked={isFreelanceMode}
+          onCheckedChange={onToggle}
+          disabled={pending}
+        />
+      </div>
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          <AlertCircle className="size-4" />
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="flex items-center gap-2 text-sm text-success">
+          <CheckCircle2 className="size-4" />
+          Preferences saved.
+        </div>
+      )}
+    </div>
+  );
+}

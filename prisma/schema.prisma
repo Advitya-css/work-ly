@@ -109,6 +109,7 @@ model CareerProfile {
   yearsExperience  Int?
   // --- Part-Time & Student Settings ---
   isPartTimeMode   Boolean  @default(false)
+  isFreelanceMode  Boolean  @default(false)
   availability     String?  // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
 
   // Deprecated as of Phase 2 — superseded by the structured Skill model

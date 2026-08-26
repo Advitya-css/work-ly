@@ -17,7 +17,7 @@ export const PIPELINE_COLUMNS: ApplicationStatus[] = [
   "WITHDRAWN",
 ];
 
-export const APPLICATION_STATUS_LABEL: Record<ApplicationStatus, string> = {
+const DEFAULT_STATUS_LABEL: Record<ApplicationStatus, string> = {
   SAVED: "Saved",
   PREPARING: "Preparing",
   APPLIED: "Applied",
@@ -28,6 +28,27 @@ export const APPLICATION_STATUS_LABEL: Record<ApplicationStatus, string> = {
   REJECTED: "Rejected",
   WITHDRAWN: "Withdrawn",
 };
+
+const FREELANCE_STATUS_LABEL: Record<ApplicationStatus, string> = {
+  SAVED: "Saved",
+  PREPARING: "Pre-Pitch",
+  APPLIED: "Pitched / Applied",
+  ASSESSMENT: "Assessment",
+  INTERVIEW: "Audition / Discussions",
+  FINAL_INTERVIEW: "Final Discussions",
+  OFFER: "Booked / Hired",
+  REJECTED: "Passed",
+  WITHDRAWN: "Withdrawn",
+};
+
+export const APPLICATION_STATUS_LABEL = DEFAULT_STATUS_LABEL;
+
+export function getApplicationStatusLabel(status: ApplicationStatus, isFreelanceMode: boolean = false): string {
+  if (isFreelanceMode) {
+    return FREELANCE_STATUS_LABEL[status];
+  }
+  return DEFAULT_STATUS_LABEL[status];
+}
 
 export const APPLICATION_STATUS_VARIANT: Record<
   ApplicationStatus,
@@ -50,6 +71,12 @@ export const APPLICATION_OUTCOME_LABEL: Record<string, string> = {
   OFFER: "Got the job",
   WITHDRAWN: "Withdrawn",
 };
+
+export function getApplicationOutcomeLabel(outcome: string, isFreelanceMode: boolean = false): string {
+  if (isFreelanceMode && outcome === "OFFER") return "Booked / Hired";
+  if (isFreelanceMode && outcome === "REJECTED") return "Passed";
+  return APPLICATION_OUTCOME_LABEL[outcome] ?? outcome;
+}
 
 export const DATE_RANGE_LABEL: Record<string, string> = {
   ALL: "All time",

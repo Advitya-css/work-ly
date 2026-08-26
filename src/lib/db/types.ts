@@ -65,6 +65,7 @@ export interface CareerProfile {
   preferredLocations: string[];
   openToRemote: boolean;
   isPartTimeMode?: boolean;
+  isFreelanceMode?: boolean;
   availability?: string | null;
   createdAt: Date;
   updatedAt: Date;

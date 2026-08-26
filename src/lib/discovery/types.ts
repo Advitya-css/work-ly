@@ -92,6 +92,7 @@ export interface IngestContext {
   /** Caps how much a single source may return in one run. */
   limit: number;
   isPartTimeMode?: boolean;
+  isFreelanceMode?: boolean;
 }
 
 export interface SourceStatusUpdate {

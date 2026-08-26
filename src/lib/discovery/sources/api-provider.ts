@@ -52,7 +52,10 @@ export const apiProviderSource: JobSourceAdapter = {
     if (!appId || !appKey) return [];
 
     const country = String(context.config.country ?? "gb").toLowerCase();
-    const what = String(context.config.keyword ?? context.query ?? "").trim();
+    let what = String(context.config.keyword ?? context.query ?? "").trim();
+    if (context.isFreelanceMode) {
+      what = what ? `${what} (freelance OR gig OR contract)` : "freelance OR gig OR contract";
+    }
 
     const params = new URLSearchParams({
       app_id: appId,
@@ -65,6 +68,9 @@ export const apiProviderSource: JobSourceAdapter = {
     if (where) params.set("where", where);
     if (context.isPartTimeMode) {
       params.set("part_time", "1");
+    }
+    if (context.isFreelanceMode) {
+      params.set("contract", "1");
     }
 
     const body = await fetchWithGuards(

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { LocationSettingsForm } from "@/components/settings/location-settings-form";
 import { PartTimeSettingsForm } from "@/components/settings/part-time-settings-form";
+import { FreelanceSettingsForm } from "@/components/settings/freelance-settings-form";
 import { ThemeSettingsForm } from "@/components/settings/theme-settings-form";
 import { PrivacyControls } from "@/components/settings/privacy-controls";
 import {

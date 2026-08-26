@@ -11,12 +11,14 @@ import { NewApplicationDialog } from "@/components/applications/new-application-
 import { getCurrentUser } from "@/lib/auth";
 import { listApplicationsByUserId } from "@/lib/db/applications";
 import { summarize } from "@/lib/applications/analytics";
+import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { buildInsights } from "@/lib/applications/insights";
 
 export const metadata: Metadata = { title: "Applications" };
 
 export default async function ApplicationsPage() {
   const user = await getCurrentUser();
+  const profile = user ? await getCareerProfileByUserId(user.id) : null;
   if (!user) redirect("/login");
 
   const applications = await listApplicationsByUserId(user.id);
@@ -42,7 +44,7 @@ export default async function ApplicationsPage() {
       ) : (
         <>
           <AnalyticsPanel summary={summary} insights={insights} />
-          <ApplicationsBoard applications={applications} />
+          <ApplicationsBoard applications={applications} isFreelanceMode={profile?.isFreelanceMode ?? false} />
         </>
       )}
     </div>

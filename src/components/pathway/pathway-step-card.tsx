@@ -1,3 +1,4 @@
+import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 "use client";
 
 import { useState, useTransition } from "react";
@@ -77,7 +78,7 @@ export function PathwayStepCard({ step, isLast }: { step: PathwayStep; isLast: b
             {step.gapType && <Badge variant="outline">{GAP_TYPE_LABEL[step.gapType] ?? step.gapType}</Badge>}
           </div>
 
-          <p className="text-sm text-muted-foreground">{step.description}</p>
+          <div className="text-sm text-muted-foreground"><MarkdownRenderer content={step.description} /></div>
 
           {/* Unlocked opportunities: only rendered when the count came from
               real Opportunity rows, so this claim is always checkable. */}
