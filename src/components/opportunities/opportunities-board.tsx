@@ -103,11 +103,12 @@ const NO_LOCATION_PREFERENCE: LocationPreference = {
   openToRemote: true,
 };
 
-export function OpportunitiesBoard({
+export function OpportunitiesBoard({ university,
   opportunities,
   locationPreference = NO_LOCATION_PREFERENCE,
 }: {
   opportunities: OpportunityWithJob[];
+  university?: string | null;
   /** Home base, other acceptable places, and whether remote counts. Set in Settings. */
   locationPreference?: LocationPreference;
 }) {
@@ -468,7 +469,7 @@ export function OpportunitiesBoard({
         // everything inside them to be cramped in the first place.
         <div className="stagger-children grid gap-4 sm:grid-cols-2">
           {sorted.map((o) => (
-            <OpportunityCard key={o.id} opportunity={o} />
+            <OpportunityCard key={o.id} opportunity={o} university={university} />
           ))}
         </div>
       )}

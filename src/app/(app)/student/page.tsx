@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { StudentSetupForm } from "@/components/student/student-setup-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { LiveStudentJobsFeed } from "@/components/student/live-student-jobs-feed";
+import { StudentAutoDiscoveryCard } from "@/components/student/student-auto-discovery-card";
 import { IconStudent } from "@/components/icons";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
@@ -80,7 +80,7 @@ export default async function StudentHomePage() {
       )}
 
       {isSetUp && counts.onCampus + counts.offCampus + counts.internship === 0 ? (
-        <LiveStudentJobsFeed type="part-time" />
+        <StudentAutoDiscoveryCard type="part-time" />
       ) : null}
     </div>
   );

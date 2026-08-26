@@ -32,10 +32,12 @@ import {
   type DateRangeKey,
 } from "@/lib/applications/analytics";
 import type { Application, ApplicationStatus } from "@/lib/db/types";
+import { classifyStudentJob } from "@/lib/student/legal-limits";
+import { IconStudent } from "@/components/icons";
 
 const ALL = "__all__";
 
-export function ApplicationsBoard({ applications, isFreelanceMode = false }: { applications: Application[]; isFreelanceMode?: boolean }) {
+export function ApplicationsBoard({ university, applications, isFreelanceMode = false }: { applications: Application[]; isFreelanceMode?: boolean; university?: string | null }) {
   const [view, setView] = useState<"kanban" | "table">("kanban");
   const [filters, setFilters] = useState<AnalyticsFilters>({ dateRange: "ALL" });
   const [sort, setSort] = useState<"recent" | "fit">("recent");
@@ -199,6 +201,23 @@ export function ApplicationsBoard({ applications, isFreelanceMode = false }: { a
                           {application.roleTitle}
                         </Link>
                       </div>
+                      
+                      {(() => {
+                        const kind = university ? classifyStudentJob({
+                          title: application.roleTitle,
+                          company: application.company,
+                          employmentType: null,
+                          description: null,
+                          location: application.location,
+                          university
+                        }) : null;
+                        return (kind && kind !== "wrong-location" && true) ? (
+                          <Badge variant="outline" className="w-fit border-primary/50 text-primary bg-primary/5 gap-1 mt-0.5 whitespace-nowrap px-1.5 py-0 text-[10px]">
+                            <IconStudent className="size-2.5" />
+                            {kind === "on-campus" ? "On-Campus" : kind === "internship" ? "Internship" : "Off-Campus"}
+                          </Badge>
+                        ) : null;
+                      })()}
                       {application.company && (
                         <p className="pl-5 text-xs text-muted-foreground truncate">{application.company}</p>
                       )}

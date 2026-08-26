@@ -44,7 +44,7 @@ export default async function ApplicationsPage() {
       ) : (
         <>
           <AnalyticsPanel summary={summary} insights={insights} />
-          <ApplicationsBoard applications={applications} isFreelanceMode={profile?.isFreelanceMode ?? false} />
+          <ApplicationsBoard applications={applications} university={profile?.university ?? null} isFreelanceMode={profile?.isFreelanceMode ?? false} />
         </>
       )}
     </div>

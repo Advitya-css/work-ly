@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { getCurrentUser } from "@/lib/auth";
-import { LiveStudentJobsFeed } from "@/components/student/live-student-jobs-feed";
+import { StudentAutoDiscoveryCard } from "@/components/student/student-auto-discovery-card";
 import { AlumniNetworkingCard } from "@/components/student/alumni-networking-card";
 import { TransitionRoadmap } from "@/components/student/transition-roadmap";
 
@@ -28,7 +28,7 @@ export default async function NewGradPage() {
         <TransitionRoadmap />
       </div>
 
-      <LiveStudentJobsFeed type="new-grad" />
+      <StudentAutoDiscoveryCard type="new-grad" />
     </div>
   );
 }

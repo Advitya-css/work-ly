@@ -19,6 +19,8 @@ import {
   WORK_MODE_LABEL,
 } from "@/lib/jobs/labels";
 import { formatSalaryRange } from "@/lib/format";
+import { classifyStudentJob } from "@/lib/student/legal-limits";
+import { IconStudent } from "@/components/icons";
 import type { OpportunityWithJob } from "@/lib/db/types";
 
 /**
@@ -43,7 +45,7 @@ import type { OpportunityWithJob } from "@/lib/db/types";
  *
  * Everything else still lives on the analysis page.
  */
-export function OpportunityCard({ opportunity }: { opportunity: OpportunityWithJob }) {
+export function OpportunityCard({ opportunity, university }: { opportunity: OpportunityWithJob, university?: string | null }) {
   const [isPending, startTransition] = useTransition();
   const { job, analysis } = opportunity;
 
@@ -51,6 +53,15 @@ export function OpportunityCard({ opportunity }: { opportunity: OpportunityWithJ
     .filter(Boolean)
     .join(" · ");
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  const studentKind = university ? classifyStudentJob({
+    title: job.title,
+    company: job.company,
+    employmentType: job.employmentType,
+    description: job.description,
+    location: job.location,
+    university
+  }) : null;
+  const isStudentBadge = studentKind  && studentKind !== "wrong-location";
 
   // One line, and a strength is preferred over a gap: the card is a reason
   // to open something, and the full picture is one click away.
@@ -106,6 +117,9 @@ export function OpportunityCard({ opportunity }: { opportunity: OpportunityWithJ
           <Badge variant={RECOMMENDATION_VARIANT[opportunity.recommendation]}>
             {RECOMMENDATION_LABEL[opportunity.recommendation]}
           </Badge>
+          {isStudentBadge && (
+            <Badge variant="outline" className="border-primary/50 text-primary bg-primary/5 gap-1 shadow-sm"><IconStudent className="size-3" />{studentKind === "on-campus" ? "On-Campus" : studentKind === "internship" ? "Internship" : "Off-Campus"}</Badge>
+          )}
           {opportunity.status !== "DISCOVERED" && (
             <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]}>
               {OPPORTUNITY_STATUS_LABEL[opportunity.status]}

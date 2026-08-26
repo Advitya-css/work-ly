@@ -43,7 +43,7 @@ export default async function OpportunitiesPage() {
           <SeedDemoButton />
         </div>
       ) : (
-        <OpportunitiesBoard
+        <OpportunitiesBoard university={profile?.university ?? null}
           opportunities={opportunities}
           locationPreference={{
             homeLocation: profile?.location ?? null,

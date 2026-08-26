@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { StudentJobList } from "@/components/student/student-job-list";
 import { LegalNote, LegalDisclaimer } from "@/components/student/legal-note";
-import { LiveStudentJobsFeed } from "@/components/student/live-student-jobs-feed";
+import { StudentAutoDiscoveryCard } from "@/components/student/student-auto-discovery-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { IllustrationSearching } from "@/components/shared/empty-illustration";
 import { getCurrentUser } from "@/lib/auth";
@@ -92,7 +92,7 @@ export default async function StudentJobsPage() {
         emptyHint="Nothing yet. Run Discover to pull in listings near you."
       />
 
-      <LiveStudentJobsFeed type="part-time" />
+      <StudentAutoDiscoveryCard type="part-time" />
       {country && <LegalDisclaimer />}
     </div>
   );
