@@ -43,15 +43,15 @@ ${candidateProfile.substring(0, 2000)}
 Here is the TARGET JOB DESCRIPTION:
 ${(jobDetails || "").substring(0, 2000)}
 
-Provide a highly optimized, tailored resume strategy for this exact role. Use the following markdown format EXACTLY:
+Provide a highly optimized, tailored resume strategy for this exact role. Use the following markdown format EXACTLY. Do NOT use any emojis in your response. Keep the tone professional, minimal, and clinical.
 
-### 🎯 ATS Keywords to Inject
+### Core ATS Keywords
 [List 5-8 critical keywords from the job description that must exist in my resume]
 
-### ✨ Tailored Professional Summary
+### Tailored Professional Summary
 [Write a 2-3 sentence tailored resume summary that perfectly bridges my background with their needs]
 
-### 🔨 Optimized Bullet Points
+### Optimized Bullet Points
 [Take 3-4 aspects of my current experience and rewrite them into powerful, impact-driven bullet points that directly address the core requirements of the job description. Do not invent experience I don't have, but frame what I DO have perfectly for this role.]`;
 
   try {

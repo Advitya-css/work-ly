@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { FileText, Loader2, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
@@ -32,10 +32,10 @@ export function ResumeTailorCard({ applicationId }: ResumeTailorCardProps) {
   };
 
   return (
-    <Card className="border-indigo-500/20 bg-indigo-500/5">
+    <Card className="border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
-          <FileText className="size-5" />
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="size-5 text-primary" />
           AI Resume Tailor
         </CardTitle>
         <CardDescription>
@@ -44,13 +44,13 @@ export function ResumeTailorCard({ applicationId }: ResumeTailorCardProps) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {!content ? (
-          <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+          <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto gap-2">
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
             {loading ? "Analyzing Job & Profile..." : "Tailor Resume for this Job"}
           </Button>
         ) : (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
-            <div className="p-4 bg-background rounded-lg border shadow-sm prose dark:prose-invert max-w-none text-sm">
+            <div className="p-5 bg-muted/30 rounded-lg border shadow-sm prose dark:prose-invert max-w-none text-sm leading-relaxed">
               <MarkdownRenderer content={content} />
             </div>
             <Button variant="outline" onClick={() => setContent(null)} className="w-full sm:w-auto">
