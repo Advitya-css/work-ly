@@ -38,7 +38,7 @@ export async function GET(req: Request) {
         AND cg."primaryTargetRole" IS NOT NULL
         AND u."isPro" = true
         AND (u."lastAlertSentAt" IS NULL OR u."lastAlertSentAt" < NOW() - INTERVAL '7 days')
-      LIMIT 15
+      LIMIT 50
     `);
 
     let emailsSent = 0;
