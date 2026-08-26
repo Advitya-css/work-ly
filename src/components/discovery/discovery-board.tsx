@@ -54,16 +54,32 @@ export function DiscoveryBoard({
   );
 
   const visible = useMemo(() => {
-    const results = searchResult.results;
-    if (!activeBucket) return results;
-    return results.filter((result) => {
-      const recommendation = result.job.recommendation;
-      if (activeBucket === "applyNow") return recommendation === "APPLY_NOW";
-      if (activeBucket === "strong") return recommendation === "APPLY";
-      if (activeBucket === "stretch") return recommendation === "STRETCH";
-      return recommendation === "LOW_PRIORITY" || recommendation === "SKIP";
+    let filtered = searchResult.results;
+    if (activeBucket) {
+      filtered = filtered.filter((result) => {
+        const recommendation = result.job.recommendation;
+        if (activeBucket === "applyNow") return recommendation === "APPLY_NOW";
+        if (activeBucket === "strong") return recommendation === "APPLY";
+        if (activeBucket === "stretch") return recommendation === "STRETCH";
+        return recommendation === "LOW_PRIORITY" || recommendation === "SKIP";
+      });
+    }
+
+    return [...filtered].sort((a, b) => {
+      if (sort === "priority") {
+        return b.score - a.score;
+      }
+      if (sort === "fit") {
+        return (b.job.fitScore ?? 0) - (a.job.fitScore ?? 0);
+      }
+      if (sort === "recent") {
+        const dateB = b.job.postedAt ? new Date(b.job.postedAt).getTime() : new Date(b.job.discoveredAt).getTime();
+        const dateA = a.job.postedAt ? new Date(a.job.postedAt).getTime() : new Date(a.job.discoveredAt).getTime();
+        return dateB - dateA;
+      }
+      return 0;
     });
-  }, [searchResult.results, activeBucket]);
+  }, [searchResult.results, activeBucket, sort]);
 
   const counts = useMemo(() => {
     const all = searchResult.results;

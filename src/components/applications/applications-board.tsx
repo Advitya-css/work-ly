@@ -44,7 +44,16 @@ export function ApplicationsBoard({ applications, isFreelanceMode = false }: { a
   const [pending, startTransition] = useTransition();
 
   const options = useMemo(() => filterOptions(applications), [applications]);
-  const filtered = useMemo(() => applyFilters(applications, filters), [applications, filters]);
+  const filtered = useMemo(() => {
+    const list = applyFilters(applications, filters);
+    return [...list].sort((a, b) => {
+      if (sort === "fit") {
+        return (b.fitScoreAtApply ?? 0) - (a.fitScoreAtApply ?? 0);
+      }
+      // "recent" (default)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [applications, filters, sort]);
 
   const byStatus = useMemo(() => {
     const map = new Map<ApplicationStatus, Application[]>();
