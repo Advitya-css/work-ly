@@ -78,8 +78,7 @@ export default async function SettingsPage() {
         <CardHeader>
           <CardTitle>Locations</CardTitle>
           <CardDescription>
-            Where you are, and everywhere else you would take a job. Used to filter and rank what
-            Workly shows you.
+            Where you are, and everywhere else you would take a job.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,8 +91,8 @@ export default async function SettingsPage() {
           <CardTitle>Student mode</CardTitle>
           <CardDescription>
             {isStudent
-              ? "Workly is showing you campus jobs and internships. Leaving keeps everything you have saved."
-              : "Replaces the normal navigation with campus jobs, internships, and the work-hour rules that apply to student work."}
+              ? "Campus jobs and internships are currently prioritized. Leaving keeps your saved items."
+              : "Switch to campus jobs, internships, and student work rules."}
           </CardDescription>
         </CardHeader>
         <CardContent>

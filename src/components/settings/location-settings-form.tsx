@@ -61,8 +61,7 @@ export function LocationSettingsForm({ profile }: { profile: CareerProfile | nul
             Open to remote work
           </Label>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            When this is on, a remote role always counts as matching your locations, wherever it is
-            based.
+            Remote roles will automatically count as a location match.
           </p>
         </div>
         <input type="hidden" name="openToRemote" value={openToRemote ? "true" : "false"} />

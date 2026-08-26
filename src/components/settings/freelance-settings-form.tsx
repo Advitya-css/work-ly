@@ -31,13 +31,13 @@ export function FreelanceSettingsForm({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="freelance-mode" className="text-base font-semibold">
-            Gig Economy & Musician Mode
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="freelance-mode" className="text-base">
+            Enable Gig & Musician Mode
           </Label>
           <p className="text-sm text-muted-foreground">
-            Switch terminology from traditional corporate roles (Applied, Interview, Offer) to Gig work (Pitched, Audition, Booked) and tailor the AI coaching to freelancers.
+            Tailor discovery, AI coaching, and pipeline terminology for freelance and gig work.
           </p>
         </div>
         <Switch
