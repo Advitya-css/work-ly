@@ -91,6 +91,7 @@ export interface IngestContext {
   config: Record<string, unknown>;
   /** Caps how much a single source may return in one run. */
   limit: number;
+  isPartTimeMode?: boolean;
 }
 
 export interface SourceStatusUpdate {

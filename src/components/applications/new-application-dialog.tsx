@@ -43,12 +43,14 @@ export function NewApplicationDialog() {
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState<ApplicationStatus>("APPLIED");
+  const [isPartTime, setIsPartTime] = useState(false);
 
   function submit() {
     setError(null);
     startTransition(async () => {
+      const finalRoleTitle = isPartTime ? `${roleTitle.trim()} (Part-Time)` : roleTitle.trim();
       const result = await createManualApplicationAction({
-        roleTitle,
+        roleTitle: finalRoleTitle,
         company,
         industry,
         location,
@@ -99,6 +101,16 @@ export function NewApplicationDialog() {
               onChange={(e) => setRoleTitle(e.target.value)}
               placeholder="e.g. Product Analyst"
             />
+            <div className="flex items-center gap-2 mt-1">
+              <input 
+                type="checkbox" 
+                id="new-app-pt" 
+                checked={isPartTime} 
+                onChange={(e) => setIsPartTime(e.target.checked)} 
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="new-app-pt" className="text-xs font-normal">This is a part-time role</Label>
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">

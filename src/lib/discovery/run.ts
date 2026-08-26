@@ -168,6 +168,7 @@ export async function runDiscovery(
           query,
           config: source.config,
           limit: options.limitPerSource ?? 50,
+          isPartTimeMode: profile.profile?.isPartTimeMode,
         });
         rawFound += raw.length;
         sourcesRun++;

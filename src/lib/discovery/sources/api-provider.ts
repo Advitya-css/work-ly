@@ -63,6 +63,9 @@ export const apiProviderSource: JobSourceAdapter = {
     if (what) params.set("what", what);
     const where = asString(context.config.locationName);
     if (where) params.set("where", where);
+    if (context.isPartTimeMode) {
+      params.set("part_time", "1");
+    }
 
     const body = await fetchWithGuards(
       `https://api.adzuna.com/v1/api/jobs/${encodeURIComponent(country)}/search/1?${params.toString()}`,
