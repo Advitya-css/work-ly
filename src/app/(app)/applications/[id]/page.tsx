@@ -23,6 +23,8 @@ import {
 } from "@/components/applications/application-detail-controls";
 import { DeleteApplicationButton } from "@/components/applications/delete-application-button";
 import { InterviewPrepCard } from "@/components/applications/interview-prep-card";
+import { TechnicalChallengeCard } from "@/components/applications/technical-challenge-card";
+import { SalaryNegotiatorCard } from "@/components/applications/salary-negotiator-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -131,8 +133,15 @@ export default async function ApplicationDetailPage({
 
           <ApplicationStrategyCard applicationId={application.id} />
 
+          {application.status === "OFFER" && (
+            <SalaryNegotiatorCard applicationId={application.id} />
+          )}
+
           {application.reachedInterviewAt && (
-            <InterviewPrepCard applicationId={application.id} />
+            <div className="flex flex-col gap-4">
+              <InterviewPrepCard applicationId={application.id} />
+              <TechnicalChallengeCard applicationId={application.id} />
+            </div>
           )}
 
           <Card>
