@@ -25,6 +25,7 @@ import { DeleteApplicationButton } from "@/components/applications/delete-applic
 import { InterviewPrepCard } from "@/components/applications/interview-prep-card";
 import { TechnicalChallengeCard } from "@/components/applications/technical-challenge-card";
 import { SalaryNegotiatorCard } from "@/components/applications/salary-negotiator-card";
+import { ResumeTailorCard } from "@/components/applications/resume-tailor-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -131,6 +132,8 @@ export default async function ApplicationDetailPage({
             </CardContent>
           </Card>
 
+          <ResumeTailorCard applicationId={application.id} />
+          
           <ApplicationStrategyCard applicationId={application.id} />
 
           {application.status === "OFFER" && (
