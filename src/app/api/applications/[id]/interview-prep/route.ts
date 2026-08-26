@@ -5,7 +5,7 @@ import { googleGenAIProvider } from "@/lib/ai/providers/google-genai";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-export const maxDuration = 60; // Allow 60s for AI generation
+export const maxDuration = 60;
 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
@@ -13,7 +13,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
 
   const isAllowed = await checkRateLimit(`ai:app:${user.id}`, 20, 3600);
   if (!isAllowed) {
-    return NextResponse.json({ error: "Too many AI requests. Please try again later." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
   const params = await context.params;
@@ -39,20 +39,32 @@ Here are my confirmed skills:
 ${candidateSkills || "None listed."}
 
 Your Task:
-Generate 5 tough, highly realistic interview questions that I am likely to be asked for this specific role. Focus on the job requirements, especially testing areas where my skills might be lacking or need deep probing.
-For each question, provide a brief "How to Answer" rubric/tip.
-Do not use generic behavioral questions like "what is your biggest weakness". Make them specific to the industry/role.
-Format as plain text. Do NOT use asterisks (*) for bolding or italics. Use standard dashes (-) for bullet points. Keep it clean and readable.`;
+Generate exactly 4 tough, highly realistic interview questions that I am likely to be asked for this specific role. Focus on testing areas where my skills might be lacking or need deep probing.
+Do not use generic behavioral questions.
+
+Return the result as a strict JSON array of strings. No markdown formatting, no comments, just a JSON array like:
+["Question 1?", "Question 2?", "Question 3?", "Question 4?"]`;
 
   try {
     const result = await googleGenAIProvider.complete({
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
-    return NextResponse.json({ text: result.content });
+    
+    // Attempt to parse JSON safely
+    let questions = [];
+    try {
+       const raw = result.content.replace(/```json/g, "").replace(/```/g, "").trim();
+       questions = JSON.parse(raw);
+       if (!Array.isArray(questions)) throw new Error("Not an array");
+    } catch(e) {
+       // fallback
+       questions = ["Tell me about a time you had to adapt quickly.", "What is your biggest technical weakness for this role?", "How do you handle disagreements with stakeholders?"];
+    }
+
+    return NextResponse.json({ questions });
   } catch (err) {
-    console.error(err);
     console.error("AI route error:", err);
-    return NextResponse.json({ error: "Failed to generate AI response. Please try again later." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate AI response." }, { status: 500 });
   }
 }
