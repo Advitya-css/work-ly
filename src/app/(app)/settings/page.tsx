@@ -66,6 +66,16 @@ export default async function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Freelance & Gig Economy</CardTitle>
+          <CardDescription>Tailor Workly for musicians, contractors, and freelancers.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FreelanceSettingsForm isFreelanceMode={profile?.isFreelanceMode ?? false} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Locations</CardTitle>
           <CardDescription>
             Where you are, and everywhere else you would take a job. Used to filter and rank what
