@@ -21,7 +21,7 @@ export async function savePartTimePreferencesAction(
 
   try {
     await pool.query(
-      `UPDATE "CareerProfile" SET "isPartTimeMode" = $1, "availability" = $2, "updatedAt" = now() WHERE "userId" = $3`,
+      `UPDATE "career_profiles" SET "isPartTimeMode" = $1, "availability" = $2, "updatedAt" = now() WHERE "userId" = $3`,
       [isPartTimeMode, availability, user.id]
     );
 
