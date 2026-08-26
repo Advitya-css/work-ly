@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -48,6 +49,10 @@ export default async function DashboardPage() {
         getFullCareerProfile(user.id),
       ])
     : [null, [], [], null, [], { profile: null, educations: [], experiences: [], projects: [], skills: [], achievements: [], certifications: [], documents: [] }];
+
+  if (profile?.isStudent) {
+    redirect("/student");
+  }
 
   const hasProfile = fullProfile.skills.length > 0 || fullProfile.experiences.length > 0;
   const hasGoal = goals.length > 0;
