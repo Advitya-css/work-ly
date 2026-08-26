@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { runDiscoveryAction, dismissDiscoveredJobAction, trackDiscoveredJobAction } from "@/lib/discovery/actions";
@@ -44,6 +45,7 @@ export function DiscoveryBoard({
   const [activeBucket, setActiveBucket] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
 
   const searchResult = useMemo(
     () => searchJobs({ jobs, query, context, limit: 200 }),
@@ -193,15 +195,32 @@ export function DiscoveryBoard({
             );
           })}
         </div>
-        {activeBucket && (
-          <button
-            type="button"
-            onClick={() => setActiveBucket(null)}
-            className="mt-2 text-xs text-muted-foreground underline underline-offset-2"
-          >
-            Show all bands
-          </button>
-        )}
+        <div className="mt-2 flex items-center justify-between">
+          {activeBucket ? (
+            <button
+              type="button"
+              onClick={() => setActiveBucket(null)}
+              className="text-xs text-muted-foreground underline underline-offset-2"
+            >
+              Show all bands
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Sort by</span>
+            <Select value={sort} onValueChange={(v: any) => setSort(v)}>
+              <SelectTrigger className="h-7 w-[120px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="priority">Priority</SelectItem>
+                <SelectItem value="fit">Fit Score</SelectItem>
+                <SelectItem value="recent">Recently Found</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Results */}

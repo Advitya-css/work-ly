@@ -37,6 +37,7 @@ const ALL = "__all__";
 export function ApplicationsBoard({ applications }: { applications: Application[] }) {
   const [view, setView] = useState<"kanban" | "table">("kanban");
   const [filters, setFilters] = useState<AnalyticsFilters>({ dateRange: "ALL" });
+  const [sort, setSort] = useState<"recent" | "fit">("recent");
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<ApplicationStatus | null>(null);
   const [pending, startTransition] = useTransition();
