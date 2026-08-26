@@ -11,9 +11,10 @@ export async function updateFreelanceModeAction(isFreelanceMode: boolean) {
 
     await pool.query(
       `
-      UPDATE "career_profiles"
+      INSERT INTO "career_profiles" ("id", "userId", "isFreelanceMode", "updatedAt")
+      VALUES (gen_random_uuid(), $2, $1, NOW())
+      ON CONFLICT ("userId") DO UPDATE
       SET "isFreelanceMode" = $1, "updatedAt" = NOW()
-      WHERE "userId" = $2
       `,
       [isFreelanceMode, user.id]
     );

@@ -53,6 +53,7 @@ export const localAuthProvider: AuthProvider = {
   async signIn({ email, password, rememberMe }): Promise<AuthResult> {
     const user = await getUserByEmail(email);
     if (!user || !user.passwordHash) {
+      await bcrypt.hash(password, 10); // dummy hash for timing attack prevention
       return { error: "Invalid email or password." };
     }
     const valid = await bcrypt.compare(password, user.passwordHash);

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { getCurrentUser } from "@/lib/auth";
 import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getDreamJobAnalysisByDreamJobId } from "@/lib/db/dream-job-analyses";
+import { coverageOf, MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 
 export const metadata: Metadata = { title: "Dream Job" };
 
@@ -88,10 +89,16 @@ export default async function DreamJobPage() {
                   <div className="flex shrink-0 items-center gap-2">
                     {analysis && (
                       <>
-                        <span className={`text-sm font-medium ${readinessColor(analysis.readinessScore)}`}>
-                          {analysis.readinessScore}/100
-                        </span>
-                        <Badge variant="outline">Readiness</Badge>
+                        {coverageOf(analysis.scoreBreakdown) >= MIN_COVERAGE_FOR_SCORE ? (
+                          <>
+                            <span className={`text-sm font-medium ${readinessColor(analysis.readinessScore)}`}>
+                              {analysis.readinessScore}/100
+                            </span>
+                            <Badge variant="outline">Readiness</Badge>
+                          </>
+                        ) : (
+                          <Badge variant="outline">Not enough info to score</Badge>
+                        )}
                       </>
                     )}
                     <ArrowRight className="size-4 text-muted-foreground" />

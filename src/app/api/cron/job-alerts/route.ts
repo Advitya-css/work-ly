@@ -10,9 +10,21 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  
-  // Only enforce CRON_SECRET if it's set (allows easy local testing)
-  if ((process.env.NODE_ENV === "production" || cronSecret) && authHeader !== `Bearer ${cronSecret}`) {
+
+  // In production this route MUST be locked down. Previously, when
+  // CRON_SECRET was unset, the comparison below became
+  // `authHeader !== "Bearer undefined"` - a literal string an attacker
+  // could just send - which let anyone trigger mass job discovery and
+  // force emails to every user with an active career goal. Now: no secret
+  // configured in production means the route refuses every request
+  // outright, instead of falling back to a guessable comparison.
+  if (process.env.NODE_ENV === "production") {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  } else if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Outside production, only enforce the check if a secret was actually
+    // set, so local testing without CRON_SECRET still works.
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

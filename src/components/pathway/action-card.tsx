@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { Check, SkipForward, RotateCcw, Pencil, StickyNote, Loader2, Clock, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
         )}
       </div>
 
-      <p className="text-sm text-muted-foreground">{action.description}</p>
+      <div className="text-sm text-muted-foreground"><MarkdownRenderer content={action.description} /></div>
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant="outline">

@@ -235,3 +235,20 @@ export async function normalizeListingAsync(raw: RawListing): Promise<Normalized
     return base;
   }
 }
+
+/**
+ * Whether a listing's own text actually contains the search query.
+ *
+ * Several adapters (feeds, company-career boards, and the demo feed's
+ * "nothing matched, show everything" fallback) return their listings
+ * unfiltered by query - they don't support keyword search at all. Without
+ * this check, run.ts labeled EVERY listing surfaced during a query-driven
+ * run "Matched your search", including ones that share nothing with what
+ * was typed - exactly the kind of invented relevance claim this app is not
+ * supposed to make. Lives here (not in run.ts, which is server-only) so
+ * it's directly testable without spinning up a full discovery run.
+ */
+export function listingMatchesQueryLiterally(listing: NormalizedListing, query: string): boolean {
+  const haystack = `${listing.title} ${listing.description ?? ""} ${listing.company ?? ""}`.toLowerCase();
+  return haystack.includes(query.toLowerCase());
+}

@@ -377,6 +377,7 @@ model CareerGoal {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
+  @@index([userId])
   @@map("career_goals")
 }
 
@@ -1131,6 +1132,10 @@ model DiscoveredJob {
   // Computed once during the discovery run, not per request. A discovery
   // page showing 173 listings must not run 173 fit analyses to render.
   fitScore       Int?
+  /// 0-1 coverage ratio behind fitScore (see lib/scoring/coverage.ts). Lets
+  /// the UI withhold the score badge when there wasn't enough data to
+  /// measure it, instead of showing a collapsed "0/100" as if it were real.
+  fitCoverage    Float?
   recommendation RecommendationType?
   matchReasons   Json @default("[]")
   /// Why this listing surfaced at all — the search term, the expanded role

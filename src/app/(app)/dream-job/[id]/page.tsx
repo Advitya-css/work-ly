@@ -23,7 +23,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { getDreamJobWithAnalysisById } from "@/lib/dream-job/get-with-analysis";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { skillsMatch } from "@/lib/scoring/shared";
-import { roundForDisplay } from "@/lib/scoring/coverage";
+import { coverageOf, MIN_COVERAGE_FOR_SCORE, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
+import { ScoreReadout } from "@/components/shared/score-readout";
 import { formatSalaryRange } from "@/lib/format";
 import {
   GAP_TYPE_LABEL,
@@ -44,12 +45,6 @@ import {
 } from "@/lib/dream-job/labels";
 
 export const metadata: Metadata = { title: "Dream Job Analysis" };
-
-function readinessColor(score: number): string {
-  if (score >= 75) return "text-success";
-  if (score >= 50) return "text-warning";
-  return "text-destructive";
-}
 
 function readinessCopy(score: number): string {
   if (score >= 75) return "You're closer than you think. This is within reach with a few targeted moves.";
@@ -139,6 +134,10 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
 
   const salary = formatSalaryRange(dreamJob.salaryMin, dreamJob.salaryMax, dreamJob.salaryCurrency);
   const topGaps = analysis.gapPriorities.slice(0, 5);
+  // Below this, Workly couldn't reliably assess the role at all - an empty
+  // gaps list here means "nothing to go on," not "you're a perfect match,"
+  // and the copy below must say so rather than implying the latter.
+  const lowCoverage = coverageOf(analysis.scoreBreakdown) < MIN_COVERAGE_FOR_SCORE;
 
   return (
     <div className="flex flex-col gap-6">
@@ -157,12 +156,13 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
       {/* Hero: Current Readiness */}
       <Card>
         <CardContent className="flex flex-col items-center gap-3 px-6 py-8 text-center">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Current Readiness</p>
-          <p className={`text-6xl font-bold tabular-nums ${readinessColor(analysis.readinessScore)}`}>
-            {analysis.readinessScore}
-            <span className="text-xl font-medium text-muted-foreground">/100</span>
-          </p>
-          <p className="max-w-md text-sm text-muted-foreground">{readinessCopy(analysis.readinessScore)}</p>
+          <ScoreReadout
+            label="Current Readiness"
+            value={analysis.readinessScore}
+            coverage={coverageOf(analysis.scoreBreakdown)}
+            unassessed={unassessedIn(analysis.scoreBreakdown)}
+            caption={readinessCopy(analysis.readinessScore)}
+          />
           <p className="text-xs text-muted-foreground">
             This is your Candidate Fit for this role. Not a hiring probability. Workly never estimates your odds of
             being hired.
@@ -215,7 +215,11 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
           </CardHeader>
           <CardContent>
             {topGaps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+              <p className="text-sm text-muted-foreground">
+                {lowCoverage
+                  ? "Workly didn't have enough information to prioritize gaps - see Current Readiness above."
+                  : "No significant gaps identified."}
+              </p>
             ) : (
               <ol className="flex flex-col gap-1.5">
                 {topGaps.map((gap, i) => (
@@ -262,7 +266,11 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             </CardHeader>
             <CardContent>
               {analysis.gaps.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information to classify gaps - see Current Readiness above."
+                    : "No significant gaps identified."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {analysis.gaps.map((gap, i) => (
@@ -292,7 +300,11 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             </CardHeader>
             <CardContent>
               {analysis.gapPriorities.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information to prioritize gaps - see Current Readiness above."
+                    : "No significant gaps identified."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {analysis.gapPriorities.map((gap, i) => (

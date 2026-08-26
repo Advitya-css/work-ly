@@ -1,0 +1,1207 @@
+// Workly — Career Intelligence Platform
+// Prisma schema — through Phase 8 (Deep Job Discovery Engine)
+//
+// Everything below the "FUTURE MODELS" marker is intentionally NOT
+// implemented yet — it documents where the schema is headed so today's
+// tables are designed to grow into it without rework.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// CORE — Phase 1
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  // Null when the account was created via an external auth provider
+  // (e.g. Supabase Auth / OAuth) that owns the credential instead of us.
+  passwordHash  String?
+  name          String?
+  avatarUrl     String?
+  onboardedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  careerProfile CareerProfile?
+  careerGoals   CareerGoal[]
+  documents     Document[]
+  jobs          Job[]
+  jobAnalyses   JobAnalysis[]
+  opportunities Opportunity[]
+  dreamJobs         DreamJob[]
+  dreamJobAnalyses  DreamJobAnalysis[]
+  careerPathways    CareerPathway[]
+  applications      Application[]
+  jobSourceConfigs  JobSourceConfig[]
+  discoveredJobs    DiscoveredJob[]
+  discoveryRuns     DiscoveryRun[]
+
+  @@map("users")
+}
+
+/// An uploaded source file (resume/CV). Kept separate from CareerProfile
+/// because a user may (re-)upload several over time; only the most recent
+/// successfully-parsed one feeds the profile, but history is preserved.
+/// Stored privately — see StorageProvider in src/lib/storage — never under
+/// the public/ directory, and only ever served back to its owner.
+model Document {
+  id           String         @id @default(uuid())
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fileName     String
+  fileType     DocumentType
+  fileSizeBytes Int
+  storageKey   String
+
+  status       DocumentStatus @default(UPLOADED)
+  errorMessage String?
+
+  uploadedAt   DateTime       @default(now())
+  parsedAt     DateTime?
+
+  @@index([userId])
+  @@map("documents")
+}
+
+enum DocumentType {
+  PDF
+  DOCX
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PARSING
+  PARSED
+  FAILED
+}
+
+/// Where a piece of profile data came from. Used throughout to keep facts
+/// (CV, USER, PROJECT, CERTIFICATION) visibly distinct from AI_INFERENCE —
+/// Product Principle #3/#4: never present an inference as a fact.
+enum DataSource {
+  CV
+  USER
+  PROJECT
+  CERTIFICATION
+  AI_INFERENCE
+}
+
+model CareerProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // --- Facts the user directly provided (never AI-invented) ---
+  headline         String?
+  summary          String?
+  location         String?
+  currentRole      String?
+  currentCompany   String?
+  yearsExperience  Int?
+  // --- Part-Time & Student Settings ---
+  isPartTimeMode   Boolean  @default(false)
+  isFreelanceMode  Boolean  @default(false)
+  availability     String?  // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
+
+  // Deprecated as of Phase 2 — superseded by the structured Skill model
+  // below (name/category/proficiency/evidence/source/recency). Left in
+  // place so Phase 1 data already saved isn't dropped; no longer written
+  // to by the UI.
+  skills           String[] @default([])
+
+  // --- Uploaded source document, via the storage abstraction ---
+  resumeFileName   String?
+  resumeFileUrl    String?
+  resumeUploadedAt DateTime?
+
+  // --- Raw AI interpretation kept structurally separate from user-entered
+  // facts (Product Principle #3/#4). Superseded by the structured
+  // Education/Experience/Project/Skill/etc. rows below, which each carry
+  // their own `source` and `isUncertain` markers — this JSON blob is kept
+  // only as an audit trail of the last raw extraction.
+  parsedData       Json?
+
+  // --- Student mode ---
+  // Being a student changes what the whole product should surface, so it
+  // lives on the person rather than on one career goal. studentCountry is
+  // needed to show work-hour limits at all: those rules are national, and
+  // stating a figure without knowing the country would be a guess.
+  isStudent          Boolean @default(false)
+  university         String?
+  major              String?
+  expectedGraduation String?
+  studentCountry     String?
+
+  // --- Account-level location preferences ---
+  // `location` above is the home base. These are the other places the user
+  // would work, plus whether remote is acceptable. Previously these lived
+  // only on a CareerGoal, so a user with no goal had nowhere to say it.
+  preferredLocations String[] @default([])
+  openToRemote       Boolean  @default(true)
+
+  educations       Education[]
+  experiences      Experience[]
+  projects         Project[]
+  skillEntries     Skill[]
+  achievements     Achievement[]
+  certifications   Certification[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("career_profiles")
+}
+
+model Education {
+  id            String     @id @default(uuid())
+  careerProfileId String
+  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  institution   String
+  degree        String?
+  fieldOfStudy  String?
+  startDate     DateTime?
+  endDate       DateTime?
+  description   String?
+
+  source        DataSource @default(USER)
+  isUncertain   Boolean    @default(false)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([careerProfileId])
+  @@map("educations")
+}
+
+model Experience {
+  id            String     @id @default(uuid())
+  careerProfileId String
+  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  company       String
+  title         String
+  location      String?
+  startDate     DateTime?
+  endDate       DateTime?
+  isCurrent     Boolean    @default(false)
+  description   String?
+
+  source        DataSource @default(USER)
+  isUncertain   Boolean    @default(false)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([careerProfileId])
+  @@map("experiences")
+}
+
+model Project {
+  id            String     @id @default(uuid())
+  careerProfileId String
+  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  name          String
+  role          String?
+  description   String?
+  url           String?
+  startDate     DateTime?
+  endDate       DateTime?
+
+  source        DataSource @default(USER)
+  isUncertain   Boolean    @default(false)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([careerProfileId])
+  @@map("projects")
+}
+
+/// A single skill claim, deliberately more than a name string — every
+/// field here exists so the UI can show *how well-supported* a skill is,
+/// not just that it was mentioned somewhere.
+model Skill {
+  id              String              @id @default(uuid())
+  careerProfileId String
+  careerProfile   CareerProfile       @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  name            String
+  category        SkillCategory       @default(OTHER)
+  proficiency     SkillProficiency?
+  experienceLevel SkillExperienceLevel?
+  evidenceLevel   SkillEvidenceLevel  @default(STATED)
+  source          DataSource          @default(USER)
+  recency         SkillRecency        @default(UNKNOWN)
+
+  /// True only for AI-surfaced transferable competencies (e.g. "President
+  /// of Economics Club" -> Leadership). Never set true for a directly
+  /// stated or CV-listed skill. The UI must render these as "Potential
+  /// transferable skill", never as a proven fact.
+  isTransferable       Boolean @default(false)
+  transferableRationale String?
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([careerProfileId])
+  @@map("skills")
+}
+
+enum SkillCategory {
+  TECHNICAL
+  SOFT
+  DOMAIN
+  TOOL
+  LANGUAGE
+  OTHER
+}
+
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SkillExperienceLevel {
+  UNDER_1_YEAR
+  ONE_TO_3_YEARS
+  THREE_TO_5_YEARS
+  FIVE_PLUS_YEARS
+}
+
+/// How well a skill claim is actually backed up — this is the field that
+/// keeps "I mentioned Python once" distinct from "I shipped 3 projects in
+/// Python" distinct from "an AI thinks this might transfer".
+enum SkillEvidenceLevel {
+  STATED
+  DEMONSTRATED
+  CERTIFIED
+  INFERRED
+}
+
+enum SkillRecency {
+  CURRENT
+  WITHIN_1_YEAR
+  WITHIN_3_YEARS
+  OVER_3_YEARS
+  UNKNOWN
+}
+
+model Achievement {
+  id            String     @id @default(uuid())
+  careerProfileId String
+  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+  date          DateTime?
+
+  source        DataSource @default(USER)
+  isUncertain   Boolean    @default(false)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([careerProfileId])
+  @@map("achievements")
+}
+
+model Certification {
+  id            String     @id @default(uuid())
+  careerProfileId String
+  careerProfile CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  name          String
+  issuer        String?
+  issueDate     DateTime?
+  expiryDate    DateTime?
+  credentialUrl String?
+
+  source        DataSource @default(USER)
+  isUncertain   Boolean    @default(false)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([careerProfileId])
+  @@map("certifications")
+}
+
+/// What the user is working toward. Deliberately richer than a single
+/// "target role" string — Phase 3's fit scoring (see JobAnalysis) reads
+/// several of these fields directly (seniority, industries, locations) to
+/// judge eligibility/relevance, not just skills.
+model CareerGoal {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title          String
+  targetRole     String?
+
+  // --- Phase 3: structured targeting ---------------------------------
+  primaryTargetRole    String?
+  secondaryTargetRoles String[]        @default([])
+  industries           String[]        @default([])
+  preferredLocations   String[]        @default([])
+  countries            String[]        @default([])
+  workModes            WorkMode[]      @default([])
+  employmentTypes      EmploymentType[] @default([])
+  seniority            SeniorityLevel?
+  salaryMin            Int?
+  salaryMax            Int?
+  salaryCurrency       String?         @default("USD")
+  /// "I'm not sure yet" — an explicit, first-class uncertainty flag rather
+  /// than inferring it from blank fields, so the UI and any downstream
+  /// matching logic can tell "hasn't decided" apart from "decided on
+  /// nothing in particular".
+  isUncertain          Boolean         @default(false)
+
+  targetIndustry String?
+  timeframe      String?
+  notes          String?
+  status         CareerGoalStatus @default(ACTIVE)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("career_goals")
+}
+
+enum CareerGoalStatus {
+  ACTIVE
+  ACHIEVED
+  PAUSED
+  ARCHIVED
+}
+
+/// Shared across CareerGoal and Job so a goal's preference and a job's
+/// actual mode can be compared directly.
+enum WorkMode {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  FREELANCE
+}
+
+/// Shared across CareerGoal and Job for the same reason as WorkMode.
+enum SeniorityLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+  EXECUTIVE
+}
+
+enum JobInputMethod {
+  PASTED_TEXT
+  URL
+}
+
+enum JobStatus {
+  PARSING
+  PARSED
+  FAILED
+}
+
+/// A single job posting the user submitted for analysis — pasted text or a
+/// public URL. Never populated by scraping; `rawInput` preserves exactly
+/// what the user gave us (or what a plain, unauthenticated fetch of their
+/// URL returned) so extraction is always re-checkable against the source.
+model Job {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  inputMethod JobInputMethod
+  url         String?
+  rawInput    String
+
+  status        JobStatus @default(PARSING)
+  errorMessage  String?
+
+  // --- Extracted fields (nullable until/unless parsing finds them) ----
+  title               String?
+  company             String?
+  location            String?
+  country             String?
+  salaryMin            Int?
+  salaryMax            Int?
+  salaryCurrency       String?
+  employmentType       EmploymentType?
+  workMode             WorkMode?
+  seniority            SeniorityLevel?
+  description          String?
+  requiredExperienceYears  Int?
+  preferredExperienceYears Int?
+  education            String?
+  industry             String?
+  deadline             DateTime?
+  datePosted           DateTime?
+  source               String?
+
+  /// Flat, directly-matchable skill name lists — used by fit scoring.
+  requiredSkills String[] @default([])
+  preferredSkills String[] @default([])
+
+  /// The full requirements checklist as extracted, each item tagged
+  /// mandatory vs preferred and by category — this is what mandatory vs
+  /// preferred requirements are actually built from; `requiredSkills`/
+  /// `preferredSkills` above are a scoring-friendly projection of it.
+  /// Shape: { text: string; mandatory: boolean; category: "skill" |
+  /// "experience" | "education" | "other" }[]
+  requirements Json @default("[]")
+
+  analysis    JobAnalysis?
+  opportunity Opportunity?
+  applications Application[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("jobs")
+}
+
+enum RecommendationType {
+  APPLY_NOW
+  APPLY
+  STRETCH
+  LOW_PRIORITY
+  SKIP
+}
+
+enum GapType {
+  SKILL_GAP
+  EXPERIENCE_GAP
+  EVIDENCE_GAP
+  PORTFOLIO_GAP
+  CREDENTIAL_GAP
+  SENIORITY_GAP
+  POSITIONING_GAP
+}
+
+/// The result of comparing one CareerProfile against one Job. Every number
+/// here is a "Candidate Fit" — how well stated facts on both sides line
+/// up — never a "chance of getting hired" (Product Principle: never claim
+/// a precise hire probability without validated outcome data, which this
+/// phase doesn't have). Deterministically computed from structured
+/// profile + job data so it's consistent and fully explainable; nothing
+/// here is generated by an unconstrained model call.
+model JobAnalysis {
+  id      String @id @default(uuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId   String @unique
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  fitScore       Int // 0-100, "Candidate Fit" — see lib/jobs/fit-score.ts
+  competitiveness String // Low | Moderate | High — derived label, not a probability
+  recommendation RecommendationType
+  recommendationReasoning String
+
+  /// Per-component breakdown backing the overall score. Shape: {
+  /// skills, experience, education, industryRelevance, seniority,
+  /// location, evidence }, each { score: number; maxScore: number;
+  /// weight: number; reasoning: string }.
+  scoreBreakdown Json
+
+  /// string[] — every claim traces back to a computed fact (a matched
+  /// skill, a met requirement), never AI-invented.
+  strengths Json @default("[]")
+  weaknesses Json @default("[]")
+
+  /// { type: GapType; title: string; description: string }[]
+  gaps Json @default("[]")
+
+  /// { text: string; met: boolean; detail: string }[]
+  mandatoryRequirements Json @default("[]")
+  preferredRequirements Json @default("[]")
+
+  /// string[] — "what could hurt your application" / "what to improve"
+  risks Json @default("[]")
+  improvements Json @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("job_analyses")
+
+  opportunity  Opportunity?
+  applications Application[]
+}
+
+enum OpportunityStatus {
+  /// Analyzed but the user hasn't acted on it yet.
+  DISCOVERED
+  /// The user is putting together an application (resume tailoring, cover
+  /// letter, etc.) — a lightweight forerunner of the future Application
+  /// tracker, not a replacement for it.
+  PREPARING
+  /// The user has submitted an application for this opportunity.
+  APPLIED
+}
+
+/// The trackable wrapper around one analyzed Job: every job a user runs
+/// through /analyze-job becomes an Opportunity automatically, carrying a
+/// snapshot of its Fit + a separately-computed Priority Score, plus the
+/// user's own save/status state. Fit asks "would I get this job?" —
+/// Priority asks "what should I spend my time on?" — the two are
+/// deliberately kept distinct (see lib/priority).
+model Opportunity {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId         String   @unique
+  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobAnalysisId String?  @unique
+  jobAnalysis   JobAnalysis? @relation(fields: [jobAnalysisId], references: [id], onDelete: SetNull)
+
+  /// Snapshot of JobAnalysis.fitScore at lastAnalyzedAt — denormalized so
+  /// the opportunities list can sort/filter without joining JobAnalysis.
+  fitScore        Int
+  /// Snapshot of JobAnalysis.recommendation at lastAnalyzedAt.
+  recommendation  RecommendationType
+  /// Snapshot of JobAnalysis.competitiveness at lastAnalyzedAt.
+  competitiveness String
+
+  /// 0-100 — see lib/priority/providers/stub.ts. Never equal to fitScore;
+  /// weighs career value, competitiveness, application effort, salary,
+  /// location, career progression and stated preferences alongside fit.
+  priorityScore     Int
+  /// Per-component breakdown backing priorityScore. Shape mirrors
+  /// JobAnalysis.scoreBreakdown: { candidateFit, careerValue,
+  /// competitiveness, applicationEffort, salary, location,
+  /// careerProgression, userPreferences }, each { score, maxScore,
+  /// weight, reasoning }.
+  priorityBreakdown Json @default("{}")
+
+  isSaved Boolean @default(false)
+  status  OpportunityStatus @default(DISCOVERED)
+
+  discoveredAt   DateTime @default(now())
+  lastAnalyzedAt DateTime
+
+  application Application?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, isSaved])
+  @@map("opportunities")
+}
+
+// ---------------------------------------------------------------------------
+// DREAM JOB ANALYZER & CAREER GAP ENGINE — Phase 5
+// ---------------------------------------------------------------------------
+
+enum DreamJobStatus {
+  PARSING
+  PARSED
+  FAILED
+}
+
+/// A user's aspirational target role — "how close am I to this?" rather
+/// than a real posting they're applying to. Deliberately mirrors Job's
+/// extracted-field shape (same parser, same fields) so the exact same
+/// scoringProvider.analyzeFit() can be reused unmodified to compute
+/// "Readiness" the same way Fit is computed for a real posting — see
+/// lib/dream-job/to-job-like.ts.
+model DreamJob {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  dreamRole   String
+  companyName String?
+  portfolio   String?
+  rawInput    String
+
+  status        DreamJobStatus @default(PARSING)
+  errorMessage  String?
+
+  // --- Extracted fields (nullable until/unless parsing finds them) ----
+  title               String?
+  company             String?
+  location            String?
+  country             String?
+  salaryMin            Int?
+  salaryMax            Int?
+  salaryCurrency       String?
+  employmentType       EmploymentType?
+  workMode             WorkMode?
+  seniority            SeniorityLevel?
+  description          String?
+  requiredExperienceYears  Int?
+  preferredExperienceYears Int?
+  education            String?
+  industry             String?
+  deadline             DateTime?
+  datePosted           DateTime?
+  source               String?
+
+  requiredSkills String[] @default([])
+  preferredSkills String[] @default([])
+  requirements Json @default("[]")
+
+  analysis    DreamJobAnalysis?
+  pathways    CareerPathway[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("dream_jobs")
+}
+
+/// The result of comparing one CareerProfile (+ real Opportunities, for
+/// grounding "N jobs this would unlock" claims) against one DreamJob.
+/// readinessScore/competitiveness/scoreBreakdown/strengths/weaknesses/gaps/
+/// mandatoryRequirements/preferredRequirements deliberately reuse
+/// JobAnalysis's exact shape (readinessScore is fitScore, relabeled) —
+/// see Product Principle: never claim a hire probability, only a fit
+/// score. The remaining fields are new for Phase 5's gap-prioritization,
+/// CV-improvement, and pathway-planning requirements.
+model DreamJobAnalysis {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dreamJobId String   @unique
+  dreamJob   DreamJob @relation(fields: [dreamJobId], references: [id], onDelete: Cascade)
+
+  readinessScore  Int
+  competitiveness String
+  scoreBreakdown  Json
+
+  strengths Json @default("[]")
+  weaknesses Json @default("[]")
+  gaps       Json @default("[]")
+
+  mandatoryRequirements Json @default("[]")
+  preferredRequirements Json @default("[]")
+
+  /// Ranked, never a flat dump — see lib/dream-job/gap-engine.ts. Shape:
+  /// { gapType: GapType; title: string; description: string; impact: "HIGH" |
+  /// "MEDIUM" | "LOW"; difficulty: "LOW" | "MEDIUM" | "HIGH"; estimatedTime:
+  /// string; affectedOpportunityCount: number; affectedOpportunityIds:
+  /// string[] }[]
+  gapPriorities Json @default("[]")
+
+  /// Never fabricated — every suggestion traces to a real comparison
+  /// against the target job text or the user's own profile text. Shape:
+  /// { area: "missing_information" | "weak_evidence" | "poor_ordering" |
+  /// "generic_language" | "unquantified_achievements" | "missing_experience";
+  /// issue: string; suggestion: string }[]
+  cvImprovements Json @default("[]")
+
+  /// What's already strong and shouldn't be touched. Shape: { title: string;
+  /// reason: string }[]
+  keepAsIs Json @default("[]")
+
+  /// Shape: { tier: "HIGH" | "MEDIUM" | "LOW"; title: string; why: string;
+  /// impact: string; effort: string; relevantJobs: string[] }[]
+  improvementPlan Json @default("[]")
+
+  /// Shape: { project: string; why: string; skillsDemonstrated: string[];
+  /// deliverables: string[]; difficulty: "LOW" | "MEDIUM" | "HIGH";
+  /// estimatedTime: string; relevantTargetJobs: string[];
+  /// portfolioPresentation: string }[]
+  projectRecommendations Json @default("[]")
+
+  biggestObstacles Json @default("[]")
+  highestImpactNextStep String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("dream_job_analyses")
+}
+
+// ---------------------------------------------------------------------------
+// CAREER PATHWAY ENGINE — Phase 6
+// ---------------------------------------------------------------------------
+
+enum PathwayStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+/// Progress state shared by pathway steps and 30/60/90 actions. SKIPPED is
+/// first-class rather than a delete: "I considered this and chose not to"
+/// is different information from "this was never suggested", and the
+/// progress counter treats them differently.
+enum PathwayItemStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+/// Which 30-day window a planned action falls in.
+enum ActionWindow {
+  DAYS_0_30
+  DAYS_31_60
+  DAYS_61_90
+}
+
+/// An ordered route from where the user is now to a target role. Generated
+/// deterministically from a DreamJobAnalysis's ranked gaps (Phase 5) — the
+/// pathway is that gap list turned into sequenced, trackable work, so the
+/// two can never disagree about what's actually missing.
+model CareerPathway {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The DreamJob this pathway targets. Null when generated from a
+  /// CareerGoal alone (no dream job analyzed yet) — a thinner pathway,
+  /// since there's no gap analysis to sequence.
+  dreamJobId String?
+  dreamJob   DreamJob? @relation(fields: [dreamJobId], references: [id], onDelete: SetNull)
+
+  /// Plain-language endpoints, snapshotted at generation time so the
+  /// pathway still reads correctly if the profile later changes.
+  currentStateLabel String
+  targetStateLabel  String
+  /// Readiness (Candidate Fit) at the moment this pathway was generated —
+  /// never a hiring probability. See DreamJobAnalysis.
+  startingReadiness Int
+
+  status PathwayStatus @default(ACTIVE)
+
+  steps   PathwayStep[]
+  actions PathwayAction[]
+
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@map("career_pathways")
+}
+
+/// One milestone between current and target state, e.g. "Build industry
+/// portfolio". Ordered by `order`, ascending.
+model PathwayStep {
+  id        String        @id @default(uuid())
+  pathwayId String
+  pathway   CareerPathway @relation(fields: [pathwayId], references: [id], onDelete: Cascade)
+
+  order       Int
+  title       String
+  description String
+
+  /// Which Phase 5 gap category this step closes, when it came from one.
+  gapType      GapType?
+  relatedSkill String?
+
+  status PathwayItemStatus @default(PENDING)
+  /// The user's own note against this step — never AI-generated.
+  note   String?
+
+  /// How many of the user's OWN tracked opportunities also want what this
+  /// step delivers. Grounded in real Opportunity rows every time — the UI
+  /// only ever shows "could make you relevant to N more opportunities"
+  /// when N was counted from the database, never estimated.
+  unlockedOpportunityCount Int  @default(0)
+  unlockedOpportunityIds   Json @default("[]")
+
+  /// Optional project that would close this step, carried over from the
+  /// Phase 5 project recommendations. Shape matches ProjectRecommendation
+  /// in src/lib/db/types.ts.
+  projectRecommendation Json?
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  actions PathwayAction[]
+
+  @@index([pathwayId])
+  @@map("pathway_steps")
+}
+
+/// A concrete, time-boxed action inside the 30/60/90 plan. Distinct from a
+/// PathwayStep: a step is the milestone ("develop skill X"), an action is
+/// something you actually do this month toward it.
+model PathwayAction {
+  id        String        @id @default(uuid())
+  pathwayId String
+  pathway   CareerPathway @relation(fields: [pathwayId], references: [id], onDelete: Cascade)
+
+  /// The milestone this action serves, when it maps to one.
+  stepId String?
+  step   PathwayStep? @relation(fields: [stepId], references: [id], onDelete: SetNull)
+
+  window ActionWindow
+  order  Int
+
+  title          String
+  description    String
+  /// 1 = highest. Kept numeric so ordering is unambiguous.
+  priority       Int
+  estimatedTime  String
+  difficulty     String
+  expectedImpact String
+
+  relatedSkill      String?
+  /// string[] — job titles from the user's own tracked opportunities.
+  relatedTargetJobs Json @default("[]")
+
+  status PathwayItemStatus @default(PENDING)
+  note   String?
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([pathwayId])
+  @@index([pathwayId, window])
+  @@map("pathway_actions")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICATION TRACKING & OUTCOME ANALYTICS — Phase 7
+// ---------------------------------------------------------------------------
+
+/// Where an application currently sits in the pipeline. Ordered as the
+/// Kanban columns are ordered; REJECTED and WITHDRAWN are terminal.
+enum ApplicationStatus {
+  SAVED
+  PREPARING
+  APPLIED
+  ASSESSMENT
+  INTERVIEW
+  FINAL_INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+}
+
+/// The settled result, separate from `status` because they answer different
+/// questions: status is "where is this now", outcome is "how did it end".
+/// An application can be REJECTED (status) having reached INTERVIEW along
+/// the way — see the milestone timestamps on Application for why that
+/// distinction is load-bearing for the analytics.
+enum ApplicationOutcome {
+  PENDING
+  REJECTED
+  OFFER
+  WITHDRAWN
+}
+
+/// One application to one opportunity, with everything the user needs to
+/// run the process — and everything Workly needs to eventually learn from
+/// how it went.
+model Application {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The tracked opportunity this came from. SetNull rather than Cascade:
+  /// deleting an old job posting must never silently destroy the outcome
+  /// record, which is the most valuable data in the system.
+  opportunityId String?      @unique
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  jobId         String?
+  job           Job?         @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobAnalysisId String?
+  jobAnalysis   JobAnalysis? @relation(fields: [jobAnalysisId], references: [id], onDelete: SetNull)
+
+  // --- Denormalised job facts -------------------------------------------
+  // Copied at creation so an application stays readable, filterable and
+  // analysable after its source job row is gone.
+  roleTitle String
+  company   String?
+  industry  String?
+  location  String?
+  country   String?
+
+  // --- Scores AT THE MOMENT OF APPLYING ---------------------------------
+  // Snapshotted deliberately. Re-analysing a job later changes its live
+  // fit/priority, and if analytics read those live values the correlation
+  // between "what Workly thought when you applied" and "what happened"
+  // would be silently corrupted. These two columns are the training signal
+  // for the personalisation work described at the bottom of this file.
+  fitScoreAtApply      Int?
+  priorityScoreAtApply Int?
+
+  status  ApplicationStatus  @default(APPLIED)
+  outcome ApplicationOutcome @default(PENDING)
+
+  dateApplied DateTime?
+
+  // --- Milestone timestamps ---------------------------------------------
+  // Set once, when first reached, and never cleared. Interview rate has to
+  // count applications that EVER reached interview — an application that
+  // got to interview and was then rejected still had an interview, and
+  // counting only rows currently sitting in the INTERVIEW column would
+  // undercount it badly.
+  reachedAssessmentAt DateTime?
+  reachedInterviewAt  DateTime?
+  reachedOfferAt      DateTime?
+  closedAt            DateTime?
+
+  // --- Application materials --------------------------------------------
+  cvVersion   String?
+  coverLetter String?
+  notes       String?
+
+  /// { name: string; role?: string; email?: string; notes?: string }[]
+  contacts Json @default("[]")
+  /// { date: string; kind: string; notes?: string }[]
+  interviews Json @default("[]")
+
+  salaryOffered  Int?
+  salaryCurrency String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, outcome])
+  @@map("applications")
+}
+
+// ---------------------------------------------------------------------------
+// DEEP JOB DISCOVERY ENGINE — Phase 8
+// ---------------------------------------------------------------------------
+
+/// The kinds of source Workly will ingest from.
+///
+/// SCOPE CONSTRAINT, enforced in code as well as documented here: Workly
+/// does NOT scrape LinkedIn, Indeed, Glassdoor or any site whose terms
+/// prohibit automated access. Every kind below is either an API published
+/// for third-party consumption, a feed an employer publishes precisely so
+/// aggregators can read it, a public-sector listing service, or data the
+/// user supplied themselves. Each configured source records its
+/// `legalBasis` in writing — see src/lib/discovery/sources/.
+enum JobSourceKind {
+  /// A company's own careers board, via its ATS's public JSON API
+  /// (Greenhouse, Lever, Ashby all publish these for embedding).
+  COMPANY_CAREER
+  /// A job board that offers a documented public API or feed.
+  PUBLIC_JOB_BOARD
+  /// Public-sector listings, e.g. the USAJOBS API.
+  GOVERNMENT
+  /// University and research-institution vacancy feeds.
+  UNIVERSITY
+  /// RSS/Atom/JSON feeds employers publish for aggregators.
+  EMPLOYER_FEED
+  /// A commercial, licensed job-data provider used under its API terms.
+  API_PROVIDER
+  /// Pasted or uploaded by the user.
+  MANUAL_IMPORT
+  /// Bundled fictional listings, so discovery is demonstrable with no
+  /// credentials and no network access. Never presented as real.
+  DEMO
+}
+
+enum JobSourceStatus {
+  ACTIVE
+  /// Configured but switched off by the user.
+  DISABLED
+  /// Missing an API key or board token, so it can't run yet.
+  NEEDS_CREDENTIALS
+  /// Last run failed; errorMessage says why.
+  ERROR
+}
+
+enum DiscoveryRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+/// One configured instance of a source — "Greenhouse board: acme",
+/// "USAJOBS", "my university's feed". Kept per-user because the sources
+/// someone wants to watch are part of their search, not global config.
+model JobSourceConfig {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind        JobSourceKind
+  name        String
+  /// Adapter-specific settings: board token, feed URL, query terms.
+  /// Never holds a secret — API keys come from environment variables.
+  config      Json            @default("{}")
+  status      JobSourceStatus @default(ACTIVE)
+  errorMessage String?
+
+  /// Written down, per source, so the basis for ingesting from it is
+  /// auditable rather than assumed.
+  legalBasis String
+
+  lastRunAt      DateTime?
+  lastRunFoundCount Int @default(0)
+
+  discoveredJobs DiscoveredJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@map("job_source_configs")
+}
+
+/// A normalized listing from any source. Every source's output collapses
+/// into exactly this shape (see lib/discovery/normalize.ts) so downstream
+/// search, dedup and scoring never care where a job came from.
+model DiscoveredJob {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceConfigId String?
+  sourceConfig   JobSourceConfig? @relation(fields: [sourceConfigId], references: [id], onDelete: SetNull)
+
+  // --- Provenance. Non-negotiable: the UI always shows where a listing
+  // --- came from and when, and never invents any of it.
+  sourceKind  JobSourceKind
+  sourceName  String
+  sourceUrl   String?
+  externalId  String
+  discoveredAt DateTime @default(now())
+  postedAt     DateTime?
+
+  // --- Normalized fields ---------------------------------------------
+  title       String
+  company     String?
+  location    String?
+  country     String?
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String?
+  employmentType EmploymentType?
+  workMode       WorkMode?
+  seniority      SeniorityLevel?
+  industry       String?
+  description    String?
+  requiredSkills  String[] @default([])
+  preferredSkills String[] @default([])
+  requirements    Json     @default("[]")
+
+  /// Stable hash over company + title + location, used as the first-pass
+  /// duplicate bucket. Two listings sharing it are compared in detail
+  /// rather than assumed identical — see lib/discovery/dedupe.ts.
+  dedupeKey String
+
+  /// Set when this listing was folded into another as a duplicate. The row
+  /// is kept rather than deleted so "also listed on X" can be shown, and so
+  /// re-ingesting doesn't resurrect it.
+  duplicateOfId String?
+
+  /// Stored vector so search never recomputes embeddings on page load
+  /// (Phase 8 performance requirement). Null until the background pass
+  /// fills it in.
+  embedding      Float[] @default([])
+  embeddingModel String?
+
+  // --- Cached scoring -------------------------------------------------
+  // Computed once during the discovery run, not per request. A discovery
+  // page showing 173 listings must not run 173 fit analyses to render.
+  fitScore       Int?
+  recommendation RecommendationType?
+  matchReasons   Json @default("[]")
+  /// Why this listing surfaced at all — the search term, the expanded role
+  /// relationship, or the source being watched.
+  discoveryReason String?
+
+  /// The user dismissed it; kept so it isn't re-surfaced next run.
+  isDismissed Boolean @default(false)
+  /// Promoted into a tracked Opportunity.
+  convertedOpportunityId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, externalId, sourceName])
+  @@index([userId])
+  @@index([userId, dedupeKey])
+  @@index([userId, recommendation])
+  @@map("discovered_jobs")
+}
+
+/// One ingestion pass. Exists so discovery can run in the background and
+/// report progress, and so alerts can say "since your last run" without
+/// guessing.
+model DiscoveryRun {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status DiscoveryRunStatus @default(RUNNING)
+  /// Free-text query the run was seeded with, when user-initiated.
+  query  String?
+
+  sourcesRun     Int @default(0)
+  rawFound       Int @default(0)
+  duplicatesFolded Int @default(0)
+  newJobs        Int @default(0)
+  /// Count of newly-discovered jobs that scored APPLY_NOW or APPLY —
+  /// the number a future alert would announce.
+  newHighPriority Int @default(0)
+
+  errorMessage String?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([userId])
+  @@map("discovery_runs")
+}
+
+// ---------------------------------------------------------------------------
+// FUTURE MODELS (not implemented yet — documented for direction only)
+// ---------------------------------------------------------------------------
+//
+// model OpportunityMatch    — semantic match score + explanation for a user x Opportunity
+// model DiscoveryAlert      — delivered notifications; Phase 8 computes the alert
+//                             payload (see lib/discovery/alerts.ts) but deliberately
+//                             ships no delivery channel
+// model LearningResource     — recommended resource attached to a PathwayStep
+// model PathwaySimulation    — persisted "what if" scenarios; Phase 6 computes these
+//                             on demand (see lib/pathway/what-if.ts) rather than storing
+//                             them, since a simulation is only meaningful against the
+//                             profile as it stands right now
+//
+// PERSONALISATION (Phase 7 lays the groundwork, deliberately stops short):
+// Application above already captures everything a future model would train
+// on — role, company, industry, location, the fit and priority scores as
+// they stood at apply time, and the outcome. What does NOT exist yet, on
+// purpose, is any model that fits weights to it. lib/applications/insights.ts
+// computes only descriptive comparisons, gated behind minimum sample sizes.
+//
+// model ScoringCalibration   — learned weights per user once enough outcomes exist
+// model AttributeCorrelation — persisted role/company/industry/skill correlations
+// model CvVariantPerformance — which CV positioning correlates with interviews

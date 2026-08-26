@@ -23,11 +23,16 @@ export type ComponentMap = { [key: string]: ScoreComponent };
 /**
  * Below this, no score is shown.
  *
- * 0.6 is a judgement call and worth stating plainly rather than burying.
- * With under 60% of the weighting measurable, the components that remain
- * are not a fair summary of anyone. "41/100" derived from two of seven
- * criteria is a precise number that means almost nothing, and precision is
- * what makes a bad number persuasive.
+ * 0.25 is a judgement call and worth stating plainly rather than burying.
+ * Deliberately lower than an earlier 0.6: that value withheld scores for
+ * plenty of entry-level roles where most components are legitimately
+ * "assumed" rather than "measured" (thin CVs, junior postings with few
+ * stated requirements) - not because the assessment was unreliable, but
+ * because there was less to measure in the first place. 0.25 still refuses
+ * a score built almost entirely from unavailable data - see
+ * tests/fit-priority-edge-cases.test.ts for the regression guard on this
+ * exact threshold - while no longer punishing roles that are simply early
+ * in someone's career.
  */
 export const MIN_COVERAGE_FOR_SCORE = 0.25;
 

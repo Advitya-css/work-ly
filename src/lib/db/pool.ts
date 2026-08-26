@@ -21,7 +21,7 @@ function createPool(): Pool {
     idleTimeoutMillis: 10_000,
     query_timeout: 15_000,
     statement_timeout: 15_000,
-    max: 10,
+    max: 3,
   });
 
   pool.on("error", (error) => {

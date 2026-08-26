@@ -18,7 +18,7 @@ export async function signUpAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
+  if (!(await checkRateLimit(`auth_login_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
   const parsed = signUpSchema.safeParse({
@@ -52,7 +52,7 @@ export async function signInAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
+  if (!(await checkRateLimit(`auth_signup_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
   const parsed = signInSchema.safeParse({
@@ -93,7 +93,7 @@ export async function forgotPasswordAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 3, 300))) {
+  if (!(await checkRateLimit(`auth_forgot_${ip}`, 3, 300))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
@@ -130,7 +130,7 @@ export async function resetPasswordAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 5, 60))) {
+  if (!(await checkRateLimit(`auth_reset_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
@@ -167,7 +167,7 @@ export async function resendVerificationAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 3, 300))) {
+  if (!(await checkRateLimit(`auth_resend_${ip}`, 3, 300))) {
     return { error: "Too many attempts. Please try again later." };
   }
 
@@ -201,7 +201,7 @@ export async function verifyEmailCodeAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_${ip}`, 10, 600))) {
+  if (!(await checkRateLimit(`auth_verify_${ip}`, 10, 600))) {
     return { error: "Too many attempts. Please try again later." };
   }
 

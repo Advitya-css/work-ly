@@ -190,6 +190,35 @@ export interface QueryExpansion {
 const MIN_AFFINITY = 0.25;
 
 /**
+ * True if `needle` appears as a contiguous run of whole words inside
+ * `haystack` - not merely as a character substring.
+ *
+ * The alias/query match below used to be plain `.includes()`, which meant
+ * "product" (the Product Management cluster's alias) matched inside
+ * "production coordinator" as a raw substring, even though "production"
+ * and "product" are unrelated words. A search for "production coordinator"
+ * could then silently pull in Product Manager/Product Owner as "related
+ * roles" - a fabricated relationship the profile gate doesn't catch,
+ * because it only asks whether the profile fits Product, never whether the
+ * match that got it there was real. Comparing whole word sequences instead
+ * closes that gap for every short alias (`sre`, `docs`, `analyst`, ...).
+ */
+function containsWordSequence(haystack: string[], needle: string[]): boolean {
+  if (needle.length === 0 || needle.length > haystack.length) return false;
+  for (let start = 0; start <= haystack.length - needle.length; start++) {
+    let matched = true;
+    for (let offset = 0; offset < needle.length; offset++) {
+      if (haystack[start + offset] !== needle[offset]) {
+        matched = false;
+        break;
+      }
+    }
+    if (matched) return true;
+  }
+  return false;
+}
+
+/**
  * Expands a query into related roles, gated on profile relevance.
  *
  * Returns the suppressed clusters too - not to display prominently, but
@@ -206,11 +235,12 @@ export function expandQuery(query: string, profileText: string): QueryExpansion 
 
   const expandedRoles: ExpandedRole[] = [];
   const suppressed: QueryExpansion["suppressed"] = [];
+  const queryWords = normalizedQuery.split(" ").filter(Boolean);
 
   for (const cluster of ROLE_CLUSTERS) {
     const matchesQuery = cluster.aliases.some((alias) => {
-      const canonicalAlias = canonical(alias);
-      return normalizedQuery.includes(canonicalAlias) || canonicalAlias.includes(normalizedQuery);
+      const aliasWords = canonical(alias).split(" ").filter(Boolean);
+      return containsWordSequence(queryWords, aliasWords) || containsWordSequence(aliasWords, queryWords);
     });
     if (!matchesQuery) continue;
 

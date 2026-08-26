@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 
 import { deduplicateBatch, descriptionSimilarity, canonicalUrl, isDuplicate } from "@/lib/discovery/dedupe";
-import { normalizeListing, buildDedupeKey, stripHtml } from "@/lib/discovery/normalize";
+import { normalizeListing, buildDedupeKey, stripHtml, listingMatchesQueryLiterally } from "@/lib/discovery/normalize";
 import { validateListing } from "@/lib/discovery/sources/base";
 import { SOURCE_ADAPTERS } from "@/lib/discovery/registry";
 import { expandQuery } from "@/lib/search/role-graph";
 import { localEmbed, cosineSimilarity } from "@/lib/search/embeddings";
-import type { RawListing } from "@/lib/discovery/types";
+import type { NormalizedListing, RawListing } from "@/lib/discovery/types";
 
 function raw(overrides: Partial<RawListing> = {}): RawListing {
   return {
@@ -204,6 +204,54 @@ describe("hidden role discovery", () => {
   it("always preserves the literal search terms", () => {
     const expansion = expandQuery("documentary filmmaking", accountingProfile);
     expect(expansion.literalTerms).toContain("documentary");
+  });
+
+  // Regression test: alias matching used to be a raw substring check, so
+  // "product" (the Product Management cluster's alias) matched inside
+  // "production coordinator" even though the words are unrelated - a
+  // search for "production coordinator" (itself a real title in the
+  // Documentary cluster's own role list) could silently pull in Product
+  // Manager/Product Owner as "related roles" for anyone whose profile
+  // happened to clear the Product affinity gate.
+  it("does not expand a query into a cluster whose alias is only a substring, not a whole-word match", () => {
+    const productLeaningProfile =
+      "Product manager. Roadmap ownership, stakeholder alignment, backlog prioritization, user research.";
+    const expansion = expandQuery("production coordinator", productLeaningProfile);
+    const roles = expansion.expandedRoles.map((r) => r.role);
+    expect(roles).not.toContain("Product Manager");
+    expect(roles).not.toContain("Product Owner");
+  });
+
+  it("still expands a genuine whole-word alias match", () => {
+    const productProfile =
+      "Product manager. Roadmap ownership, stakeholder alignment, backlog prioritization, user research.";
+    const expansion = expandQuery("product manager", productProfile);
+    const roles = expansion.expandedRoles.map((r) => r.role);
+    expect(roles).toContain("Product Owner");
+  });
+});
+
+describe("listingMatchesQueryLiterally", () => {
+  const listing = normalizeListing(
+    raw({ title: "Senior Product Analyst", company: "Northwind Retail", description: "Own the roadmap." }),
+  );
+
+  it("is true when the query appears in the listing's own text", () => {
+    expect(listingMatchesQueryLiterally(listing, "product analyst")).toBe(true);
+    expect(listingMatchesQueryLiterally(listing, "northwind")).toBe(true);
+    expect(listingMatchesQueryLiterally(listing, "roadmap")).toBe(true);
+  });
+
+  it("is false when the query shares nothing with the listing", () => {
+    // Regression guard: this is exactly the case that used to get labeled
+    // "Matched your search" by default for sources (feeds, company-career
+    // boards) that don't filter by query at all - a fabricated relevance
+    // claim on a listing that has nothing to do with what was searched.
+    expect(listingMatchesQueryLiterally(listing, "warehouse forklift operator")).toBe(false);
+  });
+
+  it("is case-insensitive", () => {
+    expect(listingMatchesQueryLiterally(listing, "PRODUCT ANALYST")).toBe(true);
   });
 });
 

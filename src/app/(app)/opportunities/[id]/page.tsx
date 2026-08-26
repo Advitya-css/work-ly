@@ -18,7 +18,7 @@ import {
 
 import { PageHeader } from "@/components/shared/page-header";
 import { ScoreReadout } from "@/components/shared/score-readout";
-import { coverageOf, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
+import { coverageOf, MIN_COVERAGE_FOR_SCORE, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 import { OpportunityStatusControls } from "@/components/opportunities/opportunity-status-controls";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -69,6 +69,10 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const fitBreakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const priorityBreakdown = opportunity.priorityBreakdown;
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  // Below this, Workly couldn't reliably assess the role - an empty
+  // gaps/strengths list means "nothing to go on," not "clean bill of
+  // health," and the copy below must say so rather than implying the latter.
+  const lowCoverage = coverageOf(fitBreakdown) < MIN_COVERAGE_FOR_SCORE;
 
   return (
     <div className="flex flex-col gap-6">
@@ -162,7 +166,11 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             </CardHeader>
             <CardContent>
               {analysis.strengths.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No strong matches were found for this role.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information to identify strengths - see the Candidate Fit note above."
+                    : "No strong matches were found for this role."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-2">
                   {analysis.strengths.map((s, i) => (
@@ -186,7 +194,11 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             </CardHeader>
             <CardContent>
               {analysis.gaps.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information to identify gaps - see the Candidate Fit note above."
+                    : "No significant gaps identified."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {analysis.gaps.map((gap, i) => (

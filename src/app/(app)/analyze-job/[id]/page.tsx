@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { roundForDisplay } from "@/lib/scoring/coverage";
+import { coverageOf, MIN_COVERAGE_FOR_SCORE, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
+import { ScoreReadout } from "@/components/shared/score-readout";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,12 +48,6 @@ function competitivenessVariant(level: string): "success" | "warning" | "destruc
   if (level === "Moderate") return "warning";
   if (level === "Low") return "destructive";
   return "outline";
-}
-
-function fitScoreColor(score: number): string {
-  if (score >= 75) return "text-success";
-  if (score >= 50) return "text-warning";
-  return "text-destructive";
 }
 
 export default async function JobAnalysisPage({ params }: { params: Promise<{ id: string }> }) {
@@ -129,6 +124,10 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
 
   const breakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  // Below this, Workly couldn't reliably assess the role at all - an empty
+  // gaps/strengths list here means "nothing to go on," not "clean bill of
+  // health," and the copy below must say so rather than implying the latter.
+  const lowCoverage = coverageOf(breakdown) < MIN_COVERAGE_FOR_SCORE;
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,13 +146,14 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
       {/* Headline: Candidate Fit, Competitiveness, Recommendation */}
       <div className="grid gap-3 sm:grid-cols-3">
         <Card>
-          <CardContent className="flex flex-col items-center gap-1 px-5 py-6 text-center">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Candidate Fit</p>
-            <p className={`text-4xl font-bold tabular-nums ${fitScoreColor(analysis.fitScore)}`}>
-              {analysis.fitScore}
-              <span className="text-lg font-medium text-muted-foreground">/100</span>
-            </p>
-            <p className="text-xs text-muted-foreground">How well you match this role. Not a hiring guarantee.</p>
+          <CardContent className="px-5 py-6">
+            <ScoreReadout
+              label="Candidate Fit"
+              value={analysis.fitScore}
+              coverage={coverageOf(breakdown)}
+              unassessed={unassessedIn(breakdown)}
+              caption="How well you match this role. Not a hiring guarantee."
+            />
           </CardContent>
         </Card>
         <Card>
@@ -188,7 +188,11 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
             </CardHeader>
             <CardContent>
               {analysis.strengths.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No strong matches were found for this role.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information from your profile and this posting to identify strengths - see the note above."
+                    : "No strong matches were found for this role."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-2">
                   {analysis.strengths.map((s, i) => (
@@ -212,7 +216,11 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
             </CardHeader>
             <CardContent>
               {analysis.gaps.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No significant gaps identified.</p>
+                <p className="text-sm text-muted-foreground">
+                  {lowCoverage
+                    ? "Workly didn't have enough information to identify gaps - see the note above."
+                    : "No significant gaps identified."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {analysis.gaps.map((gap, i) => (

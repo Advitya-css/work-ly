@@ -13,9 +13,10 @@ import {
 } from "@/lib/db/discovery";
 import { getAdapter } from "@/lib/discovery/registry";
 import { isDuplicate } from "@/lib/discovery/dedupe";
-import { normalizeListingAsync } from "@/lib/discovery/normalize";
+import { normalizeListingAsync, listingMatchesQueryLiterally } from "@/lib/discovery/normalize";
 import { embeddingProvider, jobEmbeddingText } from "@/lib/search/embeddings";
 import { expandQuery } from "@/lib/search/role-graph";
+import { coverageOf } from "@/lib/scoring/coverage";
 import type {
   CareerGoal,
   DiscoveredJob,
@@ -169,6 +170,12 @@ export async function runDiscovery(
           config: source.config,
           limit: options.limitPerSource ?? 50,
           isPartTimeMode: profile.profile?.isPartTimeMode,
+          // Was missing entirely: IngestContext declares isFreelanceMode and
+          // the Adzuna adapter reads it to bias the search query toward
+          // freelance/gig/contract roles and set the API's contract filter,
+          // but nothing ever passed it in - so turning on Gig & Musician
+          // Mode had zero effect on what discovery actually searched for.
+          isFreelanceMode: profile.profile?.isFreelanceMode,
         });
         rawFound += raw.length;
         sourcesRun++;
@@ -245,7 +252,12 @@ export async function runDiscovery(
       let fit = null;
       let embedding = null;
       let matchedExpansion = null;
-      let discoveryReason = query ? `Matched your search for "${query}".` : `Found by watching ${sourceName}.`;
+      const literalMatch = query != null && listingMatchesQueryLiterally(listing, query);
+      let discoveryReason = literalMatch
+        ? `Matched your search for "${query}".`
+        : query
+          ? `Found via ${sourceName} while you searched "${query}".`
+          : `Found by watching ${sourceName}.`;
 
       if (!storedDuplicate) {
         const jobLike = toJobLike(listing, userId);
@@ -288,6 +300,11 @@ export async function runDiscovery(
         embedding,
         embeddingModel: embeddingProvider.name,
         fitScore: fit?.fitScore ?? null,
+        // Lets the discovery feed withhold the fit badge for a listing
+        // Workly couldn't actually assess, instead of showing the fitScore
+        // the engine collapses to when coverage is insufficient (which
+        // otherwise reads as a genuine, if low, score).
+        fitCoverage: fit ? coverageOf(fit.scoreBreakdown) : null,
         recommendation: fit?.recommendation ?? null,
         matchReasons: buildMatchReasons(
           listing,

@@ -26,7 +26,14 @@ import { normalize, skillsMatch } from "@/lib/scoring/shared";
 const HIGH_DIFFICULTY_SKILL_KEYWORDS = [
   "cloud", "aws", "azure", "gcp", "kubernetes", "docker", "terraform", "devops",
   "machine learning", "deep learning", "distributed systems", "security", "infrastructure",
-  "ci cd", "microservices", "data engineering", "system design", "cplusplus", "rust", "go", "golang",
+  "ci cd", "microservices", "data engineering", "system design", "cplusplus", "rust",
+  // Deliberately "golang", not bare "go": word-boundary matching makes "go"
+  // a real standalone word in ordinary phrases too - "Go-to-market
+  // Strategy" normalizes to "go to market strategy", where "go" is the verb,
+  // not the language, but \bgo\b still matches it. "golang" is unambiguous
+  // and costs little recall, since skill lists rarely name the language as
+  // a bare, undecorated "Go" anyway.
+  "golang",
   "web3", "blockchain", "smart contract", "artificial intelligence", "data science",
   "quantitative", "accounting", "compliance", "legal", "financial modeling", "actuarial"
 ];

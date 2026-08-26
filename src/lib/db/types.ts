@@ -788,6 +788,11 @@ export interface DiscoveredJob {
 
   /// Cached during the discovery run - never computed per request.
   fitScore: number | null;
+  /// 0-1 coverage behind fitScore. Null for rows scored before this field
+  /// existed; treat null as "unknown, display the score" (the pre-existing
+  /// behavior), and a real value below MIN_COVERAGE_FOR_SCORE as "withhold
+  /// the score" - see lib/scoring/coverage.ts.
+  fitCoverage: number | null;
   recommendation: RecommendationType | null;
   matchReasons: MatchReason[];
   discoveryReason: string | null;

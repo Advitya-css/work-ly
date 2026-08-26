@@ -3,12 +3,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { googleGenAIProvider } from "@/lib/ai/providers/google-genai";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60; // Allow 60s for AI generation
 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const isAllowed = await checkRateLimit(`ai:app:${user.id}`, 20, 3600);
+  if (!isAllowed) {
+    return NextResponse.json({ error: "Too many AI requests. Please try again later." }, { status: 429 });
+  }
 
   const params = await context.params;
   const app = await getApplicationWithJobById(user.id, params.id);
@@ -46,6 +52,7 @@ Format as plain text. Do NOT use asterisks (*) for bolding or italics. Use stand
     return NextResponse.json({ text: result.content });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to generate interview prep." }, { status: 500 });
+    console.error("AI route error:", err);
+    return NextResponse.json({ error: "Failed to generate AI response. Please try again later." }, { status: 500 });
   }
 }

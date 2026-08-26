@@ -74,6 +74,7 @@ function mapJob(row: Record<string, unknown>): DiscoveredJob {
     embeddingModel: (row.embeddingModel as string | null) ?? null,
 
     fitScore: (row.fitScore as number | null) ?? null,
+    fitCoverage: (row.fitCoverage as number | null) ?? null,
     recommendation: (row.recommendation as RecommendationType | null) ?? null,
     matchReasons: (row.matchReasons as MatchReason[] | null) ?? [],
     discoveryReason: (row.discoveryReason as string | null) ?? null,
@@ -218,6 +219,7 @@ export interface UpsertDiscoveredJobInput {
   embedding: number[] | null;
   embeddingModel: string | null;
   fitScore: number | null;
+  fitCoverage: number | null;
   recommendation: RecommendationType | null;
   matchReasons: MatchReason[];
   discoveryReason: string | null;
@@ -240,7 +242,7 @@ export async function upsertDiscoveredJob(
        "employmentType", "workMode", seniority, industry, description,
        "requiredSkills", "preferredSkills", requirements,
        "dedupeKey", "duplicateOfId", embedding, "embeddingModel",
-       "fitScore", recommendation, "matchReasons", "discoveryReason", "updatedAt"
+       "fitScore", "fitCoverage", recommendation, "matchReasons", "discoveryReason", "updatedAt"
      )
      VALUES (
        $1, $2, $3, $4::"JobSourceKind", $5, $6, $7,
@@ -249,7 +251,7 @@ export async function upsertDiscoveredJob(
        $16::"EmploymentType", $17::"WorkMode", $18::"SeniorityLevel", $19, $20,
        $21, $22, $23::jsonb,
        $24, $25, $26, $27,
-       $28, $29::"RecommendationType", $30::jsonb, $31, now()
+       $28, $29, $30::"RecommendationType", $31::jsonb, $32, now()
      )
      ON CONFLICT ("userId", "externalId", "sourceName") DO UPDATE SET
        "sourceUrl" = EXCLUDED."sourceUrl",
@@ -274,6 +276,7 @@ export async function upsertDiscoveredJob(
        embedding = EXCLUDED.embedding,
        "embeddingModel" = EXCLUDED."embeddingModel",
        "fitScore" = EXCLUDED."fitScore",
+       "fitCoverage" = EXCLUDED."fitCoverage",
        recommendation = EXCLUDED.recommendation,
        "matchReasons" = EXCLUDED."matchReasons",
        "discoveryReason" = EXCLUDED."discoveryReason",
@@ -308,6 +311,7 @@ export async function upsertDiscoveredJob(
       input.embedding,
       input.embeddingModel,
       input.fitScore,
+      input.fitCoverage,
       input.recommendation,
       JSON.stringify(input.matchReasons),
       input.discoveryReason,

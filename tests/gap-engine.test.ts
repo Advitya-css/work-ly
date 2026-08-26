@@ -276,6 +276,34 @@ describe("skill difficulty classification", () => {
     expect(gap!.difficulty).not.toBe("LOW");
   });
 
+  // Related edge case, not a regression of the fix above: word-boundary
+  // matching correctly stops "Google Analytics" from matching bare "go",
+  // but "Go-to-market Strategy" normalizes to "go to market strategy",
+  // where "go" IS a genuine standalone word - just the verb, not the
+  // language. Fixed by keying HIGH difficulty off "golang" only.
+  it("does not misclassify Go-to-market Strategy as high-difficulty via a standalone 'go'", () => {
+    const profile = profileWith({ skills: [] });
+    const dreamJob = dreamJobWith({
+      requiredSkills: ["Go-to-market Strategy"],
+      requirements: [{ text: "Go-to-market Strategy", mandatory: true, category: "skill" }],
+    });
+    const result = analyze({ profile, dreamJob });
+    const gap = result.gapPriorities.find((g) => g.title === "Go-to-market Strategy");
+    expect(gap).toBeDefined();
+    expect(gap!.difficulty).not.toBe("HIGH");
+  });
+
+  it("still classifies the Go programming language as high-difficulty", () => {
+    const profile = profileWith({ skills: [] });
+    const dreamJob = dreamJobWith({
+      requiredSkills: ["Golang"],
+      requirements: [{ text: "Golang", mandatory: true, category: "skill" }],
+    });
+    const result = analyze({ profile, dreamJob });
+    const gap = result.gapPriorities.find((g) => g.title === "Golang");
+    expect(gap?.difficulty).toBe("HIGH");
+  });
+
   it("still classifies genuine infra/cloud skills as high-difficulty", () => {
     const profile = profileWith({ skills: [] });
     const dreamJob = dreamJobWith({

@@ -107,6 +107,20 @@ export const remotiveSource: JobSourceAdapter = {
   },
 };
 
+/**
+ * Jobicy returns some fields (notably `jobIndustry`, and sometimes
+ * `jobType`) as an array of strings rather than a single string. Treating
+ * either shape as plain text - rather than assuming it's always a string,
+ * which crashed keyword search with a `.toLowerCase is not a function`
+ * TypeError the moment a listing had an array here - keeps this adapter
+ * working regardless of which shape a given listing uses.
+ */
+function textOf(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === "string").join(" ");
+  return "";
+}
+
 // --- JOBICY ---
 export const jobicySource: JobSourceAdapter = {
   ...sourceDefaults,
@@ -123,10 +137,10 @@ export const jobicySource: JobSourceAdapter = {
     let jobs = parsed.jobs ?? [];
     if (keyword) {
       const kw = keyword.toLowerCase();
-      jobs = jobs.filter((j: any) => 
-        (j.jobTitle || "").toLowerCase().includes(kw) || 
-        (j.companyName || "").toLowerCase().includes(kw) ||
-        (j.jobIndustry || "").toLowerCase().includes(kw)
+      jobs = jobs.filter((j: any) =>
+        textOf(j.jobTitle).toLowerCase().includes(kw) ||
+        textOf(j.companyName).toLowerCase().includes(kw) ||
+        textOf(j.jobIndustry).toLowerCase().includes(kw)
       );
     }
     return jobs.map((job: any) => ({
@@ -140,9 +154,9 @@ export const jobicySource: JobSourceAdapter = {
       salaryMin: job.annualSalaryMin ? parseInt(job.annualSalaryMin, 10) : null,
       salaryMax: job.annualSalaryMax ? parseInt(job.annualSalaryMax, 10) : null,
       salaryCurrency: asString(job.salaryCurrency),
-      employmentTypeRaw: asString(job.jobType),
+      employmentTypeRaw: asString(job.jobType) ?? (textOf(job.jobType) || null),
       workModeRaw: "REMOTE",
-      industry: asString(job.jobIndustry),
+      industry: asString(job.jobIndustry) ?? (textOf(job.jobIndustry) || null),
     }));
   },
 };

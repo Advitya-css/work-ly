@@ -92,7 +92,11 @@ export default async function AnalyzeJobPage() {
                   <div className="flex shrink-0 items-center gap-2">
                     {opportunity && (
                       <>
-                        <span className="text-sm font-medium text-foreground">{opportunity.fitScore}/100</span>
+                        {opportunity.competitiveness !== "Insufficient data" ? (
+                          <span className="text-sm font-medium text-foreground">{opportunity.fitScore}/100</span>
+                        ) : (
+                          <Badge variant="outline">Not enough info to score</Badge>
+                        )}
                         <Badge variant={RECOMMENDATION_VARIANT[opportunity.recommendation]}>
                           {RECOMMENDATION_LABEL[opportunity.recommendation]}
                         </Badge>

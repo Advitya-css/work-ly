@@ -24,6 +24,7 @@ import { runDiscoveryAction, dismissDiscoveredJobAction, trackDiscoveredJobActio
 import { BUCKETS, SOURCE_KIND_LABEL } from "@/lib/discovery/labels";
 import { searchJobs, type SearchContext } from "@/lib/search/engine";
 import { formatSalaryRange } from "@/lib/format";
+import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import type { DiscoveredJob } from "@/lib/db/types";
 
 /**
@@ -294,7 +295,16 @@ function DiscoveryCard({
                 <bucket.icon className={cn("size-4 shrink-0", bucket.tone)} aria-label={bucket.label} />
               )}
               <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{job.title}</p>
-              {job.fitScore != null && <Badge variant="outline">Fit {job.fitScore}/100</Badge>}
+              {job.fitScore != null &&
+                // fitCoverage is null for rows scored before this field
+                // existed - fall back to showing the score rather than
+                // hiding every pre-existing listing's badge. A real
+                // coverage value below the threshold means Workly couldn't
+                // actually assess this listing, so don't show a number
+                // that looks like a measurement.
+                (job.fitCoverage == null || job.fitCoverage >= MIN_COVERAGE_FOR_SCORE) && (
+                  <Badge variant="outline">Fit {job.fitScore}/100</Badge>
+                )}
             </div>
             <p className="text-xs text-muted-foreground truncate">
               {[job.company, job.location, job.country].filter(Boolean).join(" · ") || "-"}
