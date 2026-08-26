@@ -1,5 +1,5 @@
-import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 "use client";
+import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useState, useTransition } from "react";
 import {
