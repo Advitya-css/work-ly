@@ -184,13 +184,13 @@ export function ApplicationsBoard({ applications }: { applications: Application[
                         <GripVertical className="mt-0.5 size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                         <Link
                           href={`/applications/${application.id}`}
-                          className="text-sm font-medium leading-tight text-foreground hover:underline"
+                          className="text-sm font-medium leading-tight text-foreground hover:underline line-clamp-2 break-words"
                         >
                           {application.roleTitle}
                         </Link>
                       </div>
                       {application.company && (
-                        <p className="pl-5 text-xs text-muted-foreground">{application.company}</p>
+                        <p className="pl-5 text-xs text-muted-foreground truncate">{application.company}</p>
                       )}
                       <div className="flex flex-wrap gap-1 pl-5">
                         {application.fitScoreAtApply != null && (
@@ -257,10 +257,10 @@ export function ApplicationsBoard({ applications }: { applications: Application[
                   ) : (
                     filtered.map((application) => (
                       <tr key={application.id} className="transition-colors hover:bg-secondary/40">
-                        <td className="px-4 py-3 font-medium text-foreground">
+                        <td className="px-4 py-3 font-medium text-foreground max-w-[200px] truncate">
                           {application.roleTitle}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">
                           {application.company ?? "-"}
                         </td>
                         <td className="px-4 py-3">

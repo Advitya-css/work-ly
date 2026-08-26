@@ -69,7 +69,7 @@ export function OpportunityCard({ opportunity }: { opportunity: OpportunityWithJ
           <div className="min-w-0 flex-1">
             <Link
               href={`/opportunities/${opportunity.id}`}
-              className="line-clamp-2 text-[15px] leading-snug font-semibold text-foreground transition-colors hover:text-primary"
+              className="line-clamp-2 text-[15px] leading-snug font-semibold text-foreground transition-colors hover:text-primary break-words"
             >
               {job.title ?? "Untitled role"}
             </Link>

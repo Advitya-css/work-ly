@@ -288,15 +288,15 @@ function DiscoveryCard({
     <Card>
       <CardContent className="flex flex-col gap-2.5 px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               {bucket && (
                 <bucket.icon className={cn("size-4 shrink-0", bucket.tone)} aria-label={bucket.label} />
               )}
-              <p className="text-sm font-semibold text-foreground">{job.title}</p>
+              <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{job.title}</p>
               {job.fitScore != null && <Badge variant="outline">Fit {job.fitScore}/100</Badge>}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               {[job.company, job.location, job.country].filter(Boolean).join(" · ") || "-"}
             </p>
           </div>
@@ -335,9 +335,9 @@ function DiscoveryCard({
 
         {/* Trust: source, link, and both dates, always */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-xs text-muted-foreground">
-          <span>
+          <span className="truncate max-w-[200px] sm:max-w-none">
             Source: <span className="text-foreground">{job.sourceName}</span>{" "}
-            <Badge variant="secondary">{SOURCE_KIND_LABEL[job.sourceKind]}</Badge>
+            <Badge variant="secondary" className="whitespace-nowrap">{SOURCE_KIND_LABEL[job.sourceKind]}</Badge>
           </span>
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />

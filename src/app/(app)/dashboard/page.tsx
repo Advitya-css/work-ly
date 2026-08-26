@@ -129,9 +129,9 @@ export default async function DashboardPage() {
                 ))}
               </div>
               {discoveryBuckets.applyNow[0] && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground line-clamp-2">
                   Top find:{" "}
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-foreground break-words">
                     {discoveryBuckets.applyNow[0].title}
                   </span>
                   {discoveryBuckets.applyNow[0].company
