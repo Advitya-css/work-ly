@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { LegalNote, LegalDisclaimer } from "@/components/student/legal-note";
+import { LiveStudentJobsFeed } from "@/components/student/live-student-jobs-feed";
 import { EmptyState } from "@/components/shared/empty-state";
 import { IllustrationStudent } from "@/components/shared/empty-illustration";
 import { Badge } from "@/components/ui/badge";

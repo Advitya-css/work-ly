@@ -116,4 +116,5 @@ export const STUDENT_TABS: SectionTab[] = [
   { label: "Overview", href: "/student", icon: IconStudent },
   { label: "Campus jobs", href: "/student/jobs", icon: IconOpportunity },
   { label: "Internships", href: "/student/internships", icon: IconDream },
+  { label: "New Grad", href: "/student/new-grad", icon: IconPathway },
 ];
