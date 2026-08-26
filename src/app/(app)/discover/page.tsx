@@ -33,7 +33,11 @@ export default async function DiscoverPage() {
     getLatestRun(user.id),
   ]);
 
-  const jobs = rawJobs;
+  const jobs = rawJobs.filter(job => matchesLocationPreference(job.location, job.workMode, {
+    homeLocation: profile.profile?.location ?? null,
+    preferredLocations: profile.profile?.preferredLocations ?? [],
+    openToRemote: profile.profile?.openToRemote ?? true
+  }));
 
   const profileText = profileSearchText(profile);
   const candidateYears = estimateYearsExperience(profile);

@@ -51,7 +51,18 @@ export const apiProviderSource: JobSourceAdapter = {
     const appKey = process.env.ADZUNA_APP_KEY;
     if (!appId || !appKey) return [];
 
-    const country = String(context.config.country ?? "gb").toLowerCase();
+        let defaultCountry = "gb";
+    const loc = (context.homeLocation || "").toLowerCase();
+    if (loc.includes("canada") || loc.endsWith(", ca") || loc.endsWith(" ca")) defaultCountry = "ca";
+    else if (loc.includes("united states") || loc.includes("usa") || loc.endsWith(", us") || loc.endsWith(" us")) defaultCountry = "us";
+    else if (loc.includes("australia") || loc.endsWith(", au") || loc.endsWith(" au")) defaultCountry = "au";
+    else if (loc.includes("india") || loc.endsWith(", in") || loc.endsWith(" in")) defaultCountry = "in";
+    else if (loc.includes("germany") || loc.endsWith(", de") || loc.endsWith(" de")) defaultCountry = "de";
+    else if (loc.includes("france") || loc.endsWith(", fr") || loc.endsWith(" fr")) defaultCountry = "fr";
+    else if (loc.includes("new zealand") || loc.endsWith(", nz") || loc.endsWith(" nz")) defaultCountry = "nz";
+    else if (loc.includes("south africa") || loc.endsWith(", za") || loc.endsWith(" za")) defaultCountry = "za";
+
+    const country = String(context.config.country ?? defaultCountry).toLowerCase();
     let what = String(context.config.keyword ?? context.query ?? "").trim();
     if (context.isFreelanceMode) {
       what = what ? `${what} (freelance OR gig OR contract)` : "freelance OR gig OR contract";

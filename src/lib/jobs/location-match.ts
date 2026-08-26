@@ -37,7 +37,16 @@ export function matchesLocationPreference(
   return candidates.some((candidate) => {
     const c = candidate.toLowerCase().trim();
     if (!c) return false;
-    return text.includes(c) || c.includes(text);
+    if (text.includes(c) || c.includes(text)) return true;
+    
+    const textWords = text.split(/[\s,]+/).filter(w => w.length > 3);
+    const cWords = c.split(/[\s,]+/).filter(w => w.length > 3);
+    
+    for (const w of cWords) {
+      if (textWords.includes(w)) return true;
+    }
+    
+    return false;
   });
 }
 
