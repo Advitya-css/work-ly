@@ -113,13 +113,15 @@ export function DiscoveryBoard({
           {pending ? <Loader2 className="animate-spin" /> : <Radar />}
           {pending ? "Discovering…" : "Discover"}
         </Button>
+        <AddFeedForm />
       </div>
-
+      
       {message && (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
+        <p className="text-sm text-muted-foreground animate-in fade-in slide-in-from-top-2">
+          {message}
+        </p>
       )}
+
 
       {/* Hidden role discovery. Shown whenever expansion actually fired */}
       {searchResult.expansion.expandedRoles.length > 0 && (
@@ -145,7 +147,6 @@ export function DiscoveryBoard({
             </AlertDescription>
           </Alert>
         )}
-        <AddFeedForm />
 
       {/* Bucket summary: the whole point of the page */}
       <div>
