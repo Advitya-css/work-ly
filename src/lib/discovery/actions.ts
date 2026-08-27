@@ -115,9 +115,20 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
   revalidateDiscoveryViews();
 }
 
-export async function runDiscoveryAction(query?: string): Promise<{ error?: string; found?: number }> {
+export async function runDiscoveryAction(query?: string): Promise<{ error?: string; found?: number; upgradeRequired?: boolean }> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  // Check rate limit (3 runs per day)
+  const { rows } = await pool.query(
+    `SELECT COUNT(*) FROM discovery_runs WHERE "userId" = $1 AND "startedAt" > NOW() - INTERVAL '24 hours'`,
+    [user.id]
+  );
+  
+  const dailyRuns = parseInt(rows[0].count, 10);
+  if (dailyRuns >= 3) {
+    return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
+  }
 
   // Guarantees there's at least one real source to run against, with no
   // setup required.

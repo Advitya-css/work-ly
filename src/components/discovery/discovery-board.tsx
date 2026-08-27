@@ -95,17 +95,24 @@ export function DiscoveryBoard({
     };
   }, [searchResult.results]);
 
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
+
   function discover() {
     setMessage(null);
+    setUpgradeRequired(false);
     startTransition(async () => {
       const result = await runDiscoveryAction(query || undefined);
-      setMessage(
-        result.error
-          ? result.error
-          : result.found === 0
-            ? "No new listings. Anything found was either already saved, or hidden by your location filters."
-            : `Discovered ${result.found} new listing${result.found === 1 ? "" : "s"}.`,
-      );
+      if (result.upgradeRequired) {
+        setUpgradeRequired(true);
+      } else {
+        setMessage(
+          result.error
+            ? result.error
+            : result.found === 0
+              ? "No new listings. Anything found was either already saved, or hidden by your location filters."
+              : `Discovered ${result.found} new listing${result.found === 1 ? "" : "s"}.`,
+        );
+      }
     });
   }
 
