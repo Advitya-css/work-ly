@@ -11,7 +11,7 @@ vi.mock("../src/lib/ai/index", () => ({
 }));
 
 describe("AI Tailoring & Reminders", () => {
-  const mockProfile: CareerProfile = {
+  const mockProfile = {
     id: "prof-1",
     userId: "user-1",
     experience: "5 years React",
@@ -23,7 +23,7 @@ describe("AI Tailoring & Reminders", () => {
     includeRemote: true,
   };
 
-  const mockJob: Job = {
+  const mockJob = {
     id: "job-1",
     userId: "user-1",
     url: "https://example.com/job",
@@ -32,12 +32,12 @@ describe("AI Tailoring & Reminders", () => {
     description: "Looking for a React expert with TS skills.",
     mandatorySkills: [],
     optionalSkills: [],
-    status: "DISCOVERED",
+    status: "PARSED",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  const mockApplication: Application = {
+  const mockApplication = {
     id: "app-1",
     userId: "user-1",
     opportunityId: "opp-1",
@@ -62,7 +62,7 @@ describe("AI Tailoring & Reminders", () => {
       }`,
     });
 
-    const result = await generateTailoredApplication(mockProfile, mockJob);
+    const result = await generateTailoredApplication(mockProfile as any, mockJob as any);
     
     expect(result.coverLetter).toContain("Dear Vercel");
     expect(result.resumeBullets).toHaveLength(2);
@@ -75,7 +75,7 @@ describe("AI Tailoring & Reminders", () => {
       content: "Hi Vercel team,\\n\\nFollowing up on my interview.\\n\\nBest, Candidate",
     });
 
-    const result = await generateFollowUpEmail(mockApplication, mockJob);
+    const result = await generateFollowUpEmail(mockApplication as any, mockJob as any);
     
     expect(result).toContain("Following up on my interview");
     expect(aiProvider.complete).toHaveBeenCalledTimes(1);
@@ -90,6 +90,6 @@ describe("AI Tailoring & Reminders", () => {
       content: `{ "wrongKey": "Oops" }`, // Missing coverLetter and resumeBullets
     });
 
-    await expect(generateTailoredApplication(mockProfile, mockJob)).rejects.toThrow("Failed to generate tailored application.");
+    await expect(generateTailoredApplication(mockProfile as any, mockJob as any)).rejects.toThrow("Failed to generate tailored application.");
   });
 });

@@ -13,14 +13,15 @@ export const metadata: Metadata = {
   description: "View my professional profile on Workly",
 };
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // We use pool directly here because we only need the public fields and don't require auth.
   const { rows } = await pool.query(
     `SELECT cp.*, u.name, u."avatarUrl" 
      FROM "CareerProfile" cp 
      JOIN "User" u ON cp."userId" = u.id 
      WHERE cp.id = $1`,
-    [params.id]
+    [id]
   );
 
   const profile = rows[0];
