@@ -345,11 +345,12 @@ export function searchJobs(input: SearchJobsInput): SearchJobsResult {
   // without this, an empty search term and a nonsense one look identical.
   let relevant = ranked;
   if (input.query.trim()) {
-    // If they provided a search term, aggressively filter out anything that doesn't
-    // match the literal term OR any of the AI-expanded synonyms.
-    // The previous semantic fallback (semantic > 0.7) was too loose because cosine 
-    // similarity often bottoms out around 0.75 for unrelated English text.
-    relevant = ranked.filter(s => s.components.keyword > 0);
+    // Top-tier semantic search: rely on the fully blended overall score.
+    // This allows jobs with massive semantic vector overlap to pass even if they
+    // lack exact keywords, while aggressively rejecting jobs that just happen
+    // to match a single split word (like "Data" in a Nurse job) because their
+    // overall score will fall below the baseline.
+    relevant = ranked.filter(s => s.score > 0.58);
   }
 
   return {

@@ -227,7 +227,9 @@ function containsWordSequence(haystack: string[], needle: string[]): boolean {
  */
 export function expandQuery(query: string, profileText: string): QueryExpansion {
   const normalizedQuery = canonical(query);
-  const literalTerms = normalizedQuery ? [normalizedQuery] : [];
+  const literalTerms = normalizedQuery 
+    ? Array.from(new Set([normalizedQuery, ...normalizedQuery.split(" ").filter((term) => term.length > 2)]))
+    : [];
 
   if (!normalizedQuery) {
     return { literalTerms: [], expandedRoles: [], suppressed: [] };
