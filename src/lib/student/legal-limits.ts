@@ -332,8 +332,10 @@ export function classifyStudentJob(input: {
     }
   }
 
-  // Enforce location matching for off-campus and internships if we know the university's location
-  if (kind !== "on-campus" && input.location && university) {
+  // Enforce location matching across ALL jobs if we know the university's location.
+  // This prevents jobs at OTHER universities (which might mistakenly be tagged as on-campus 
+  // because the employer name contains the word 'university') from bypassing the location check.
+  if (input.location && university) {
     const validLocations = UNIVERSITY_LOCATIONS[university];
     if (validLocations) {
       const loc = input.location.toLowerCase();
