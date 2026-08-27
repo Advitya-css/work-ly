@@ -80,6 +80,10 @@ export async function signInAction(
     return { error: result.error };
   }
 
+  if (result.user && !result.user.onboardedAt) {
+    redirect("/onboarding");
+  }
+
   redirect("/dashboard");
 }
 

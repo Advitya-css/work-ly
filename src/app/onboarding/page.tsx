@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, FileText, Compass, Target, TrendingUp } from "lucide-react";
+import { Check, FileText, Compass, Target, TrendingUp, GraduationCap, Briefcase } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StepIndicator } from "@/components/onboarding/step-indicator";
 import { UploadStep } from "@/components/onboarding/upload-step";
 import { ReviewStep } from "@/app/onboarding/review-step";
+import { StudentStep } from "@/components/onboarding/student-step";
 import { completeOnboardingAction } from "@/lib/onboarding/actions";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -36,10 +37,10 @@ const steps = [
   },
 ];
 
-type OnboardingStep = "welcome" | "upload" | "review";
+type OnboardingStep = "welcome" | "upload" | "review" | "student-setup";
 
 function resolveStep(raw: string | undefined): OnboardingStep {
-  if (raw === "upload" || raw === "review") return raw;
+  if (raw === "upload" || raw === "review" || raw === "student-setup") return raw;
   return "welcome";
 }
 
@@ -57,7 +58,7 @@ export default async function OnboardingPage({
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
-      <StepIndicator current={stepIndex} />
+      {(step === "upload" || step === "review") && <StepIndicator current={stepIndex} />}
 
       {step === "welcome" && (
         <>
@@ -66,42 +67,56 @@ export default async function OnboardingPage({
               Welcome to Workly{user.name ? `, ${user.name.split(" ")[0]}` : ""}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Here&apos;s how the platform works, start to finish.
+              Are you here as a student looking for campus/grad roles, or an established professional?
             </p>
           </div>
 
-          <div className="grid w-full gap-3 sm:grid-cols-2">
-            {steps.map((item, index) => (
-              <Card key={item.title} className="text-left">
-                <CardContent className="flex gap-3 px-5">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent">
-                    <item.icon className="size-4 text-accent-foreground" strokeWidth={1.75} />
+          <div className="grid w-full gap-4 sm:grid-cols-2 mt-4">
+            <Link href="/onboarding?step=student-setup" className="group">
+              <Card variant="interactive" className="h-full border-2 border-transparent hover:border-[var(--area-color,var(--primary))]/35">
+                <CardContent className="flex flex-col items-center gap-4 px-6 py-8 text-center">
+                  <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <GraduationCap className="size-7 text-primary" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Step {index + 1}</p>
-                    <p className="mt-0.5 text-sm font-semibold text-foreground">{item.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                    <h3 className="text-lg font-semibold text-foreground">Student Mode</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Track on-campus jobs, strict visa limit enforcement, and new grad roles.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            </Link>
+
+            <Link href="/onboarding?step=upload" className="group">
+              <Card variant="interactive" className="h-full border-2 border-transparent hover:border-[var(--area-color,var(--primary))]/35">
+                <CardContent className="flex flex-col items-center gap-4 px-6 py-8 text-center">
+                  <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Briefcase className="size-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Professional</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Upload your resume, build a profile, and find your next senior role.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-4">
             <form action={completeOnboardingAction}>
               <Button type="submit" variant="ghost">
                 Skip setup
               </Button>
             </form>
-            <Button asChild size="lg">
-              <Link href="/onboarding?step=upload">
-                <Check />
-                Get started
-              </Link>
-            </Button>
           </div>
         </>
       )}
+      
+      {step === "student-setup" && <StudentStep />}
+
 
       {step === "upload" && <UploadStep />}
 
