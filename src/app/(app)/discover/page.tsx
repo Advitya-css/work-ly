@@ -64,6 +64,7 @@ export default async function DiscoverPage() {
     profileSkills: profile.skills.filter((s) => !s.isTransferable).map((s) => s.name),
     candidateSeniority: deriveCandidateSeniority(candidateYears, careerGoal),
     careerGoal,
+    profileLocation: profile.profile?.location ?? null,
   };
 
   const alert = buildAlert(latestRun, jobs);

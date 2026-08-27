@@ -356,14 +356,6 @@ function scoreSeniority(job: Job, candidateYears: number | null, careerGoal: Car
 }
 
 function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerGoal | null) {
-  // A genuine, evidence-backed default: a remote role really does satisfy
-  // any location preference. Marked `assumed` rather than `measured`
-  // because it is a rule rather than a comparison.
-  if (job.workMode === "REMOTE") {
-    return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, so location is not a constraint.");
-  }
-
-  // Account-level preferences first, falling back to the career goal.
   const preferredLocations = profile.profile?.preferredLocations?.length
     ? profile.profile.preferredLocations
     : (careerGoal?.preferredLocations ?? []);
@@ -371,7 +363,22 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   const countries = careerGoal?.countries ?? [];
   const workModes = careerGoal?.workModes ?? [];
 
+  // A remote job is not automatically global. If the job specifies a country that is clearly not the user's country, it's a mismatch.
+  const isRemote = job.workMode === "REMOTE";
+  if (isRemote) {
+    const candidateCountries = [...countries];
+    if (home && !candidateCountries.some(c => home.includes(c))) {
+      candidateCountries.push(home);
+    }
+    
+    if (job.country && candidateCountries.length > 0 && !candidateCountries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
+      return component(WEIGHTS.location, 0, `Remote, but restricted to ${job.country} which does not match your target countries.`);
+    }
+    return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, making it broadly location-compatible.");
+  }
+
   const anyPreference = Boolean(home) || preferredLocations.length > 0 || countries.length > 0 || workModes.length > 0;
+
   if (!anyPreference) {
     return unavailable(
       WEIGHTS.location,

@@ -59,6 +59,7 @@ export interface SearchContext {
   profileSkills: string[];
   candidateSeniority: SeniorityLevel | null;
   careerGoal: CareerGoal | null;
+  profileLocation: string | null;
 }
 
 export interface ScoredJob {
@@ -203,15 +204,35 @@ function structuredScore(job: DiscoveredJob, context: SearchContext): { score: n
     parts.push(0.5);
   }
 
-  // Remote roles are location-compatible with everyone.
   if (job.workMode === "REMOTE") {
-    parts.push(1);
-    reasons.push("Remote, so location isn't a constraint.");
+    const candidateCountries = [...(context.careerGoal?.countries || [])];
+    if (context.profileLocation && !candidateCountries.some(c => context.profileLocation!.includes(c))) {
+      // Very naive extraction: if they typed "San Francisco, US", we want "US".
+      // But we can just use the whole string for a substring check against job.country.
+      candidateCountries.push(context.profileLocation);
+    }
+    
+    // If the job specifies a country (e.g. UK, Germany) and the candidate has a country/location constraint (e.g. SF, USA)
+    // and they don't match, penalize heavily.
+    if (job.country && candidateCountries.length > 0 && !candidateCountries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
+      parts.push(0.3);
+      reasons.push(`Remote, but restricted to ${job.country}.`);
+    } else {
+      parts.push(1);
+      reasons.push("Remote, making it broadly location-compatible.");
+    }
   } else {
     parts.push(0.6);
   }
 
-  return { score: parts.reduce((a, b) => a + b, 0) / parts.length, reasons };
+  
+  let finalScore = parts.reduce((a, b) => a + b, 0) / parts.length;
+  // Hard penalty if it's remote but explicitly locked to a country the candidate is not in
+  if (reasons.some(r => r.startsWith("Remote, but restricted to "))) {
+    finalScore *= 0.5; // Halve the structured score
+  }
+  return { score: finalScore, reasons };
+
 }
 
 function preferenceScore(job: DiscoveredJob, goal: CareerGoal | null): { score: number; reasons: string[] } {
@@ -249,7 +270,14 @@ function preferenceScore(job: DiscoveredJob, goal: CareerGoal | null): { score: 
   }
 
   if (parts.length === 0) return { score: 0.5, reasons };
-  return { score: parts.reduce((a, b) => a + b, 0) / parts.length, reasons };
+  
+  let finalScore = parts.reduce((a, b) => a + b, 0) / parts.length;
+  // If we know candidate countries, and this job is explicitly in a different country, tank the score.
+  if (job.country && goal.countries.length > 0 && !goal.countries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
+     finalScore *= 0.5;
+  }
+  return { score: finalScore, reasons };
+
 }
 
 // ---------------------------------------------------------------------------

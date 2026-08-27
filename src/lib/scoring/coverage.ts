@@ -34,7 +34,7 @@ export type ComponentMap = { [key: string]: ScoreComponent };
  * exact threshold - while no longer punishing roles that are simply early
  * in someone's career.
  */
-export const MIN_COVERAGE_FOR_SCORE = 0.25;
+export const MIN_COVERAGE_FOR_SCORE = 0.40;
 
 /**
  * Derives coverage from a stored breakdown.
