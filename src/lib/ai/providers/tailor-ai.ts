@@ -21,8 +21,8 @@ University: \${profile.university ?? "Not provided"}
 Major: \${profile.major ?? "Not provided"}
 
 === TARGET JOB ===
-Title: \${job.title}
-Company: \${job.company}
+Title: ${job.title}
+Company: ${job.company}
 Description:
 \${job.description}
 
@@ -56,4 +56,31 @@ Output strict JSON in the following format. No prose, no markdown fences:
     console.error("Tailoring parsing error:", error, res.content);
     throw new Error("Failed to generate tailored application.");
   }
+}
+
+import type { Application } from "@/lib/db/types";
+
+export async function generateFollowUpEmail(
+  application: Application,
+  job: Job,
+): Promise<string> {
+  const statusContext = 
+    application.status === "INTERVIEW" ? "after my recent interview" :
+    application.status === "ASSESSMENT" ? "after submitting my assessment" :
+    "after submitting my initial application";
+
+  const prompt = `You are a career coach writing a highly professional, brief follow-up email.
+The candidate is following up ${statusContext} for the "${job.title}" position at ${job.company}.
+It has been roughly a week with no response.
+
+Write a short, polite email (max 4 sentences) checking in on the status of their candidacy.
+Use a professional, warm tone. Do not use generic placeholders like [Company Name], use the actual data provided.
+Just return the email text directly. No markdown fences.`;
+
+  const res = await aiProvider.complete({
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.7,
+  });
+
+  return res.content.trim();
 }

@@ -27,6 +27,7 @@ import { TechnicalChallengeCard } from "@/components/applications/technical-chal
 import { SalaryNegotiatorCard } from "@/components/applications/salary-negotiator-card";
 import { ResumeTailorCard } from "@/components/applications/resume-tailor-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
+import { FollowUpTemplateCard } from "@/components/applications/follow-up-template-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { formatSalaryRange } from "@/lib/format";

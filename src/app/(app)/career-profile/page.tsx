@@ -17,6 +17,7 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { listCareerGoalsByUserId } from "@/lib/db/career-goals";
 import { calculateCareerReadiness, calculateProfileCompleteness } from "@/lib/career/completeness";
 import { redirect } from "next/navigation";
+import { ShareProfileButton } from "@/components/career/share-profile-button";
 
 export const metadata: Metadata = { title: "Career Profile" };
 
@@ -34,9 +35,11 @@ export default async function CareerProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      
       <PageHeader
         title="Career Profile"
         description="The single source of truth Workly uses to understand where you stand today."
+        action={full.profile ? <ShareProfileButton profileId={full.profile.id} /> : undefined}
       />
 
       <SectionTabs section="career" />

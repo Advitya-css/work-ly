@@ -215,3 +215,25 @@ export async function deleteApplicationAction(id: string): Promise<void> {
   revalidateApplicationViews();
   redirect("/applications");
 }
+
+import { generateFollowUpEmail } from "@/lib/ai/providers/tailor-ai";
+
+export async function generateFollowUpEmailAction(applicationId: string) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Unauthorized" };
+
+  try {
+    const application = await requireOwnedApplication(applicationId);
+    if (!application) return { error: "Not found" };
+
+    if (!application.jobId) return { error: "Application is not linked to a job" };
+    const job = await getJobById(user.id, application.jobId);
+    if (!job) return { error: "Job not found" };
+
+    const result = await generateFollowUpEmail(application, job);
+    return { data: result };
+  } catch (err) {
+    console.error(err);
+    return { error: "Failed to generate email." };
+  }
+}
