@@ -30,7 +30,7 @@ import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-j
 import { exploreCareers } from "@/lib/pathway/explore-careers";
 import { ACTION_WINDOW_ORDER, ACTION_WINDOW_LABEL, ACTION_WINDOW_CAPTION } from "@/lib/pathway/labels";
 
-export const metadata: Metadata = { title: "Career Path" };
+export const metadata: Metadata = { title: "Action Plan" };
 
 export default async function CareerPathPage() {
   const user = await getCurrentUser();
@@ -54,8 +54,8 @@ export default async function CareerPathPage() {
     return (
       <div className="flex flex-col gap-6">
         <PageHeader
-          title="Career Path"
-          description="A practical, ordered pathway from where you are now to where you want to be."
+          title="Action Plan"
+          description="A specific, premium 30/60/90 day curriculum to close your skill gaps."
         />
 
         <SectionTabs section="career" />
@@ -158,7 +158,7 @@ export default async function CareerPathPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Your 30/60/90 plan
+            Your 30/60/90 Action Plan
           </CardTitle>
           <CardDescription>
             Concrete actions, time-boxed. Each one says what it costs you and what it&apos;s worth.
@@ -254,8 +254,7 @@ function CareerExplorer({
             {career.relevantJobCount > 0 && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Sparkles className="size-3.5" />
-                {career.relevantJobCount} matching opportunit
-                {career.relevantJobCount === 1 ? "y" : "ies"} in your pipeline
+                {career.relevantJobCount} matching {career.relevantJobCount === 1 ? "opportunity" : "opportunities"} in your pipeline
               </p>
             )}
           </div>

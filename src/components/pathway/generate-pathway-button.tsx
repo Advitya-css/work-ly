@@ -29,7 +29,7 @@ export function GeneratePathwayButton({ hasExisting }: { hasExisting: boolean })
         disabled={pending}
       >
         {pending ? <Loader2 className="animate-spin" /> : hasExisting ? <RefreshCw /> : <Route />}
-        {pending ? "Building your pathway…" : hasExisting ? "Regenerate pathway" : "Build my pathway"}
+        {pending ? "Building your pathway…" : hasExisting ? "Regenerate Action Plan" : "Build my pathway"}
       </Button>
       {hasExisting && (
         <p className="text-xs text-muted-foreground">

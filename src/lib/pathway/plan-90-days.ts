@@ -33,9 +33,7 @@ function difficultyLabel(difficulty: string): string {
 
 function impactFor(gap: GapPriority | null, targetJobs: string[]): string {
   if (gap && gap.affectedOpportunityCount > 0) {
-    return `Strengthens your standing on ${gap.affectedOpportunityCount} opportunit${
-      gap.affectedOpportunityCount === 1 ? "y" : "ies"
-    } you're already tracking.`;
+    return `Strengthens your standing on ${gap.affectedOpportunityCount} opportunit${gap.affectedOpportunityCount === 1 ? "y" : "ies"} you're already tracking.`;
   }
   if (targetJobs.length > 0) {
     return `Directly relevant to ${targetJobs.length} role${targetJobs.length === 1 ? "" : "s"} in your pipeline.`;
@@ -143,51 +141,9 @@ export function buildNinetyDayPlan(input: NinetyDayPlanInput): NewPathwayAction[
   // An empty window reads as a broken plan. These are genuine, always-valid
   // actions rather than filler - but they're only added when the window
   // would otherwise be blank.
-  if (!actions.some((a) => a.window === "DAYS_0_30")) {
-    push("DAYS_0_30", {
-      stepIndex: null,
-      title: "Analyze three more target roles",
-      description:
-        "Paste three real postings for roles you'd want into Analyze a Job. More postings means Workly can ground its gap analysis and priorities in a wider, more reliable sample.",
-      priority: 2,
-      estimatedTime: "45 minutes",
-      difficulty: "Easy",
-      expectedImpact: "Improves the accuracy of every recommendation Workly makes for you.",
-      relatedSkill: null,
-      relatedTargetJobs: [],
-    });
-  }
-
-  if (!actions.some((a) => a.window === "DAYS_31_60")) {
-    push("DAYS_31_60", {
-      stepIndex: null,
-      title: "Add evidence to your strongest skills",
-      description:
-        "Pick the three skills most relevant to your target and attach concrete evidence to each. A project, a measurable outcome, or a certification.",
-      priority: 2,
-      estimatedTime: "3–4 hours",
-      difficulty: "Easy",
-      expectedImpact: "Evidence-backed skills score higher than self-stated ones in every fit calculation.",
-      relatedSkill: null,
-      relatedTargetJobs: [],
-    });
-  }
-
-  if (!actions.some((a) => a.window === "DAYS_61_90")) {
-    push("DAYS_61_90", {
-      stepIndex: null,
-      title: "Re-run your dream job analysis",
-      description:
-        "After 60 days of work, re-analyze your target role. Your readiness score should have moved, and the gap list will have changed shape.",
-      priority: 2,
-      estimatedTime: "15 minutes",
-      difficulty: "Easy",
-      expectedImpact: "Tells you objectively whether the last two months moved the needle.",
-      relatedSkill: null,
-      relatedTargetJobs: [],
-    });
-  }
-
+  
+  
+  
   // Within each window, highest priority first.
   const windows: Window[] = ["DAYS_0_30", "DAYS_31_60", "DAYS_61_90"];
   return windows.flatMap((window) =>

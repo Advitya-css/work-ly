@@ -110,7 +110,7 @@ export const CAREER_TABS: SectionTab[] = [
   { label: "Profile", href: "/career-profile", icon: IconProfile },
   { label: "Goals", href: "/career-goals", icon: IconGoal },
   { label: "Dream job", href: "/dream-job", icon: IconDream },
-  { label: "Career path", href: "/career-path", icon: IconPathway },
+  { label: "Action Plan", href: "/career-path", icon: IconPathway },
 ];
 
 export const STUDENT_TABS: SectionTab[] = [
