@@ -343,7 +343,10 @@ export function searchJobs(input: SearchJobsInput): SearchJobsResult {
 
   // A literal query should never return things that match nothing at all;
   // without this, an empty search term and a nonsense one look identical.
-  const relevant = ranked;
+  let relevant = ranked;
+  if (input.query.trim()) {
+    relevant = ranked.filter(s => s.components.keyword > 0 || s.components.semantic > 0.7);
+  }
 
   return {
     results: relevant.slice(0, input.limit ?? 50),
