@@ -39,7 +39,7 @@ export function MobileTopbar({ user, student = false }: { user: AuthUser; studen
         </Button>
         <SheetContent side="left" className="w-72 bg-sidebar p-0">
           <SheetHeader className="border-b border-sidebar-border">
-            <SheetTitle asChild>
+            <SheetTitle className="text-left font-normal flex items-center h-8">
               <Logo />
             </SheetTitle>
             <SheetDescription className="sr-only">Main navigation</SheetDescription>

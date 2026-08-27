@@ -23,7 +23,10 @@ export function MarketingNavbar() {
             <Link href="/login">Sign in</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/signup">Analyze My Career</Link>
+            <Link href="/signup">
+              <span className="hidden sm:inline">Analyze My Career</span>
+              <span className="inline sm:hidden">Get Started</span>
+            </Link>
           </Button>
         </div>
       </div>
