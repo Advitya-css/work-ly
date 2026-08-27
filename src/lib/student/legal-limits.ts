@@ -249,7 +249,7 @@ export function limitsFor(code: string | null, kind: StudentJobKind): LegalLimit
 export const LEGAL_DISCLAIMER =
   "These are general rules for the country you selected, not advice about your situation. Workly does not know your immigration status and never asks for it. Confirm anything that affects your visa with your school before you accept work.";
 
-const UNIVERSITY_ALIASES: Record<string, string[]> = {
+export const UNIVERSITY_ALIASES: Record<string, string[]> = {
   "nyu": ["new york university"],
   "uw": ["university of washington"],
   "uoft": ["university of toronto"],
@@ -267,7 +267,7 @@ const UNIVERSITY_ALIASES: Record<string, string[]> = {
   "berkeley": ["university of california berkeley", "uc berkeley"],
 };
 
-const UNIVERSITY_LOCATIONS: Record<string, string[]> = {
+export const UNIVERSITY_LOCATIONS: Record<string, string[]> = {
   "new york university": ["new york", "ny", "nyc", "manhattan", "brooklyn"],
   "columbia university": ["new york", "ny", "nyc", "manhattan"],
   "university of washington": ["seattle", "wa", "washington", "bellevue", "redmond"],

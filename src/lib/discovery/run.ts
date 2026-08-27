@@ -16,6 +16,7 @@ import { isDuplicate } from "@/lib/discovery/dedupe";
 import { normalizeListingAsync, listingMatchesQueryLiterally } from "@/lib/discovery/normalize";
 import { embeddingProvider, jobEmbeddingText } from "@/lib/search/embeddings";
 import { expandQuery } from "@/lib/search/role-graph";
+import { UNIVERSITY_ALIASES, UNIVERSITY_LOCATIONS } from "@/lib/student/legal-limits";
 import { coverageOf } from "@/lib/scoring/coverage";
 import type {
   CareerGoal,
@@ -176,9 +177,24 @@ export async function runDiscovery(
           // but nothing ever passed it in - so turning on Gig & Musician
           // Mode had zero effect on what discovery actually searched for.
           isFreelanceMode: profile.profile?.isFreelanceMode,
-          homeLocation: profile.profile?.isStudent && profile.profile?.university 
-            ? `${profile.profile.university}, ${profile.profile.studentCountry}` 
-            : (profile.profile?.preferredLocations?.[0] || profile.profile?.location),
+          homeLocation: (() => {
+            if (profile.profile?.isStudent && profile.profile?.university) {
+              let uni = profile.profile.university.toLowerCase().trim();
+              if (UNIVERSITY_ALIASES[uni]) uni = UNIVERSITY_ALIASES[uni][0];
+              else {
+                for (const aliases of Object.values(UNIVERSITY_ALIASES) as string[][]) {
+                  if (aliases.includes(uni)) {
+                    uni = aliases[0];
+                    break;
+                  }
+                }
+              }
+              const city = UNIVERSITY_LOCATIONS[uni]?.[0];
+              if (city) return `${city}, ${profile.profile.studentCountry}`;
+              return `${profile.profile.university}, ${profile.profile.studentCountry}`;
+            }
+            return profile.profile?.preferredLocations?.[0] || profile.profile?.location;
+          })(),
                   });
         rawFound += raw.length;
         sourcesRun++;
