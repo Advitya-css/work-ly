@@ -18,7 +18,7 @@ import { updateLocationPreferences } from "@/lib/db/career-profile";
 const schema = z.object({
   location: z.string().trim().max(120).optional().or(z.literal("")),
   preferredLocations: z.array(z.string().trim().min(1).max(120)).max(20).optional().default([]),
-  openToRemote: z.coerce.boolean().optional(),
+  openToRemote: z.boolean().optional(),
 });
 
 export interface LocationActionState {
