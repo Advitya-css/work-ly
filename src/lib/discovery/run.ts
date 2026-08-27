@@ -280,9 +280,11 @@ export async function runDiscovery(
           ? `Found via ${sourceName} while you searched "${query}".`
           : `Found by watching ${sourceName}.`;
 
+      // Always re-score so any profile updates or algorithm updates reflect on existing jobs
+      const jobLike = toJobLike(listing, userId);
+      fit = scoringProvider.analyzeFit({ profile, careerGoal, job: jobLike });
+      
       if (!storedDuplicate) {
-        const jobLike = toJobLike(listing, userId);
-        fit = scoringProvider.analyzeFit({ profile, careerGoal, job: jobLike });
         embedding = await embeddingProvider.embed(jobEmbeddingText(listing));
         
         matchedExpansion = expansion.expandedRoles.find((role) =>

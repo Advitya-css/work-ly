@@ -327,7 +327,7 @@ function extractEducation(lines: string[]): string | null {
   return line ? line.slice(0, 200) : null;
 }
 
-async function run(jobText: string): Promise<ExtractedJob> {
+export function parseJobSync(jobText: string): ExtractedJob {
   const sanitized = jobText.replace(/^[*_]+|[*_]+$/gm, "");
   const sections = splitSections(jobText); // splitSections now handles its own sanitation
   const { location, country } = extractLocation(sanitized);
@@ -375,5 +375,5 @@ async function run(jobText: string): Promise<ExtractedJob> {
 
 export const heuristicJobParsingProvider: JobParsingProvider = {
   name: "heuristic",
-  parseJob: run,
+  parseJob: (text) => Promise.resolve(parseJobSync(text)),
 };

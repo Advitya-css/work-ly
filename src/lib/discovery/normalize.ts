@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 
 import type { EmploymentType, SeniorityLevel, WorkMode } from "@/lib/db/types";
-import { heuristicJobParsingProvider } from "@/lib/ai/providers/job-heuristic";
+import { parseJobSync } from "@/lib/ai/providers/job-heuristic";
 import { canonical as canonicalText } from "@/lib/text-utils";
 import type { NormalizedListing, RawListing } from "@/lib/discovery/types";
 
@@ -178,17 +178,10 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
       // typed as a promise by the shared interface, so results are read
       // opportunistically and a failure just leaves the lists empty rather
       // than failing the whole ingest.
-      const parsed = heuristicJobParsingProvider.parseJob(description) as unknown as {
-        then?: unknown;
-        requiredSkills?: string[];
-        preferredSkills?: string[];
-        requirements?: NormalizedListing["requirements"];
-      };
-      if (!parsed?.then) {
-        requiredSkills = parsed.requiredSkills ?? [];
-        preferredSkills = parsed.preferredSkills ?? [];
-        requirements = parsed.requirements ?? [];
-      }
+      const parsed = parseJobSync(description);
+      requiredSkills = parsed.requiredSkills ?? [];
+      preferredSkills = parsed.preferredSkills ?? [];
+      requirements = parsed.requirements ?? [];
     } catch {
       // Extraction is a bonus, never a reason to drop a real listing.
     }
@@ -224,7 +217,7 @@ export async function normalizeListingAsync(raw: RawListing): Promise<Normalized
     return base;
   }
   try {
-    const parsed = await heuristicJobParsingProvider.parseJob(base.description);
+    const parsed = parseJobSync(base.description);
     return {
       ...base,
       requiredSkills: parsed.requiredSkills ?? [],
