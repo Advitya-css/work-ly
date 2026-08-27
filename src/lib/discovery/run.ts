@@ -190,6 +190,8 @@ export async function runDiscovery(
                 }
               }
               const city = UNIVERSITY_LOCATIONS[uni]?.[0];
+              // Adzuna API is already scoped by country in the URL. Passing ", Canada" in the 'where' 
+              // parameter breaks the API's geocoding for many cities. Just pass the raw city.
               if (city) return `${city}, ${profile.profile.studentCountry}`;
               return `${profile.profile.university}, ${profile.profile.studentCountry}`;
             }

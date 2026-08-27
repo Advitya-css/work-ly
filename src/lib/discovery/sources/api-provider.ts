@@ -75,8 +75,13 @@ export const apiProviderSource: JobSourceAdapter = {
       "content-type": "application/json",
     });
     if (what) params.set("what", what);
-    const where = asString(context.config.locationName) || context.homeLocation;
-    if (where) params.set("where", where);
+    let where = asString(context.config.locationName) || context.homeLocation;
+    if (where) {
+      // Adzuna API is already scoped by country in the URL. Passing the country in the 'where' 
+      // parameter frequently breaks its geocoding. Strip known countries.
+      where = where.replace(/,\s*(canada|ca|united states|usa|us|australia|au|india|in|germany|de|france|fr|new zealand|nz|south africa|za)$/i, '').trim();
+      params.set("where", where);
+    }
     if (context.isPartTimeMode) {
       params.set("part_time", "1");
     }
