@@ -1,20 +1,20 @@
 "use client";
 
-import { Sparkles, MapPin } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RunStudentDiscoveryButton } from "./run-student-discovery-button";
 
 export function StudentAutoDiscoveryCard({ type }: { type: "part-time" | "internship" | "new-grad" }) {
   const titles = {
-    "part-time": "Auto-Discover Off-Campus Jobs",
-    "internship": "Auto-Discover Local Internships",
-    "new-grad": "Auto-Discover New Grad Roles"
+    "part-time": "Find local campus jobs",
+    "internship": "Find summer internships",
+    "new-grad": "Find new grad roles"
   };
 
   const descriptions = {
-    "part-time": "We will trigger a full AI discovery run to find part-time, retail, and entry-level roles in your university's area. They will be parsed, scored, and added directly to your tracked pipeline.",
-    "internship": "We will trigger a full AI discovery run to find summer and co-op internships near your university. They will be added directly to your tracked pipeline.",
-    "new-grad": "We will trigger a full AI discovery run to find early-career and graduate programs near your university. They will be added directly to your tracked pipeline."
+    "part-time": "Discover entry-level and campus roles tailored to your university.",
+    "internship": "Discover summer internships and co-ops in your area.",
+    "new-grad": "Discover early-career roles tailored for recent graduates."
   };
 
   return (

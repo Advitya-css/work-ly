@@ -84,20 +84,7 @@ export default async function DashboardPage() {
         description="Here's where things stand across your career profile, goals, and pipeline."
       />
 
-      {/*
-        The way into student mode. It sits at the top rather than in
-        Settings because someone who needs it needs it on their first visit,
-        before they have had any reason to go looking through preferences.
-      */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card px-5 py-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">At university?</p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Switch to campus jobs, internships, and the work rules that apply to student work.
-          </p>
-        </div>
-        <EnterStudentModeButton />
-      </div>
+      
 
       {/* New opportunities for you. Spec requirement #10 */}
       <Card>

@@ -47,7 +47,7 @@ export default async function StudentHomePage() {
     <div className="flex flex-col gap-8">
       <PageHeader
         title="Student home"
-        description="Work that fits around a timetable, and internships that build toward what you want after you graduate."
+        description="Manage campus jobs and internships."
       />
 
       <SectionTabs section="student" />
@@ -57,8 +57,8 @@ export default async function StudentHomePage() {
           <CardTitle>{isSetUp ? "Your details" : "Start here"}</CardTitle>
           <CardDescription>
             {isSetUp
-              ? "Change these any time. They shape what the other two screens show you."
-              : "Two of these matter: your university, so Workly can tell a campus job from any other, and where you study, because work-hour rules are national."}
+              ? "Update your location and university to refine AI discoveries."
+              : "Set your university and location to unlock local campus jobs."}
           </CardDescription>
         </CardHeader>
         <CardContent>

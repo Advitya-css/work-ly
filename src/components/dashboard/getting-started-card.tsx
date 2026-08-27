@@ -21,21 +21,21 @@ export function GettingStartedCard({ hasProfile, hasGoal, hasAnalyzedJob }: Gett
   const steps = [
     {
       title: "Build your career profile",
-      description: "Upload a resume or enter your experience manually so Workly knows your background.",
+      description: "Upload a resume or enter your experience manually.",
       href: "/career-profile",
       icon: FileText,
       isDone: hasProfile,
     },
     {
       title: "Set a career goal",
-      description: "Tell Workly what you're aiming for—target roles, location, and salary expectations.",
+      description: "Define your target roles, location, and expectations.",
       href: "/career-goals",
       icon: Target,
       isDone: hasGoal,
     },
     {
       title: "Analyze your first job",
-      description: "Paste a job description or URL to see your Fit Score and Priority Breakdown.",
+      description: "Analyze a job to generate your first Fit Score.",
       href: "/analyze-job",
       icon: ScanSearch,
       isDone: hasAnalyzedJob,
