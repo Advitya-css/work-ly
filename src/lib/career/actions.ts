@@ -161,3 +161,11 @@ export async function deleteCareerGoalAction(id: string): Promise<void> {
   revalidatePath("/career-goals");
   revalidatePath("/dashboard");
 }
+
+export async function saveLocationAction(location: string) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Unauthorized" };
+  await upsertCareerProfile(user.id, { location });
+  revalidatePath("/career-profile");
+  return { success: true };
+}

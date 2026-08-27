@@ -75,6 +75,7 @@ export interface ExtractedTransferableSkill {
 export interface ExtractedCareerProfile {
   headline?: string;
   summary?: string;
+  location?: string;
   /**
    * Years of experience implied by the dated roles on the CV, or null when
    * the dates could not be read. Null and 0 are deliberately different: null

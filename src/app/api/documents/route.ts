@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const sniffedOk =
     (validation.fileType === "PDF" && sniffed?.mime === "application/pdf") ||
     (validation.fileType === "DOCX" &&
-      sniffed?.mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      (sniffed?.mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || sniffed?.mime === "application/zip"));
   if (!sniffedOk) {
     return NextResponse.json(
       { error: "The file's contents don't match a valid PDF or DOCX." },

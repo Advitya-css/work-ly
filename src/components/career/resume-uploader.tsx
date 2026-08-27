@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { validateResumeFile, MAX_RESUME_SIZE_BYTES } from "@/lib/validations/document";
+import { saveLocationAction } from "@/lib/career/actions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import type { ParseDocumentResult } from "@/lib/career/parse-document";
 
 type Status = "idle" | "dragover" | "uploading" | "parsing" | "success" | "error";
@@ -49,6 +51,8 @@ export function ResumeUploader({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [extractedLocation, setExtractedLocation] = useState<string | null>(null);
+  const [locationSaving, setLocationSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
@@ -76,6 +80,10 @@ export function ResumeUploader({
       }
 
       setStatus("success");
+      const location = parseBody.extraction?.location;
+      if (location) {
+        setExtractedLocation(location);
+      }
       onComplete?.(parseBody as ParseDocumentResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -194,6 +202,29 @@ export function ResumeUploader({
           </AlertDescription>
         </Alert>
       )}
+      <Dialog open={!!extractedLocation} onOpenChange={(open) => { if (!open) setExtractedLocation(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update your location?</DialogTitle>
+            <DialogDescription>
+              We found <strong>{extractedLocation}</strong> on your resume. Would you like to save this as your primary location?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setExtractedLocation(null)}>Skip</Button>
+            <Button disabled={locationSaving} onClick={async () => {
+              if (!extractedLocation) return;
+              setLocationSaving(true);
+              await saveLocationAction(extractedLocation);
+              setLocationSaving(false);
+              setExtractedLocation(null);
+            }}>
+              {locationSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : null}
+              Save Location
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
