@@ -11,7 +11,7 @@ const SYSTEM_PROMPT = `You extract structured career information from resume tex
 3. Distinguish REAL LISTED SKILLS (stated directly, e.g. under a "Skills" heading, or clearly demonstrated by a project/job description) from TRANSFERABLE SKILLS (competencies not stated as a skill but reasonably implied by a role or achievement. E.g. "President of Economics Club" implies leadership, event management, communication). Put the first kind in "skills" and the second kind ONLY in "transferableSkills", each with a one-sentence "rationale" explaining the inference. Never put an inferred competency in "skills".
 4. Include languages spoken as skills with category "LANGUAGE".
 5. Output strict JSON matching the schema you're given. No prose, no markdown fences.
-6. In the `summary` field, alongside a professional summary, explicitly append a paragraph evaluating the candidate's core values, preferred work culture (e.g., fast-paced, academic, social impact, sustainability), and professional working style. This enables semantic matching against company cultures.`;
+6. In the 'summary' field, alongside a professional summary, explicitly append a paragraph evaluating the candidate's core values, preferred work culture (e.g., fast-paced, academic, social impact, sustainability), and professional working style. This enables semantic matching against company cultures.`;
 
 const RESPONSE_SCHEMA = {
   name: "extracted_career_profile",
