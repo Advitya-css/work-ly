@@ -126,7 +126,7 @@ export function DiscoveryBoard({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Try a field rather than a title: e.g. documentary filmmaking"
+            placeholder="Filter or explore (e.g. 'Data', 'urban planning and climate')"
             className="pl-9"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -244,14 +244,25 @@ export function DiscoveryBoard({
             <div />
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Sort by</span>
-            <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-              <SelectTrigger className="h-7 w-[120px] text-xs">
+            <span className="text-xs text-muted-foreground">Mode</span>
+            <Select value={mode} onValueChange={(v: any) => setMode(v)}>
+              <SelectTrigger className="h-7 w-[160px] text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="priority">Priority</SelectItem>
-                <SelectItem value="fit">Fit Score</SelectItem>
+                <SelectItem value="BALANCED">Balanced Search</SelectItem>
+                <SelectItem value="STRICT_SKILLS">Strict Skills Match</SelectItem>
+                <SelectItem value="CULTURE_VIBE">Culture & Vibe Explore</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-xs text-muted-foreground ml-2">Sort by</span>
+            <Select value={sort} onValueChange={(v: any) => setSort(v)}>
+              <SelectTrigger className="h-7 w-[160px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="priority">Top Matches (For You)</SelectItem>
+                <SelectItem value="fit">Candidate Fit</SelectItem>
                 <SelectItem value="recent">Recently Found</SelectItem>
               </SelectContent>
             </Select>
