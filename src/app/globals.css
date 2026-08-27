@@ -635,3 +635,12 @@
     scroll-behavior: auto !important;
   }
 }
+
+@layer base {
+  /* Enforce touch-action manipulation to eliminate 300ms tap delay on mobile completely */
+  /* Remove tap highlight color for a native app feel */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

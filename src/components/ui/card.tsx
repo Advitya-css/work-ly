@@ -51,7 +51,7 @@ const cardVariants = cva(
         default: "shadow-sm",
         /** For a card that is itself a link or button. */
         interactive:
-          "shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--area-color,var(--primary))]/35 hover:shadow-md",
+          "shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--area-color,var(--primary))]/35 hover:shadow-md active:scale-[0.98]",
         /** No lift, for cards nested inside another surface. */
         flat: "",
       },

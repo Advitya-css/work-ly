@@ -59,7 +59,7 @@ export function SidebarNav({
                 onClick={onNavigate}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
+                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-all active:scale-[0.98]",
                   isActive
                     ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",

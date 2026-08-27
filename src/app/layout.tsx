@@ -1,5 +1,17 @@
 export const dynamic = "force-dynamic";
-import type { Metadata } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevents zooming on input focus which ruins mobile fluidity
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fffdfb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" },
+  ],
+};
+
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
