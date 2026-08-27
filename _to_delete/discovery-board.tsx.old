@@ -148,17 +148,6 @@ export function DiscoveryBoard({
         </p>
       )}
 
-      {upgradeRequired && (
-        <Alert>
-          <Sparkles className="size-4" />
-          <AlertDescription>
-            <span className="font-medium text-foreground">Daily discovery limit reached.</span>{" "}
-            You&apos;ve used your 3 free AI discoveries for today — it resets in 24 hours. Upgrading
-            removes the daily cap.
-          </AlertDescription>
-        </Alert>
-      )}
-
 
       {/* Hidden role discovery. Shown whenever expansion actually fired */}
       {searchResult.expansion.expandedRoles.length > 0 && (

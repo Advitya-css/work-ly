@@ -238,18 +238,8 @@ describe("dynamic page guards", () => {
     const missing: string[] = [];
     for (const page of pages) {
       const source = readFileSync(page, "utf8");
-      // Two valid idioms exist in this codebase: (a) fetch by id alone, then
-      // compare `record.userId !== user.id` and 404/redirect; (b) pass the
-      // signed-in user's id straight into a `*ById(userId, id)` lookup whose
-      // SQL already filters `WHERE id = $1 AND "userId" = $2`, so a mismatched
-      // owner comes back as "not found" rather than someone else's row. Both
-      // enforce the same guarantee - only the first pattern used to be
-      // recognized here, which made e.g. applications/[id]/challenge/page.tsx
-      // and .../interview/page.tsx (both use idiom (b) via
-      // getApplicationWithJobById(user.id, id)) look unguarded when they were not.
-      const comparesOwner = /userId !== user\.id|userId !== currentUser\.id/.test(source);
-      const scopedLookup = /ById\(\s*(user|currentUser)\.id\s*,/.test(source);
-      if (!comparesOwner && !scopedLookup) missing.push(path.relative(SRC, page));
+      const checksOwner = /userId !== user\.id|userId !== currentUser\.id/.test(source);
+      if (!checksOwner) missing.push(path.relative(SRC, page));
     }
     expect(missing, `pages without an ownership check: ${missing.join(", ")}`).toEqual([]);
   });

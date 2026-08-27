@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { TailorApplicationButton } from "@/components/opportunities/tailor-application-button";
 import { ScoreReadout } from "@/components/shared/score-readout";
 import { coverageOf, MIN_COVERAGE_FOR_SCORE, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
@@ -83,7 +84,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             Back to Opportunities
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <TailorApplicationButton opportunityId={opportunity.id} />
           <OpportunityStatusControls opportunity={opportunity} />
           <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
         </div>

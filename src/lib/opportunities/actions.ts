@@ -42,3 +42,29 @@ export async function setOpportunityStatusAction(id: string, status: Opportunity
   revalidatePath("/applications");
   revalidatePath("/dashboard");
 }
+
+import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
+import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { getJobById } from "@/lib/db/jobs";
+
+export async function generateTailoredApplicationAction(opportunityId: string) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Unauthorized" };
+
+  try {
+    const opportunity = await getOpportunityById(opportunityId);
+    if (!opportunity || opportunity.userId !== user.id) return { error: "Not found" };
+
+    const job = await getJobById(user.id, opportunity.jobId);
+    if (!job) return { error: "Job not found" };
+
+    const profile = await getCareerProfileByUserId(user.id);
+    if (!profile) return { error: "Please complete your career profile first." };
+
+    const result = await generateTailoredApplication(profile, job);
+    return { data: result };
+  } catch (err) {
+    console.error(err);
+    return { error: "Failed to generate tailored application." };
+  }
+}

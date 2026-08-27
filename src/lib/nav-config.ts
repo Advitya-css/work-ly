@@ -104,6 +104,7 @@ export const JOBS_TABS: SectionTab[] = [
   { label: "Opportunities", href: "/opportunities", icon: IconOpportunity },
   { label: "Discover", href: "/discover", icon: IconDiscover },
   { label: "Analyze a job", href: "/analyze-job", icon: IconAnalyze },
+  { label: "1-Click Capture", href: "/capture", icon: IconDiscover },
 ];
 
 export const CAREER_TABS: SectionTab[] = [
