@@ -80,7 +80,7 @@ export interface ScoredJob {
 const WEIGHTS = {
   BALANCED: { keyword: 0.35, structured: 0.25, semantic: 0.25, preferences: 0.15 },
   STRICT_SKILLS: { keyword: 0.55, structured: 0.35, semantic: 0.0, preferences: 0.10 },
-  CULTURE_VIBE: { keyword: 0.0, structured: 0.20, semantic: 0.60, preferences: 0.20 },
+  EXPLORE: { keyword: 0.0, structured: 0.20, semantic: 0.60, preferences: 0.20 },
 };
 
 const SENIORITY_ORDER: SeniorityLevel[] = [
@@ -323,6 +323,11 @@ export function rankJobs(
           ? // Cosine runs -1..1; map to 0..1 so it can't contribute negatively.
             (cosineSimilarity(queryEmbedding, job.embedding) + 1) / 2
           : 0.5;
+          
+      // Feature 2: Passive Vibe Match (always calculate against profile)
+      const profileSemanticRaw = job.embedding.length > 0 && context.profileEmbedding.length > 0
+        ? cosineSimilarity(context.profileEmbedding, job.embedding)
+        : 0;
 
       const score =
         keyword * WEIGHTS[mode].keyword +
@@ -345,7 +350,11 @@ export function rankJobs(
           semantic: Math.round(semantic * 100) / 100,
           preferences: Math.round(preferences.score * 100) / 100,
         },
-        reasons: [...structured.reasons, ...preferences.reasons].slice(0, 4),
+        reasons: [
+          ...(profileSemanticRaw > 0.15 ? ["✨ Strong match with your background and work style"] : []),
+          ...structured.reasons, 
+          ...preferences.reasons
+        ].slice(0, 4),
         viaExpansion: matchedExpansion
           ? { role: matchedExpansion.role, rationale: matchedExpansion.rationale }
           : null,
@@ -354,7 +363,7 @@ export function rankJobs(
     .sort((a, b) => b.score - a.score);
 }
 
-export type SearchMode = "BALANCED" | "STRICT_SKILLS" | "CULTURE_VIBE";
+export type SearchMode = "BALANCED" | "STRICT_SKILLS" | "EXPLORE";
 
 export interface SearchJobsInput {
   mode?: SearchMode;

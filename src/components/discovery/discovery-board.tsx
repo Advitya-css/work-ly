@@ -47,7 +47,7 @@ export function DiscoveryBoard({
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
-  const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "CULTURE_VIBE">("BALANCED");
+  const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
   const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
 
   const searchResult = useMemo(
@@ -138,9 +138,9 @@ export function DiscoveryBoard({
           </button>
           <button 
             className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "explore" ? "border-purple-500 text-purple-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setSearchMode("explore"); setMode("CULTURE_VIBE"); }}
+            onClick={() => { setSearchMode("explore"); setMode("EXPLORE"); }}
           >
-            <Sparkles className="size-3.5" /> Vibe & Culture Explore
+            <Sparkles className="size-3.5" /> Brainstorm / Explore
           </button>
         </div>
         
@@ -150,7 +150,7 @@ export function DiscoveryBoard({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={searchMode === "explore" ? "Describe your ideal role, culture, or interests... (e.g., 'climate tech data')" : "Filter by title, company, or keyword..."}
+              placeholder={searchMode === "explore" ? "Brainstorm roles, industries, or interests... (e.g., 'climate tech data')" : "Filter by title, company, or keyword..."}
               className={`pl-9 ${searchMode === "explore" ? "border-purple-500/30 focus-visible:ring-purple-500/30 shadow-sm" : ""}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
