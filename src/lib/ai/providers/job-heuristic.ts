@@ -136,6 +136,30 @@ function toRequirements(lines: string[], mandatory: boolean): RequirementItem[] 
   return lines.slice(0, 25).map((text) => ({ text, mandatory, category: categorize(text) }));
 }
 
+
+const COMMON_TECH = [
+  "sql", "python", "java", "javascript", "typescript", "react", "node.js", "aws", "azure", "gcp",
+  "docker", "kubernetes", "machine learning", "data analysis", "tableau", "looker", "power bi",
+  "excel", "pandas", "pytorch", "tensorflow", "c++", "c#", "ruby", "php", "swift", "kotlin", "go",
+  "rust", "html", "css", "linux", "git", "ci/cd", "agile", "scrum", "project management",
+  "salesforce", "marketing", "seo", "figma", "ui/ux", "communication", "leadership",
+  "data visualization", "statistics", "mathematics", "api", "rest", "graphql"
+];
+
+function fallbackExtractSkills(text: string): string[] {
+  const found = new Set<string>();
+  const lower = text.toLowerCase();
+  for (const kw of COMMON_TECH) {
+    // Exact word boundary match for the keyword
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\function extractSkillNames(lines: string[]): string[] {");
+    const regex = new RegExp(`\\b${escaped}\\b`, "i");
+    if (regex.test(lower)) {
+      found.add(kw);
+    }
+  }
+  return Array.from(found);
+}
+
 function extractSkillNames(lines: string[]): string[] {
   // The post-split cap is deliberately the same SKILL_LINE_MAX that
   // categorize() applies. An earlier, tighter cap here silently dropped
@@ -309,6 +333,19 @@ async function run(jobText: string): Promise<ExtractedJob> {
   const salary = extractSalary(sanitized);
   const title = extractTitle(sanitized, sections.all);
 
+  
+  let reqSkills = extractSkillNames(sections.mandatory);
+  let prefSkills = extractSkillNames(sections.preferred);
+  
+  if (reqSkills.length === 0 && prefSkills.length === 0) {
+    reqSkills = fallbackExtractSkills(sanitized);
+  }
+
+  let reqs = [...toRequirements(sections.mandatory, true), ...toRequirements(sections.preferred, false)];
+  if (reqs.length === 0 && reqSkills.length > 0) {
+    reqs = reqSkills.map(s => ({ text: `Must have experience with ${s}`, mandatory: true, category: "skill" as const }));
+  }
+
   return {
     title,
     company: extractCompany(sanitized),
@@ -321,17 +358,18 @@ async function run(jobText: string): Promise<ExtractedJob> {
     workMode: extractWorkMode(sanitized),
     seniority: extractSeniority(sanitized, title),
     description: sections.other.slice(0, 40).join("\n") || null,
-    requiredExperienceYears: extractExperienceYears(sections.mandatory),
+    requiredExperienceYears: extractExperienceYears(sections.mandatory) || extractExperienceYears([sanitized]),
     preferredExperienceYears: extractExperienceYears(sections.preferred),
-    education: extractEducation([...sections.mandatory, ...sections.preferred]),
+    education: extractEducation([...sections.mandatory, ...sections.preferred, sanitized]),
     industry: extractIndustry(sanitized),
     deadline: extractLabeledDate(sanitized, /^(?:deadline|apply by|closing date)\s*:\s*(.+)$/im),
     datePosted: extractLabeledDate(sanitized, /^(?:date posted|posted(?: on)?|posting date)\s*:\s*(.+)$/im),
-    requiredSkills: extractSkillNames(sections.mandatory),
-    preferredSkills: extractSkillNames(sections.preferred),
-    requirements: [...toRequirements(sections.mandatory, true), ...toRequirements(sections.preferred, false)],
+    requiredSkills: reqSkills,
+    preferredSkills: prefSkills,
+    requirements: reqs,
     extractionMethod: "heuristic",
   };
+
 }
 
 export const heuristicJobParsingProvider: JobParsingProvider = {

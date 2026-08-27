@@ -53,7 +53,8 @@ export const apiProviderSource: JobSourceAdapter = {
 
         let defaultCountry = "gb";
     const loc = (context.homeLocation || "").toLowerCase();
-    if (loc.includes("canada") || loc.endsWith(", ca") || loc.endsWith(" ca")) defaultCountry = "ca";
+    if (loc.includes("san francisco") || loc.includes("new york") || loc.includes("california") || loc.includes("usa") || loc.includes("united states") || loc.endsWith(", us") || loc.endsWith(" us") || loc === "us") defaultCountry = "us";
+    else if (loc.includes("canada") || loc.endsWith(", ca") || loc.endsWith(" ca")) defaultCountry = "ca";
     else if (loc.includes("united states") || loc.includes("usa") || loc.endsWith(", us") || loc.endsWith(" us")) defaultCountry = "us";
     else if (loc.includes("australia") || loc.endsWith(", au") || loc.endsWith(" au")) defaultCountry = "au";
     else if (loc.includes("india") || loc.endsWith(", in") || loc.endsWith(" in")) defaultCountry = "in";
