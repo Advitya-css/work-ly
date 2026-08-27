@@ -48,6 +48,7 @@ export function DiscoveryBoard({
   const [message, setMessage] = useState<string | null>(null);
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "CULTURE_VIBE">("BALANCED");
+  const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
 
   const searchResult = useMemo(
     () => searchJobs({ jobs, query, context, limit: 200, mode }),
@@ -57,7 +58,8 @@ export function DiscoveryBoard({
   const topPicks = useMemo(() => {
     if (query.trim() !== "") return [];
     const baseline = searchJobs({ jobs, query: "", context, limit: 3, mode: "BALANCED" });
-    return baseline.results.filter((r) => r.job.fitScore && r.job.fitScore > 75).slice(0, 3);
+    const sorted = [...baseline.results].sort((a, b) => (b.job.fitScore ?? 0) - (a.job.fitScore ?? 0));
+    return sorted.filter((r) => r.job.fitScore != null).slice(0, 3);
   }, [jobs, query, context]);
 
   const visible = useMemo(() => {
@@ -126,27 +128,44 @@ export function DiscoveryBoard({
   return (
     <div className="flex flex-col gap-5">
       {/* Search */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[260px] flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter or explore (e.g. 'Data', 'urban planning and climate')"
-            className="pl-9"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                discover();
-              }
-            }}
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-4 border-b border-border pb-1">
+          <button 
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${searchMode === "search" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            onClick={() => { setSearchMode("search"); setMode("BALANCED"); }}
+          >
+            Standard Search
+          </button>
+          <button 
+            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "explore" ? "border-purple-500 text-purple-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            onClick={() => { setSearchMode("explore"); setMode("CULTURE_VIBE"); }}
+          >
+            <Sparkles className="size-3.5" /> Vibe & Culture Explore
+          </button>
         </div>
-        <Button type="button" onClick={discover} disabled={pending}>
-          {pending ? <Loader2 className="animate-spin" /> : <Radar />}
-          {pending ? "Discovering…" : "Discover"}
-        </Button>
-        <AddFeedForm />
+        
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <div className="relative min-w-[260px] flex-1">
+            <Search className={`absolute left-3 top-1/2 size-4 -translate-y-1/2 ${searchMode === "explore" ? "text-purple-500" : "text-muted-foreground"}`} />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={searchMode === "explore" ? "Describe your ideal role, culture, or interests... (e.g., 'climate tech data')" : "Filter by title, company, or keyword..."}
+              className={`pl-9 ${searchMode === "explore" ? "border-purple-500/30 focus-visible:ring-purple-500/30 shadow-sm" : ""}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  discover();
+                }
+              }}
+            />
+          </div>
+          <Button type="button" onClick={discover} disabled={pending} className={searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}>
+            {pending ? <Loader2 className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : <Radar />)}
+            {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : "Discover")}
+          </Button>
+          <AddFeedForm />
+        </div>
       </div>
       
       {message && (
@@ -250,18 +269,7 @@ export function DiscoveryBoard({
             <div />
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Mode</span>
-            <Select value={mode} onValueChange={(v: any) => setMode(v)}>
-              <SelectTrigger className="h-7 w-[160px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="BALANCED">Balanced Search</SelectItem>
-                <SelectItem value="STRICT_SKILLS">Strict Skills Match</SelectItem>
-                <SelectItem value="CULTURE_VIBE">Culture & Vibe Explore</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-xs text-muted-foreground ml-2">Sort by</span>
+            <span className="text-xs text-muted-foreground">Sort by</span>
             <Select value={sort} onValueChange={(v: any) => setSort(v)}>
               <SelectTrigger className="h-7 w-[160px] text-xs">
                 <SelectValue />
