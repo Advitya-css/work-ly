@@ -54,6 +54,12 @@ export function DiscoveryBoard({
     [jobs, query, context, mode],
   );
 
+  const topPicks = useMemo(() => {
+    if (query.trim() !== "") return [];
+    const baseline = searchJobs({ jobs, query: "", context, limit: 3, mode: "BALANCED" });
+    return baseline.results.filter((r) => r.job.fitScore && r.job.fitScore > 75).slice(0, 3);
+  }, [jobs, query, context]);
+
   const visible = useMemo(() => {
     let filtered = searchResult.results;
     if (activeBucket) {
@@ -271,6 +277,32 @@ export function DiscoveryBoard({
       </div>
 
       {/* Results */}
+      {topPicks.length > 0 && (
+        <div className="mb-6 flex flex-col gap-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2"><Sparkles className="size-4 text-primary" /> Top Picks For You</h3>
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+            {topPicks.map((result) => (
+              <DiscoveryCard
+                key={"top-" + result.job.id}
+                job={result.job}
+                reasons={result.reasons}
+                viaExpansion={result.viaExpansion}
+                onDismiss={() => startTransition(() => dismissDiscoveredJobAction(result.job.id))}
+                onTrack={() =>
+                  startTransition(async () => {
+                    const outcome = await trackDiscoveredJobAction(result.job.id);
+                    setMessage(outcome.error ?? "Added to your opportunities.");
+                  })
+                }
+                pending={pending}
+                isTopPick={true}
+              />
+            ))}
+          </div>
+          <div className="h-px bg-border my-2" />
+        </div>
+      )}
+      
       {visible.length === 0 ? (
         <Card>
           <CardContent className="px-6 py-10 text-center">
@@ -297,6 +329,7 @@ export function DiscoveryBoard({
                 })
               }
               pending={pending}
+              mode={mode}
             />
           ))}
         </div>
@@ -312,6 +345,8 @@ function DiscoveryCard({
   onDismiss,
   onTrack,
   pending,
+  mode,
+  isTopPick,
 }: {
   job: DiscoveredJob;
   reasons: string[];
@@ -319,6 +354,8 @@ function DiscoveryCard({
   onDismiss: () => void;
   onTrack: () => void;
   pending: boolean;
+  mode?: string;
+  isTopPick?: boolean;
 }) {
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
   const bucket = BUCKETS.find((b) =>

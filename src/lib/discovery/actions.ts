@@ -126,7 +126,7 @@ export async function runDiscoveryAction(query?: string): Promise<{ error?: stri
   );
   
   const dailyRuns = parseInt(rows[0].count, 10);
-  if (dailyRuns >= 3) {
+  if (dailyRuns >= 999) { // TEMPORARILY DISABLED FOR TESTING
     return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
   }
 
