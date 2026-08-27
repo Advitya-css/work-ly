@@ -60,7 +60,7 @@ export function DiscoveryBoard({
     // baseline is already sorted by the highly-tuned blended relevance score (b.score)
     const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED" });
     return baseline.results
-      .filter((r) => r.job.fitScore != null && (r.job.fitCoverage ?? 0) >= 0.5) // ensure decent data quality
+      .filter((r) => r.job.fitScore != null && (r.job.fitCoverage ?? 0) >= 0.5 && r.score >= 0.65) // Ironclad floor: must be highly relevant
       .slice(0, 3);
   }, [jobs, query, context]);
 

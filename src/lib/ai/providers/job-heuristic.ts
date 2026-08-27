@@ -143,7 +143,13 @@ const COMMON_TECH = [
   "excel", "pandas", "pytorch", "tensorflow", "c++", "c#", "ruby", "php", "swift", "kotlin", "go",
   "rust", "html", "css", "linux", "git", "ci/cd", "agile", "scrum", "project management",
   "salesforce", "marketing", "seo", "figma", "ui/ux", "communication", "leadership",
-  "data visualization", "statistics", "mathematics", "api", "rest", "graphql"
+  "data visualization", "statistics", "mathematics", "api", "rest", "graphql",
+  "urban planning", "city planning", "sustainability", "gis", "arcgis", "financial analysis",
+  "accounting", "operations", "strategy", "business development", "sales", "customer success",
+  "writing", "editing", "research", "public speaking", "event planning", "budgeting",
+  "nursing", "patient care", "medical terminology", "cpr", "bls", "acls", "clinical",
+  "legal research", "drafting", "contract negotiation", "compliance", "risk management",
+  "teaching", "curriculum development", "mentoring", "training", "instructional design"
 ];
 
 function fallbackExtractSkills(text: string): string[] {

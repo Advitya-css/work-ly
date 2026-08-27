@@ -228,10 +228,20 @@ export function totalFrom(breakdown: Record<string, ScoreComponent>): ScoreTotal
   }
 
   const coverage = allWeight > 0 ? possible / allWeight : 0;
-  const score =
+  let score =
     possible > 0 && coverage >= MIN_COVERAGE_FOR_SCORE
       ? Math.round((earned / possible) * 100)
       : null;
+
+  // IRONCLAD GUARD: Never allow a mathematically inflated score if critical
+  // components of the job (like the skills requirement) are completely unknown.
+  if (score !== null) {
+    if (missing.includes("skills")) {
+      score = Math.min(score, 65); // Cap at 65% if skills are unknown
+    } else if (coverage < 0.6) {
+      score = Math.min(score, 75); // Cap at 75% if we only know half the job
+    }
+  }
 
   return { score, coverage, missing };
 }

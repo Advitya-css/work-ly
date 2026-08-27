@@ -705,6 +705,14 @@ function buildRecommendation(
         "Workly could only assess a small part of this role against your profile, so it is not making a recommendation. Fill in more of your profile, or check the posting parsed correctly, and this will sharpen up.",
     };
   }
+  
+  // IRONCLAD GUARD: Never strongly recommend a job if we know less than 65% of the facts about it.
+  if (coverage < 0.65) {
+    return {
+      recommendation: fitScore >= 55 ? "STRETCH" : "LOW_PRIORITY",
+      reasoning: `Workly could only assess ${Math.round(coverage * 100)}% of this role's requirements. Based on what is visible, Candidate Fit is ${fitScore}/100, making it a stretch at best.`,
+    };
+  }
 
   const basis =
     mandatoryMetRatio != null
