@@ -77,7 +77,11 @@ export interface ScoredJob {
   viaExpansion: { role: string; rationale: string } | null;
 }
 
-const WEIGHTS = { keyword: 0.35, structured: 0.25, semantic: 0.25, preferences: 0.15 };
+const WEIGHTS = {
+  BALANCED: { keyword: 0.35, structured: 0.25, semantic: 0.25, preferences: 0.15 },
+  STRICT_SKILLS: { keyword: 0.55, structured: 0.35, semantic: 0.0, preferences: 0.10 },
+  CULTURE_VIBE: { keyword: 0.0, structured: 0.20, semantic: 0.60, preferences: 0.20 },
+};
 
 const SENIORITY_ORDER: SeniorityLevel[] = [
   "ENTRY", "JUNIOR", "MID", "SENIOR", "LEAD", "PRINCIPAL", "EXECUTIVE",
@@ -301,6 +305,7 @@ export function rankJobs(
   jobs: DiscoveredJob[],
   context: SearchContext,
   expansion: QueryExpansion,
+  mode: SearchMode = "BALANCED"
 ): ScoredJob[] {
   const expandedRoleNames = expansion.expandedRoles.map((role) => role.role);
   const queryEmbedding =
@@ -320,10 +325,10 @@ export function rankJobs(
           : 0.5;
 
       const score =
-        keyword * WEIGHTS.keyword +
-        structured.score * WEIGHTS.structured +
-        semantic * WEIGHTS.semantic +
-        preferences.score * WEIGHTS.preferences;
+        keyword * WEIGHTS[mode].keyword +
+        structured.score * WEIGHTS[mode].structured +
+        semantic * WEIGHTS[mode].semantic +
+        preferences.score * WEIGHTS[mode].preferences;
 
       const matchedExpansion =
         keyword < 1 && expandedRoleNames.length > 0
@@ -349,7 +354,10 @@ export function rankJobs(
     .sort((a, b) => b.score - a.score);
 }
 
+export type SearchMode = "BALANCED" | "STRICT_SKILLS" | "CULTURE_VIBE";
+
 export interface SearchJobsInput {
+  mode?: SearchMode;
   jobs: DiscoveredJob[];
   query: string;
   filters?: JobFilters;
@@ -367,7 +375,7 @@ export interface SearchJobsResult {
 export function searchJobs(input: SearchJobsInput): SearchJobsResult {
   const filtered = filterJobs(input.jobs, input.filters ?? {});
   const expansion = expandQuery(input.query, input.context.profileText);
-  const ranked = rankJobs(filtered, input.context, expansion);
+  const ranked = rankJobs(filtered, input.context, expansion, input.mode ?? "BALANCED");
 
   // A literal query should never return things that match nothing at all;
   // without this, an empty search term and a nonsense one look identical.

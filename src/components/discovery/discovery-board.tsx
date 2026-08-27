@@ -47,10 +47,11 @@ export function DiscoveryBoard({
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
+  const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "CULTURE_VIBE">("BALANCED");
 
   const searchResult = useMemo(
-    () => searchJobs({ jobs, query, context, limit: 200 }),
-    [jobs, query, context],
+    () => searchJobs({ jobs, query, context, limit: 200, mode }),
+    [jobs, query, context, mode],
   );
 
   const visible = useMemo(() => {
