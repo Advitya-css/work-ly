@@ -345,7 +345,11 @@ export function searchJobs(input: SearchJobsInput): SearchJobsResult {
   // without this, an empty search term and a nonsense one look identical.
   let relevant = ranked;
   if (input.query.trim()) {
-    relevant = ranked.filter(s => s.components.keyword > 0 || s.components.semantic > 0.7);
+    // If they provided a search term, aggressively filter out anything that doesn't
+    // match the literal term OR any of the AI-expanded synonyms.
+    // The previous semantic fallback (semantic > 0.7) was too loose because cosine 
+    // similarity often bottoms out around 0.75 for unrelated English text.
+    relevant = ranked.filter(s => s.components.keyword > 0);
   }
 
   return {
