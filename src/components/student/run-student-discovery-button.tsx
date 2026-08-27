@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { runDiscoveryAction } from "@/lib/discovery/actions";
+import { seedDemoOpportunitiesAction } from "@/lib/opportunities/seed-demo";
 import { useRouter } from "next/navigation";
 
 export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "internship" | "new-grad" }) {
@@ -23,9 +24,14 @@ export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "inter
       const res = await runDiscoveryAction(query);
       if (res.error) {
         setError(res.error);
+      } else if (res.found === 0) {
+        // Fallback: If no API key is configured or no jobs found in the location, seed demo data 
+        // so the student can still experience the pipeline features.
+        await seedDemoOpportunitiesAction();
+        setSuccess(true);
+        router.refresh();
       } else {
         setSuccess(true);
-        // Refresh the page so the newly discovered jobs appear natively in the buckets
         router.refresh();
       }
     } catch (e) {

@@ -16,6 +16,55 @@ export interface DemoJob {
 
 export const DEMO_JOBS: DemoJob[] = [
   {
+    title: "Part-Time Campus Ambassador",
+    company: "University of Toronto",
+    text: `Part-Time Campus Ambassador
+Company: University of Toronto
+Location: Toronto, ON
+Employment Type: Part-time
+Work Mode: Onsite
+
+About the role:
+The University of Toronto is seeking a Campus Ambassador to lead tours for prospective students and their families. This is a highly visible role representing the university.
+
+Requirements (must have):
+- Current undergraduate student at the University of Toronto
+- Excellent public speaking and interpersonal skills
+- Availability to work 10-15 hours per week
+
+Preferred:
+- Involvement in campus clubs or student life
+
+Salary: CAD 18 per hour
+Industry: Higher Education
+Seniority: Entry
+Deadline: 2026-09-01`,
+  },
+  {
+    title: "Retail Associate (Eaton Centre)",
+    company: "Apple",
+    text: `Retail Associate
+Company: Apple
+Location: Toronto, ON
+Employment Type: Part-time
+Work Mode: Onsite
+
+About the role:
+Join the Apple Store team at the Toronto Eaton Centre! We are looking for part-time specialists to help customers discover our products. Great for students looking for off-campus work in downtown Toronto.
+
+Requirements (must have):
+- Strong communication and customer service skills
+- Flexibility to work weekends and some evenings
+
+Preferred:
+- Passion for technology
+
+Salary: CAD 22 per hour
+Industry: Retail
+Seniority: Entry
+Deadline: 2026-09-15`,
+  },
+  {
     title: "Bobst Library Student Assistant",
     company: "New York University",
     text: `Bobst Library Student Assistant
