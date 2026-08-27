@@ -18,8 +18,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   // We use pool directly here because we only need the public fields and don't require auth.
   const { rows } = await pool.query(
     `SELECT cp.*, u.name, u."avatarUrl" 
-     FROM "CareerProfile" cp 
-     JOIN "User" u ON cp."userId" = u.id 
+     FROM career_profiles cp 
+     JOIN users u ON cp."userId" = u.id 
      WHERE cp.id = $1`,
     [id]
   );
@@ -43,7 +43,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 sm:-mt-16 mb-8">
               <div className="size-24 sm:size-32 rounded-xl border-4 border-background bg-muted overflow-hidden shadow-sm flex items-center justify-center shrink-0">
                 {profile.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt={profile.name ?? "User"} className="h-full w-full object-cover" />
+                  <img src={profile.avatarUrl} alt={profile.name ?? users} className="h-full w-full object-cover" />
                 ) : (
                   <div className="text-4xl font-semibold text-muted-foreground">
                     {(profile.name || "U").charAt(0).toUpperCase()}
