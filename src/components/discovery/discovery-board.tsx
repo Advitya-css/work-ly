@@ -57,9 +57,11 @@ export function DiscoveryBoard({
 
   const topPicks = useMemo(() => {
     if (query.trim() !== "") return [];
-    const baseline = searchJobs({ jobs, query: "", context, limit: 3, mode: "BALANCED" });
-    const sorted = [...baseline.results].sort((a, b) => (b.job.fitScore ?? 0) - (a.job.fitScore ?? 0));
-    return sorted.filter((r) => r.job.fitScore != null).slice(0, 3);
+    // baseline is already sorted by the highly-tuned blended relevance score (b.score)
+    const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED" });
+    return baseline.results
+      .filter((r) => r.job.fitScore != null && (r.job.fitCoverage ?? 0) >= 0.5) // ensure decent data quality
+      .slice(0, 3);
   }, [jobs, query, context]);
 
   const visible = useMemo(() => {

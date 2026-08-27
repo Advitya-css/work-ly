@@ -351,7 +351,7 @@ export function rankJobs(
           preferences: Math.round(preferences.score * 100) / 100,
         },
         reasons: [
-          ...(profileSemanticRaw > 0.15 ? ["Strong match with your background and work style"] : []),
+          ...(profileSemanticRaw > 0.45 ? ["Strong match with your background and work style"] : []),
           ...structured.reasons, 
           ...preferences.reasons
         ].slice(0, 4),
