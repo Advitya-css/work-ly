@@ -91,8 +91,8 @@ export function CaptureForm() {
           <div className="flex items-center justify-center p-8 border-2 border-dashed border-primary/20 rounded-xl bg-background">
             <a 
               href={bookmarkletCode}
-              onClick={(e) => e.preventDefault()}
               className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow transition-transform hover:scale-105 active:scale-95 cursor-grab"
+              title="Drag me to your bookmarks bar"
             >
               <Plus className="mr-2 size-4" />
               Save to Workly
@@ -101,7 +101,7 @@ export function CaptureForm() {
           <div className="text-sm text-muted-foreground">
             <p className="font-medium text-foreground mb-1">How to use it:</p>
             <ol className="list-decimal pl-4 space-y-1">
-              <li>Drag the button above to your bookmarks bar.</li>
+              <li>Drag the button above to your bookmarks bar. <button type="button" onClick={() => { navigator.clipboard.writeText(bookmarkletCode); alert("Code copied! Create a new bookmark and paste this code as the URL."); }} className="text-primary hover:underline ml-1">Or click here to copy the code manually.</button></li>
               <li>Open any job on LinkedIn, Indeed, or a company site.</li>
               <li>Click the bookmark. It will automatically copy the job and send it to Workly.</li>
             </ol>
