@@ -150,8 +150,7 @@ function fallbackExtractSkills(text: string): string[] {
   const found = new Set<string>();
   const lower = text.toLowerCase();
   for (const kw of COMMON_TECH) {
-    // Exact word boundary match for the keyword
-    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\function extractSkillNames(lines: string[]): string[] {");
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(lower)) {
       found.add(kw);
@@ -159,6 +158,8 @@ function fallbackExtractSkills(text: string): string[] {
   }
   return Array.from(found);
 }
+
+
 
 function extractSkillNames(lines: string[]): string[] {
   // The post-split cap is deliberately the same SKILL_LINE_MAX that
