@@ -160,3 +160,43 @@ export const jobicySource: JobSourceAdapter = {
     }));
   },
 };
+
+// --- HIMALAYAS ---
+export const himalayasSource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "himalayas",
+  name: "Himalayas",
+  legalBasis: "Himalayas publishes an open, keyless JSON API (himalayas.app/jobs/api) for public consumption.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim() || "";
+    const url = `https://himalayas.app/jobs/api?limit=${Math.min(context.limit, 50)}`;
+    const body = await fetchWithGuards(url);
+    const parsed = JSON.parse(body);
+    let jobs = parsed.jobs ?? [];
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      jobs = jobs.filter((j: any) =>
+        textOf(j.title).toLowerCase().includes(kw) ||
+        textOf(j.companyName).toLowerCase().includes(kw) ||
+        textOf(j.excerpt).toLowerCase().includes(kw)
+      );
+    }
+    return jobs.map((job: any) => ({
+      externalId: `himalayas:${job.guid ?? job.applicationLink}`,
+      title: asString(job.title) ?? "Untitled role",
+      company: asString(job.companyName),
+      location: asString(job.locationRestrictions?.[0]) ?? "Remote",
+      description: job.description ? stripTags(job.description) : null,
+      url: asString(job.applicationLink),
+      postedAt: job.pubDate ? new Date(job.pubDate * 1000) : null,
+      salaryMin: job.minSalary ? parseInt(job.minSalary, 10) : null,
+      salaryMax: job.maxSalary ? parseInt(job.maxSalary, 10) : null,
+      salaryCurrency: asString(job.currency) ?? "USD",
+      employmentTypeRaw: asString(job.employmentType),
+      workModeRaw: "REMOTE",
+      industry: asString(job.categories?.[0]),
+    }));
+  },
+};
