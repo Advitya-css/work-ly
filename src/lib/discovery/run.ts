@@ -16,7 +16,7 @@ import { isDuplicate } from "@/lib/discovery/dedupe";
 import { normalizeListingAsync, listingMatchesQueryLiterally } from "@/lib/discovery/normalize";
 import { embeddingProvider, jobEmbeddingText } from "@/lib/search/embeddings";
 import { expandQuery } from "@/lib/search/role-graph";
-import { suggestTitlesForInterest } from "@/lib/ai/providers/interest-titles";
+import { suggestTitlesForInterest, suggestIdealJobSearches } from "@/lib/ai/providers/interest-titles";
 import { UNIVERSITY_ALIASES, UNIVERSITY_LOCATIONS } from "@/lib/student/legal-limits";
 import { coverageOf } from "@/lib/scoring/coverage";
 import type {
@@ -214,7 +214,18 @@ export async function runDiscovery(
     // interest-titles.ts). buildSearchTerms caps the total and dedupes.
     const roleGraphTitles = options.expandSearch ? expansion.expandedRoles.map((r) => r.role) : [];
     const aiTitles = options.expandSearch && query ? await suggestTitlesForInterest(query) : [];
-    const searchTerms = buildSearchTerms(query, roleGraphTitles, aiTitles);
+    
+    let searchTerms = buildSearchTerms(query, roleGraphTitles, aiTitles);
+    
+    // SMART DEFAULT: If the user hit Discover without typing a query, don't just ask the job
+    // board for "any job in this city" (which returns physicians and truck drivers). 
+    // Proactively read their profile and search for highly targeted jobs.
+    if (!query || query.trim() === "") {
+      const idealTitles = await suggestIdealJobSearches(profileText, careerGoal?.primaryTargetRole ?? null);
+      if (idealTitles.length > 0) {
+        searchTerms = idealTitles;
+      }
+    }
     searchTermsUsed = searchTerms.filter((t): t is string => Boolean(t));
 
     // Computed once - doesn't vary per source or per search term.

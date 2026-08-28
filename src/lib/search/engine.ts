@@ -436,22 +436,8 @@ export function rankJobs(
             null
           : null;
 
-      let overriddenFitScore = job.fitScore;
-      let overriddenRecommendation = job.recommendation;
-      
-      // STALE DB GUARD: If a job was scored before the severe mismatch penalty was
-      // deployed, it might be sitting in the database with a falsely inflated 74/100.
-      // We enforce a real-time semantic clamp here so the UI NEVER shows generic garbage
-      // as a "Strong Match", automatically healing old DB rows on display.
-      if (profileSemanticRaw < 0.30) {
-        if (overriddenFitScore != null) {
-          overriddenFitScore = Math.min(overriddenFitScore, 25);
-        }
-        overriddenRecommendation = "LOW_PRIORITY";
-      }
-
       return {
-        job: { ...job, fitScore: overriddenFitScore, recommendation: overriddenRecommendation },
+        job,
         score: Math.round(score * 100) / 100,
         components: {
           keyword: Math.round(keyword * 100) / 100,
