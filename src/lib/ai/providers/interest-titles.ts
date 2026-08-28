@@ -18,7 +18,7 @@ import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
  * a specific real job existing, only a search term, so nothing here can
  * violate "never invent job information."
  */
-const SYSTEM_PROMPT = `Given a short, informal description of what someone is interested in working on, output 2 to 4 REAL, specific job titles a hiring company would actually use in a posting - not vague categories, not the input restated. Titles must be genuinely searchable on job boards (e.g. "Sustainability Analyst", "Smart City Planner", not "climate person" or "someone who cares about cities"). If the description is too vague, too broad, or you cannot confidently name real titles for it, output an empty list rather than guessing - an empty list is a correct and expected answer for a lot of inputs.`;
+const SYSTEM_PROMPT = `Given a short, informal description of a candidate's major, degree, or area of interest, output 2 to 4 REAL, specific job titles a hiring company would actually use in a posting - not vague categories, not the input restated. For example, if they enter "City Planning Major", output entry-level or standard roles for that major like "Urban Planner", "City Planner", "Transportation Analyst". Titles must be genuinely searchable on job boards (e.g. "Sustainability Analyst", "Smart City Planner", not "climate person" or "someone who cares about cities"). If the description is too vague or broad, output an empty list.`;
 
 const RESPONSE_SCHEMA = {
   name: "interest_titles",

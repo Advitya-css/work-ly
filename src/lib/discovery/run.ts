@@ -17,6 +17,8 @@ import { normalizeListingAsync, listingMatchesQueryLiterally } from "@/lib/disco
 import { embeddingProvider, jobEmbeddingText } from "@/lib/search/embeddings";
 import { expandQuery } from "@/lib/search/role-graph";
 import { suggestTitlesForInterest, suggestIdealJobSearches } from "@/lib/ai/providers/interest-titles";
+import { extractTargetCompany } from "@/lib/ai/providers/extract-company";
+import { greenhouseSource, leverSource } from "@/lib/discovery/sources/company-career";
 import { UNIVERSITY_ALIASES, UNIVERSITY_LOCATIONS } from "@/lib/student/legal-limits";
 import { coverageOf } from "@/lib/scoring/coverage";
 import type {
