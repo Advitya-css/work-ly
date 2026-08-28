@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db/pool";
 import { runDiscovery } from "@/lib/discovery/run";
+import { suggestIdealJobSearches } from "@/lib/ai/providers/interest-titles";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
+import { profileSearchText } from "@/lib/discovery/profile-text";
 
 export const maxDuration = 300; 
 export const dynamic = "force-dynamic";
@@ -39,9 +42,36 @@ export async function GET(req: Request) {
       const targetRole = row.primaryTargetRole as string;
 
       try {
-        const result = await runDiscovery(userId, { query: targetRole, limitPerSource: 10 });
+        // AI Proactive Scraping: instead of just searching for the generic targetRole,
+        // we feed the user's entire profile to the AI and have it generate 3 highly
+        // specific titles. This turns discovery into a proactive, intelligent agent.
+        const profile = await getFullCareerProfile(userId);
+        const text = profileSearchText(profile);
+        
+        const idealTitles = await suggestIdealJobSearches(text, targetRole);
+        const queries = idealTitles.length > 0 ? idealTitles : [targetRole];
+        
+        // Auto-provision keyless boards if they don't have them
+        const { rows: existingSources } = await pool.query(`SELECT "adapterId" FROM job_source_configs WHERE "userId" = $1`, [userId]);
+        const existingAdapterIds = new Set(existingSources.map(r => r.adapterId));
+        
+        for (const adapterId of ["arbeitnow", "remotive", "jobicy"]) {
+          if (!existingAdapterIds.has(adapterId)) {
+            await pool.query(
+              `INSERT INTO job_source_configs (id, "userId", "adapterId", name, kind, config, status, "legalBasis", "createdAt", "updatedAt")
+               VALUES (gen_random_uuid(), $1, $2, $3, 'PUBLIC_JOB_BOARD', '{}', 'ACTIVE', 'Open API', NOW(), NOW())`,
+              [userId, adapterId, adapterId.charAt(0).toUpperCase() + adapterId.slice(1)]
+            );
+          }
+        }
+
+        // Run discovery on all smart queries!
+        for (const q of queries) {
+          const result = await runDiscovery(userId, { query: q, limitPerSource: 10 });
+          totalNewJobs += result.newJobs;
+        }
+        
         usersProcessed++;
-        totalNewJobs += result.newJobs;
       } catch (err) {
         console.error(`[workly:cron] Failed daily discovery for user ${userId}:`, err);
       }

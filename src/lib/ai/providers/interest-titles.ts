@@ -70,3 +70,48 @@ export async function suggestTitlesForInterest(interestText: string): Promise<st
     return [];
   }
 }
+
+const IDEAL_SYSTEM_PROMPT = `You are an expert technical recruiter and career coach. Your task is to read a candidate's full resume/profile and their target role (if provided), and generate exactly 3 highly specific, searchable job titles that this candidate is overwhelmingly qualified for.
+- Do NOT generate generic titles like "Data Analyst" or "Manager".
+- DO generate highly specific titles like "Senior Spatial Data Analyst", "Urban Planning Data Scientist", "Geospatial Analyst", etc.
+- The titles MUST be real titles used on job boards.
+- Output ONLY the array of titles.`;
+
+const IDEAL_SCHEMA = {
+  name: "ideal_titles",
+  schema: {
+    type: "object",
+    properties: {
+      titles: { type: "array", items: { type: "string" } },
+    },
+    required: ["titles"],
+  },
+};
+
+export async function suggestIdealJobSearches(profileText: string, targetRole: string | null): Promise<string[]> {
+  try {
+    const prompt = `TARGET ROLE: ${targetRole || 'None'}
+
+PROFILE:
+${profileText.slice(0, 3000)}`;
+    const result = await aiProvider.complete({
+      messages: [
+        { role: "system", content: IDEAL_SYSTEM_PROMPT },
+        { role: "user", content: stripPromptInjectionMarkers(prompt) },
+      ],
+      responseSchema: IDEAL_SCHEMA,
+      temperature: 0.2,
+    });
+
+    const parsed = (result.parsed ?? {}) as { titles?: unknown };
+    if (!Array.isArray(parsed.titles)) return [];
+
+    return parsed.titles
+      .filter((t): t is string => typeof t === "string" && t.trim().length > 0 && t.length < MAX_TITLE_LENGTH)
+      .map((t) => t.trim())
+      .slice(0, 3);
+  } catch (error) {
+    console.warn("[workly:ai] ideal-title suggestion failed:", error);
+    return targetRole ? [targetRole] : [];
+  }
+}
