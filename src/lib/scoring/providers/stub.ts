@@ -730,8 +730,8 @@ function buildRecommendation(
     };
   }
   
-  // IRONCLAD GUARD: Never strongly recommend a job if we know less than 65% of the facts about it.
-  if (coverage < 0.65) {
+  // Prevent APPLY_NOW if data is extremely sparse, but allow STRONG (APPLY) if it's over 40%
+  if (coverage < 0.40) {
     return {
       recommendation: fitScore >= 55 ? "STRETCH" : "LOW_PRIORITY",
       reasoning: `Workly could only assess ${Math.round(coverage * 100)}% of this role's requirements. Based on what is visible, Candidate Fit is ${fitScore}/100, making it a stretch at best.`,
