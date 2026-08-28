@@ -95,7 +95,7 @@ export function DiscoveryBoard({
           // which is why Top Picks could come up empty even with plenty of
           // good matches sitting right there.
           (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
-          r.score >= 0.65 && // Ironclad floor: must be highly relevant
+          r.score >= 0.58 && // Solid relevance floor
           // A job Workly itself has bucketed Low Priority or Skip has no
           // business calling itself a "Top Pick" even if its blended
           // relevance score alone happens to clear the floor above - that
