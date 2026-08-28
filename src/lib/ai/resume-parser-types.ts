@@ -72,6 +72,26 @@ export interface ExtractedTransferableSkill {
   rationale: string;
 }
 
+/**
+ * A work value/culture preference inferred from the CV as a whole - the
+ * kind of employer or mission the person's history suggests they gravitate
+ * toward. Never a stated fact: `value` must be one of the WORK_VALUES
+ * catalog keys (lib/values/value-graph.ts), and `evidence` must quote or
+ * closely paraphrase something actually in the document. Grounding checks
+ * this the same way it checks transferable-skill rationales - kept either
+ * way, but counted toward the grounding ratio as a quality signal, since
+ * (like a transferable skill) the value itself is expected not to appear
+ * verbatim in the source.
+ */
+export interface ExtractedWorkValue {
+  /** A WORK_VALUES catalog key, e.g. "sustainability_climate". */
+  value: string;
+  /** 0-1: how clearly the CV supports this, not how much Workly likes it. */
+  confidence: number;
+  /** What in the CV supports this inference - shown to the user as "why". */
+  evidence: string;
+}
+
 export interface ExtractedCareerProfile {
   headline?: string;
   summary?: string;
@@ -91,5 +111,7 @@ export interface ExtractedCareerProfile {
   achievements: ExtractedAchievement[];
   certifications: ExtractedCertification[];
   transferableSkills: ExtractedTransferableSkill[];
+  /** Never invented for its own sake - empty when the CV doesn't clearly support any. */
+  workValues: ExtractedWorkValue[];
   extractionMethod: "ai" | "heuristic";
 }

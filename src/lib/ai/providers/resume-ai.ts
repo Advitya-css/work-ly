@@ -3,6 +3,9 @@ import type { ResumeParsingProvider } from "@/lib/ai/resume-parser-provider-type
 import type { ExtractedCareerProfile } from "@/lib/ai/resume-parser-types";
 import { heuristicResumeParsingProvider } from "@/lib/ai/providers/resume-heuristic";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
+import { WORK_VALUES } from "@/lib/values/value-graph";
+
+const WORK_VALUE_KEYS = WORK_VALUES.map((v) => v.key);
 
 const SYSTEM_PROMPT = `You extract structured career information from resume text. Follow these rules strictly:
 
@@ -11,7 +14,7 @@ const SYSTEM_PROMPT = `You extract structured career information from resume tex
 3. Distinguish REAL LISTED SKILLS (stated directly, e.g. under a "Skills" heading, or clearly demonstrated by a project/job description) from TRANSFERABLE SKILLS (competencies not stated as a skill but reasonably implied by a role or achievement. E.g. "President of Economics Club" implies leadership, event management, communication). Put the first kind in "skills" and the second kind ONLY in "transferableSkills", each with a one-sentence "rationale" explaining the inference. Never put an inferred competency in "skills".
 4. Include languages spoken as skills with category "LANGUAGE".
 5. Output strict JSON matching the schema you're given. No prose, no markdown fences.
-6. In the 'summary' field, alongside a professional summary, explicitly append a paragraph evaluating the candidate's core values, preferred work culture (e.g., fast-paced, academic, social impact, sustainability), and professional working style. This enables semantic matching against company cultures.`;
+6. Separately, in "workValues": infer which of these exact catalog keys the candidate's work history genuinely supports - ${WORK_VALUE_KEYS.join(", ")}. This is an interpretation, not a stated fact, so apply the same discipline as transferable skills: only include a value when specific roles, employers, projects, or descriptions in the CV actually support it (e.g. two jobs at climate-tech companies supports "sustainability_climate"; a CV that never mentions anything like this supports none of them - an empty list is the correct, expected answer for most resumes). For each one included, give a confidence from 0 to 1 reflecting how clearly the CV supports it (not how desirable the value is), and "evidence" naming the specific thing in the CV that supports it. Never invent evidence, and never include a value with no real textual basis - do not put anything in the 'summary' field about this, workValues is the only place it belongs.`;
 
 const RESPONSE_SCHEMA = {
   name: "extracted_career_profile",
@@ -130,8 +133,29 @@ const RESPONSE_SCHEMA = {
           required: ["name", "category", "rationale"],
         },
       },
+      workValues: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            value: { type: "string", enum: WORK_VALUE_KEYS },
+            confidence: { type: "number" },
+            evidence: { type: "string" },
+          },
+          required: ["value", "confidence", "evidence"],
+        },
+      },
     },
-    required: ["education", "experience", "projects", "skills", "achievements", "certifications", "transferableSkills"],
+    required: [
+      "education",
+      "experience",
+      "projects",
+      "skills",
+      "achievements",
+      "certifications",
+      "transferableSkills",
+      "workValues",
+    ],
   },
 };
 
@@ -198,6 +222,12 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
     if (years > 0) yearsExperience = Math.min(years, 60);
   }
 
+  // The schema's enum should already constrain this, but providers vary in
+  // how strictly they enforce enum fields - a value key outside the real
+  // catalog would otherwise persist as an orphaned tag that never matches
+  // anything on the job side and never renders a label anywhere.
+  const workValues = (parsed.workValues ?? []).filter((v) => WORK_VALUE_KEYS.includes(v.value));
+
   return {
     headline: parsed.headline,
     summary: parsed.summary,
@@ -209,6 +239,7 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
     achievements: parsed.achievements ?? [],
     certifications: parsed.certifications ?? [],
     transferableSkills: parsed.transferableSkills ?? [],
+    workValues,
     extractionMethod: "ai",
   };
 }

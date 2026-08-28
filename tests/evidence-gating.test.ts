@@ -73,6 +73,7 @@ function emptyProfile(): FullCareerProfile {
     achievements: [],
     certifications: [],
     documents: [],
+    workValues: [],
   };
 }
 

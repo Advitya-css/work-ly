@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -25,6 +25,7 @@ import { BUCKETS, SOURCE_KIND_LABEL } from "@/lib/discovery/labels";
 import { searchJobs, type SearchContext } from "@/lib/search/engine";
 import { formatSalaryRange } from "@/lib/format";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
+import { comparePriority } from "@/lib/discovery/sort";
 import type { DiscoveredJob } from "@/lib/db/types";
 
 /**
@@ -50,6 +51,19 @@ export function DiscoveryBoard({
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
   const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
 
+  // A bucket filter selected in one mode (e.g. "Strong" while browsing
+  // Standard Search results) used to silently stay applied after switching
+  // to Brainstorm/Explore and typing a new query - the results count above
+  // the list would report the real total (e.g. "4 matching opportunities"),
+  // while the list itself, still filtered to a bucket that happens to have
+  // zero matches under the new query, showed "No listings match this
+  // search" right below it. Same query, two contradictory answers on one
+  // screen. Clearing the filter on every mode switch keeps a filter chip
+  // selected only for the search that was showing when it was clicked.
+  useEffect(() => {
+    setActiveBucket(null);
+  }, [searchMode]);
+
   const searchResult = useMemo(
     () => searchJobs({ jobs, query, context, limit: 200, mode }),
     [jobs, query, context, mode],
@@ -74,8 +88,18 @@ export function DiscoveryBoard({
           // which is why Top Picks could come up empty even with plenty of
           // good matches sitting right there.
           (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
-          r.score >= 0.65, // Ironclad floor: must be highly relevant
+          r.score >= 0.65 && // Ironclad floor: must be highly relevant
+          // A job Workly itself has bucketed Low Priority or Skip has no
+          // business calling itself a "Top Pick" even if its blended
+          // relevance score alone happens to clear the floor above - that
+          // was exactly the "top match is actually a Low Priority job"
+          // contradiction found on the bucket-count sort (see
+          // lib/discovery/sort.ts). Recommendation, not raw relevance, is
+          // the more authoritative signal here.
+          r.job.recommendation !== "LOW_PRIORITY" &&
+          r.job.recommendation !== "SKIP",
       )
+      .sort(comparePriority)
       .slice(0, 3);
   }, [jobs, query, context]);
 
@@ -93,7 +117,7 @@ export function DiscoveryBoard({
 
     return [...filtered].sort((a, b) => {
       if (sort === "priority") {
-        return b.score - a.score;
+        return comparePriority(a, b);
       }
       if (sort === "fit") {
         return (b.job.fitScore ?? 0) - (a.job.fitScore ?? 0);
@@ -127,7 +151,7 @@ export function DiscoveryBoard({
     setMessage(null);
     setUpgradeRequired(false);
     startTransition(async () => {
-      const result = await runDiscoveryAction(query || undefined);
+      const result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" });
       if (result.upgradeRequired) {
         setUpgradeRequired(true);
       } else {

@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         listApplicationsByUserId(user.id),
         getFullCareerProfile(user.id),
       ])
-    : [null, [], [], null, [], { profile: null, educations: [], experiences: [], projects: [], skills: [], achievements: [], certifications: [], documents: [] }];
+    : [null, [], [], null, [], { profile: null, educations: [], experiences: [], projects: [], skills: [], achievements: [], certifications: [], documents: [], workValues: [] }];
 
   if (profile?.isStudent) {
     redirect("/student");

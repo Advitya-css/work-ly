@@ -456,6 +456,15 @@ export function groundResumeExtraction(
     run.observe(run.rationaleIsAnchored(t.rationale));
   }
 
+  // Same reasoning as transferable skills just above: a work value like
+  // "sustainability_climate" is a catalog key, not something the CV states
+  // verbatim, so checking the key itself would fail every real inference.
+  // What's checkable is whether the cited evidence is actually anchored in
+  // the document.
+  for (const v of extracted.workValues) {
+    run.observe(run.rationaleIsAnchored(v.evidence));
+  }
+
   // The company is the identity of an experience entry. If it is not in the
   // document, the role did not come from the document, and its dates and
   // bullet points are not salvageable, so the entry goes as a unit.

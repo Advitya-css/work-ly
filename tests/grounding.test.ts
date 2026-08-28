@@ -75,6 +75,7 @@ function emptyProfile(): ExtractedCareerProfile {
     achievements: [],
     certifications: [],
     transferableSkills: [],
+    workValues: [],
     extractionMethod: "ai",
   };
 }
@@ -230,6 +231,50 @@ describe("groundResumeExtraction", () => {
     expect(report.dropped).toEqual([]);
     // The rationale quotes the CV, so it counts as a grounded claim.
     expect(report.groundedRatio).toBe(1);
+  });
+
+  it("keeps a work value whose evidence is anchored in the CV, and counts it toward the ratio", () => {
+    const report = groundResumeExtraction(
+      {
+        ...emptyProfile(),
+        workValues: [
+          {
+            value: "stability_structured",
+            confidence: 0.5,
+            evidence: "Presented weekly trading results to the commercial leadership team.",
+          },
+        ],
+      },
+      CV,
+    );
+
+    expect(report.grounded.workValues).toHaveLength(1);
+    expect(report.dropped).toEqual([]);
+    expect(report.groundedRatio).toBe(1);
+  });
+
+  it("keeps a work value even with unanchored evidence, but it drags the ratio down", () => {
+    // Same non-deletion policy as transferable skills: the value itself is
+    // never quoted verbatim in the CV by design, so the entry is never
+    // dropped outright - it's already surfaced to the user as an
+    // inference, not a fact. But fabricated evidence should still show up
+    // *somewhere* auditable, which is the ratio.
+    const report = groundResumeExtraction(
+      {
+        ...emptyProfile(),
+        workValues: [
+          {
+            value: "sustainability_climate",
+            confidence: 0.8,
+            evidence: "Led the company's entire carbon-neutral supply chain initiative.",
+          },
+        ],
+      },
+      CV,
+    );
+
+    expect(report.grounded.workValues).toHaveLength(1);
+    expect(report.groundedRatio).toBeLessThan(1);
   });
 
   it("passes a fully grounded extraction through unchanged with ratio 1", () => {

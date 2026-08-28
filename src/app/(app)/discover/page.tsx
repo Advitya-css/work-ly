@@ -65,6 +65,7 @@ export default async function DiscoverPage() {
     candidateSeniority: deriveCandidateSeniority(candidateYears, careerGoal),
     careerGoal,
     profileLocation: profile.profile?.location ?? null,
+    profileValues: profile.workValues.map((v) => ({ value: v.value, confidence: v.confidence })),
   };
 
   const alert = buildAlert(latestRun, jobs);

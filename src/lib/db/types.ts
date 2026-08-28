@@ -147,6 +147,19 @@ export interface Skill {
   updatedAt: Date;
 }
 
+/** A candidate's inferred work-culture preference - see lib/values/value-graph.ts for the catalog `value` keys come from. */
+export interface CandidateValueSignal {
+  id: string;
+  careerProfileId: string;
+  /** A WORK_VALUES catalog key, e.g. "sustainability_climate". */
+  value: string;
+  confidence: number;
+  evidence: string;
+  source: DataSource;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Achievement extends SourcedEntity {
   id: string;
   careerProfileId: string;

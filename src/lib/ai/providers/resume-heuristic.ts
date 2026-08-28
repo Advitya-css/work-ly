@@ -7,8 +7,10 @@ import type {
   ExtractedExperience,
   ExtractedProject,
   ExtractedSkill,
+  ExtractedWorkValue,
 } from "@/lib/ai/resume-parser-types";
 import type { SkillCategory } from "@/lib/db/types";
+import { detectValues } from "@/lib/values/value-graph";
 
 /**
  * No-model fallback: splits resume text into sections by common headers
@@ -305,6 +307,31 @@ function extractAchievements(lines: string[]): ExtractedAchievement[] {
   }));
 }
 
+/**
+ * No AI available here, so there is no real interpretation of what the
+ * candidate's history *implies* about their values - only whether the
+ * resume text literally uses value-signaling language (a candidate who
+ * worked at climate-tech companies without ever writing the word
+ * "climate" or "sustainability" gets nothing from this path; that's the
+ * honest limit of pattern matching, not a bug to work around here). Every
+ * confidence is capped well below what the real AI parser would give for
+ * equivalent evidence, specifically so the heuristic path can never look
+ * as confident as the real inference it stands in for.
+ */
+function extractWorkValues(resumeText: string): ExtractedWorkValue[] {
+  const lines = resumeText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  return detectValues(resumeText)
+    .slice(0, 3)
+    .map(({ value, hits }) => {
+      const evidenceLine = lines.find((line) => line.toLowerCase().includes(hits[0])) ?? hits[0];
+      return {
+        value: value.key,
+        confidence: Math.min(0.3 + hits.length * 0.1, 0.6),
+        evidence: `Resume mentions "${hits[0]}"${evidenceLine !== hits[0] ? `: "${firstNWords(evidenceLine, 16)}"` : ""}.`,
+      };
+    });
+}
+
 // A real resume is never anywhere near this long; capping input before the
 // line-by-line regex matching below runs bounds the worst case regardless
 // of any individual pattern's own behavior on pathological input.
@@ -334,6 +361,7 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
     // heuristic fallback never fabricates transferable skills. Only the
     // real AI provider populates this array.
     transferableSkills: [],
+    workValues: extractWorkValues(resumeText.slice(0, MAX_HEURISTIC_CHARS)),
     extractionMethod: "heuristic",
   };
 }

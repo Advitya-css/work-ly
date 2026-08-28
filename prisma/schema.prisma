@@ -157,12 +157,13 @@ model CareerProfile {
   preferredLocations String[] @default([])
   openToRemote       Boolean  @default(true)
 
-  educations     Education[]
-  experiences    Experience[]
-  projects       Project[]
-  skillEntries   Skill[]
-  achievements   Achievement[]
-  certifications Certification[]
+  educations         Education[]
+  experiences        Experience[]
+  projects           Project[]
+  skillEntries       Skill[]
+  achievements       Achievement[]
+  certifications     Certification[]
+  candidateValues    CandidateValueSignal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -265,6 +266,32 @@ model Skill {
 
   @@index([careerProfileId])
   @@map("skills")
+}
+
+/// A candidate's inferred work-culture preference, e.g. "sustainability_climate"
+/// or "startup_pace" - see lib/values/value-graph.ts for the catalog these
+/// keys come from. Always AI-inferred (real model or the lexical heuristic
+/// fallback), never a fact the user stated directly - kept as its own model
+/// rather than folded into Skill, since a value is a judgment about the
+/// person's history as a whole, not a discrete competency.
+model CandidateValueSignal {
+  id              String        @id @default(uuid())
+  careerProfileId String
+  careerProfile   CareerProfile @relation(fields: [careerProfileId], references: [id], onDelete: Cascade)
+
+  /// A WORK_VALUES catalog key. Not a Prisma enum, so the app-level catalog
+  /// (which needs to stay in one place, shared with job-side matching in
+  /// engine.ts) can grow without a schema migration for every addition.
+  value      String
+  confidence Float
+  evidence   String
+  source     DataSource @default(AI_INFERENCE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([careerProfileId])
+  @@map("candidate_value_signals")
 }
 
 enum SkillCategory {

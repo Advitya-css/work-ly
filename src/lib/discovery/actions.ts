@@ -115,7 +115,10 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
   revalidateDiscoveryViews();
 }
 
-export async function runDiscoveryAction(query?: string): Promise<{ error?: string; found?: number; upgradeRequired?: boolean }> {
+export async function runDiscoveryAction(
+  query?: string,
+  options: { expandSearch?: boolean } = {},
+): Promise<{ error?: string; found?: number; upgradeRequired?: boolean }> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -124,7 +127,7 @@ export async function runDiscoveryAction(query?: string): Promise<{ error?: stri
     `SELECT COUNT(*) FROM discovery_runs WHERE "userId" = $1 AND "startedAt" > NOW() - INTERVAL '24 hours'`,
     [user.id]
   );
-  
+
   const dailyRuns = parseInt(rows[0].count, 10);
   if (dailyRuns >= 999) { // TEMPORARILY DISABLED FOR TESTING
     return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
@@ -134,7 +137,7 @@ export async function runDiscoveryAction(query?: string): Promise<{ error?: stri
   // setup required.
   await ensureDefaultSourcesAction();
 
-  const run = await runDiscovery(user.id, { query });
+  const run = await runDiscovery(user.id, { query, expandSearch: options.expandSearch });
   revalidateDiscoveryViews();
 
   if (run.status === "FAILED") {

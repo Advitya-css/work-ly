@@ -4,6 +4,7 @@
 import { canonical, skillsMatch } from "@/lib/text-utils";
 import { cosineSimilarity, localEmbed } from "@/lib/search/embeddings";
 import { expandQuery, type QueryExpansion } from "@/lib/search/role-graph";
+import { detectValues, workValueByKey } from "@/lib/values/value-graph";
 import type {
   CareerGoal,
   DiscoveredJob,
@@ -60,6 +61,13 @@ export interface SearchContext {
   candidateSeniority: SeniorityLevel | null;
   careerGoal: CareerGoal | null;
   profileLocation: string | null;
+  /**
+   * Work-culture preferences inferred from the candidate's CV (real AI, or
+   * the lexical heuristic fallback - see resume-ai.ts / resume-heuristic.ts
+   * and CandidateValueSignal). Empty for most candidates: it requires
+   * actual supporting evidence in the resume, never a default guess.
+   */
+  profileValues: { value: string; confidence: number }[];
 }
 
 export interface ScoredJob {
@@ -70,6 +78,7 @@ export interface ScoredJob {
     structured: number;
     semantic: number;
     preferences: number;
+    values: number;
   };
   /** Human-readable, shown as "why it matches". */
   reasons: string[];
@@ -77,9 +86,19 @@ export interface ScoredJob {
   viaExpansion: { role: string; rationale: string } | null;
 }
 
+// Five signals now, not four: VALUES (Values & Culture Matching) was added
+// as its own weighted component rather than folded into `preferences`,
+// because it answers a different question - preferences is what the
+// candidate explicitly told Workly via CareerGoal (target role, countries,
+// salary floor); values is what their CV's own history suggests they
+// gravitate toward (see lib/values/value-graph.ts), which most candidates
+// never state explicitly anywhere. Every mode's weights were rescaled
+// proportionally to make room for it, so each mode's original signal
+// balance (e.g. STRICT_SKILLS still leaning almost entirely on keyword +
+// structured) is preserved, just slightly compressed.
 const WEIGHTS = {
-  BALANCED: { keyword: 0.35, structured: 0.25, semantic: 0.25, preferences: 0.15 },
-  STRICT_SKILLS: { keyword: 0.55, structured: 0.35, semantic: 0.0, preferences: 0.10 },
+  BALANCED: { keyword: 0.31, structured: 0.22, semantic: 0.22, preferences: 0.13, values: 0.12 },
+  STRICT_SKILLS: { keyword: 0.51, structured: 0.32, semantic: 0.0, preferences: 0.09, values: 0.08 },
   // Zeroing keyword here used to also zero out role-graph expansion - the
   // one signal in this file actually built to solve "I don't know what
   // this is called, but these are real job titles for it" (see
@@ -91,8 +110,11 @@ const WEIGHTS = {
   // "Sustainability Analyst" relates to "climate" unless the words
   // literally overlap. A real, non-zero keyword weight here means a query
   // the role graph actually covers surfaces its real job titles instead of
-  // relying on lexical luck.
-  EXPLORE: { keyword: 0.30, structured: 0.15, semantic: 0.35, preferences: 0.20 },
+  // relying on lexical luck. `values` carries the highest weight of any
+  // mode here on purpose: Explore is exactly the "I don't know what to
+  // search for, but I care about X" mode, which is what values matching is
+  // actually for.
+  EXPLORE: { keyword: 0.26, structured: 0.12, semantic: 0.30, preferences: 0.17, values: 0.15 },
 };
 
 const SENIORITY_ORDER: SeniorityLevel[] = [
@@ -303,6 +325,50 @@ function preferenceScore(job: DiscoveredJob, goal: CareerGoal | null): { score: 
 
 }
 
+/**
+ * Values & Culture Matching. Job-side detection is lexical (see
+ * value-graph.ts's own doc comment for why that's a reasonable trade here,
+ * even though it would be too weak for candidate-side inference): a job
+ * posting that genuinely is climate-focused or mission-driven almost
+ * always says so directly ("climate", "carbon", "mission-driven", ...),
+ * unlike a candidate's history, which usually implies a value rather than
+ * naming it.
+ *
+ * Three honest outcomes, not two: a real match earns a real boost: no
+ * candidate values recorded, or a job that states no culture signal at
+ * all, is neutral (0.5) - absence of a signal is not evidence of
+ * mismatch; and a job that *does* state a culture but not the one the
+ * candidate's CV supports gets a mild penalty, the same "we checked and it
+ * doesn't line up" treatment industry/country mismatches get elsewhere in
+ * this file.
+ */
+function valuesScore(
+  job: DiscoveredJob,
+  profileValues: SearchContext["profileValues"],
+): { score: number; reasons: string[] } {
+  if (profileValues.length === 0) return { score: 0.5, reasons: [] };
+
+  const jobText = `${job.title} ${job.industry ?? ""} ${(job.description ?? "").slice(0, 2000)}`;
+  const jobValueHits = detectValues(jobText);
+  if (jobValueHits.length === 0) return { score: 0.5, reasons: [] };
+
+  const jobValueKeys = new Set(jobValueHits.map((hit) => hit.value.key));
+  const matched = [...profileValues]
+    .filter((pv) => jobValueKeys.has(pv.value))
+    .sort((a, b) => b.confidence - a.confidence)[0];
+
+  if (matched) {
+    const catalogEntry = workValueByKey(matched.value);
+    const label = catalogEntry?.description ?? matched.value;
+    return {
+      score: 1,
+      reasons: [`Aligns with your interest in ${catalogEntry?.label.toLowerCase() ?? matched.value} - this looks like a ${label} role.`],
+    };
+  }
+
+  return { score: 0.4, reasons: [] };
+}
+
 // ---------------------------------------------------------------------------
 // rankJobs / semanticSearch / searchJobs
 // ---------------------------------------------------------------------------
@@ -348,11 +414,14 @@ export function rankJobs(
         ? cosineSimilarity(context.profileEmbedding, job.embedding)
         : 0;
 
+      const values = valuesScore(job, context.profileValues);
+
       const score =
         keyword * WEIGHTS[mode].keyword +
         structured.score * WEIGHTS[mode].structured +
         semantic * WEIGHTS[mode].semantic +
-        preferences.score * WEIGHTS[mode].preferences;
+        preferences.score * WEIGHTS[mode].preferences +
+        values.score * WEIGHTS[mode].values;
 
       const matchedExpansion =
         keyword < 1 && expandedRoleNames.length > 0
@@ -368,8 +437,13 @@ export function rankJobs(
           structured: Math.round(structured.score * 100) / 100,
           semantic: Math.round(semantic * 100) / 100,
           preferences: Math.round(preferences.score * 100) / 100,
+          values: Math.round(values.score * 100) / 100,
         },
         reasons: [
+          // Values leads when present - it's the most specific "why", and
+          // the one users explicitly asked to see spelled out rather than
+          // buried behind a generic score.
+          ...values.reasons,
           // Deliberately not phrased as "matches your work style" or
           // similar - profileSemanticRaw is cosine similarity over a
           // hashed bag-of-words vector (see embeddings.ts), which detects

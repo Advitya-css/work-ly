@@ -84,6 +84,7 @@ function profileWith(skills: string[], yearsExperience = 5): FullCareerProfile {
     achievements: [],
     certifications: [],
     documents: [],
+    workValues: [],
   };
 }
 

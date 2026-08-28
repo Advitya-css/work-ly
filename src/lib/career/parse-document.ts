@@ -13,6 +13,7 @@ import { createProject } from "@/lib/db/projects";
 import { createSkill } from "@/lib/db/skills";
 import { createAchievement } from "@/lib/db/achievements";
 import { createCertification } from "@/lib/db/certifications";
+import { replaceCandidateValues } from "@/lib/db/candidate-values";
 import { storageProvider } from "@/lib/storage";
 
 function parseDate(value: string | undefined): Date | null {
@@ -34,6 +35,7 @@ export interface ParseDocumentResult {
     achievements: number;
     certifications: number;
     transferableSkills: number;
+    workValues: number;
   };
 }
 
@@ -76,6 +78,7 @@ export async function parseDocumentAndBuildProfile(
         achievements: 0,
         certifications: 0,
         transferableSkills: 0,
+        workValues: 0,
       },
     };
   }
@@ -230,6 +233,18 @@ export async function parseDocumentAndBuildProfile(
       ),
     ]);
 
+    // Replaces rather than adds - see replaceCandidateValues for why a
+    // fresh parse supersedes the previous inference instead of piling on.
+    await replaceCandidateValues(
+      profile.id,
+      extraction.workValues.map((v) => ({
+        value: v.value,
+        confidence: v.confidence,
+        evidence: v.evidence,
+        source: "AI_INFERENCE" as const,
+      })),
+    );
+
     await updateDocumentStatus(documentId, "PARSED");
 
     return {
@@ -242,6 +257,7 @@ export async function parseDocumentAndBuildProfile(
         achievements: extraction.achievements.length,
         certifications: extraction.certifications.length,
         transferableSkills: extraction.transferableSkills.length,
+        workValues: extraction.workValues.length,
       },
     };
   } catch (error) {

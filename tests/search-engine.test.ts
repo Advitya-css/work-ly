@@ -110,6 +110,7 @@ function context(overrides: Partial<SearchContext> = {}): SearchContext {
     candidateSeniority: "MID",
     careerGoal: null,
     profileLocation: null,
+    profileValues: [],
     ...overrides,
   };
 }
@@ -205,5 +206,67 @@ describe("searchJobs — the engine behind Top Picks / Standard Search / Explore
     if (reasons.includes("Shares notable language")) {
       expect(reasons).toContain("Shares notable language with your profile");
     }
+  });
+});
+
+describe("Values & Culture Matching", () => {
+  it("scores a climate-focused job higher than an equivalent job with no stated culture, for a candidate whose CV supports sustainability_climate", () => {
+    // This is the user's own example: someone whose CV shows real
+    // sustainability/climate work should see a green-tech role rank above
+    // an otherwise-equivalent role that states no particular culture.
+    const climateJob = job({
+      title: "Data Analyst",
+      description: "Support our climate strategy team with carbon accounting and renewable energy reporting.",
+      requiredSkills: ["SQL"],
+    });
+    const genericJob = job({
+      title: "Data Analyst",
+      description: "Support the finance team with reporting and analysis.",
+      requiredSkills: ["SQL"],
+    });
+
+    const ctx = context({ profileValues: [{ value: "sustainability_climate", confidence: 0.8 }] });
+    const result = searchJobs({ jobs: [climateJob, genericJob], query: "", context: ctx, limit: 10, mode: "BALANCED" });
+
+    const climateResult = result.results.find((r) => r.job.id === climateJob.id)!;
+    const genericResult = result.results.find((r) => r.job.id === genericJob.id)!;
+
+    expect(climateResult.score).toBeGreaterThan(genericResult.score);
+    expect(climateResult.components.values).toBe(1);
+    expect(genericResult.components.values).toBe(0.5);
+  });
+
+  it("explains the match in the reasoning text, by name", () => {
+    const climateJob = job({
+      description: "Our mission is measurable climate impact - carbon accounting and renewable energy at scale.",
+    });
+    const ctx = context({ profileValues: [{ value: "sustainability_climate", confidence: 0.8 }] });
+    const result = searchJobs({ jobs: [climateJob], query: "", context: ctx, limit: 10, mode: "BALANCED" });
+    expect(result.results[0].reasons[0]).toContain("Aligns with your interest in");
+    expect(result.results[0].reasons[0].toLowerCase()).toContain("sustainability");
+  });
+
+  it("stays neutral (0.5) for a candidate with no recorded values, never inventing a boost or a penalty", () => {
+    const climateJob = job({ description: "Climate strategy, carbon accounting, renewable energy." });
+    const result = searchJobs({ jobs: [climateJob], query: "", context: context({ profileValues: [] }), limit: 10, mode: "BALANCED" });
+    expect(result.results[0].components.values).toBe(0.5);
+  });
+
+  it("stays neutral (0.5) for a job that states no culture signal at all, even for a candidate with strong recorded values", () => {
+    const plainJob = job({ title: "Data Analyst", description: "Analyze data and build dashboards.", requiredSkills: [] });
+    const ctx = context({ profileValues: [{ value: "sustainability_climate", confidence: 0.9 }] });
+    const result = searchJobs({ jobs: [plainJob], query: "", context: ctx, limit: 10, mode: "BALANCED" });
+    expect(result.results[0].components.values).toBe(0.5);
+  });
+
+  it("mildly penalizes a job that states a *different* culture than the one the candidate's CV supports", () => {
+    const startupJob = job({
+      title: "Data Analyst",
+      description: "Scrappy early-stage startup, wear many hats, move fast.",
+      requiredSkills: [],
+    });
+    const ctx = context({ profileValues: [{ value: "sustainability_climate", confidence: 0.9 }] });
+    const result = searchJobs({ jobs: [startupJob], query: "", context: ctx, limit: 10, mode: "BALANCED" });
+    expect(result.results[0].components.values).toBe(0.4);
   });
 });

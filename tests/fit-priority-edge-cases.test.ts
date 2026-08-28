@@ -70,6 +70,7 @@ function profileWith(skills: string[] = [], overrides: Partial<NonNullable<FullC
     achievements: [],
     certifications: [],
     documents: [],
+    workValues: [],
   };
 }
 
@@ -164,6 +165,7 @@ describe("coverage threshold", () => {
       achievements: [],
       certifications: [],
       documents: [],
+      workValues: [],
     };
     const job = jobWith({
       requiredSkills: [],
@@ -321,6 +323,7 @@ describe("NaN / corrupt-data safety", () => {
       achievements: [],
       certifications: [],
       documents: [],
+      workValues: [],
     };
     const job = jobWith({ requiredExperienceYears: 5 });
     const fit = deterministicScoringProvider.analyzeFit({ profile, careerGoal: null, job });

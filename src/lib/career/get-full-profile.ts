@@ -8,8 +8,10 @@ import { listSkillsByProfileId } from "@/lib/db/skills";
 import { listAchievementsByProfileId } from "@/lib/db/achievements";
 import { listCertificationsByProfileId } from "@/lib/db/certifications";
 import { listDocumentsByUserId } from "@/lib/db/documents";
+import { listCandidateValuesByProfileId } from "@/lib/db/candidate-values";
 import type {
   Achievement,
+  CandidateValueSignal,
   CareerProfile,
   Certification,
   Document,
@@ -28,6 +30,7 @@ export interface FullCareerProfile {
   achievements: Achievement[];
   certifications: Certification[];
   documents: Document[];
+  workValues: CandidateValueSignal[];
 }
 
 /** Single place that assembles everything the Career Profile page, the
@@ -46,10 +49,11 @@ export async function getFullCareerProfile(userId: string): Promise<FullCareerPr
       achievements: [],
       certifications: [],
       documents,
+      workValues: [],
     };
   }
 
-  const [educations, experiences, projects, skills, achievements, certifications] =
+  const [educations, experiences, projects, skills, achievements, certifications, workValues] =
     await Promise.all([
       listEducationByProfileId(profile.id),
       listExperienceByProfileId(profile.id),
@@ -57,7 +61,8 @@ export async function getFullCareerProfile(userId: string): Promise<FullCareerPr
       listSkillsByProfileId(profile.id),
       listAchievementsByProfileId(profile.id),
       listCertificationsByProfileId(profile.id),
+      listCandidateValuesByProfileId(profile.id),
     ]);
 
-  return { profile, educations, experiences, projects, skills, achievements, certifications, documents };
+  return { profile, educations, experiences, projects, skills, achievements, certifications, documents, workValues };
 }

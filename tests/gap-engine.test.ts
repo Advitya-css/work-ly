@@ -149,6 +149,7 @@ function profileWith(opts: {
     achievements: [],
     certifications: [],
     documents: [],
+    workValues: [],
   };
 }
 
