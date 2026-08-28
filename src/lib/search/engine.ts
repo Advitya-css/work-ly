@@ -390,7 +390,8 @@ export function rankJobs(
   jobs: DiscoveredJob[],
   context: SearchContext,
   expansion: QueryExpansion,
-  mode: SearchMode = "BALANCED"
+  mode: SearchMode = "BALANCED",
+  matchValues: boolean = false
 ): ScoredJob[] {
   const expandedRoleNames = expansion.expandedRoles.map((role) => role.role);
   const queryEmbedding =
@@ -414,14 +415,20 @@ export function rankJobs(
         ? cosineSimilarity(context.profileEmbedding, job.embedding)
         : 0;
 
-      const values = valuesScore(job, context.profileValues);
+      const values = matchValues ? valuesScore(job, context.profileValues) : { score: 0, reasons: [] };
 
-      const score =
+      let baseScore = 
         keyword * WEIGHTS[mode].keyword +
         structured.score * WEIGHTS[mode].structured +
         semantic * WEIGHTS[mode].semantic +
-        preferences.score * WEIGHTS[mode].preferences +
-        values.score * WEIGHTS[mode].values;
+        preferences.score * WEIGHTS[mode].preferences;
+      
+      // Values Boost: If matchValues is on and there is alignment, explicitly add up to 15% bonus.
+      if (matchValues && values.score > 0.5) {
+        baseScore += 0.15;
+      }
+      
+      const score = baseScore;
 
       const matchedExpansion =
         keyword < 1 && expandedRoleNames.length > 0
@@ -466,6 +473,7 @@ export type SearchMode = "BALANCED" | "STRICT_SKILLS" | "EXPLORE";
 
 export interface SearchJobsInput {
   mode?: SearchMode;
+  matchValues?: boolean;
   jobs: DiscoveredJob[];
   query: string;
   filters?: JobFilters;

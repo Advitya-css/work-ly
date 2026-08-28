@@ -56,6 +56,7 @@ export function DiscoveryBoard({
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
   const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
+  const [matchValues, setMatchValues] = useState(false);
 
   // A bucket filter selected in one mode (e.g. "Strong" while browsing
   // Standard Search results) used to silently stay applied after switching
@@ -71,14 +72,14 @@ export function DiscoveryBoard({
   }, [searchMode]);
 
   const searchResult = useMemo(
-    () => searchJobs({ jobs, query, context, limit: 200, mode }),
+    () => searchJobs({ jobs, query, context, limit: 200, mode, matchValues }),
     [jobs, query, context, mode],
   );
 
   const topPicks = useMemo(() => {
     if (query.trim() !== "") return [];
     // baseline is already sorted by the highly-tuned blended relevance score (b.score)
-    const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED" });
+    const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED", matchValues });
     return baseline.results
       .filter(
         (r) =>
@@ -218,6 +219,24 @@ export function DiscoveryBoard({
             {pending ? <Loader2 className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : <Radar />)}
             {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : "Discover")}
           </Button>
+          <div className="flex items-center gap-2 border rounded-md px-3 py-1.5 bg-background shadow-sm">
+            <input 
+              type="checkbox" 
+              id="matchValuesToggle"
+              checked={matchValues} 
+              onChange={(e) => setMatchValues(e.target.checked)} 
+              className="rounded text-primary focus:ring-primary h-4 w-4"
+            />
+            <label htmlFor="matchValuesToggle" className="text-sm font-medium cursor-pointer select-none">
+              Match my Values
+            </label>
+            <div className="group relative flex items-center justify-center">
+              <Info className="size-4 text-muted-foreground" />
+              <div className="absolute bottom-full mb-2 hidden w-64 rounded-md bg-popover p-2 text-xs text-popover-foreground shadow-md group-hover:block z-50">
+                Turn this on to cross-reference jobs with your extracted core values (e.g., sustainability, fast-paced). Aligned jobs get a +15% fit boost.
+              </div>
+            </div>
+          </div>
           <AddFeedForm />
         </div>
       </div>
@@ -237,7 +256,7 @@ export function DiscoveryBoard({
         <Alert>
           <Sparkles className="size-4" />
           <AlertDescription>
-            <span className="font-medium text-foreground">Searched live for: </span>
+            <span className="font-medium text-purple-600">✨ AI Thought Translation: </span> Based on your interest, we scraped the web for: 
             {lastSearchTermsUsed.join(", ")}.
           </AlertDescription>
         </Alert>
