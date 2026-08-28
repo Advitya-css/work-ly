@@ -200,3 +200,57 @@ export const himalayasSource: JobSourceAdapter = {
     }));
   },
 };
+
+// --- THE MUSE ---
+export const museSource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "themuse",
+  name: "The Muse",
+  legalBasis: "The Muse publishes a free public JSON API (themuse.com/api/public/jobs) for syndicating their job listings.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim().toLowerCase() || "";
+    // We'll fetch 2 pages to get up to 40 jobs, since we have to filter locally for keywords
+    let allJobs: any[] = [];
+    for (let page = 1; page <= 2; page++) {
+      try {
+        let url = `https://www.themuse.com/api/public/jobs?page=${page}`;
+        const locationName = asString(context.config.locationName) || context.homeLocation;
+        if (locationName) {
+           // The Muse requires exact location matches for its API, but taking just the city or state helps.
+           const city = locationName.split(',')[0].trim();
+           url += `&location=${encodeURIComponent(city)}`;
+        }
+        const body = await fetchWithGuards(url);
+        const parsed = JSON.parse(body);
+        if (parsed.results && Array.isArray(parsed.results)) {
+           allJobs = allJobs.concat(parsed.results);
+        }
+      } catch (e) {
+        // Ignore pagination errors if we hit the end
+      }
+    }
+    
+    let filtered = allJobs;
+    if (keyword) {
+      filtered = filtered.filter((j: any) =>
+        textOf(j.name).toLowerCase().includes(keyword) ||
+        textOf(j.company?.name).toLowerCase().includes(keyword) ||
+        textOf(j.contents).toLowerCase().includes(keyword)
+      );
+    }
+    
+    return filtered.slice(0, context.limit).map((job: any) => ({
+      externalId: `themuse:${job.id}`,
+      title: asString(job.name) ?? "Untitled role",
+      company: asString(job.company?.name),
+      location: asString(job.locations?.[0]?.name),
+      description: job.contents ? stripTags(job.contents) : null,
+      url: asString(job.refs?.landing_page),
+      postedAt: job.publication_date ? new Date(job.publication_date) : null,
+      seniority: asString(job.levels?.[0]?.name),
+      industry: asString(job.categories?.[0]?.name),
+    }));
+  },
+};
