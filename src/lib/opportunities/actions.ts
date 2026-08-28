@@ -44,7 +44,7 @@ export async function setOpportunityStatusAction(id: string, status: Opportunity
 }
 
 import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
-import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
 
 export async function generateTailoredApplicationAction(opportunityId: string) {
@@ -58,8 +58,8 @@ export async function generateTailoredApplicationAction(opportunityId: string) {
     const job = await getJobById(user.id, opportunity.jobId);
     if (!job) return { error: "Job not found" };
 
-    const profile = await getCareerProfileByUserId(user.id);
-    if (!profile) return { error: "Please complete your career profile first." };
+    const profile = await getFullCareerProfile(user.id);
+    if (!profile.profile) return { error: "Please complete your career profile first." };
 
     const result = await generateTailoredApplication(profile, job);
     return { data: result };

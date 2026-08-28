@@ -23,16 +23,17 @@ export type ComponentMap = { [key: string]: ScoreComponent };
 /**
  * Below this, no score is shown.
  *
- * 0.25 is a judgement call and worth stating plainly rather than burying.
- * Deliberately lower than an earlier 0.6: that value withheld scores for
- * plenty of entry-level roles where most components are legitimately
- * "assumed" rather than "measured" (thin CVs, junior postings with few
- * stated requirements) - not because the assessment was unreliable, but
- * because there was less to measure in the first place. 0.25 still refuses
- * a score built almost entirely from unavailable data - see
- * tests/fit-priority-edge-cases.test.ts for the regression guard on this
- * exact threshold - while no longer punishing roles that are simply early
- * in someone's career.
+ * 0.40 is a judgement call and worth stating plainly rather than burying.
+ * This has moved twice: an original 0.6 withheld scores for plenty of
+ * entry-level roles where most components are legitimately "assumed"
+ * rather than "measured" (thin CVs, junior postings with few stated
+ * requirements), so it was lowered to 0.25 - then raised back up to 0.40
+ * after 0.25 let a handful of edge-case, almost-entirely-assumed low-data
+ * jobs through with scores that looked more confident than the underlying
+ * data justified. 0.40 is the current balance between those two failure
+ * modes - see tests/fit-priority-edge-cases.test.ts for the regression
+ * guard on this exact threshold - and if it moves again, that guard should
+ * be updated deliberately, not left silently failing.
  */
 export const MIN_COVERAGE_FOR_SCORE = 0.40;
 

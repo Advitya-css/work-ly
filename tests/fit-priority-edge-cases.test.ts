@@ -142,14 +142,14 @@ function analysisFrom(fit: ReturnType<typeof deterministicScoringProvider.analyz
 }
 
 describe("coverage threshold", () => {
-  it("MIN_COVERAGE_FOR_SCORE is the current product value (0.25), not a stale default", () => {
-    // Regression guard: a prior local copy of this file had the threshold
-    // hard-coded to 0.6, which was since deliberately lowered so entry-level
-    // roles (short, sparse postings with fewer measurable components) don't
-    // get an unreliable score withheld when there's genuinely enough signal.
+  it("MIN_COVERAGE_FOR_SCORE is the current product value (0.40), not a stale default", () => {
+    // Regression guard: this threshold has moved twice already - 0.6
+    // (withheld too many entry-level roles) -> 0.25 (let edge-case,
+    // almost-entirely-assumed low-data jobs through with an
+    // overconfident-looking score) -> 0.40 (see lib/scoring/coverage.ts).
     // If this constant ever changes again it should be a deliberate product
-    // decision, not something that silently drifts back.
-    expect(MIN_COVERAGE_FOR_SCORE).toBe(0.25);
+    // decision reflected here too, not something that silently drifts back.
+    expect(MIN_COVERAGE_FOR_SCORE).toBe(0.40);
   });
 
   it("withholds a fit score below the coverage threshold", () => {

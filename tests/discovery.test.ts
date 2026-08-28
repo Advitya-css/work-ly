@@ -229,6 +229,20 @@ describe("hidden role discovery", () => {
     const roles = expansion.expandedRoles.map((r) => r.role);
     expect(roles).toContain("Product Owner");
   });
+
+  // Regression guard for a real user complaint: "urban planning and
+  // climate" (a vague-interest, Explore-mode-style query) returned nothing
+  // useful because no cluster covered that space at all - the local
+  // embedding provider is lexical (see embeddings.ts) and cannot bridge
+  // "climate" to "Sustainability Analyst" on its own.
+  it("expands a climate/sustainability interest into the roles actually advertised", () => {
+    const sustainabilityProfile =
+      "Sustainability coordinator. ESG reporting, carbon accounting, renewable energy policy, stakeholder engagement.";
+    const expansion = expandQuery("urban planning and climate", sustainabilityProfile);
+    const roles = expansion.expandedRoles.map((r) => r.role);
+    expect(roles).toContain("Sustainability Analyst");
+    expect(roles.some((r) => r.includes("Climate") || r.includes("Environmental"))).toBe(true);
+  });
 });
 
 describe("listingMatchesQueryLiterally", () => {

@@ -67,6 +67,8 @@ export interface CareerProfile {
   isPartTimeMode?: boolean;
   isFreelanceMode?: boolean;
   availability?: string | null;
+  /** Explicit, revocable opt-in gating the /p/[id] public share page. */
+  isPublic?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

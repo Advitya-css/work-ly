@@ -18,11 +18,11 @@ export async function enhancePathwayWithActionablePlans(
         return action;
       }
       
-      const prompt = `You are an elite, $500/hr executive career strategist. Your client wants to become a \${targetRole}.
-\${profile.profile?.isFreelanceMode ? "CRITICAL CONTEXT: This candidate operates in the GIG ECONOMY (freelance, contract, or musician). Do NOT give them generic 9-to-5 corporate advice. Focus on portfolio, networking, clients, etc." : ""}
+      const prompt = `You are an elite, $500/hr executive career strategist. Your client wants to become a ${targetRole}.
+${profile.profile?.isFreelanceMode ? "CRITICAL CONTEXT: This candidate operates in the GIG ECONOMY (freelance, contract, or musician). Do NOT give them generic 9-to-5 corporate advice. Focus on portfolio, networking, clients, etc." : ""}
 
-Their next 30/60/90 day milestone is: "\${action.title}"
-Current context: "\${action.description}"
+Their next 30/60/90 day milestone is: "${action.title}"
+Current context: "${action.description}"
 
 Your task: Rewrite this milestone's description into a highly actionable, premium, step-by-step masterclass.
 
@@ -46,7 +46,7 @@ FORMAT REQUIREMENTS (Must use Markdown):
           return { ...action, description: result.content.trim() };
         }
       } catch (err) {
-        console.error(`[workly:pathway-planner] failed to enhance action \${action.title}:`, err);
+        console.error(`[workly:pathway-planner] failed to enhance action ${action.title}:`, err);
       }
       return action;
     })

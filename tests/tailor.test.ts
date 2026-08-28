@@ -11,16 +11,33 @@ vi.mock("../src/lib/ai/index", () => ({
 }));
 
 describe("AI Tailoring & Reminders", () => {
+  // Shaped like FullCareerProfile (profile + structured child arrays), not
+  // the old flat CareerProfile - generateTailoredApplication used to take
+  // the flat shape and read .experience/.education off it, fields that
+  // don't exist on that type at all. That went unnoticed because the
+  // prompt template's interpolations were accidentally escaped
+  // (`\${profile.experience}` instead of `${profile.experience}`), so the
+  // AI was silently sent the literal placeholder text instead of any real
+  // profile data. This fixture, and the assertion below, guard against
+  // that regressing.
   const mockProfile = {
-    id: "prof-1",
-    userId: "user-1",
-    experience: "5 years React",
-    skills: '{"React","TypeScript"}',
-    education: "B.S. CS",
-    isPartTimeMode: false,
-    isFreelanceMode: false,
-    openToRelocation: false,
-    includeRemote: true,
+    profile: {
+      id: "prof-1",
+      userId: "user-1",
+      headline: "Frontend Engineer",
+      summary: "React specialist focused on performance.",
+      isPartTimeMode: false,
+      isFreelanceMode: false,
+    },
+    experiences: [
+      { title: "Frontend Engineer", company: "Acme", isCurrent: true, description: "Built React apps." },
+    ],
+    educations: [{ degree: "B.S.", fieldOfStudy: "Computer Science", institution: "State University" }],
+    skills: [{ name: "React" }, { name: "TypeScript" }],
+    projects: [],
+    achievements: [],
+    certifications: [],
+    documents: [],
   };
 
   const mockJob = {
@@ -63,11 +80,18 @@ describe("AI Tailoring & Reminders", () => {
     });
 
     const result = await generateTailoredApplication(mockProfile as any, mockJob as any);
-    
+
     expect(result.coverLetter).toContain("Dear Vercel");
     expect(result.resumeBullets).toHaveLength(2);
     expect(result.resumeBullets[0]).toBe("Built apps with React");
     expect(aiProvider.complete).toHaveBeenCalledTimes(1);
+
+    // The prompt actually sent to the AI must contain the candidate's real
+    // data, not the literal, unrendered "${...}" template text.
+    const prompt = vi.mocked(aiProvider.complete).mock.calls[0][0].messages[0].content;
+    expect(prompt).toContain("Frontend Engineer");
+    expect(prompt).toContain("State University");
+    expect(prompt).not.toContain("${");
   });
 
   it("should successfully generate a follow-up email", async () => {

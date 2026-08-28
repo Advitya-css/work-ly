@@ -13,6 +13,7 @@ import {
 
 import { PageHeader } from "@/components/shared/page-header";
 import { DeleteDreamJobButton } from "@/components/dream-job/delete-dream-job-button";
+import { BuildPathwayFromDreamJobButton } from "@/components/pathway/build-pathway-from-dream-job-button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -248,9 +249,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               <p className="text-sm font-medium text-foreground">{analysis.highestImpactNextStep}</p>
             </div>
           </div>
-          <Button asChild size="sm" className="shrink-0">
-            <a href="#improvement-plan">Build My Pathway</a>
-          </Button>
+          <BuildPathwayFromDreamJobButton dreamJobId={id} />
         </CardContent>
       </Card>
 

@@ -39,7 +39,11 @@ export default async function CareerProfilePage() {
       <PageHeader
         title="Career Profile"
         description="The single source of truth Workly uses to understand where you stand today."
-        action={full.profile ? <ShareProfileButton profileId={full.profile.id} /> : undefined}
+        action={
+          full.profile ? (
+            <ShareProfileButton profileId={full.profile.id} initialIsPublic={Boolean(full.profile.isPublic)} />
+          ) : undefined
+        }
       />
 
       <SectionTabs section="career" />

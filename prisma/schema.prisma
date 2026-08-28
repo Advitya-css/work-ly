@@ -115,6 +115,12 @@ model CareerProfile {
   isFreelanceMode Boolean @default(false)
   availability    String? // e.g. "Weekends", "Evenings", "Mon-Wed-Fri"
 
+  // --- Public share link (/p/[id]) ---
+  // Explicit, revocable opt-in. Defaults false so a profile is never
+  // publicly viewable until the user's own "Share Profile" action sets
+  // this - see 20261012000000_career_profile_public_opt_in for why.
+  isPublic Boolean @default(false)
+
   // Deprecated as of Phase 2 — superseded by the structured Skill model
   // below (name/category/proficiency/evidence/source/recency). Left in
   // place so Phase 1 data already saved isn't dropped; no longer written

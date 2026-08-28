@@ -153,6 +153,31 @@ export const ROLE_CLUSTERS: RoleCluster[] = [
     ],
     rationale: "Engineering titles split by stack and seniority but overlap heavily in practice.",
   },
+  {
+    aliases: [
+      "urban planning",
+      "climate",
+      "sustainability",
+      "environmental",
+      "climate change",
+      "green jobs",
+    ],
+    roles: [
+      "Sustainability Analyst",
+      "Urban Planner",
+      "Climate Policy Analyst",
+      "Environmental Planner",
+      "ESG Analyst",
+      "Sustainability Consultant",
+      "Transportation Planner",
+    ],
+    affinitySignals: [
+      "sustainability", "climate", "environmental", "urban", "planning", "zoning", "policy",
+      "esg", "carbon", "emissions", "renewable", "transit", "land use", "resilience",
+    ],
+    rationale:
+      "\"Climate\" or \"urban planning\" as a search term matches almost nothing directly - the actual openings are titled sustainability, ESG, planning or policy roles.",
+  },
 ];
 
 /** How strongly a profile belongs to a cluster, 0-1. */

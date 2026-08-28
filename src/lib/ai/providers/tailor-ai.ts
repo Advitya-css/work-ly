@@ -1,30 +1,64 @@
 import { aiProvider } from "@/lib/ai";
-import type { CareerProfile, Job } from "@/lib/db/types";
+import type { Job } from "@/lib/db/types";
+import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 
 export interface TailoredApplication {
   coverLetter: string;
   resumeBullets: string[];
 }
 
+/**
+ * Builds the "who this candidate is" section from the structured profile
+ * (experiences/education/skills), not the deprecated flat
+ * headline/summary-only shape - see profileSearchText in
+ * lib/discovery/profile-text.ts for the sibling version used for search.
+ */
+function candidateSummary(profile: FullCareerProfile): string {
+  const lines: string[] = [];
+  if (profile.profile?.headline) lines.push(`Headline: ${profile.profile.headline}`);
+  if (profile.profile?.summary) lines.push(`Summary: ${profile.profile.summary}`);
+
+  if (profile.experiences.length > 0) {
+    lines.push(
+      "Experience:",
+      ...profile.experiences.map(
+        (e) =>
+          `- ${e.title} at ${e.company}${e.isCurrent ? " (current)" : ""}${
+            e.description ? `: ${e.description}` : ""
+          }`,
+      ),
+    );
+  }
+  if (profile.educations.length > 0) {
+    lines.push(
+      "Education:",
+      ...profile.educations.map(
+        (e) => `- ${[e.degree, e.fieldOfStudy].filter(Boolean).join(", ")} — ${e.institution}`,
+      ),
+    );
+  }
+  if (profile.skills.length > 0) {
+    lines.push(`Skills: ${profile.skills.map((s) => s.name).join(", ")}`);
+  }
+
+  return lines.length > 0 ? lines.join("\n") : "Not provided.";
+}
+
 export async function generateTailoredApplication(
-  profile: CareerProfile,
+  profile: FullCareerProfile,
   job: Job,
 ): Promise<TailoredApplication> {
   const prompt = `You are an expert career coach and executive resume writer.
 Your goal is to help the candidate tailor their application to perfectly match the job description, ensuring they pass the ATS (Applicant Tracking System) and impress the hiring manager.
 
 === CANDIDATE PROFILE ===
-Experience: \${profile.experience ?? "Not provided"}
-Skills: \${profile.skills ?? "Not provided"}
-Education: \${profile.education ?? "Not provided"}
-University: \${profile.university ?? "Not provided"}
-Major: \${profile.major ?? "Not provided"}
+${candidateSummary(profile)}
 
 === TARGET JOB ===
 Title: ${job.title}
 Company: ${job.company}
 Description:
-\${job.description}
+${job.description ?? "Not provided."}
 
 === INSTRUCTIONS ===
 1. Generate an elegant, highly customized cover letter (3-4 paragraphs) that connects the candidate's background to the specific needs of the job. Do not use generic fluff. Use a professional, confident tone.

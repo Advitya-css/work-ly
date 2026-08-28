@@ -12,20 +12,27 @@ import { toArray } from "@/lib/db/array";
 export const metadata: Metadata = {
   title: "Career Profile",
   description: "View my professional profile on Workly",
+  // Reachable by anyone with the link (that's the point of "Share Profile"),
+  // but not opted into search-engine indexing - that's a separate decision
+  // nobody's made yet, and this is still personal data.
+  robots: { index: false, follow: false },
 };
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
   const { rows } = await pool.query(
-    `SELECT cp.*, u.name, u."avatarUrl" 
-     FROM career_profiles cp 
-     JOIN users u ON cp."userId" = u.id 
-     WHERE cp.id = $1`,
+    `SELECT cp.*, u.name, u."avatarUrl"
+     FROM career_profiles cp
+     JOIN users u ON cp."userId" = u.id
+     WHERE cp.id = $1 AND cp."isPublic" = true`,
     [id]
   );
 
   const profile = rows[0];
+  // Same response whether the id doesn't exist or the owner never made it
+  // public - never confirm to a visitor that a given id is a real, private
+  // profile.
   if (!profile) notFound();
 
   const skills = profile.skills ? toArray(profile.skills) : [];

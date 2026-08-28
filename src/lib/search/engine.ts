@@ -80,7 +80,19 @@ export interface ScoredJob {
 const WEIGHTS = {
   BALANCED: { keyword: 0.35, structured: 0.25, semantic: 0.25, preferences: 0.15 },
   STRICT_SKILLS: { keyword: 0.55, structured: 0.35, semantic: 0.0, preferences: 0.10 },
-  EXPLORE: { keyword: 0.0, structured: 0.20, semantic: 0.60, preferences: 0.20 },
+  // Zeroing keyword here used to also zero out role-graph expansion - the
+  // one signal in this file actually built to solve "I don't know what
+  // this is called, but these are real job titles for it" (see
+  // role-graph.ts). keywordScore() scores a job whose title matches an
+  // *expanded* role name almost as highly as a literal match, so a fully
+  // zero keyword weight discarded that entirely and left Explore mode
+  // depending only on the local hashed-bag-of-words "semantic" signal -
+  // which, per embeddings.ts's own doc comment, cannot tell that
+  // "Sustainability Analyst" relates to "climate" unless the words
+  // literally overlap. A real, non-zero keyword weight here means a query
+  // the role graph actually covers surfaces its real job titles instead of
+  // relying on lexical luck.
+  EXPLORE: { keyword: 0.30, structured: 0.15, semantic: 0.35, preferences: 0.20 },
 };
 
 const SENIORITY_ORDER: SeniorityLevel[] = [
@@ -209,15 +221,22 @@ function structuredScore(job: DiscoveredJob, context: SearchContext): { score: n
   }
 
   if (job.workMode === "REMOTE") {
-    const candidateCountries = [...(context.careerGoal?.countries || [])];
-    if (context.profileLocation && !candidateCountries.some(c => context.profileLocation!.includes(c))) {
-      // Very naive extraction: if they typed "San Francisco, US", we want "US".
-      // But we can just use the whole string for a substring check against job.country.
-      candidateCountries.push(context.profileLocation);
-    }
-    
-    // If the job specifies a country (e.g. UK, Germany) and the candidate has a country/location constraint (e.g. SF, USA)
-    // and they don't match, penalize heavily.
+    // Deliberately NOT falling back to context.profileLocation here. That
+    // used to happen ("if they typed 'San Francisco, US', we want 'US' -
+    // but we can just use the whole string"), and it didn't work: a
+    // free-text location like "Austin, TX" or "San Francisco, CA" doesn't
+    // contain the string "US" as a substring, so almost every US
+    // candidate who typed a city (rather than literally the word "US")
+    // failed this match and every remote job got hit with a 50% penalty
+    // and a "Remote, but restricted to US" reason that wasn't true. Only
+    // careerGoal.countries is real, structured country data (a country
+    // picker, not free text) - the same signal preferenceScore already
+    // trusts for its own country check below. Guessing a country from a
+    // location string is exactly the kind of unearned confidence this
+    // codebase avoids everywhere else; this was the one place it hadn't
+    // been fixed yet.
+    const candidateCountries = context.careerGoal?.countries ?? [];
+
     if (job.country && candidateCountries.length > 0 && !candidateCountries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
       parts.push(0.3);
       reasons.push(`Remote, but restricted to ${job.country}.`);
@@ -351,8 +370,14 @@ export function rankJobs(
           preferences: Math.round(preferences.score * 100) / 100,
         },
         reasons: [
-          ...(profileSemanticRaw > 0.45 ? ["Strong match with your background and work style"] : []),
-          ...structured.reasons, 
+          // Deliberately not phrased as "matches your work style" or
+          // similar - profileSemanticRaw is cosine similarity over a
+          // hashed bag-of-words vector (see embeddings.ts), which detects
+          // shared terminology, not values, culture, or working style. A
+          // confident-sounding claim the engine can't actually back up is
+          // exactly the "feels fake" failure mode this line used to cause.
+          ...(profileSemanticRaw > 0.45 ? ["Shares notable language with your profile - worth a look even without an exact title match"] : []),
+          ...structured.reasons,
           ...preferences.reasons
         ].slice(0, 4),
         viaExpansion: matchedExpansion

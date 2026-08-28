@@ -225,6 +225,20 @@ describe("server action guards", () => {
   });
 });
 
+// Pages that are deliberately public - reachable by anyone with the link,
+// not just the record's owner - because the person who owns the record
+// explicitly opted in. Each entry's `mustContain` pattern must still appear
+// in the page's own source, so removing the actual consent check (not just
+// this allowlist entry) is what it'd take to slip an unguarded page past
+// this test - the allowlist alone can't create a blind spot.
+const DELIBERATELY_PUBLIC_PAGES: { path: string; mustContain: RegExp; why: string }[] = [
+  {
+    path: "app/p/[id]/page.tsx",
+    mustContain: /"isPublic"\s*=\s*true/,
+    why: 'the "Share Profile" feature - gated on career_profiles.isPublic, which only setProfilePublicAction (the profile\'s own owner) can ever set to true',
+  },
+];
+
 describe("dynamic page guards", () => {
   const pages = walk(path.join(SRC, "app"), (f) => f.endsWith("page.tsx")).filter((f) =>
     f.includes("["),
@@ -238,6 +252,7 @@ describe("dynamic page guards", () => {
     const missing: string[] = [];
     for (const page of pages) {
       const source = readFileSync(page, "utf8");
+      const relPath = path.relative(SRC, page);
       // Two valid idioms exist in this codebase: (a) fetch by id alone, then
       // compare `record.userId !== user.id` and 404/redirect; (b) pass the
       // signed-in user's id straight into a `*ById(userId, id)` lookup whose
@@ -249,7 +264,14 @@ describe("dynamic page guards", () => {
       // getApplicationWithJobById(user.id, id)) look unguarded when they were not.
       const comparesOwner = /userId !== user\.id|userId !== currentUser\.id/.test(source);
       const scopedLookup = /ById\(\s*(user|currentUser)\.id\s*,/.test(source);
-      if (!comparesOwner && !scopedLookup) missing.push(path.relative(SRC, page));
+
+      // A third, narrower idiom: a page that's meant to be public to
+      // anyone with the link, gated by the record owner's own consent
+      // rather than by who's currently signed in.
+      const publicEntry = DELIBERATELY_PUBLIC_PAGES.find((p) => p.path === relPath);
+      const consentGated = publicEntry != null && publicEntry.mustContain.test(source);
+
+      if (!comparesOwner && !scopedLookup && !consentGated) missing.push(relPath);
     }
     expect(missing, `pages without an ownership check: ${missing.join(", ")}`).toEqual([]);
   });

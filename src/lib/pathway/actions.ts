@@ -66,6 +66,27 @@ export async function generatePathwayAction(): Promise<GeneratePathwayState> {
   return {};
 }
 
+/**
+ * The "Build My Pathway" entry point from a specific Dream Job's analysis
+ * page. Two things distinguish this from generatePathwayAction above: the
+ * pathway is scoped to *this* dream job rather than whichever one happens
+ * to be first, and success lands the user on /career-path directly - the
+ * dream-job page previously had a same-named button that only anchor-
+ * scrolled to a static "Improvement plan" list further down the same page
+ * and never touched the real pathway system at all, which is exactly the
+ * "confusing/mixed" experience this replaces.
+ */
+export async function generatePathwayFromDreamJobAction(dreamJobId: string): Promise<GeneratePathwayState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const result = await generatePathway(user.id, { dreamJobId });
+  if ("error" in result) return { error: result.error };
+
+  revalidatePathwayViews();
+  redirect("/career-path");
+}
+
 export async function setStepStatusAction(stepId: string, status: PathwayItemStatus): Promise<void> {
   const step = await requireOwnedStep(stepId);
   if (!step) return;

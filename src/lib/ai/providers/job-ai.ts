@@ -70,7 +70,12 @@ async function run(jobText: string): Promise<ExtractedJob> {
       { role: "user", content: stripPromptInjectionMarkers(jobText.slice(0, 20000)) },
     ],
     responseSchema: RESPONSE_SCHEMA,
-    temperature: 0.1,
+    // Zero, not just low: this is factual extraction feeding a supposedly
+    // precise Fit score downstream, not creative writing. Any temperature
+    // above 0 means re-analyzing the exact same job text can extract a
+    // different skill list or seniority and silently shift the score - the
+    // "the fit score changes for no reason" failure mode.
+    temperature: 0,
   });
 
   const validated = extractedJobSchema.safeParse(result.parsed);

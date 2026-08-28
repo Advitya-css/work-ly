@@ -25,12 +25,14 @@ export async function generatePremiumActionPlan(
   targetRole: string,
   gaps: GapPriority[]
 ): Promise<PremiumActionPlan> {
-  const gapContext = gaps.map(g => `- \${g.title} (\${g.category}): \${g.reasoning}`).join("\\n");
-  
-  const prompt = `You are an elite, $500/hr executive career strategist. Your client wants to land a role as a \${targetRole}.
-Here is their profile summary: \${profile.profile?.headline || "Not provided"} - \${profile.profile?.summary || ""}
+  const gapContext = gaps
+    .map((g) => `- ${g.title} (${g.gapType}, ${g.impact} impact, ${g.difficulty} to close): ${g.description}`)
+    .join("\n");
+
+  const prompt = `You are an elite, $500/hr executive career strategist. Your client wants to land a role as a ${targetRole}.
+Here is their profile summary: ${profile.profile?.headline || "Not provided"} - ${profile.profile?.summary || ""}
 Here are their critical skill gaps identified by our engine:
-\${gapContext || "None explicitly identified. Focus on networking, portfolio building, and interviewing."}
+${gapContext || "None explicitly identified. Focus on networking, portfolio building, and interviewing."}
 
 Your job is to build a hyper-specific, highly actionable 30/60/90 day curriculum to close these gaps.
 Do NOT use generic corporate fluff.
@@ -60,7 +62,7 @@ Return ONLY the JSON. No markdown fences, no prose.`;
   });
 
   try {
-    const raw = res.content.replace(/^[\\s\\S]*?\\{/, "{").replace(/\\s*\\}[\\s\\S]*$/, "}");
+    const raw = res.content.replace(/^[\s\S]*?\{/, "{").replace(/\s*\}[\s\S]*$/, "}");
     const parsed = JSON.parse(raw) as PremiumActionPlan;
     if (!parsed.thirtyDays || !parsed.sixtyDays || !parsed.ninetyDays) {
       throw new Error("Invalid schema");

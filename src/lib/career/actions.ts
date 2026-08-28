@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth";
-import { upsertCareerProfile } from "@/lib/db/career-profile";
+import { upsertCareerProfile, setCareerProfilePublic } from "@/lib/db/career-profile";
 import { createCareerGoal, deleteCareerGoal, getCareerGoalById, updateCareerGoal } from "@/lib/db/career-goals";
 import { careerGoalSchema, careerProfileSchema } from "@/lib/validations/career";
 
@@ -166,6 +166,20 @@ export async function saveLocationAction(location: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
   await upsertCareerProfile(user.id, { location });
+  revalidatePath("/career-profile");
+  return { success: true };
+}
+
+/**
+ * The only path that can ever make a profile publicly viewable at /p/[id].
+ * Requires a signed-in user and only ever touches that user's own row, so
+ * "Share Profile" is an explicit, per-user consent action rather than
+ * something that was already true for everyone by default.
+ */
+export async function setProfilePublicAction(isPublic: boolean): Promise<{ error?: string; success?: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Unauthorized" };
+  await setCareerProfilePublic(user.id, isPublic);
   revalidatePath("/career-profile");
   return { success: true };
 }

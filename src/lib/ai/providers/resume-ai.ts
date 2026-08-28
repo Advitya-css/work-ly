@@ -146,7 +146,11 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
       { role: "user", content: stripPromptInjectionMarkers(resumeText.slice(0, 20000)) },
     ],
     responseSchema: RESPONSE_SCHEMA,
-    temperature: 0.1,
+    // Zero, not just low - see the matching comment in providers/job-ai.ts.
+    // This extraction feeds every downstream Fit score for this candidate,
+    // so it needs to be the same skill list every time the same resume
+    // text is (re-)parsed, not a slightly different one each run.
+    temperature: 0,
   });
 
   const parsed = (result.parsed ?? {}) as Partial<ExtractedCareerProfile>;

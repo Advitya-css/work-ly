@@ -60,7 +60,22 @@ export function DiscoveryBoard({
     // baseline is already sorted by the highly-tuned blended relevance score (b.score)
     const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED" });
     return baseline.results
-      .filter((r) => r.job.fitScore != null && (r.job.fitCoverage ?? 0) >= 0.5 && r.score >= 0.65) // Ironclad floor: must be highly relevant
+      .filter(
+        (r) =>
+          r.job.fitScore != null &&
+          // Null fitCoverage means this job was discovered before coverage
+          // tracking existed (or, going forward, before the discovery run
+          // that scored it could measure enough to compute one) - treat it
+          // the same way DiscoveredJob.fitCoverage's own doc comment and
+          // every other coverage-gated display in this codebase do: unknown
+          // is not the same as zero, so it doesn't get excluded. Coercing
+          // it to 0 here silently hid every job that predated the coverage
+          // column - in practice, on a real account, most or all of them -
+          // which is why Top Picks could come up empty even with plenty of
+          // good matches sitting right there.
+          (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
+          r.score >= 0.65, // Ironclad floor: must be highly relevant
+      )
       .slice(0, 3);
   }, [jobs, query, context]);
 

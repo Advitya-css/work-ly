@@ -29,6 +29,7 @@ function mapRow(row: Record<string, unknown>): CareerProfile {
     isPartTimeMode: Boolean(row.isPartTimeMode),
     isFreelanceMode: Boolean(row.isFreelanceMode),
     availability: (row.availability as string | null) ?? null,
+    isPublic: Boolean(row.isPublic),
     createdAt: row.createdAt as Date,
     updatedAt: row.updatedAt as Date,
   };
@@ -127,6 +128,19 @@ export async function upsertCareerProfile(
  * student screens each edit one slice of the profile, so routing them
  * through it would silently wipe whatever the other screen had saved.
  */
+
+/**
+ * Flips the explicit opt-in behind the /p/[id] public share page. Scoped by
+ * userId so a caller can only ever change their own profile's visibility -
+ * this is the only thing that's allowed to turn a profile public.
+ */
+export async function setCareerProfilePublic(userId: string, isPublic: boolean): Promise<void> {
+  await getOrCreateCareerProfile(userId);
+  await pool.query(
+    `UPDATE career_profiles SET "isPublic" = $2, "updatedAt" = now() WHERE "userId" = $1`,
+    [userId, isPublic],
+  );
+}
 
 export interface StudentProfileInput {
   university?: string | null;
