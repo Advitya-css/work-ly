@@ -172,10 +172,16 @@ export interface RunDiscoveryOptions {
   expandSearch?: boolean;
 }
 
+/** `runDiscovery`'s DB row plus the search terms actually issued to live
+ * sources this run - Explore mode's UI shows this back to the user so
+ * "we searched for X, Y, Z" is a report of what really happened, not a
+ * separate, uncapped, client-only expansion that can drift from it. */
+export type DiscoveryRunResult = DiscoveryRun & { searchTermsUsed: string[] };
+
 export async function runDiscovery(
   userId: string,
   options: RunDiscoveryOptions = {},
-): Promise<DiscoveryRun> {
+): Promise<DiscoveryRunResult> {
   const query = options.query?.trim() || undefined;
   const run = await createRun(userId, query ?? null);
 
@@ -184,6 +190,9 @@ export async function runDiscovery(
   let duplicatesFolded = 0;
   let newJobs = 0;
   let newHighPriority = 0;
+  // Populated as soon as it's computed below; stays [] if the run fails
+  // before that point (nothing was actually searched yet).
+  let searchTermsUsed: string[] = [];
 
   try {
     const [profile, careerGoal, sources, existingJobs] = await Promise.all([
@@ -206,6 +215,7 @@ export async function runDiscovery(
     const roleGraphTitles = options.expandSearch ? expansion.expandedRoles.map((r) => r.role) : [];
     const aiTitles = options.expandSearch && query ? await suggestTitlesForInterest(query) : [];
     const searchTerms = buildSearchTerms(query, roleGraphTitles, aiTitles);
+    searchTermsUsed = searchTerms.filter((t): t is string => Boolean(t));
 
     // Computed once - doesn't vary per source or per search term.
     const homeLocation = (() => {
@@ -418,7 +428,7 @@ export async function runDiscovery(
       if (storedDuplicate) duplicatesFolded++;
     }
 
-    return await completeRun(run.id, {
+    const completed = await completeRun(run.id, {
       status: "COMPLETED",
       sourcesRun,
       rawFound,
@@ -426,9 +436,10 @@ export async function runDiscovery(
       newJobs,
       newHighPriority,
     });
+    return { ...completed, searchTermsUsed };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Discovery failed.";
-    return completeRun(run.id, {
+    const failed = await completeRun(run.id, {
       status: "FAILED",
       sourcesRun,
       rawFound,
@@ -437,6 +448,7 @@ export async function runDiscovery(
       newHighPriority,
       errorMessage: message,
     });
+    return { ...failed, searchTermsUsed };
   }
 }
 

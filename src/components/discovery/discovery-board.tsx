@@ -47,6 +47,12 @@ export function DiscoveryBoard({
   const [activeBucket, setActiveBucket] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  // What Explore mode actually issued to live sources, from the server
+  // action's own report - not the separate, uncapped, client-only
+  // expansion below (which explains locally-stored search results, not
+  // what got queried against the internet). Kept distinct on purpose so
+  // this line can never claim more than what really happened.
+  const [lastSearchTermsUsed, setLastSearchTermsUsed] = useState<string[] | null>(null);
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
   const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
@@ -150,6 +156,7 @@ export function DiscoveryBoard({
   function discover() {
     setMessage(null);
     setUpgradeRequired(false);
+    setLastSearchTermsUsed(null);
     startTransition(async () => {
       const result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" });
       if (result.upgradeRequired) {
@@ -162,6 +169,12 @@ export function DiscoveryBoard({
               ? "No new listings. Anything found was either already saved, or hidden by your location filters."
               : `Discovered ${result.found} new listing${result.found === 1 ? "" : "s"}.`,
         );
+        // Only worth showing once there's more than the literal query to
+        // report - a plain Standard Search run also returns searchTermsUsed
+        // (just the one literal term), which isn't worth a line of its own.
+        if (result.searchTermsUsed && result.searchTermsUsed.length > 1) {
+          setLastSearchTermsUsed(result.searchTermsUsed);
+        }
       }
     });
   }
@@ -215,6 +228,21 @@ export function DiscoveryBoard({
         </p>
       )}
 
+      {/* What Explore mode actually sent to live sources this run - a
+          direct report of real server-side behavior, not the separate
+          client-side expansion below (which explains why already-known
+          results match, and can legitimately list more titles than were
+          ever queried live). */}
+      {lastSearchTermsUsed && (
+        <Alert>
+          <Sparkles className="size-4" />
+          <AlertDescription>
+            <span className="font-medium text-foreground">Searched live for: </span>
+            {lastSearchTermsUsed.join(", ")}.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {upgradeRequired && (
         <Alert>
           <Sparkles className="size-4" />
@@ -227,13 +255,18 @@ export function DiscoveryBoard({
       )}
 
 
-      {/* Hidden role discovery. Shown whenever expansion actually fired */}
+      {/* Hidden role discovery: why already-known results below also count
+          as a match for this query. This is a LOCAL relevance signal over
+          jobs already in your feed, computed instantly in the browser - it
+          is not a report of what got searched live (see "Searched live
+          for" above, shown only after an Explore run). It can legitimately
+          list more titles than a live search ever used. */}
       {searchResult.expansion.expandedRoles.length > 0 && (
         <Alert>
           <Sparkles className="size-4" />
           <AlertDescription>
             <span className="font-medium text-foreground">
-              Also searching related roles:{" "}
+              Also matching related roles:{" "}
               {[...new Set(searchResult.expansion.expandedRoles.map((r) => r.role))].join(", ")}.
             </span>{" "}
             {searchResult.expansion.expandedRoles[0].rationale}

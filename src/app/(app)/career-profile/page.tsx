@@ -10,6 +10,7 @@ import { ExperienceSection } from "@/components/career/sections/experience-secti
 import { EducationSection } from "@/components/career/sections/education-section";
 import { ProjectSection } from "@/components/career/sections/project-section";
 import { SkillSection } from "@/components/career/sections/skill-section";
+import { ValuesSection } from "@/components/career/sections/values-section";
 import { AchievementSection } from "@/components/career/sections/achievement-section";
 import { CertificationSection } from "@/components/career/sections/certification-section";
 import { getCurrentUser } from "@/lib/auth";
@@ -57,6 +58,7 @@ export default async function CareerProfilePage() {
           <EducationSection educations={full.educations} />
           <ProjectSection projects={full.projects} />
           <SkillSection skills={full.skills} />
+          <ValuesSection values={full.workValues} />
           <AchievementSection achievements={full.achievements} />
           <CertificationSection certifications={full.certifications} />
         </div>

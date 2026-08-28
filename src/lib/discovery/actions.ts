@@ -118,7 +118,7 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
 export async function runDiscoveryAction(
   query?: string,
   options: { expandSearch?: boolean } = {},
-): Promise<{ error?: string; found?: number; upgradeRequired?: boolean }> {
+): Promise<{ error?: string; found?: number; upgradeRequired?: boolean; searchTermsUsed?: string[] }> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -141,9 +141,9 @@ export async function runDiscoveryAction(
   revalidateDiscoveryViews();
 
   if (run.status === "FAILED") {
-    return { error: run.errorMessage ?? "Discovery failed." };
+    return { error: run.errorMessage ?? "Discovery failed.", searchTermsUsed: run.searchTermsUsed };
   }
-  return { found: run.newJobs };
+  return { found: run.newJobs, searchTermsUsed: run.searchTermsUsed };
 }
 
 export interface AddSourceInput {
