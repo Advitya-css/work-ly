@@ -776,6 +776,12 @@ function buildRecommendation(
 // Main entry point
 // ---------------------------------------------------------------------------
 
+function getCoreWords(text: string | null | undefined): Set<string> {
+  if (!text) return new Set();
+  const stopwords = new Set(["and","or","the","a","an","in","on","at","to","for","of","with","as","by","is","are","this","that","freelance","associate","junior","senior","lead","manager","director","head","vp","president","assistant","coordinator","specialist","officer","staff","worker","level","i","ii","iii","iv"]);
+  return new Set(text.toLowerCase().split(/\W+/).filter(w => w.length > 2 && !stopwords.has(w)));
+}
+
 function analyzeFit({
   profile,
   careerGoal,
@@ -786,6 +792,29 @@ function analyzeFit({
   job: Job;
 }): JobFitAnalysis {
   const candidateYears = estimateYearsExperience(profile);
+  
+  // Severe Mismatch Penalty: if the job title shares absolutely zero core concepts
+  // with the candidate's career goal, current headline, or top skills, it is likely
+  // an irrelevant garbage pull from an API. We calculate a severe penalty multiplier.
+  const titleWords = getCoreWords(job.title);
+  const profileWords = new Set([
+    ...getCoreWords(careerGoal?.title ?? ""),
+    ...getCoreWords(profile.profile?.headline ?? ""),
+    ...getCoreWords(profile.experiences[0]?.title ?? ""),
+    ...profile.skills.filter(s => !s.isTransferable).map(s => s.name.toLowerCase())
+  ]);
+  
+  let hasIntersection = false;
+  for (const w of titleWords) {
+    if (profileWords.has(w) || Array.from(profileWords).some((pw) => typeof pw === "string" && typeof w === "string" && (pw.includes(w) || w.includes(pw)))) {
+      hasIntersection = true;
+      break;
+    }
+  }
+  
+  // If no intersection, penalize the final fit score heavily
+  const severeMismatchPenalty = (titleWords.size > 0 && !hasIntersection) ? 0.25 : 1.0;
+
 
   const skills = scoreSkills(job, profile.skills);
   const experience = scoreExperience(job, candidateYears);
@@ -818,7 +847,7 @@ function analyzeFit({
   // too little was assessable the number is withheld entirely rather than
   // dressed up, because a precise figure derived from two of seven
   // components is exactly the kind of number that persuades wrongly.
-  const fitScore = total.score ?? 0;
+  const fitScore = total.score != null ? Math.round(total.score * severeMismatchPenalty) : 0;
   const competitiveness: JobFitAnalysis["competitiveness"] =
     total.score == null ? "Insufficient data" : fitScore >= 75 ? "High" : fitScore >= 50 ? "Moderate" : "Low";
 
