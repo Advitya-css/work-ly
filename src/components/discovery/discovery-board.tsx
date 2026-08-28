@@ -112,6 +112,9 @@ export function DiscoveryBoard({
 
   const visible = useMemo(() => {
     let filtered = searchResult.results;
+    
+    // UI Guard: Never show explicitly rejected/irrelevant jobs in the default feed.
+    // If the user wants to see them, they must explicitly click the "Low Priority" bucket filter.
     if (activeBucket) {
       filtered = filtered.filter((result) => {
         const recommendation = result.job.recommendation;
@@ -119,6 +122,13 @@ export function DiscoveryBoard({
         if (activeBucket === "strong") return recommendation === "APPLY";
         if (activeBucket === "stretch") return recommendation === "STRETCH";
         return recommendation === "LOW_PRIORITY" || recommendation === "SKIP";
+      });
+    } else if (query.trim() === "") {
+      // No bucket selected and no query typed: they are just looking at the default feed.
+      // Hide explicitly rejected jobs. Showing them here makes the user think the AI recommended them!
+      filtered = filtered.filter((result) => {
+         const rec = result.job.recommendation;
+         return rec === "APPLY_NOW" || rec === "APPLY" || rec === "STRETCH";
       });
     }
 
