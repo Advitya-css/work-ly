@@ -146,8 +146,32 @@ function scoreSkills(job: Job, profileSkills: Skill[]) {
   if (requiredTotal > 0) parts.push(`${requiredHit} of ${requiredTotal} required skills`);
   if (preferredTotal > 0) parts.push(`${preferredHit} of ${preferredTotal} preferred skills`);
 
+  // A named skill list this short is a thin basis for a confident ratio -
+  // "1 of 1 required skills" reads identically whether that one skill is
+  // "leadership" (present in almost every profile, on almost every job,
+  // meaning nothing) or something genuinely specific. Skills is the
+  // heaviest single component (30 of 100), and a real production case
+  // surfaced exactly this: an Occupational Therapy posting with one
+  // extracted required skill ("leadership") the candidate's profile also
+  // listed, maxing out all 30 points on a single generic coincidence and
+  // dragging the blended Fit score into the 60s-70s for a role with no
+  // real relevance to the candidate's background. Below
+  // SKILL_SAMPLE_FULL_CONFIDENCE named skills, the component's own ceiling
+  // shrinks in proportion to the sample size - the ratio itself is left
+  // honest (you genuinely did match what was there), but a thin sample can
+  // no longer carry the same weight as a real, multi-skill comparison. The
+  // points this removes are not redistributed anywhere: they simply drop
+  // out of both `earned` and `possible` in totalFrom, which is exactly
+  // what shrinks `coverage` for a job Workly only got a thin read on - the
+  // same "missing data reduces how much of the picture we claim to have"
+  // principle this file states for fully-unavailable components, applied
+  // here to a component that is available but too thin to trust fully.
+  const SKILL_SAMPLE_FULL_CONFIDENCE = 3;
+  const sampleSize = requiredTotal + preferredTotal;
+  const effectiveWeight = WEIGHTS.skills * Math.min(1, sampleSize / SKILL_SAMPLE_FULL_CONFIDENCE);
+
   return {
-    breakdown: component(ratio * WEIGHTS.skills, WEIGHTS.skills, `You match ${parts.join(" and ")}.`),
+    breakdown: component(ratio * effectiveWeight, effectiveWeight, `You match ${parts.join(" and ")}.`),
     requiredMatches,
     preferredMatches,
   };
