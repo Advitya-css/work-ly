@@ -19,16 +19,24 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
+  id                          String    @id @default(uuid())
+  email                       String    @unique
   // Null when the account was created via an external auth provider
   // (e.g. Supabase Auth / OAuth) that owns the credential instead of us.
-  passwordHash String?
-  name         String?
-  avatarUrl    String?
-  onboardedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  passwordHash                String?
+  name                        String?
+  avatarUrl                   String?
+  onboardedAt                 DateTime?
+  emailVerified               Boolean   @default(false)
+  verificationToken           String?
+  verificationTokenExpiresAt  DateTime?
+  verificationCodeHash        String?
+  verificationCodeExpiresAt   DateTime?
+  verificationAttempts        Int       @default(0)
+  resetPasswordToken          String?
+  resetPasswordTokenExpiresAt DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
   isPro           Boolean   @default(false)
   lastAlertSentAt DateTime?
@@ -157,13 +165,13 @@ model CareerProfile {
   preferredLocations String[] @default([])
   openToRemote       Boolean  @default(true)
 
-  educations         Education[]
-  experiences        Experience[]
-  projects           Project[]
-  skillEntries       Skill[]
-  achievements       Achievement[]
-  certifications     Certification[]
-  candidateValues    CandidateValueSignal[]
+  educations      Education[]
+  experiences     Experience[]
+  projects        Project[]
+  skillEntries    Skill[]
+  achievements    Achievement[]
+  certifications  Certification[]
+  candidateValues CandidateValueSignal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -303,10 +311,10 @@ model CandidateValueSignal {
 /// src/lib/student/country-rules-db.ts for how it's read, with the static
 /// COUNTRY_RULES list as a fallback if the table is ever empty.
 model StudentCountryRule {
-  id         String   @id @default(uuid())
-  code       String   @unique
+  id         String  @id @default(uuid())
+  code       String  @unique
   label      String
-  unverified Boolean  @default(false)
+  unverified Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1266,3 +1274,11 @@ model DiscoveryRun {
 // model ScoringCalibration   — learned weights per user once enough outcomes exist
 // model AttributeCorrelation — persisted role/company/industry/skill correlations
 // model CvVariantPerformance — which CV positioning correlates with interviews
+
+model RateLimit {
+  key        String   @id
+  count      Int
+  expires_at DateTime
+
+  @@map("rate_limits")
+}
