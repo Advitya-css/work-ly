@@ -17,6 +17,9 @@ import {
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { getDreamJobById } from "@/lib/db/dream-jobs";
+import { createSkill } from "@/lib/db/skills";
+import { scoringProvider } from "@/lib/scoring";
+import { pool } from "@/lib/db/pool";
 import { simulate } from "@/lib/pathway/what-if";
 import type { Scenario, SimulationResult } from "@/lib/pathway/what-if-types";
 import type { PathwayItemStatus } from "@/lib/db/types";
@@ -91,6 +94,24 @@ export async function setStepStatusAction(stepId: string, status: PathwayItemSta
   const step = await requireOwnedStep(stepId);
   if (!step) return;
   await setStepStatus(stepId, status);
+  
+  if (status === "COMPLETED" && step.relatedSkill) {
+    const pathway = await getPathwayById(step.pathwayId);
+    if (pathway) {
+      // Silently auto-add the acquired skill to the user's profile
+      await createSkill(pathway.userId, { name: step.relatedSkill, proficiency: "BEGINNER" });
+      
+      // We don't overwrite the entire pathway, but we recalculate startingReadiness to reflect the jump!
+      const profile = await getFullCareerProfile(pathway.userId);
+      const careerGoal = await getPrimaryCareerGoal(pathway.userId);
+      const dreamJob = pathway.dreamJobId ? await getDreamJobById(pathway.dreamJobId) : null;
+      if (dreamJob && dreamJob.status === "PARSED") {
+        const fit = scoringProvider.analyzeFit({ profile, careerGoal, job: dreamJob as any });
+        await pool.query('UPDATE career_pathways SET "startingReadiness" = $1 WHERE id = $2', [fit.fitScore, pathway.id]);
+      }
+    }
+  }
+
   revalidatePathwayViews();
 }
 

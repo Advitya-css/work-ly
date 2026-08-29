@@ -32,7 +32,7 @@ export function BuildPathwayFromDreamJobButton({ dreamJobId }: { dreamJobId: str
     <div className="flex flex-col items-end gap-2">
       <Button type="button" size="sm" className="shrink-0" onClick={handleClick} disabled={pending}>
         {pending ? <Loader2 className="animate-spin" /> : <Route />}
-        {pending ? "Building your pathway…" : "Build My Pathway"}
+        {pending ? "Building your pathway…" : "Build My Dream Pathway"}
       </Button>
       {error && (
         <Alert variant="destructive" className="max-w-sm">

@@ -17,6 +17,7 @@ import { IllustrationPathway } from "@/components/shared/empty-illustration";
 import { PathwayStepCard } from "@/components/pathway/pathway-step-card";
 import { ActionCard } from "@/components/pathway/action-card";
 import { GeneratePathwayButton } from "@/components/pathway/generate-pathway-button";
+import { PathwayCheckIn } from "@/components/pathway/pathway-check-in";
 import { WhatIfPanel } from "@/components/pathway/what-if-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

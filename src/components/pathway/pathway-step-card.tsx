@@ -83,11 +83,19 @@ export function PathwayStepCard({ step, isLast }: { step: PathwayStep; isLast: b
           {/* Unlocked opportunities: only rendered when the count came from
               real Opportunity rows, so this claim is always checkable. */}
           {step.unlockedOpportunityCount > 0 && (
-            <p className="flex items-start gap-1.5 text-xs text-primary">
-              <Unlock className="mt-0.5 size-3.5 shrink-0" />
-              Completing this step could make you relevant to {step.unlockedOpportunityCount} additional
-              opportunit{step.unlockedOpportunityCount === 1 ? "y" : "ies"} you&apos;re already tracking.
-            </p>
+            <div className={`flex items-center gap-2 rounded-md p-2 px-3 text-xs ${step.status === "COMPLETED" ? "bg-green-50 text-green-700" : "bg-primary/5 text-primary"}`}>
+              <Unlock className="size-3.5 shrink-0" />
+              <span>
+                {step.status === "COMPLETED" 
+                  ? `You can apply to ${step.unlockedOpportunityCount} new opportunit${step.unlockedOpportunityCount === 1 ? "y" : "ies"} now!` 
+                  : `Completing this could unlock ${step.unlockedOpportunityCount} additional opportunit${step.unlockedOpportunityCount === 1 ? "y" : "ies"}.`}
+              </span>
+              {step.status === "COMPLETED" && (
+                <Button variant="link" size="sm" className="h-auto p-0 text-green-700 underline" onClick={() => window.location.href = '/opportunities'}>
+                  View them
+                </Button>
+              )}
+            </div>
           )}
 
           {project && (
