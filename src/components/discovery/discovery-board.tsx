@@ -55,7 +55,7 @@ export function DiscoveryBoard({
   const [lastSearchTermsUsed, setLastSearchTermsUsed] = useState<string[] | null>(null);
   const [sort, setSort] = useState<"priority" | "fit" | "recent">("priority");
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
-  const [searchMode, setSearchMode] = useState<"search" | "explore">("search");
+  const [searchMode, setSearchMode] = useState<"search" | "explore" | "company" | "major">("search");
   const [matchValues, setMatchValues] = useState(false);
 
   // A bucket filter selected in one mode (e.g. "Strong" while browsing
@@ -215,8 +215,18 @@ export function DiscoveryBoard({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={searchMode === "explore" ? "Brainstorm roles, industries, or interests... (e.g., 'climate tech data')" : "Filter by title, company, or keyword..."}
-              className={`pl-9 ${searchMode === "explore" ? "border-purple-500/30 focus-visible:ring-purple-500/30 shadow-sm" : ""}`}
+              placeholder={
+                searchMode === "explore" ? "Brainstorm roles, industries, or interests... (e.g., 'climate tech data')" : 
+                searchMode === "company" ? "Enter a company name (e.g., 'Apple', 'Stripe', 'OpenAI')..." :
+                searchMode === "major" ? "Enter your college major (e.g., 'Computer Science', 'City Planning')..." :
+                "Filter by title, company, or keyword..."
+              }
+              className={`pl-9 ${
+                searchMode === "explore" ? "border-purple-500/30 focus-visible:ring-purple-500/30 shadow-sm" : 
+                searchMode === "company" ? "border-blue-500/30 focus-visible:ring-blue-500/30 shadow-sm" :
+                searchMode === "major" ? "border-green-500/30 focus-visible:ring-green-500/30 shadow-sm" :
+                ""
+              }`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -225,9 +235,14 @@ export function DiscoveryBoard({
               }}
             />
           </div>
-          <Button type="button" onClick={discover} disabled={pending} className={searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}>
-            {pending ? <Loader2 className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : <Radar />)}
-            {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : "Discover")}
+          <Button type="button" onClick={discover} disabled={pending} className={
+            searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
+            searchMode === "company" ? "bg-blue-600 hover:bg-blue-700 text-white" :
+            searchMode === "major" ? "bg-green-600 hover:bg-green-700 text-white" :
+            ""
+          }>
+            {pending ? <Loader2 className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : searchMode === "company" || searchMode === "major" ? <Search className="size-4" /> : <Radar />)}
+            {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : searchMode === "company" ? "Search Company" : searchMode === "major" ? "Find Roles" : "Discover")}
           </Button>
           <div className="flex items-center gap-2 border rounded-md px-3 py-1.5 bg-background shadow-sm">
             <input 
