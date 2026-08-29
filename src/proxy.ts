@@ -10,9 +10,23 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
  * CSP is nonce-based for scripts rather than `'unsafe-inline'`: a fresh
  * nonce is minted per request, put on the CSP header, and handed to the app
  * via the `x-nonce` request header so the root layout can read it with
- * `headers()`. Next.js detects the nonce on the request and applies it to
- * every script it generates itself, so this closes off arbitrary inline
- * script injection without the app needing to do anything else.
+ * `headers()`. Next.js is supposed to detect the nonce on the request and
+ * apply it to every script it generates itself.
+ *
+ * `'strict-dynamic'` is deliberately NOT in script-src, even though it's
+ * the natural pairing with a nonce. In production this build's own
+ * framework/chunk scripts were coming back without a matching nonce
+ * attribute (a live Turbopack/Next 16 nonce-propagation issue, not
+ * something this file controls), and `'strict-dynamic'` explicitly turns
+ * OFF host-based (`'self'`) allowlisting per the CSP spec the moment it's
+ * present - so every one of those scripts was blocked and the entire app
+ * failed to hydrate: no button, form, or client interaction on any page
+ * worked for anyone. `'self'` alone is a real, meaningful policy (only
+ * same-origin scripts run, no inline script without a matching nonce, no
+ * remote script injection), just without the narrower same-origin-upload
+ * protection `'strict-dynamic'` adds on top. Re-add `'strict-dynamic'`
+ * once the nonce-propagation issue is confirmed fixed upstream - don't
+ * drop it silently for a future change.
  *
  * `style-src` keeps `'unsafe-inline'`: a nonce only covers `<style>`
  * elements, not the `style="..."` attribute React's `style={{...}}` prop
@@ -24,7 +38,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 function buildCsp(nonce: string): string {
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data:",
     "font-src 'self'",
