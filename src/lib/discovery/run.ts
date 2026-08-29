@@ -254,6 +254,43 @@ export async function runDiscovery(
 
     const activeSources = sources.filter((source) => source.status !== "DISABLED");
 
+    // Dynamically inject ATS sources if the user's query names a specific company
+    if (query && options.expandSearch) {
+      const companySlug = await extractTargetCompany(query);
+      if (companySlug) {
+        // Inject Greenhouse
+        activeSources.push({
+          id: `dynamic-greenhouse-${companySlug}`,
+          userId,
+          name: `${companySlug} (Greenhouse)`,
+          kind: "COMPANY_CAREER",
+          status: "ACTIVE",
+          config: { boardToken: companySlug },
+          legalBasis: "User-requested dynamic ATS search",
+          errorMessage: null,
+          lastRunAt: null,
+          lastRunFoundCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        // Inject Lever
+        activeSources.push({
+          id: `dynamic-lever-${companySlug}`,
+          userId,
+          name: `${companySlug} (Lever)`,
+          kind: "COMPANY_CAREER",
+          status: "ACTIVE",
+          config: { boardToken: companySlug },
+          legalBasis: "User-requested dynamic ATS search",
+          errorMessage: null,
+          lastRunAt: null,
+          lastRunFoundCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+    }
+
     // Collected across all sources first, so cross-source duplicates are
     // caught before anything is written.
     const collected: { listing: NormalizedListing; sourceConfigId: string; sourceName: string; sourceKind: DiscoveredJob["sourceKind"] }[] = [];

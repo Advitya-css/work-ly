@@ -169,7 +169,7 @@ export function DiscoveryBoard({
     setUpgradeRequired(false);
     setLastSearchTermsUsed(null);
     startTransition(async () => {
-      const result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" });
+      const result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" || searchMode === "company" || searchMode === "major" });
       if (result.upgradeRequired) {
         setUpgradeRequired(true);
       } else {
@@ -229,7 +229,7 @@ export function DiscoveryBoard({
               onChange={(e) => setQuery(e.target.value)}
               placeholder={
                 searchMode === "explore" ? "Brainstorm roles, industries, or interests... (e.g., 'climate tech data')" : 
-                searchMode === "company" ? "Enter a company name (e.g., 'Apple', 'Stripe', 'OpenAI')..." :
+                searchMode === "company" ? "Enter a company or specific role (e.g., 'Analytics at Apple')..." :
                 searchMode === "major" ? "Enter your college major (e.g., 'Computer Science', 'City Planning')..." :
                 "Filter by title, company, or keyword..."
               }
