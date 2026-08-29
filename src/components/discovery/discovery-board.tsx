@@ -194,7 +194,7 @@ export function DiscoveryBoard({
     <div className="flex flex-col gap-5">
       {/* Search */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-4 border-b border-border pb-1">
+        <div className="flex items-center gap-4 border-b border-border pb-1 overflow-x-auto whitespace-nowrap">
           <button 
             className={`text-sm font-medium pb-2 border-b-2 transition-colors ${searchMode === "search" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             onClick={() => { setSearchMode("search"); setMode("BALANCED"); }}
@@ -206,6 +206,18 @@ export function DiscoveryBoard({
             onClick={() => { setSearchMode("explore"); setMode("EXPLORE"); }}
           >
             <Sparkles className="size-3.5" /> Brainstorm / Explore
+          </button>
+          <button 
+            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "company" ? "border-blue-500 text-blue-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            onClick={() => { setSearchMode("company"); setMode("EXPLORE"); }}
+          >
+            Target Company
+          </button>
+          <button 
+            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "major" ? "border-green-500 text-green-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            onClick={() => { setSearchMode("major"); setMode("EXPLORE"); }}
+          >
+            Search by Major
           </button>
         </div>
         
