@@ -2,6 +2,9 @@ import { greenhouseSource, leverSource, jobPostingSchemaSource } from "@/lib/dis
 import { employerFeedSource, universitySource, publicJobBoardSource } from "@/lib/discovery/sources/feeds";
 import { governmentSource } from "@/lib/discovery/sources/government";
 import { apiProviderSource } from "@/lib/discovery/sources/api-provider";
+import { joobleSource } from "@/lib/discovery/sources/jooble";
+import { reedSource } from "@/lib/discovery/sources/reed";
+import { findworkSource } from "@/lib/discovery/sources/findwork";
 import { manualImportSource } from "@/lib/discovery/sources/manual-import";
 import { demoFeedSource } from "@/lib/discovery/sources/demo-feed";
 import { arbeitnowSource, remotiveSource, jobicySource, himalayasSource, museSource } from "@/lib/discovery/sources/keyless-boards";
@@ -49,6 +52,9 @@ export const SOURCE_ADAPTERS: JobSourceAdapter[] = [
   publicJobBoardSource,
   governmentSource,
   apiProviderSource,
+  joobleSource,
+  reedSource,
+  findworkSource,
 ];
 
 export function getAdapter(id: string): JobSourceAdapter | undefined {
