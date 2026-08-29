@@ -78,8 +78,12 @@ export default async function CareerPathPage() {
 
   const progress = computeProgress(pathway);
 
+  // Find the first pending action to ask about
+  const firstPendingAction = pathway.actions.find((a: any) => a.status === "PENDING");
+
   return (
     <div className="flex flex-col gap-6">
+      <PathwayCheckIn pendingActionTitle={firstPendingAction?.title} />
       <PageHeader
         title="Career Path"
         description="A practical, ordered pathway from where you are now to where you want to be."
