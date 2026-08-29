@@ -143,7 +143,7 @@ export default async function CareerPathPage() {
           <div className="ml-4 h-6 w-px bg-border" aria-hidden />
 
           {pathway.steps.map((step, index) => (
-            <PathwayStepCard key={step.id} step={step} isLast={index === pathway.steps.length - 1} />
+            <PathwayStepCard key={step.id} step={step} isLast={index === pathway.steps.length - 1} actions={pathway.actions.filter((a: any) => a.stepId === step.id)} />
           ))}
 
           {/* TARGET marker */}

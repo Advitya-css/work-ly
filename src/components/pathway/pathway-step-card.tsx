@@ -30,9 +30,10 @@ import { cn } from "@/lib/utils";
 import { setStepStatusAction, updateStepAction } from "@/lib/pathway/actions";
 import { GAP_TYPE_LABEL } from "@/lib/jobs/labels";
 import { ITEM_STATUS_LABEL, ITEM_STATUS_VARIANT } from "@/lib/pathway/labels";
-import type { PathwayStep } from "@/lib/db/types";
+import type { PathwayStep, PathwayAction } from "@/lib/db/types";
+import { ActionCard } from "@/components/pathway/action-card";
 
-export function PathwayStepCard({ step, isLast }: { step: PathwayStep; isLast: boolean }) {
+export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayStep; isLast: boolean; actions?: PathwayAction[] }) {
   const [pending, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -104,7 +105,19 @@ export function PathwayStepCard({ step, isLast }: { step: PathwayStep; isLast: b
             </div>
           )}
 
-          {project && (
+          {actions && actions.length > 0 ? (
+            <div className="mt-3 flex flex-col gap-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
+                <FolderKanban className="size-3.5" />
+                Real-World Action Items
+              </p>
+              <div className="flex flex-col gap-3">
+                {actions.map(action => (
+                  <ActionCard key={action.id} action={action} />
+                ))}
+              </div>
+            </div>
+          ) : project && (
             <div className="mt-1 flex flex-col gap-1 rounded-lg bg-secondary/50 px-3 py-2.5">
               <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <FolderKanban className="size-3.5" />
