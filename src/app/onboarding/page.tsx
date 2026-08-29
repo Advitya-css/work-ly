@@ -11,6 +11,7 @@ import { ReviewStep } from "@/app/onboarding/review-step";
 import { StudentStep } from "@/components/onboarding/student-step";
 import { completeOnboardingAction } from "@/lib/onboarding/actions";
 import { getCurrentUser } from "@/lib/auth";
+import { listSupportedStudentCountries } from "@/lib/student/country-rules-db";
 
 export const metadata: Metadata = { title: "Welcome" };
 
@@ -115,7 +116,7 @@ export default async function OnboardingPage({
         </>
       )}
       
-      {step === "student-setup" && <StudentStep />}
+      {step === "student-setup" && <StudentStep countries={await listSupportedStudentCountries()} />}
 
 
       {step === "upload" && <UploadStep />}

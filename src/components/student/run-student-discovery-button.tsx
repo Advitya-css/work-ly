@@ -4,12 +4,13 @@
 import { useState } from "react";
 import { Loader2, Sparkles, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { runDiscoveryAction } from "@/lib/discovery/actions";
+import { runStudentDiscoveryAndTrackAction, type StudentDiscoveryType } from "@/lib/student/discovery-actions";
 import { useRouter } from "next/navigation";
 
-export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "internship" | "new-grad" }) {
+export function RunStudentDiscoveryButton({ type }: { type: StudentDiscoveryType }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [trackedCount, setTrackedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const router = useRouter();
@@ -18,18 +19,18 @@ export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "inter
     setLoading(true);
     setError(null);
     try {
-      let query = "part time";
-      if (type === "internship") query = "internship";
-      if (type === "new-grad") query = "graduate entry level";
-
-      const res = await runDiscoveryAction(query);
+      const res = await runStudentDiscoveryAndTrackAction(type);
       if (res.upgradeRequired) {
         setUpgradeRequired(true);
       } else if (res.error) {
         setError(res.error);
-      } else if (res.found === 0) {
+      } else if (!res.found) {
         setError("No jobs found in your area right now.");
+      } else if (!res.tracked) {
+        setError(`Found ${res.found} listing${res.found === 1 ? "" : "s"}, but none looked like a strong enough match to add automatically. Check Discover to review them yourself.`);
+        router.refresh();
       } else {
+        setTrackedCount(res.tracked);
         setSuccess(true);
         router.refresh();
       }
@@ -44,7 +45,7 @@ export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "inter
     return (
       <Button variant="outline" disabled className="gap-2 text-primary border-primary">
         <CheckCircle2 className="size-4" />
-        Jobs Tracked Successfully
+        {trackedCount} job{trackedCount === 1 ? "" : "s"} added below
       </Button>
     );
   }
@@ -53,7 +54,7 @@ export function RunStudentDiscoveryButton({ type }: { type: "part-time" | "inter
     return (
       <div className="flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
         <p className="text-sm text-foreground font-medium">
-          You've reached your daily limit of 3 AI discoveries.
+          You&apos;ve reached your daily limit of 3 AI discoveries.
         </p>
         <Button className="w-fit gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90">
           <Zap className="size-4 fill-current" />

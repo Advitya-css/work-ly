@@ -294,6 +294,26 @@ model CandidateValueSignal {
   @@map("candidate_value_signals")
 }
 
+/// Which countries Workly currently has sourced student work-hour rules
+/// for. Deliberately just the picker list (code/label/unverified) - the
+/// actual sourced legal text (headline/detail/confirmWith/sourceUrl per
+/// job kind) stays in src/lib/student/legal-limits.ts, since that content
+/// requires a human to read and cite an official government source before
+/// it changes. Seeded idempotently in migration 20261014000000; see
+/// src/lib/student/country-rules-db.ts for how it's read, with the static
+/// COUNTRY_RULES list as a fallback if the table is ever empty.
+model StudentCountryRule {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  label      String
+  unverified Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("student_country_rules")
+}
+
 enum SkillCategory {
   TECHNICAL
   SOFT

@@ -186,6 +186,8 @@ export default async function InternshipsPage() {
         )}
       </section>
 
+      <StudentAutoDiscoveryCard type="internship" />
+
       {profile?.studentCountry && <LegalDisclaimer />}
     </div>
   );

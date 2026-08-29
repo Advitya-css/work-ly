@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveStudentProfileAction, type StudentActionState } from "@/lib/student/actions";
-import { COUNTRY_RULES } from "@/lib/student/legal-limits";
 import type { CareerProfile } from "@/lib/db/types";
+import type { SupportedStudentCountry } from "@/lib/student/country-rules-db";
 import { useState } from "react";
 
 const initialState: StudentActionState = {};
@@ -26,7 +26,13 @@ const initialState: StudentActionState = {};
  * nothing. Note what is NOT asked: nothing here touches immigration status,
  * and the rules shown are attached to job types rather than to the person.
  */
-export function StudentSetupForm({ profile }: { profile: CareerProfile | null }) {
+export function StudentSetupForm({
+  profile,
+  countries,
+}: {
+  profile: CareerProfile | null;
+  countries: SupportedStudentCountry[];
+}) {
   const [state, formAction, pending] = useActionState(saveStudentProfileAction, initialState);
   const [country, setCountry] = useState(profile?.studentCountry ?? "");
 
@@ -75,7 +81,7 @@ export function StudentSetupForm({ profile }: { profile: CareerProfile | null })
               <SelectValue placeholder="Select a country" />
             </SelectTrigger>
             <SelectContent>
-              {COUNTRY_RULES.map((c) => (
+              {countries.map((c) => (
                 <SelectItem key={c.code} value={c.code}>
                   {c.label}
                 </SelectItem>

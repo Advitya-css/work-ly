@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { setupStudentProfileAction } from "@/lib/onboarding/actions";
+import type { SupportedStudentCountry } from "@/lib/student/country-rules-db";
 
-export function StudentStep() {
+export function StudentStep({ countries }: { countries: SupportedStudentCountry[] }) {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -85,12 +86,18 @@ export function StudentStep() {
                 <MapPin className="size-4 text-muted-foreground" />
                 Country of Study
               </Label>
-              <Input
-                id="studentCountry"
-                name="studentCountry"
-                placeholder="e.g. Canada"
-                required
-              />
+              <Select name="studentCountry" required>
+                <SelectTrigger id="studentCountry">
+                  <SelectValue placeholder="Select a country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground mt-1">
                 Required to ensure roles comply with local student visa hour limits.
               </p>

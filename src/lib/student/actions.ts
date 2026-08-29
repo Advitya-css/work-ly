@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { setStudentMode, updateStudentProfile } from "@/lib/db/career-profile";
 import { safeMessage } from "@/lib/errors";
-import { COUNTRY_RULES } from "@/lib/student/legal-limits";
+import { isSupportedStudentCountry } from "@/lib/student/country-rules-db";
 
 /**
  * Student mode is a switch on the profile rather than a separate account
@@ -95,7 +95,7 @@ export async function saveStudentProfileAction(
   const country = parsed.data.studentCountry || null;
   // A country Workly has no sourced rules for would produce a screen that
   // silently shows no limits, which reads as "there are none". Reject it.
-  if (country && !COUNTRY_RULES.some((c) => c.code === country)) {
+  if (country && !(await isSupportedStudentCountry(country))) {
     return { error: "Workly does not have sourced work rules for that country yet." };
   }
 

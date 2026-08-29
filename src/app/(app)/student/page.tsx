@@ -12,6 +12,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
 import { classifyStudentJob, rulesForCountry } from "@/lib/student/legal-limits";
+import { listSupportedStudentCountries } from "@/lib/student/country-rules-db";
+import { AddUniversityFeedForm } from "@/components/student/add-university-feed-form";
 
 export const metadata: Metadata = { title: "Student home" };
 
@@ -19,9 +21,10 @@ export default async function StudentHomePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [profile, opportunities] = await Promise.all([
+  const [profile, opportunities, countries] = await Promise.all([
     getCareerProfileByUserId(user.id),
     listOpportunitiesWithJobByUserId(user.id),
+    listSupportedStudentCountries(),
   ]);
 
   const classified = opportunities.map((o) =>
@@ -61,10 +64,26 @@ export default async function StudentHomePage() {
               : "Set your university and location to unlock local campus jobs."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <StudentSetupForm profile={profile} />
+        <CardContent className="flex flex-col gap-4">
+          <StudentSetupForm profile={profile} countries={countries} />
         </CardContent>
       </Card>
+
+      {isSetUp && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add your university&apos;s job feed</CardTitle>
+            <CardDescription>
+              Many universities publish a public vacancies feed for on-campus and student roles. Add
+              yours and it feeds straight into Discover and the lists below, alongside everything else
+              Workly watches.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AddUniversityFeedForm />
+          </CardContent>
+        </Card>
+      )}
 
       {isSetUp && (
         <div className="grid gap-4 sm:grid-cols-3">

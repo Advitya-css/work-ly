@@ -25,6 +25,7 @@ import {
   unavailable,
   MIN_COVERAGE_FOR_SCORE,
 } from "@/lib/scoring/shared";
+import { classifyStudentJob } from "@/lib/student/legal-limits";
 
 /**
  * THE FIT ENGINE.
@@ -874,12 +875,9 @@ function analyzeFit({
     checkable.length > 0 ? checkable.filter((r) => r.status === "met").length / checkable.length : null;
   const unknownCount = mandatoryRequirements.length - checkable.length;
 
-  const { recommendation, reasoning: recommendationReasoning } = buildRecommendation(
-    fitScore,
-    total.coverage,
-    mandatoryMetRatio,
-    checkable.length,
-  );
+  const built = buildRecommendation(fitScore, total.coverage, mandatoryMetRatio, checkable.length);
+  let recommendation = built.recommendation;
+  let recommendationReasoning = built.reasoning;
 
   const gaps = classifyGaps({
     job,
@@ -930,6 +928,48 @@ function analyzeFit({
   }
   if (job.seniority && seniorityRatio != null && seniorityRatio < 0.5) {
     risks.push("This role is pitched at a different seniority than your profile suggests, which may raise questions.");
+  }
+
+  // --- Student work-hour eligibility ---
+  // Gated entirely behind isStudent, so this can never change a fitScore
+  // or recommendation for a non-student profile - isStudent defaults to
+  // false and this whole block is a no-op when it is.
+  //
+  // A student who has told Workly they're looking for part-time/campus
+  // work (isPartTimeMode) still gets full-time roles surfaced by
+  // keyword-matching sources. Applying to one wastes their time at best;
+  // at worst it's a role their visa or course doesn't permit the hours
+  // for. This doesn't invent a score - it downgrades a recommendation the
+  // engine already made, using a fact the student stated about themselves,
+  // and says exactly why in the reasoning shown on screen.
+  if (profile.profile?.isStudent) {
+    if (profile.profile.isPartTimeMode && job.employmentType === "FULL_TIME") {
+      risks.push(
+        "This is a full-time role, but your student profile is set to part-time/campus work. Confirm your visa or course allows full-time hours before applying.",
+      );
+      if (recommendation === "APPLY_NOW" || recommendation === "APPLY") {
+        recommendation = "STRETCH";
+        recommendationReasoning = `${recommendationReasoning} Downgraded from a stronger match because it is full-time and your student profile is set to part-time/campus work.`;
+      }
+    }
+
+    const studentKind = classifyStudentJob({
+      title: job.title,
+      company: job.company,
+      employmentType: job.employmentType,
+      description: job.description,
+      location: job.location,
+      university: profile.profile.university ?? null,
+    });
+    if (studentKind === "wrong-location") {
+      risks.push(
+        "This role's location doesn't match your university's area, so it's unlikely to be a real on-campus fit even though it looked like one.",
+      );
+      if (recommendation === "APPLY_NOW") {
+        recommendation = "APPLY";
+        recommendationReasoning = `${recommendationReasoning} Downgraded one step because the listed location doesn't match your university.`;
+      }
+    }
   }
 
   const improvements: string[] = [];
