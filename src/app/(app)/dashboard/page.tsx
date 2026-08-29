@@ -82,6 +82,7 @@ export default async function DashboardPage() {
       <PageHeader
         title={`Welcome back${user?.name ? `, ${user.name.split(" ")[0]}` : ""}`}
         description="Here's where things stand across your career profile, goals, and pipeline."
+        action={<EnterStudentModeButton />}
       />
 
       
