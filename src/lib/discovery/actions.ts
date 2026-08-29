@@ -143,6 +143,10 @@ export async function runDiscoveryAction(
   if (run.status === "FAILED") {
     return { error: run.errorMessage ?? "Discovery failed.", searchTermsUsed: run.searchTermsUsed };
   }
+  if (run.sourcesRun === 0 && run.status === "COMPLETED") {
+    // If it "completed" but didn't run any sources successfully, every single source must have thrown an error.
+    return { error: "All active job sources failed to connect. Please try again shortly.", searchTermsUsed: run.searchTermsUsed };
+  }
   return { found: run.newJobs, searchTermsUsed: run.searchTermsUsed };
 }
 

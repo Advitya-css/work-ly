@@ -420,6 +420,8 @@ export function DiscoveryBoard({
             <p className="text-sm text-muted-foreground">
               {jobs.length === 0
                 ? "Nothing discovered yet. Press Discover to run your sources."
+                : activeBucket == null && searchResult.results.length > 0
+                ? "No highly relevant listings found. Check the Low Priority bucket to review filtered jobs, or run a new search."
                 : "No listings match this search."}
             </p>
           </CardContent>

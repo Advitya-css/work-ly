@@ -1,4 +1,5 @@
 import "server-only";
+import { UserFacingError } from "@/lib/errors";
 
 import { extractDocumentText } from "@/lib/ai/document-text";
 import { resumeParsingProvider } from "@/lib/ai/resume-parser";
@@ -104,7 +105,7 @@ export async function parseDocumentAndBuildProfile(
     // exactly as authoritative as a real one.
     const authenticity = checkAuthenticity(text, "resume");
     if (authenticity.verdict === "reject") {
-      throw new Error(authenticity.message);
+      throw new UserFacingError(authenticity.message);
     }
 
     const rawExtraction = await resumeParsingProvider.extractCareerProfile(text);

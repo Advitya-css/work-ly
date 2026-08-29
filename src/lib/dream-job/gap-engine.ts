@@ -440,7 +440,7 @@ function skillLabelForProjectTitle(skillName: string): string {
 function projectTemplateFor(skillName: string, industry: string, roleTitle: string): { project: string; deliverables: string[]; skillsDemonstrated: string[] } {
   const label = skillLabelForProjectTitle(skillName);
   const n = normalize(skillName);
-  const ind = industry ? industry.toLowerCase() : "the industry";
+  const ind = industry ? industry.toLowerCase() : "real-world";
   const role = roleTitle ? roleTitle.toLowerCase() : "your target role";
 
   // Cloud & DevOps

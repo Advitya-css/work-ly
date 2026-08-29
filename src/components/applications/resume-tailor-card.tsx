@@ -13,20 +13,25 @@ interface ResumeTailorCardProps {
 export function ResumeTailorCard({ applicationId }: ResumeTailorCardProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleTailor = async () => {
     setLoading(true);
     setContent(null);
     try {
+      setError(null);
       const res = await fetch(`/api/applications/${applicationId}/tailor-resume`, {
         method: "POST",
       });
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setContent(data.text);
+      } else {
+        setError(data.error || "Failed to generate tailored resume.");
       }
     } catch (e) {
       console.error(e);
+      setError("A network error occurred.");
     }
     setLoading(false);
   };
