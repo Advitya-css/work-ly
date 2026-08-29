@@ -38,78 +38,46 @@ export async function ensureDefaultSourcesAction(): Promise<void> {
   if (!user) redirect("/login");
 
   const existing = await listSourcesByUserId(user.id);
-  const existingKinds = new Set(existing.map((source) => source.kind));
 
-// Clean up any existing Demo feeds since we now have real sources
+  // Clean up any existing Demo feeds since we now have real sources
   const demoSources = existing.filter((s) => s.kind === "DEMO");
   for (const demo of demoSources) {
     await deleteSource(demo.id);
   }
   // Delete any fictional jobs that were already imported
-  await pool.query(`DELETE FROM discovered_jobs WHERE "sourceKind" = \'DEMO\' AND "userId" = $1`, [user.id]);
+  await pool.query(`DELETE FROM discovered_jobs WHERE "sourceKind" = 'DEMO' AND "userId" = $1`, [user.id]);
 
-  const hasArbeitnow = existing.some(
-    (source) => source.kind === "PUBLIC_JOB_BOARD" && source.config?.adapterId === "arbeitnow",
-  );
-
-  const hasAdzuna = existing.some((s) => s.config?.adapterId === "adzuna");
-  if (!hasAdzuna) {
-    const adapter = getAdapter("adzuna");
-    if (adapter && adapter.isConfigured({})) {
-      await createSource(user.id, {
-        kind: adapter.kind,
-        name: adapter.name,
-        config: { adapterId: adapter.id },
-        legalBasis: adapter.legalBasis,
-      });
+  // All keyless boards to add
+  const keylessIds = ["remotive", "jobicy", "arbeitnow", "himalayas", "themuse"];
+  for (const id of keylessIds) {
+    if (!existing.some((s) => s.config?.adapterId === id)) {
+      const adapter = getAdapter(id);
+      if (adapter) {
+        await createSource(user.id, {
+          kind: adapter.kind,
+          name: adapter.name,
+          config: { adapterId: adapter.id },
+          legalBasis: adapter.legalBasis,
+        });
+      }
     }
   }
 
-
-  const hasUsaJobs = existing.some((s) => s.config?.adapterId === "usajobs");
-  if (!hasUsaJobs) {
-    const adapter = getAdapter("usajobs");
-    if (adapter && adapter.isConfigured({})) {
-      await createSource(user.id, {
-        kind: adapter.kind,
-        name: adapter.name,
-        config: { adapterId: adapter.id },
-        legalBasis: adapter.legalBasis,
-      });
+  // All API providers to add (only if configured in env, though we can add them anyway so the user sees them and can configure them)
+  const apiIds = ["adzuna", "usajobs", "jooble", "reed", "findwork"];
+  for (const id of apiIds) {
+    if (!existing.some((s) => s.config?.adapterId === id)) {
+      const adapter = getAdapter(id);
+      // Let's add them regardless of whether they are fully configured in process.env so they appear in the UI
+      if (adapter) {
+        await createSource(user.id, {
+          kind: adapter.kind,
+          name: adapter.name,
+          config: { adapterId: adapter.id },
+          legalBasis: adapter.legalBasis,
+        });
+      }
     }
-  }
-
-
-  const hasRemotive = existing.some((s) => s.config?.adapterId === "remotive");
-  if (!hasRemotive) {
-    const adapter = getAdapter("remotive")!;
-    await createSource(user.id, {
-      kind: "PUBLIC_JOB_BOARD",
-      name: adapter.name,
-      config: { adapterId: adapter.id },
-      legalBasis: adapter.legalBasis,
-    });
-  }
-
-  const hasJobicy = existing.some((s) => s.config?.adapterId === "jobicy");
-  if (!hasJobicy) {
-    const adapter = getAdapter("jobicy")!;
-    await createSource(user.id, {
-      kind: "PUBLIC_JOB_BOARD",
-      name: adapter.name,
-      config: { adapterId: adapter.id },
-      legalBasis: adapter.legalBasis,
-    });
-  }
-
-  if (!hasArbeitnow) {
-    const adapter = getAdapter("arbeitnow")!;
-    await createSource(user.id, {
-      kind: "PUBLIC_JOB_BOARD",
-      name: adapter.name,
-      config: { adapterId: adapter.id },
-      legalBasis: adapter.legalBasis,
-    });
   }
 
   revalidateDiscoveryViews();
