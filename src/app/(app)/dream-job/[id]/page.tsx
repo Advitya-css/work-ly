@@ -249,7 +249,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               <p className="text-sm font-medium text-foreground">{analysis.highestImpactNextStep}</p>
             </div>
           </div>
-          <BuildPathwayFromDreamJobButton dreamJobId={id} />
+          <BuildPathwayFromDreamJobButton dreamJobId={id} isPro={user.isPro} />
         </CardContent>
       </Card>
 

@@ -68,7 +68,7 @@ export default async function CareerPathPage() {
             action={{ label: "Analyze your dream job", href: "/dream-job" }}
             className="w-full"
           />
-          <GeneratePathwayButton hasExisting={false} />
+          <GeneratePathwayButton hasExisting={false} isPro={user.isPro} />
         </div>
 
         {adjacentCareers.length > 0 && <CareerExplorer careers={adjacentCareers} />}
@@ -87,7 +87,7 @@ export default async function CareerPathPage() {
       <PageHeader
         title="Career Path"
         description="A practical, ordered pathway from where you are now to where you want to be."
-        action={<GeneratePathwayButton hasExisting />}
+        action={<GeneratePathwayButton hasExisting isPro={user.isPro} />}
       />
 
       <SectionTabs section="career" />

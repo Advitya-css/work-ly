@@ -12,6 +12,7 @@ function mapRow(row: Record<string, unknown>): User {
     avatarUrl: (row.avatarUrl as string | null) ?? null,
     onboardedAt: (row.onboardedAt as Date | null) ?? null,
     emailVerified: (row.emailVerified as boolean) ?? false,
+    isPro: (row.isPro as boolean) ?? false,
     verificationToken: (row.verificationToken as string | null) ?? null,
     verificationTokenExpiresAt: (row.verificationTokenExpiresAt as Date | null) ?? null,
     verificationCodeHash: (row.verificationCodeHash as string | null) ?? null,

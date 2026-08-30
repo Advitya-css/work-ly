@@ -144,7 +144,7 @@ export default async function ApplicationDetailPage({
           {application.reachedInterviewAt && (
             <div className="flex flex-col gap-4">
               <InterviewPrepCard applicationId={application.id} />
-              <TechnicalChallengeCard applicationId={application.id} roleTitle={application.job?.title ?? application.roleTitle} />
+              <TechnicalChallengeCard applicationId={application.id} roleTitle={application.job?.title ?? application.roleTitle} isPro={user.isPro} />
             </div>
           )}
 

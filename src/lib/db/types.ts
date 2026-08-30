@@ -30,6 +30,7 @@ export interface User {
   avatarUrl: string | null;
   onboardedAt: Date | null;
   emailVerified: boolean;
+  isPro: boolean;
   verificationToken: string | null;
   verificationTokenExpiresAt: Date | null;
   verificationCodeHash: string | null;

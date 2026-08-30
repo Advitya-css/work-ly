@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/dialog";
 
 import type { TailoredApplication } from "@/lib/ai/providers/tailor-ai";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 
-export function TailorApplicationButton({ opportunityId }: { opportunityId: string }) {
+export function TailorApplicationButton({ opportunityId, isPro = false }: { opportunityId: string; isPro?: boolean }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
