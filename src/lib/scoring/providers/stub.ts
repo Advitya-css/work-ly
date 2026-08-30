@@ -724,10 +724,20 @@ function buildRecommendation(
 ): { recommendation: RecommendationType; reasoning: string } {
   // Not enough of the picture to advise on at all.
   if (coverage < MIN_COVERAGE_FOR_SCORE) {
+    // If we have a decent fitScore (e.g. from a fallback), or if we literally couldn't assess anything,
+    // don't bury it in LOW_PRIORITY where the user never sees it in the Discovery feed.
+    // If fitScore is literally 0, it means it failed the Industry Gate, so keep it LOW_PRIORITY.
+    // Otherwise, surface it as STRETCH so they can at least see it and click 'Analyze'.
+    if (fitScore === 0) {
+      return {
+        recommendation: "LOW_PRIORITY",
+        reasoning: "Failed the industry/domain gate.",
+      };
+    }
     return {
-      recommendation: "LOW_PRIORITY",
+      recommendation: "STRETCH",
       reasoning:
-        "Workly could only assess a small part of this role against your profile, so it is not making a recommendation. Fill in more of your profile, or check the posting parsed correctly, and this will sharpen up.",
+        "Workly could only assess a small part of this role against your profile. Click 'Analyze Job' to run the deep AI parser.",
     };
   }
   
@@ -802,7 +812,7 @@ function analyzeFit({
     ...getCoreWords(careerGoal?.title ?? ""),
     ...getCoreWords(profile.profile?.headline ?? ""),
     ...getCoreWords(profile.experiences[0]?.title ?? ""),
-    ...profile.skills.filter(s => !s.isTransferable).map(s => s.name.toLowerCase())
+    ...profile.skills.filter(s => !s.isTransferable).flatMap(s => Array.from(getCoreWords(s.name)))
   ]);
   
   let hasIntersection = false;
@@ -851,7 +861,10 @@ function analyzeFit({
   // too little was assessable the number is withheld entirely rather than
   // dressed up, because a precise figure derived from two of seven
   // components is exactly the kind of number that persuades wrongly.
-  const fitScore = total.score != null ? Math.round(total.score * severeMismatchPenalty) : 0;
+  // If coverage was too low to calculate a total score, but it passed the industry gate,
+  // give it a fallback score of 50 so it doesn't get instantly hidden by LOW_PRIORITY.
+  const fallbackScore = hasIntersection ? 50 : 0;
+  const fitScore = total.score != null ? Math.round(total.score * severeMismatchPenalty) : fallbackScore;
   const competitiveness: JobFitAnalysis["competitiveness"] =
     total.score == null ? "Insufficient data" : fitScore >= 75 ? "High" : fitScore >= 50 ? "Moderate" : "Low";
 
