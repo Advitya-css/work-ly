@@ -51,7 +51,7 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {!content ? (
-          {!isPro ? (
+          !isPro ? (
             <UpgradeModal title="Unlock AI Resume Tailoring" description="Instantly rewrite your resume to beat the ATS filters for this exact job.">
               <Button className="w-full gap-2 bg-primary/90 hover:bg-primary sm:w-auto">
                 <Lock className="size-4" />
@@ -63,7 +63,7 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
               {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
               {loading ? "Analyzing Job & Profile..." : "Tailor Resume for this Job"}
             </Button>
-          )}
+          )
         ) : (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
             <div className="p-5 bg-muted/30 rounded-lg border shadow-sm prose dark:prose-invert max-w-none text-sm leading-relaxed">
