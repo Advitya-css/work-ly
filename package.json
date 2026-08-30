@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@radix-ui/react-avatar": "^1.2.6",
