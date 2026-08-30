@@ -721,6 +721,7 @@ function buildRecommendation(
   coverage: number,
   mandatoryMetRatio: number | null,
   checkedCount: number,
+  gaps: GapItem[]
 ): { recommendation: RecommendationType; reasoning: string } {
   // Not enough of the picture to advise on at all.
   if (coverage < MIN_COVERAGE_FOR_SCORE) {
@@ -758,8 +759,8 @@ function buildRecommendation(
   // invented ratio, and say that is what happened.
   if (mandatoryMetRatio == null) {
     if (fitScore >= 80) return { recommendation: "APPLY", reasoning: `${basis} On profile match alone this looks strong.` };
-    if (fitScore >= 55) return { recommendation: "STRETCH", reasoning: `${basis} On profile match alone this is a reasonable stretch.` };
-    return { recommendation: "LOW_PRIORITY", reasoning: `${basis} On profile match alone the overlap is limited.` };
+    if (fitScore >= 55) return { recommendation: "STRETCH", reasoning: `${basis} On profile match alone this is a reasonable stretch.${gapText}` };
+    return { recommendation: "LOW_PRIORITY", reasoning: `${basis} On profile match alone the overlap is limited.${gapText}` };
   }
 
   if (mandatoryMetRatio >= 0.9 && fitScore >= 80) {
@@ -772,15 +773,27 @@ function buildRecommendation(
     return { recommendation: "APPLY", reasoning: `${basis} You meet the great majority of them, so this is worth applying to.` };
   }
   if (mandatoryMetRatio >= 0.7 && fitScore >= 45) {
-    return { recommendation: "STRETCH", reasoning: `${basis} You meet most checkable requirements, but the broader profile overlap is limited. A reasonable stretch.` };
+    return { recommendation: "STRETCH", reasoning: `${basis} You meet most checkable requirements, but the broader profile overlap is limited.${gapText}` };
   }
   if (mandatoryMetRatio >= 0.4 && fitScore >= 45) {
-    return { recommendation: "STRETCH", reasoning: `${basis} There are real gaps, but enough overlap for a reasonable stretch application.` };
+    return { recommendation: "STRETCH", reasoning: `${basis} There are real gaps, but enough overlap for a reasonable stretch application.${gapText}` };
   }
+  // Generate dynamic, useful reasoning based on the actual gaps found
+  const gapPhrases = gaps.map(g => {
+    if (g.type === "SKILL_GAP") return g.description ? `missing skills (${g.description})` : g.title.toLowerCase();
+    if (g.type === "EXPERIENCE_GAP") return `lacking required years of experience`;
+    if (g.type === "SENIORITY_GAP") return `a seniority mismatch`;
+    return g.title.toLowerCase();
+  });
+  
+  const gapText = gapPhrases.length > 0 
+    ? ` Major gaps include: ${gapPhrases.join(", ")}.`
+    : "";
+
   if (fitScore >= 25) {
-    return { recommendation: "LOW_PRIORITY", reasoning: `${basis} The overlap here is limited.` };
+    return { recommendation: "LOW_PRIORITY", reasoning: `${basis} The overall match is too low.${gapText}` };
   }
-  return { recommendation: "SKIP", reasoning: `${basis} On what Workly can see, this role does not line up with your profile today.` };
+  return { recommendation: "SKIP", reasoning: `${basis} This role does not line up with your profile today.${gapText}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -891,10 +904,6 @@ function analyzeFit({
     checkable.length > 0 ? checkable.filter((r) => r.status === "met").length / checkable.length : null;
   const unknownCount = mandatoryRequirements.length - checkable.length;
 
-  const built = buildRecommendation(fitScore, total.coverage, mandatoryMetRatio, checkable.length);
-  let recommendation = built.recommendation;
-  let recommendationReasoning = built.reasoning;
-
   const gaps = classifyGaps({
     job,
     profile,
@@ -902,6 +911,10 @@ function analyzeFit({
     candidateYears,
     seniorityRatio,
   });
+
+  const built = buildRecommendation(fitScore, total.coverage, mandatoryMetRatio, checkable.length, gaps);
+  let recommendation = built.recommendation;
+  let recommendationReasoning = built.reasoning;
 
   const strengths: string[] = [];
   const matchedRequired = skills.requiredMatches.filter((m) => m.match);
