@@ -2,12 +2,14 @@ import Link from "next/link";
 import { Sparkles, Mic } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { Lock } from "lucide-react";
 
 interface InterviewPrepCardProps {
   applicationId: string;
 }
 
-export function InterviewPrepCard({ applicationId }: InterviewPrepCardProps) {
+export function InterviewPrepCard({ applicationId, isPro = false }: InterviewPrepCardProps & { isPro?: boolean }) {
   return (
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader>
@@ -20,12 +22,21 @@ export function InterviewPrepCard({ applicationId }: InterviewPrepCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Link href={`/applications/${applicationId}/interview`}>
-          <Button className="gap-2 w-full sm:w-auto">
-            <Sparkles className="size-4" />
-            Enter the Prep Room
-          </Button>
-        </Link>
+        {!isPro ? (
+          <UpgradeModal title="Unlock Interview War Room" description="Practice live behavioral and technical interviews with an AI hiring manager.">
+            <Button className="gap-2 w-full sm:w-auto">
+              <Lock className="size-4" />
+              Enter the Prep Room (Pro)
+            </Button>
+          </UpgradeModal>
+        ) : (
+          <Link href={`/applications/${applicationId}/interview`}>
+            <Button className="gap-2 w-full sm:w-auto">
+              <Sparkles className="size-4" />
+              Enter the Prep Room
+            </Button>
+          </Link>
+        )}
       </CardContent>
     </Card>
   );

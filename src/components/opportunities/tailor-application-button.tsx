@@ -48,16 +48,25 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
 
   return (
     <>
-      <Button 
-        onClick={() => {
-          setOpen(true);
-          if (!data && !loading && !error) handleGenerate();
-        }}
-        className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2"
-      >
-        <Sparkles className="size-4 fill-current" />
-        Tailor Resume & Cover Letter
-      </Button>
+      {!isPro ? (
+        <UpgradeModal title="Unlock AI Application Tailor" description="Generate a highly optimized, role-specific cover letter and resume bullet points.">
+          <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2">
+            <Lock className="size-4 fill-current" />
+            Tailor Application (Pro)
+          </Button>
+        </UpgradeModal>
+      ) : (
+        <Button 
+          onClick={() => {
+            setOpen(true);
+            if (!data && !loading && !error) handleGenerate();
+          }}
+          className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2"
+        >
+          <Sparkles className="size-4 fill-current" />
+          Tailor Resume & Cover Letter
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">

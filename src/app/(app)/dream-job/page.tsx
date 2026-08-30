@@ -50,7 +50,7 @@ export default async function DreamJobPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DreamJobForm />
+          <DreamJobForm isPro={user.isPro} />
         </CardContent>
       </Card>
 

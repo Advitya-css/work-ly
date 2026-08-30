@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { Lock } from "lucide-react";
 
 const initialState: DreamJobActionState = {};
 
-export function DreamJobForm() {
+export function DreamJobForm({ isPro = false }: { isPro?: boolean }) {
   const [state, formAction, pending] = useActionState(analyzeDreamJobAction, initialState);
 
   return (
@@ -54,19 +56,28 @@ export function DreamJobForm() {
         <Input id="dream-company" name="companyName" placeholder="e.g. a specific company you're aiming for" disabled={pending} />
       </div>
 
-      <Button type="submit" disabled={pending} className="w-fit">
-        {pending ? (
-          <>
-            <Loader2 className="animate-spin" />
-            Analyzing…
-          </>
-        ) : (
-          <>
-            <Sparkles />
-            See how close you are
-          </>
-        )}
-      </Button>
+      {!isPro ? (
+        <UpgradeModal title="Unlock Dream Job Analysis" description="Run a deep, AI-powered gap analysis against your ultimate dream job.">
+          <Button type="button" className="w-fit gap-2">
+            <Lock className="size-4" />
+            See how close you are (Pro)
+          </Button>
+        </UpgradeModal>
+      ) : (
+        <Button type="submit" disabled={pending} className="w-fit gap-2">
+          {pending ? (
+            <>
+              <Loader2 className="animate-spin size-4" />
+              Analyzing…
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              See how close you are
+            </>
+          )}
+        </Button>
+      )}
     </form>
   );
 }
