@@ -6,7 +6,6 @@ import { SectionTabs } from "@/components/shared/section-tabs";
 import { EmptyState } from "@/components/shared/empty-state";
 import { IllustrationNoResults } from "@/components/shared/empty-illustration";
 import { OpportunitiesBoard } from "@/components/opportunities/opportunities-board";
-import { SeedDemoButton } from "@/components/opportunities/seed-demo-button";
 import { getCurrentUser } from "@/lib/auth";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
@@ -36,11 +35,10 @@ export default async function OpportunitiesPage() {
           <EmptyState
             illustration={IllustrationNoResults}
             title="No opportunities yet"
-            description="Analyze a real job posting, or load a set of fictional ones to see how prioritization works."
+            description="Analyze a job posting to track it here and see how prioritization works."
             action={{ label: "Analyze a job", href: "/analyze-job" }}
             className="w-full"
           />
-          <SeedDemoButton />
         </div>
       ) : (
         <OpportunitiesBoard university={profile?.university ?? null}
