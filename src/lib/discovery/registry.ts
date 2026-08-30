@@ -7,7 +7,7 @@ import { reedSource } from "@/lib/discovery/sources/reed";
 import { findworkSource } from "@/lib/discovery/sources/findwork";
 import { manualImportSource } from "@/lib/discovery/sources/manual-import";
 import { demoFeedSource } from "@/lib/discovery/sources/demo-feed";
-import { arbeitnowSource, remotiveSource, jobicySource, himalayasSource, museSource } from "@/lib/discovery/sources/keyless-boards";
+import { arbeitnowSource, remotiveSource, jobicySource, himalayasSource, museSource, remoteokSource, workingNomadsSource } from "@/lib/discovery/sources/keyless-boards";
 import type { JobSourceAdapter } from "@/lib/discovery/types";
 
 /**
@@ -44,6 +44,8 @@ export const SOURCE_ADAPTERS: JobSourceAdapter[] = [
   jobicySource,
   himalayasSource,
   museSource,
+  remoteokSource,
+  workingNomadsSource,
   greenhouseSource,
   leverSource,
   jobPostingSchemaSource,
@@ -63,5 +65,5 @@ export function getAdapter(id: string): JobSourceAdapter | undefined {
 
 /** Adapters that can run with no user setup at all - what a brand-new account can use today. */
 export function zeroConfigAdapters(): JobSourceAdapter[] {
-  return SOURCE_ADAPTERS.filter((adapter) => adapter.id === "demo-feed" || adapter.id === "arbeitnow" || adapter.id === "remotive" || adapter.id === "jobicy" || adapter.id === "himalayas" || adapter.id === "themuse");
+  return SOURCE_ADAPTERS.filter((adapter) => adapter.id === "demo-feed" || adapter.id === "arbeitnow" || adapter.id === "remotive" || adapter.id === "jobicy" || adapter.id === "himalayas" || adapter.id === "themuse" || adapter.id === "remoteok" || adapter.id === "workingnomads");
 }

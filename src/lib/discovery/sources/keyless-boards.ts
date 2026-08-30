@@ -254,3 +254,80 @@ export const museSource: JobSourceAdapter = {
     }));
   },
 };
+
+// --- REMOTE OK ---
+export const remoteokSource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "remoteok",
+  name: "Remote OK",
+  legalBasis: "Remote OK provides an open JSON API (remoteok.com/api) specifically for syndication and external consumption.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim() || "";
+    const url = "https://remoteok.com/api";
+    const body = await fetchWithGuards(url);
+    const parsed = JSON.parse(body);
+    let jobs = parsed.filter((j: any) => j.id); // Filter out the legal notice
+    
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      jobs = jobs.filter((j: any) =>
+        textOf(j.position).toLowerCase().includes(kw) ||
+        textOf(j.company).toLowerCase().includes(kw) ||
+        (j.tags && j.tags.some((t: string) => t.toLowerCase().includes(kw)))
+      );
+    }
+    
+    return jobs.slice(0, context.limit).map((job: any) => ({
+      externalId: `remoteok:${job.id}`,
+      title: asString(job.position) ?? "Untitled role",
+      company: asString(job.company),
+      location: asString(job.location) ?? "Remote",
+      description: job.description ? stripTags(job.description) : null,
+      url: asString(job.url),
+      postedAt: job.date ? new Date(job.date) : null,
+      salaryMin: job.salary_min ? parseInt(job.salary_min, 10) : null,
+      salaryMax: job.salary_max ? parseInt(job.salary_max, 10) : null,
+      workModeRaw: "REMOTE",
+    }));
+  },
+};
+
+// --- WORKING NOMADS ---
+export const workingNomadsSource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "PUBLIC_JOB_BOARD",
+  id: "workingnomads",
+  name: "Working Nomads",
+  legalBasis: "Working Nomads publishes an open, keyless JSON API (workingnomads.co/api/exposed_jobs/) for public consumption.",
+  isConfigured() { return true; },
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const keyword = context.query?.trim() || "";
+    const url = "https://www.workingnomads.co/api/exposed_jobs/";
+    const body = await fetchWithGuards(url);
+    const jobs = JSON.parse(body) || [];
+    
+    let filtered = jobs;
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      filtered = filtered.filter((j: any) =>
+        textOf(j.title).toLowerCase().includes(kw) ||
+        textOf(j.company_name).toLowerCase().includes(kw) ||
+        textOf(j.tags).toLowerCase().includes(kw)
+      );
+    }
+    
+    return filtered.slice(0, context.limit).map((job: any) => ({
+      externalId: `workingnomads:${job.url}`,
+      title: asString(job.title) ?? "Untitled role",
+      company: asString(job.company_name),
+      location: asString(job.location) ?? "Remote",
+      description: job.description ? stripTags(job.description) : null,
+      url: asString(job.url),
+      postedAt: job.pub_date ? new Date(job.pub_date) : null,
+      industry: asString(job.category_name),
+      workModeRaw: "REMOTE",
+    }));
+  },
+};
