@@ -57,6 +57,7 @@ export function DiscoveryBoard({
   const [mode, setMode] = useState<"BALANCED" | "STRICT_SKILLS" | "EXPLORE">("BALANCED");
   const [searchMode, setSearchMode] = useState<"search" | "explore" | "company" | "major">("search");
   const [matchValues, setMatchValues] = useState(false);
+  const [seniorityFilter, setSeniorityFilter] = useState<string>("ALL");
 
   // A bucket filter selected in one mode (e.g. "Strong" while browsing
   // Standard Search results) used to silently stay applied after switching
@@ -112,6 +113,10 @@ export function DiscoveryBoard({
 
   const visible = useMemo(() => {
     let filtered = searchResult.results;
+    
+    if (seniorityFilter !== "ALL") {
+      filtered = filtered.filter(result => result.job.seniority === seniorityFilter);
+    }
     
     // UI Guard: Never show explicitly rejected/irrelevant jobs in the default feed.
     // If the user wants to see them, they must explicitly click the "Low Priority" bucket filter.
@@ -247,6 +252,17 @@ export function DiscoveryBoard({
               }}
             />
           </div>
+          <select 
+            className="flex h-10 w-full sm:w-[160px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={seniorityFilter}
+            onChange={(e) => setSeniorityFilter(e.target.value)}
+          >
+            <option value="ALL">All Levels</option>
+            <option value="ENTRY_LEVEL">Entry Level</option>
+            <option value="MID_LEVEL">Mid Level</option>
+            <option value="SENIOR">Senior</option>
+            <option value="EXECUTIVE">Executive</option>
+          </select>
           <Button type="button" onClick={discover} disabled={pending} className={
             searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
             searchMode === "company" ? "bg-blue-600 hover:bg-blue-700 text-white" :
