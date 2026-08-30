@@ -133,7 +133,7 @@ export default async function ApplicationDetailPage({
             </CardContent>
           </Card>
 
-          <ResumeTailorCard applicationId={application.id} />
+          <ResumeTailorCard applicationId={application.id} isPro={user.isPro} />
           
           <ApplicationStrategyCard applicationId={application.id} />
 
