@@ -779,7 +779,7 @@ function buildRecommendation(
 
 function getCoreWords(text: string | null | undefined): Set<string> {
   if (!text) return new Set();
-  const stopwords = new Set(["and","or","the","a","an","in","on","at","to","for","of","with","as","by","is","are","this","that","freelance","associate","junior","senior","lead","manager","director","head","vp","president","assistant","coordinator","specialist","officer","staff","worker","level","i","ii","iii","iv"]);
+  const stopwords = new Set(["and","or","the","a","an","in","on","at","to","for","of","with","as","by","is","are","this","that","freelance","associate","junior","senior","lead","manager","director","head","vp","president","assistant","coordinator","specialist","officer","staff","worker","level","i","ii","iii","iv","expert","professional","generalist","consultant","technician","representative","agent"]);
   return new Set(text.toLowerCase().split(/\W+/).filter(w => w.length > 2 && !stopwords.has(w)));
 }
 
@@ -807,14 +807,17 @@ function analyzeFit({
   
   let hasIntersection = false;
   for (const w of titleWords) {
-    if (profileWords.has(w) || Array.from(profileWords).some((pw) => typeof pw === "string" && typeof w === "string" && (pw.includes(w) || w.includes(pw)))) {
+    // STRICT EXACT MATCH ONLY to prevent semantic smearing (e.g. "car" matching "care" or "plan" matching "plant")
+    if (profileWords.has(w)) {
       hasIntersection = true;
       break;
     }
   }
   
-  // If no intersection, penalize the final fit score heavily
-  const severeMismatchPenalty = (titleWords.size > 0 && !hasIntersection) ? 0.25 : 1.0;
+  // Hard Industry Gate: If no core concepts overlap, obliterate the score (0.01 multiplier).
+  // This completely removes completely irrelevant roles (like Nursing for a City Planner) 
+  // from ever passing the discovery thresholds.
+  const severeMismatchPenalty = (titleWords.size > 0 && !hasIntersection) ? 0.01 : 1.0;
 
 
   const skills = scoreSkills(job, profile.skills);
