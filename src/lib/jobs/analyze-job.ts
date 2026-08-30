@@ -71,6 +71,7 @@ export async function submitJob(userId: string, input: SubmitJobInput): Promise<
       return { error: "That doesn't look like a full job description. Please paste more of it." };
     }
     rawInput = trimmedText;
+    url = input.url ? input.url.trim() : null; // Preserve URL if explicitly provided alongside pasted text
   }
 
   // Is this actually a job posting? A blank page, a cookie banner scraped

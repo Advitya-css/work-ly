@@ -226,6 +226,7 @@ export async function trackDiscoveredJobAction(
   const result = await submitParseAndAnalyzeJob(user.id, {
     inputMethod: "PASTED_TEXT",
     text: `${header}\n\n${job.description}`,
+    url: job.sourceUrl || undefined,
     skipAuthenticityCheck: true,
   });
 
