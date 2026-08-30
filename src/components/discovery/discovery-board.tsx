@@ -111,12 +111,13 @@ export function DiscoveryBoard({
       .slice(0, 3);
   }, [jobs, query, context]);
 
+  const seniorityFilteredResults = useMemo(() => {
+    if (seniorityFilter === "ALL") return searchResult.results;
+    return searchResult.results.filter(result => result.job.seniority === seniorityFilter);
+  }, [searchResult.results, seniorityFilter]);
+
   const visible = useMemo(() => {
-    let filtered = searchResult.results;
-    
-    if (seniorityFilter !== "ALL") {
-      filtered = filtered.filter(result => result.job.seniority === seniorityFilter);
-    }
+    let filtered = seniorityFilteredResults;
     
     // UI Guard: Never show explicitly rejected/irrelevant jobs in the default feed.
     // If the user wants to see them, they must explicitly click the "Low Priority" bucket filter.
@@ -151,10 +152,10 @@ export function DiscoveryBoard({
       }
       return 0;
     });
-  }, [searchResult.results, activeBucket, sort]);
+  }, [seniorityFilteredResults, activeBucket, sort]);
 
   const counts = useMemo(() => {
-    const all = searchResult.results;
+    const all = seniorityFilteredResults;
     const count = (predicate: (job: DiscoveredJob) => boolean) =>
       all.filter((result) => predicate(result.job)).length;
     return {
@@ -165,7 +166,7 @@ export function DiscoveryBoard({
         (job) => job.recommendation === "LOW_PRIORITY" || job.recommendation === "SKIP",
       ),
     };
-  }, [searchResult.results]);
+  }, [seniorityFilteredResults]);
 
   const [upgradeRequired, setUpgradeRequired] = useState(false);
 
@@ -360,9 +361,9 @@ export function DiscoveryBoard({
       {/* Bucket summary: the whole point of the page */}
       <div>
         <p className="mb-2 text-sm text-muted-foreground">
-          <span className="text-lg font-bold text-foreground">{searchResult.results.length}</span>{" "}
+          <span className="text-lg font-bold text-foreground">{seniorityFilteredResults.length}</span>{" "}
           {query ? "matching " : ""}opportunit
-          {searchResult.results.length === 1 ? "y" : "ies"} discovered. Organized so you don&apos;t
+          {seniorityFilteredResults.length === 1 ? "y" : "ies"} discovered. Organized so you don&apos;t
           have to read them all.
         </p>
         <div className="flex flex-wrap gap-2">
