@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useTransition, useState, useOptimistic } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -14,11 +14,17 @@ export function FreelanceSettingsForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  
+  const [optimisticMode, setOptimisticMode] = useOptimistic(
+    isFreelanceMode,
+    (_, newMode: boolean) => newMode
+  );
 
   function onToggle(checked: boolean) {
     setError(null);
     setSuccess(false);
     startTransition(async () => {
+      setOptimisticMode(checked);
       const res = await updateFreelanceModeAction(checked);
       if (res.error) {
         setError(res.error);
@@ -42,7 +48,7 @@ export function FreelanceSettingsForm({
         </div>
         <Switch
           id="freelance-mode"
-          checked={isFreelanceMode}
+          checked={optimisticMode}
           onCheckedChange={onToggle}
           disabled={pending}
         />
