@@ -36,10 +36,14 @@ export async function redeemBetaCodeAction(code: string) {
       );
 
       // Upgrade user
-      await client.query(
+      const result = await client.query(
         `UPDATE users SET "isPro" = true WHERE id = $1`,
         [user.id]
       );
+      
+      if (result.rowCount === 0) {
+        throw new Error("Failed to apply Pro status because the user record is missing in the database. Please reload and try again.");
+      }
 
       await client.query('COMMIT');
     } catch (e) {

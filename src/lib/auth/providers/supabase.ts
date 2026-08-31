@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { AuthProvider, AuthResult, AuthUser } from "@/lib/auth/types";
 import { getUserById } from "@/lib/db/users";
+import { pool } from "@/lib/db/pool";
 
 /**
  * Supabase Auth implementation of the AuthProvider contract. Activate with:
@@ -87,7 +88,29 @@ export const supabaseAuthProvider: AuthProvider = {
     
     // Auth user only contains JWT data. We must merge it with the database record
     // to get application-level flags like isPro.
-    const dbUser = await getUserById(user.id);
+    let dbUser = await getUserById(user.id);
+    
+    // If using Supabase Auth without a Postgres trigger, the user might not exist in public.users yet.
+    // Lazily create them to ensure data consistency for foreign keys and upgrades.
+    if (!dbUser) {
+      try {
+        await pool.query(
+          `INSERT INTO users (id, email, name, "avatarUrl", "emailVerified", "createdAt", "updatedAt")
+           VALUES ($1, $2, $3, $4, true, now(), now())
+           ON CONFLICT (id) DO NOTHING`,
+          [
+            user.id,
+            user.email ?? "",
+            (user.user_metadata?.name as string) ?? null,
+            (user.user_metadata?.avatar_url as string) ?? null
+          ]
+        );
+        dbUser = await getUserById(user.id);
+      } catch (err) {
+        console.error("Failed to lazily create missing public.user:", err);
+      }
+    }
+
     const authUser = toAuthUser(user);
     
     if (dbUser) {
