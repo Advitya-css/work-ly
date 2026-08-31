@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { FeedbackButton } from "@/components/shared/feedback-button";
+import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 
@@ -32,7 +33,16 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AppShell user={user} student={profile?.isStudent ?? false}>
       {children}
-      <FeedbackButton />
+      {user.isPro ? (
+        <FeedbackButton />
+      ) : (
+        <div className="fixed bottom-6 right-6 z-50 rounded-full bg-background/80 backdrop-blur-md border border-border px-4 py-2 shadow-sm">
+          <a href="mailto:advitya@work-ly.in" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Mail className="size-4" />
+            Contact us: advitya@work-ly.in
+          </a>
+        </div>
+      )}
     </AppShell>
   );
 }
