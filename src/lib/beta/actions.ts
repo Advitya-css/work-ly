@@ -49,9 +49,9 @@ export async function redeemBetaCodeAction(code: string) {
       client.release();
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/opportunities");
-    revalidatePath("/settings");
+    revalidatePath("/", "layout");
+    
+    
 
     return { success: true };
   } catch (error) {
