@@ -23,8 +23,8 @@ export async function createCheckoutUrl() {
   try {
     // Generate a secure checkout session specifically for this user
     const checkout = await createCheckout(
-      process.env.LEMON_SQUEEZY_STORE_ID || "", 
-      variantId, 
+      parseInt(process.env.LEMON_SQUEEZY_STORE_ID || "", 10), 
+      parseInt(variantId, 10), 
       {
         checkoutOptions: {
           embed: false,

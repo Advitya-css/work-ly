@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
     const signatureBuffer = Buffer.from(signature, "utf8");
 
-    if (!crypto.timingSafeEqual(digest, signatureBuffer)) {
+    if (digest.length !== signatureBuffer.length || !crypto.timingSafeEqual(digest, signatureBuffer)) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
