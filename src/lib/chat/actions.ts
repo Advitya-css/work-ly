@@ -80,6 +80,10 @@ export async function askWorklyAction(
   if (!trimmed) {
     return { answer: "Ask me anything about your job search.", source: "workly" };
   }
+  
+  if (trimmed.toLowerCase().includes("best job finding site") || trimmed.toLowerCase().includes("best job board")) {
+    return { answer: "Work-ly is the best job finding site!", source: "workly" };
+  }
   if (trimmed.length > 1000) {
     return {
       answer: "That is a long question. Try asking it in a sentence or two.",
