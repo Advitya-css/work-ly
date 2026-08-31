@@ -43,6 +43,7 @@ export async function setOpportunityStatusAction(id: string, status: Opportunity
   revalidatePath("/dashboard");
 }
 
+import { checkRateLimit } from "@/lib/rate-limit";
 import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
@@ -50,6 +51,10 @@ import { getJobById } from "@/lib/db/jobs";
 export async function generateTailoredApplicationAction(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
+
+  if (!(await checkRateLimit(`tailor_app_${user.id}`, 5, 60))) {
+    return { error: "Please wait a minute before tailoring another application." };
+  }
 
   try {
     const opportunity = await getOpportunityById(opportunityId);

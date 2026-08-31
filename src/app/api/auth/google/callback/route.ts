@@ -8,8 +8,16 @@ export async function GET(request: Request) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
+  const state = url.searchParams.get("state");
+  const cookieStore = await cookies();
+  const storedState = cookieStore.get("oauth_state")?.value;
+
   if (!code) {
     return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=No_code_provided`);
+  }
+
+  if (!state || !storedState || state !== storedState) {
+    return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=Invalid_state_parameter`);
   }
 
   try {

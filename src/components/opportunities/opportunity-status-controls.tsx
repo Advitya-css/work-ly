@@ -6,13 +6,13 @@ import { Bookmark, Loader2, ClipboardCheck, Send, RotateCcw } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toggleOpportunitySavedAction, setOpportunityStatusAction } from "@/lib/opportunities/actions";
-import type { Opportunity } from "@/lib/db/types";
+import type { OpportunityStatus } from "@/lib/db/types";
 
-export function OpportunityStatusControls({ opportunity }: { opportunity: Opportunity }) {
+export function OpportunityStatusControls({ id, isSaved, status }: { id: string; isSaved: boolean; status: OpportunityStatus }) {
   const [isPending, startTransition] = useTransition();
 
   function toggleSaved() {
-    startTransition(() => toggleOpportunitySavedAction(opportunity.id, !opportunity.isSaved));
+    startTransition(() => toggleOpportunitySavedAction(id, !isSaved));
   }
 
   return (
@@ -23,45 +23,45 @@ export function OpportunityStatusControls({ opportunity }: { opportunity: Opport
         size="sm"
         onClick={toggleSaved}
         disabled={isPending}
-        className={cn(opportunity.isSaved && "border-primary text-primary")}
+        className={cn(isSaved && "border-primary text-primary")}
       >
-        <Bookmark className={cn("size-3.5", opportunity.isSaved && "fill-current")} />
-        {opportunity.isSaved ? "Saved" : "Save"}
+        <Bookmark className={cn("size-3.5", isSaved && "fill-current")} />
+        {isSaved ? "Saved" : "Save"}
       </Button>
 
-      {opportunity.status !== "PREPARING" && (
+      {status !== "PREPARING" && (
         <Button
           type="button"
           variant="outline"
           size="sm"
           disabled={isPending}
-          onClick={() => startTransition(() => setOpportunityStatusAction(opportunity.id, "PREPARING"))}
+          onClick={() => startTransition(() => setOpportunityStatusAction(id, "PREPARING"))}
         >
           {isPending ? <Loader2 className="animate-spin" /> : <ClipboardCheck />}
           Mark as preparing
         </Button>
       )}
 
-      {opportunity.status !== "APPLIED" && (
+      {status !== "APPLIED" && (
         <Button
           type="button"
           size="sm"
           disabled={isPending}
-          onClick={() => startTransition(() => setOpportunityStatusAction(opportunity.id, "APPLIED"))}
+          onClick={() => startTransition(() => setOpportunityStatusAction(id, "APPLIED"))}
         >
           {isPending ? <Loader2 className="animate-spin" /> : <Send />}
           Mark as applied
         </Button>
       )}
 
-      {opportunity.status !== "DISCOVERED" && (
+      {status !== "DISCOVERED" && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
           disabled={isPending}
           className="text-muted-foreground"
-          onClick={() => startTransition(() => setOpportunityStatusAction(opportunity.id, "DISCOVERED"))}
+          onClick={() => startTransition(() => setOpportunityStatusAction(id, "DISCOVERED"))}
         >
           <RotateCcw />
           Reset status

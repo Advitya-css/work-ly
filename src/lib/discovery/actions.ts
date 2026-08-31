@@ -17,6 +17,7 @@ import {
 } from "@/lib/db/discovery";
 import { runDiscovery } from "@/lib/discovery/run";
 import { getAdapter, SOURCE_ADAPTERS } from "@/lib/discovery/registry";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
 
 function revalidateDiscoveryViews() {
@@ -36,6 +37,10 @@ function revalidateDiscoveryViews() {
 export async function ensureDefaultSourcesAction(): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  if (!(await checkRateLimit(`discovery_run_${user.id}`, 2, 60))) {
+    return { error: "Please wait a minute before running discovery again." };
+  }
 
   const existing = await listSourcesByUserId(user.id);
 
@@ -97,7 +102,8 @@ export async function runDiscoveryAction(
   );
 
   const dailyRuns = parseInt(rows[0].count, 10);
-  if (dailyRuns >= 999) { // TEMPORARILY DISABLED FOR TESTING
+  if (!user.isPro && dailyRuns >= 5) { return { error: "You have reached your free daily limit of 5 AI discoveries.", upgradeRequired: true }; }
+  if (user.isPro && dailyRuns >= 30) {
     return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
   }
 

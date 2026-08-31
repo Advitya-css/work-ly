@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
 import { generatePathway } from "@/lib/pathway/generate";
 import {
@@ -32,6 +33,10 @@ import type { PathwayItemStatus } from "@/lib/db/types";
 async function requireOwnedStep(stepId: string) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  if (!(await checkRateLimit(`generate_pathway_${user.id}`, 3, 60))) {
+    return { error: "Please wait a minute before generating another pathway." };
+  }
   const step = await getStepById(stepId);
   if (!step) return null;
   const pathway = await getPathwayById(step.pathwayId);

@@ -86,7 +86,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
         </Button>
         <div className="flex items-center gap-2 flex-wrap">
           <TailorApplicationButton opportunityId={opportunity.id} isPro={user.isPro} />
-          <OpportunityStatusControls opportunity={opportunity} />
+          <OpportunityStatusControls id={opportunity.id} isSaved={opportunity.isSaved} status={opportunity.status} />
           <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
         </div>
       </div>
