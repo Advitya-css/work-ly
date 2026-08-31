@@ -29,12 +29,18 @@ export function UpgradeModal({
     if (!betaCode.trim()) return;
     setBetaLoading(true);
     setBetaError("");
-    const result = await redeemBetaCodeAction(betaCode);
-    if (result.error) {
-      setBetaError(result.error);
+    try {
+      const result = await redeemBetaCodeAction(betaCode);
+      if (result && result.error) {
+        setBetaError(result.error);
+        setBetaLoading(false);
+      } else {
+        window.location.reload(); // Refresh to apply Pro state globally
+      }
+    } catch (err: any) {
+      console.error(err);
+      setBetaError(err.message || "Something went wrong.");
       setBetaLoading(false);
-    } else {
-      window.location.reload(); // Refresh to apply Pro state globally
     }
   };
 
