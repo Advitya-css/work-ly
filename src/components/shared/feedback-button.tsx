@@ -45,7 +45,7 @@ export function FeedbackButton() {
         <Button
           variant="default"
           size="icon"
-          className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg z-50 transition-transform hover:scale-110"
+          className="fixed bottom-5 left-4 md:left-[264px] h-12 w-12 rounded-full shadow-lg z-50 transition-transform hover:scale-110"
         >
           <MessageSquare className="size-5" />
         </Button>

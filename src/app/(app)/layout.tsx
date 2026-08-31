@@ -36,7 +36,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       {user.isPro ? (
         <FeedbackButton />
       ) : (
-        <div className="fixed bottom-6 right-6 z-50 rounded-full bg-background/80 backdrop-blur-md border border-border px-4 py-2 shadow-sm">
+        <div className="fixed bottom-5 left-4 md:left-[264px] z-50 rounded-full bg-background/80 backdrop-blur-md border border-border px-4 py-2 shadow-sm">
           <a href="mailto:advitya@work-ly.in" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             <Mail className="size-4" />
             Contact us: advitya@work-ly.in
