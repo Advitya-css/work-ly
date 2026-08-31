@@ -10,7 +10,7 @@ import { redeemBetaCodeAction } from "@/lib/beta/actions";
 
 export function UpgradeModal({ 
   children,
-  title = "Unlock Workly Pro",
+  title = "Unlock Work-ly Pro",
   description = "Get the ultimate unfair advantage in your job hunt."
 }: { 
   children: React.ReactNode,
@@ -86,7 +86,7 @@ export function UpgradeModal({
 
           <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="font-semibold text-lg">Workly Pro</span>
+              <span className="font-semibold text-lg">Work-ly Pro</span>
               <span className="text-sm text-muted-foreground">$15 / month</span>
             </div>
             <Button onClick={handleUpgrade} disabled={loading} size="lg" className="gap-2">

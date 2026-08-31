@@ -41,7 +41,7 @@ export async function createCheckoutUrl(interval: "monthly" | "yearly" = "monthl
         },
         productOptions: {
           redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/settings?success=true`,
-          receiptButtonText: "Return to Workly",
+          receiptButtonText: "Return to Work-ly",
         },
       }
     );

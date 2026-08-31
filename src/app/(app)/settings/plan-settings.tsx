@@ -17,7 +17,7 @@ export async function PlanSettings() {
       <Card>
         <CardHeader>
           <CardTitle>Plan & Billing</CardTitle>
-          <CardDescription>Manage your Workly subscription</CardDescription>
+          <CardDescription>Manage your Work-ly subscription</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex items-center justify-between p-5 bg-muted/30 rounded-xl border">
@@ -31,7 +31,7 @@ export async function PlanSettings() {
                 </span>
               ) : isPro ? (
                 <span className="text-sm text-muted-foreground">
-                  You are currently subscribed to Workly Pro.
+                  You are currently subscribed to Work-ly Pro.
                 </span>
               ) : (
                 <span className="text-sm text-muted-foreground">

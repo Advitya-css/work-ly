@@ -15,7 +15,7 @@ export function PricingCard() {
           <div>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Sparkles className="size-6 text-primary" />
-              Workly Pro
+              {isYearly ? "Work-ly Pro Yearly" : "Work-ly Pro Monthly"}
             </CardTitle>
             <CardDescription className="mt-1">Unlock the ultimate unfair advantage in your job hunt.</CardDescription>
           </div>

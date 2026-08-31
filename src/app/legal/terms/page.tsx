@@ -19,7 +19,7 @@ export default function TermsOfService() {
         employer, and it does not guarantee you a job, an interview, or any particular outcome.
       </p>
       <p>
-        Workly is currently free to use. If we introduce a paid &quot;Workly Pro&quot; tier, billing (processed
+        Workly is currently free to use. If we introduce a paid &quot;Work-ly Pro&quot; tier, billing (processed
         through our payment provider, Lemon Squeezy) and refund terms will be presented to you separately before
         you&apos;re charged, and using a paid feature means you accept those terms too.
       </p>

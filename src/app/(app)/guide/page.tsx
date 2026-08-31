@@ -42,7 +42,7 @@ export default function GuidePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
               <Zap className="size-5" />
-              Workly Pro
+              Work-ly Pro
             </CardTitle>
             <CardDescription>The ultimate unfair advantage. Automate your job hunt.</CardDescription>
           </CardHeader>
