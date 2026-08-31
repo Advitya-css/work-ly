@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { AuthProvider, AuthResult, AuthUser } from "@/lib/auth/types";
+import { getUserById } from "@/lib/db/users";
 
 /**
  * Supabase Auth implementation of the AuthProvider contract. Activate with:
@@ -82,6 +83,18 @@ export const supabaseAuthProvider: AuthProvider = {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    return user ? toAuthUser(user) : null;
+    if (!user) return null;
+    
+    // Auth user only contains JWT data. We must merge it with the database record
+    // to get application-level flags like isPro.
+    const dbUser = await getUserById(user.id);
+    const authUser = toAuthUser(user);
+    
+    if (dbUser) {
+      authUser.isPro = dbUser.isPro;
+      authUser.onboardedAt = dbUser.onboardedAt;
+    }
+    
+    return authUser;
   },
 };
