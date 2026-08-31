@@ -31,6 +31,7 @@ export interface User {
   onboardedAt: Date | null;
   emailVerified: boolean;
   isPro: boolean;
+  proUntil: Date | null;
   verificationToken: string | null;
   verificationTokenExpiresAt: Date | null;
   verificationCodeHash: string | null;

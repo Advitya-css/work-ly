@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function redeemBetaCodeAction(code: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
-  if (user.isPro) return { error: "You are already a Pro user." };
+  if (user.isPro) return { success: true }; // Force a success so the client reloads instead of being stuck
 
   try {
     const cleanCode = code.trim().toUpperCase();
@@ -35,9 +35,9 @@ export async function redeemBetaCodeAction(code: string) {
         [user.id, betaCodeId]
       );
 
-      // Upgrade user
+      // Upgrade user for 1 month
       const result = await client.query(
-        `UPDATE users SET "isPro" = true WHERE id = $1`,
+        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '1 month' WHERE id = $1`,
         [user.id]
       );
       

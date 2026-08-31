@@ -39,6 +39,7 @@ model User {
   updatedAt                   DateTime  @updatedAt
 
   isPro           Boolean   @default(false)
+  proUntil        DateTime?
   lastAlertSentAt DateTime?
 
   careerProfile    CareerProfile?

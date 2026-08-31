@@ -115,6 +115,7 @@ export const supabaseAuthProvider: AuthProvider = {
     
     if (dbUser) {
       authUser.isPro = dbUser.isPro;
+      authUser.proUntil = dbUser.proUntil;
       authUser.onboardedAt = dbUser.onboardedAt;
     }
     

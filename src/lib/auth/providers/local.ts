@@ -18,6 +18,8 @@ function toAuthUser(user: {
   avatarUrl: string | null;
   onboardedAt: Date | null;
   emailVerified?: boolean;
+  isPro?: boolean;
+  proUntil?: Date | null;
 }): AuthUser {
   return {
     id: user.id,
@@ -26,6 +28,8 @@ function toAuthUser(user: {
     avatarUrl: user.avatarUrl,
     onboardedAt: user.onboardedAt,
     emailVerified: user.emailVerified ?? false,
+    isPro: user.isPro ?? false,
+    proUntil: user.proUntil ?? null,
   };
 }
 

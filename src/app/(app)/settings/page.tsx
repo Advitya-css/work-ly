@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { PlanSettings } from "./plan-settings";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { LocationSettingsForm } from "@/components/settings/location-settings-form";
 import { PartTimeSettingsForm } from "@/components/settings/part-time-settings-form";
@@ -31,6 +32,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Settings" description="Your account, where you will work, and your data." />
+      <PlanSettings />
 
       <Card>
         <CardHeader>

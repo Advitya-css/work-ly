@@ -22,6 +22,8 @@ export interface AuthUser {
   avatarUrl: string | null;
   onboardedAt: Date | null;
   emailVerified?: boolean;
+  isPro?: boolean;
+  proUntil?: Date | null;
 }
 
 export interface AuthResult {
