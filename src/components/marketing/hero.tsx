@@ -16,13 +16,13 @@ export function Hero() {
           Career intelligence, not another job board
         </span>
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          Stop searching for jobs.
+          Work-ly: Stop searching for jobs.
           <br />
           Start finding the right ones.
         </h1>
         <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
-          AI that understands your career, discovers opportunities you would otherwise miss, and
-          tells you what to do next.
+          Work-ly is an AI co-pilot that understands your career, discovers opportunities you would otherwise miss, and
+          tells you exactly what to do to get hired.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg">

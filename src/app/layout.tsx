@@ -64,11 +64,15 @@ const instrumentSerif = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Workly: Know which jobs are actually worth pursuing",
-    template: "%s · Workly",
+    default: "Work-ly — Your ultimate unfair advantage in the job hunt",
+    template: "%s · Work-ly",
   },
   description:
-    "Workly is an AI-powered career intelligence platform: it understands your career profile, discovers relevant opportunities, tells you why they're worth pursuing, and builds a practical pathway to close your gaps.",
+    "Work-ly is an AI-powered career intelligence platform: it understands your career profile, discovers relevant opportunities, tells you why they're worth pursuing, and builds a practical pathway to close your gaps.",
+  metadataBase: new URL("https://work-ly.in"),
+  alternates: {
+    canonical: "/",
+  }
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
