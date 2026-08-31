@@ -40,8 +40,8 @@ export const reedSource: JobSourceAdapter = {
       description: asString(job.jobDescription),
       url: asString(job.jobUrl),
       postedAt: asDate(job.date),
-      salaryMin: typeof job.minimumSalary === "number" ? job.minimumSalary : null,
-      salaryMax: typeof job.maximumSalary === "number" ? job.maximumSalary : null,
+      salaryMin: typeof job.minimumSalary === "number" ? Math.round(job.minimumSalary) : null,
+      salaryMax: typeof job.maximumSalary === "number" ? Math.round(job.maximumSalary) : null,
       salaryCurrency: "GBP",
     }));
   }

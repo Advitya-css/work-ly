@@ -228,7 +228,28 @@ export async function runDiscovery(
         searchTerms = idealTitles;
       }
     }
-    searchTermsUsed = searchTerms.filter((t): t is string => Boolean(t));
+
+    const isJunior = profile.profile?.isStudent || (profile.profile?.yearsExperience != null && profile.profile.yearsExperience < 3);
+    let finalTerms = searchTerms.filter((t): t is string => Boolean(t));
+    
+    if (isJunior) {
+      const biased = new Set<string>();
+      for (const term of finalTerms) {
+        if (!term) continue;
+        const lower = term.toLowerCase();
+        // If it already contains junior or entry, keep as is
+        if (lower.includes("junior") || lower.includes("entry") || lower.includes("intern")) {
+          biased.add(term);
+        } else {
+          biased.add(`Junior ${term}`);
+          biased.add(`Entry Level ${term}`);
+          biased.add(term); // keep original as fallback
+        }
+      }
+      finalTerms = Array.from(biased);
+    }
+    
+    searchTermsUsed = finalTerms.slice(0, 4); // Limit to avoid hitting rate limits on job boards
 
     // Computed once - doesn't vary per source or per search term.
     const homeLocation = (() => {

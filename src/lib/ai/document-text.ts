@@ -3,29 +3,24 @@ import type { DocumentType } from "@/lib/db/types";
 
 /** Extracts plain text from an uploaded resume file so it can be handed to a parser. */
 
-if (typeof globalThis.DOMMatrix === 'undefined') {
-  (globalThis as any).DOMMatrix = class DOMMatrix {};
-}
-if (typeof globalThis.Path2D === 'undefined') {
-  (globalThis as any).Path2D = class Path2D {};
-}
-if (typeof globalThis.ImageData === 'undefined') {
-  (globalThis as any).ImageData = class ImageData {};
-}
-
 export async function extractDocumentText(
   buffer: Buffer,
   fileType: DocumentType,
 ): Promise<string> {
   if (fileType === "PDF") {
-    const { PDFParse } = await import("pdf-parse");
-    const parser = new PDFParse({ data: buffer });
-    try {
-      const result = await parser.getText();
-      return result.text;
-    } finally {
-      await parser.destroy();
-    }
+    const PDFParser = (await import("pdf2json")).default;
+    return new Promise((resolve, reject) => {
+      // 1 flag means text only
+      const pdfParser = new PDFParser(null, 1);
+      
+      pdfParser.on("pdfParser_dataError", (errData) => reject(errData.parserError));
+      pdfParser.on("pdfParser_dataReady", () => {
+        const text = pdfParser.getRawTextContent();
+        resolve(text.replace(/\r\n/g, '\n'));
+      });
+      
+      pdfParser.parseBuffer(buffer);
+    });
   }
 
   // DOCX
