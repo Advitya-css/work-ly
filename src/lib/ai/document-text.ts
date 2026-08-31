@@ -11,9 +11,9 @@ export async function extractDocumentText(
     const PDFParser = (await import("pdf2json")).default;
     return new Promise((resolve, reject) => {
       // 1 flag means text only
-      const pdfParser = new PDFParser(null, 1);
+      const pdfParser = new PDFParser(null, 1 as any);
       
-      pdfParser.on("pdfParser_dataError", (errData) => reject(errData.parserError));
+      pdfParser.on("pdfParser_dataError", (errData) => reject((errData as any).parserError || errData));
       pdfParser.on("pdfParser_dataReady", () => {
         const text = pdfParser.getRawTextContent();
         resolve(text.replace(/\r\n/g, '\n'));

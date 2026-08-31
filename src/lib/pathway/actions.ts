@@ -96,8 +96,10 @@ export async function generatePathwayFromDreamJobAction(dreamJobId: string): Pro
 }
 
 export async function setStepStatusAction(stepId: string, status: PathwayItemStatus): Promise<void> {
-  const step = await requireOwnedStep(stepId);
-  if (!step) return;
+  const stepRes = await requireOwnedStep(stepId);
+  if (!stepRes || "error" in stepRes) return;
+  const step = stepRes as import("@/lib/db/types").PathwayStep;
+  
   await setStepStatus(stepId, status);
   
   if (status === "COMPLETED" && step.relatedSkill) {

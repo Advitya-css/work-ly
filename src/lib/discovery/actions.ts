@@ -34,7 +34,7 @@ function revalidateDiscoveryViews() {
  * to be "the demo feed" alone - now a brand-new account sees real, current
  * listings from the first run, not just fictional ones.
  */
-export async function ensureDefaultSourcesAction(): Promise<void> {
+export async function ensureDefaultSourcesAction() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
