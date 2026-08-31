@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, FileText, CheckCircle2, ChevronRight, X, Loader2, Copy } from "lucide-react";
+import { Sparkles, FileText, CheckCircle2, ChevronRight, X, Loader2, Copy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateTailoredApplicationAction } from "@/lib/opportunities/actions";
 import {
