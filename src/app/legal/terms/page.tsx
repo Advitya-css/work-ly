@@ -2,62 +2,120 @@ export default function TermsOfService() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
       <h1 className="font-serif text-4xl text-foreground mb-4">Terms of Service</h1>
-      <p className="text-sm italic">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+      <p className="text-sm italic">Last updated: August 31, 2026</p>
 
       <p>
-        Welcome to Workly. By accessing or using our website, platform, and services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+        These Terms of Service (&quot;Terms&quot;) are an agreement between you and Advitya Bansal, operating
+        Workly (work-ly.in) as an individual based in India (&quot;Workly,&quot; &quot;we,&quot; &quot;us&quot;). By creating an account or
+        using Workly, you agree to these Terms, our <a href="/legal/privacy" className="text-foreground underline underline-offset-2">Privacy Policy</a>, and our{" "}
+        <a href="/legal/cookies" className="text-foreground underline underline-offset-2">Cookie Policy</a>. If you don&apos;t agree, please don&apos;t use Workly.
       </p>
 
-      <div className="border-l-4 border-warning pl-4 py-1 my-4 bg-warning/10 text-warning-foreground text-sm">
-        <p className="font-semibold mb-1">Disclaimer</p>
-        <p>This is a generic boilerplate Terms of Service document provided for demonstration purposes. You should consult with a legal professional to ensure your terms are legally compliant for your specific jurisdiction and business operations.</p>
+      <h2 className="text-2xl font-bold text-foreground mt-4">1. What Workly is</h2>
+      <p>
+        Workly is an AI-assisted career intelligence platform that helps you build a career profile, discover job
+        opportunities from third-party sources, see how well a role matches your profile, and track your
+        applications. Workly is a tool to support your job search &mdash; it is not a recruiter, staffing agency, or
+        employer, and it does not guarantee you a job, an interview, or any particular outcome.
+      </p>
+      <p>
+        Workly is currently free to use. If we introduce a paid &quot;Workly Pro&quot; tier, billing (processed
+        through our payment provider, Lemon Squeezy) and refund terms will be presented to you separately before
+        you&apos;re charged, and using a paid feature means you accept those terms too.
+      </p>
+
+      <h2 className="text-2xl font-bold text-foreground mt-4">2. Eligibility and your account</h2>
+      <p>
+        You must be at least 18 years old to use Workly. You&apos;re responsible for the accuracy of your account
+        information, for keeping your password and sign-in credentials confidential, and for all activity on your
+        account. Contact us right away at{" "}
+        <a href="mailto:advitya@work-ly.in" className="text-foreground underline underline-offset-2">advitya@work-ly.in</a>{" "}
+        if you suspect unauthorized access.
+      </p>
+
+      <h2 className="text-2xl font-bold text-foreground mt-4">3. Your content</h2>
+      <p>
+        You own your résumé, career profile, and everything else you submit (&quot;Your Content&quot;). By using
+        Workly you give us a limited license to host, store, and process Your Content solely to provide the
+        service to you &mdash; for example, parsing a résumé, building your profile, scoring a job, or drafting a
+        cover letter you asked for. We don&apos;t sell Your Content, and we don&apos;t use it to train third-party AI
+        models beyond what&apos;s needed to generate the specific output you requested. Don&apos;t upload anyone
+        else&apos;s personal information without their permission.
+      </p>
+      <p>
+        You can delete your résumé/CV files, your career data, or your entire account at any time from Settings.
+        <strong className="text-foreground"> These deletions are permanent and cannot be undone.</strong>
+      </p>
+
+      <div className="border-l-4 border-warning pl-4 py-1 my-2 bg-warning/10 text-warning-foreground text-sm">
+        <p className="font-semibold mb-1">4. AI-generated and algorithmic features &mdash; please read this</p>
+        <p className="mb-2">
+          Fit and Priority scores describe how your profile compares to a role&apos;s stated requirements. They are
+          <strong> not</strong> a prediction or guarantee of your chances of being hired, shortlisted, or
+          interviewed.
+        </p>
+        <p className="mb-2">
+          AI-generated content (including cover letters and auto-extracted résumé data) can be inaccurate or
+          incomplete, including dates and figures pulled from your own résumé. <strong>You&apos;re responsible for
+          reviewing and correcting any AI-assisted or auto-extracted content before you rely on it or send it to an
+          employer.</strong>
+        </p>
+        <p>
+          Career guidance and pathway suggestions are informational and general &mdash; they aren&apos;t
+          professional career counseling, legal, immigration, tax, or financial advice.
+        </p>
       </div>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">1. Description of Service</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">5. Third-party job listings</h2>
       <p>
-        Workly is an AI-powered career intelligence platform designed to help users match their skills with job opportunities, analyze gaps, and tailor applications. We aggregate public job listings and use artificial intelligence to provide recommendations.
+        Listings on Workly come from third-party job boards and data providers (including Adzuna, Reed, Remotive,
+        Jobicy, and similar licensed sources), with the original source and a link shown wherever a listing
+        appears. We don&apos;t control or verify third-party listings and aren&apos;t responsible for their
+        accuracy or availability. Always confirm details at the original source before applying.
       </p>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">2. Account Registration</h2>
-      <p>
-        You must register an account to access certain features. You agree to provide accurate, current, and complete information during the registration process and to keep your account information updated. You are responsible for safeguarding your password and for all activities that occur under your account.
-      </p>
-
-      <h2 className="text-2xl font-bold text-foreground mt-4">3. Pro and Payment Terms</h2>
-      <p>
-        Certain features are locked behind a "Workly Pro" subscription. By choosing to upgrade to Pro, you agree to pay the fees associated with the subscription. Payments are processed securely via our merchant of record, Lemon Squeezy. All fees are non-refundable unless required by law.
-      </p>
-
-      <h2 className="text-2xl font-bold text-foreground mt-4">4. Acceptable Use</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">6. Acceptable use</h2>
       <p>You agree not to:</p>
       <ul className="list-disc pl-6 flex flex-col gap-2">
-        <li>Reverse engineer, decompile, or disassemble any aspect of the Workly platform.</li>
-        <li>Automate access to the service (e.g., scraping, bots) without explicit written permission.</li>
-        <li>Use the service to generate false, misleading, or fraudulent job applications.</li>
-        <li>Attempt to bypass or exploit our rate limits, security measures, or payment gateways.</li>
+        <li>Submit false or fraudulent information, or impersonate someone else.</li>
+        <li>Scrape, reverse-engineer, or attempt to extract Workly&apos;s source code or underlying models.</li>
+        <li>Use bots or scripts to access Workly outside of normal individual use, or try to bypass rate limits or security controls.</li>
+        <li>Attempt to access another user&apos;s data, account, or content.</li>
+        <li>Upload malicious code or attempt to disrupt Workly&apos;s infrastructure.</li>
+        <li>Use Workly to build a competing product, or resell or redistribute access without our permission.</li>
       </ul>
+      <p>We may suspend or terminate accounts that violate this section.</p>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">5. Disclaimer of Warranties; AI Limitations</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">7. Intellectual property</h2>
       <p>
-        Workly heavily relies on third-party Artificial Intelligence (AI) to generate analysis, fit scores, and application materials. AI can produce inaccurate, incomplete, or inappropriate outputs ("hallucinations"). You are solely responsible for reviewing and verifying any AI-generated content before using it in your career search.
-      </p>
-      <p>
-        THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE." WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. WE DO NOT GUARANTEE THAT YOU WILL RECEIVE JOB OFFERS, INTERVIEWS, OR EMPLOYMENT AS A RESULT OF USING THE SERVICE.
-      </p>
-
-      <h2 className="text-2xl font-bold text-foreground mt-4">6. Limitation of Liability</h2>
-      <p>
-        To the maximum extent permitted by law, Workly shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of the service.
+        Workly&apos;s software, design, branding, and underlying technology belong to us or our licensors. These
+        Terms don&apos;t grant you any rights in them beyond using Workly as intended.
       </p>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">7. Changes to Terms</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">8. Disclaimers &amp; limitation of liability</h2>
       <p>
-        We may modify these Terms at any time. If we make material changes, we will notify you by updating the date at the top of this page and potentially via email or in-app notification. Your continued use of the service constitutes acceptance of the revised Terms.
+        Workly is provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind. We
+        don&apos;t guarantee the service will be uninterrupted, error-free, or that using it will lead to any job
+        offer, interview, or employment outcome. To the maximum extent permitted by law, we won&apos;t be liable
+        for indirect, incidental, or consequential damages, and our total liability to you is limited to the
+        amount you&apos;ve paid us in the past 12 months (or the equivalent of INR 5,000, given Workly is currently
+        free). Nothing here limits any right you can&apos;t lawfully waive under the law that applies to you
+        (for example, statutory consumer guarantees in your country).
       </p>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">8. Contact Information</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">9. Changes, termination &amp; governing law</h2>
       <p>
-        For legal inquiries regarding these terms, please contact legal@workly.com.
+        We may update these Terms or the service over time and will give reasonable notice of material changes.
+        You can delete your account at any time; we may suspend or terminate accounts that violate these Terms.
+        These Terms are governed by the laws of India, and disputes not resolved informally will be handled by the
+        courts of India &mdash; unless you&apos;re located elsewhere and entitled to protections under your own
+        country&apos;s mandatory consumer or data protection law, which we don&apos;t intend to override.
+      </p>
+
+      <h2 className="text-2xl font-bold text-foreground mt-4">10. Contact</h2>
+      <p>
+        Questions about these Terms:{" "}
+        <a href="mailto:advitya@work-ly.in" className="text-foreground underline underline-offset-2">advitya@work-ly.in</a>
       </p>
     </div>
   );
