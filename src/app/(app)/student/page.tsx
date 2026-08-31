@@ -76,7 +76,7 @@ export default async function StudentHomePage() {
             <CardDescription>
               Many universities publish a public vacancies feed for on-campus and student roles. Add
               yours and it feeds straight into Discover and the lists below, alongside everything else
-              Workly watches.
+              Work-ly watches.
             </CardDescription>
           </CardHeader>
           <CardContent>

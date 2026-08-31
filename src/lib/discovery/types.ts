@@ -17,7 +17,7 @@ import type {
  * ==========================================================================
  * SCOPE CONSTRAINT
  * ==========================================================================
- * Workly does not scrape LinkedIn, Indeed, Glassdoor, or any service whose
+ * Work-ly does not scrape LinkedIn, Indeed, Glassdoor, or any service whose
  * terms prohibit automated access. That isn't a soft preference; there is
  * no adapter in this codebase capable of it, and any new adapter must
  * declare a `legalBasis` string explaining the permission it operates

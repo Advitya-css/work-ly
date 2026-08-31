@@ -38,7 +38,7 @@ export default async function ApplicationsPage() {
         <EmptyState
           icon={SendHorizonal}
           title="No applications tracked yet"
-          description="Mark an opportunity as applied and it'll appear here automatically, or log a role you applied to elsewhere. Outcomes feed back into what Workly can tell you about your search."
+          description="Mark an opportunity as applied and it'll appear here automatically, or log a role you applied to elsewhere. Outcomes feed back into what Work-ly can tell you about your search."
           action={{ label: "Browse opportunities", href: "/opportunities" }}
         />
       ) : (

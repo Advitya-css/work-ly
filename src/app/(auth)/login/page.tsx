@@ -9,7 +9,7 @@ export default function LoginPage() {
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <h1 className="text-lg font-semibold tracking-tight text-foreground">Welcome back</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in to your Workly account</p>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to your Work-ly account</p>
       </div>
       <SignInForm />
     </div>

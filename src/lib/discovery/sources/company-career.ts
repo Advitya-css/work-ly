@@ -11,7 +11,7 @@ import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discover
  * read-only board endpoints whose stated purpose is letting third parties
  * display a company's open roles. Using them is the intended behaviour,
  * not a workaround - this is the opposite of scraping a site that forbids
- * it. Workly hits one board per configured company, on demand, and caches
+ * it. Work-ly hits one board per configured company, on demand, and caches
  * the result.
  *
  * The user supplies the board token (the company's handle on that ATS),

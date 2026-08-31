@@ -24,7 +24,7 @@ import type { FullCareerProfile } from "@/lib/career/get-full-profile";
  * The user reads all three as "this is your score". Case 3 is the worst:
  * an engineer whose CV import produced no dates was told "You have 0 years
  * of experience, short of the 5-year requirement" and lost a quarter of the
- * available points. That sentence is false, and Workly asserted it with
+ * available points. That sentence is false, and Work-ly asserted it with
  * total confidence.
  *
  * So `ScoreComponent` now carries a `confidence`, and a component that

@@ -127,7 +127,7 @@ const UNITED_KINGDOM: CountryRules = {
       {
         headline: "Depends on your course level and the time of year",
         detail:
-          "On a Student visa, how much you can work depends on what you are studying and whether it is term time or vacation. GOV.UK sets out the allowance but does not print the weekly figure on its overview page, so Workly does not state one here rather than repeat a number it cannot cite.",
+          "On a Student visa, how much you can work depends on what you are studying and whether it is term time or vacation. GOV.UK sets out the allowance but does not print the weekly figure on its overview page, so Work-ly does not state one here rather than repeat a number it cannot cite.",
         confirmWith:
           "Your visa conditions, printed on your BRP or in your online status, and your university's international student advice team.",
         sourceName: "GOV.UK, Student visa: what you can and cannot do",
@@ -245,9 +245,9 @@ export function limitsFor(code: string | null, kind: StudentJobKind): LegalLimit
   return rulesForCountry(code)?.limits[kind] ?? [];
 }
 
-/** Shown wherever a limit is displayed. Workly is not a law firm and says so. */
+/** Shown wherever a limit is displayed. Work-ly is not a law firm and says so. */
 export const LEGAL_DISCLAIMER =
-  "These are general rules for the country you selected, not advice about your situation. Workly does not know your immigration status and never asks for it. Confirm anything that affects your visa with your school before you accept work.";
+  "These are general rules for the country you selected, not advice about your situation. Work-ly does not know your immigration status and never asks for it. Confirm anything that affects your visa with your school before you accept work.";
 
 export const UNIVERSITY_ALIASES: Record<string, string[]> = {
   "nyu": ["new york university"],

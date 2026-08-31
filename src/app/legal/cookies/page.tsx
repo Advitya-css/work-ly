@@ -5,7 +5,7 @@ export default function CookiePolicy() {
       <p className="text-sm italic">Last updated: August 31, 2026</p>
 
       <p>
-        This Cookie Policy explains how Workly (work-ly.in) uses cookies and similar technologies. Read it together
+        This Cookie Policy explains how Work-ly (work-ly.in) uses cookies and similar technologies. Read it together
         with our <a href="/legal/privacy" className="text-foreground underline underline-offset-2">Privacy Policy</a>.
       </p>
 
@@ -20,7 +20,7 @@ export default function CookiePolicy() {
         <li>
           <strong className="text-foreground">Strictly necessary:</strong> a session cookie that keeps you signed
           in, set as HttpOnly (not readable by page scripts) and Secure (HTTPS only). Essential &mdash; disabling it
-          will prevent you from signing in or using most of Workly.
+          will prevent you from signing in or using most of Work-ly.
         </li>
         <li>
           <strong className="text-foreground">Analytics:</strong> we use Vercel Analytics to understand aggregate

@@ -556,7 +556,7 @@ function findGate(text: string, kind: DocumentKind, stats: TextStats): Gate | nu
     return {
       id: "not-placeholder-text",
       detail: `Contains ${stats.loremHits} words from the standard lorem ipsum placeholder passage.`,
-      message: `This is placeholder text rather than a real ${noun}. Anything Workly built from it would be made up, so nothing has been saved.`,
+      message: `This is placeholder text rather than a real ${noun}. Anything Work-ly built from it would be made up, so nothing has been saved.`,
     };
   }
 
@@ -564,7 +564,7 @@ function findGate(text: string, kind: DocumentKind, stats: TextStats): Gate | nu
     return {
       id: "readable-words",
       detail: `Only ${Math.round(stats.wordlikeRatio * 100)}% of the text reads as real words.`,
-      message: `Workly couldn't find readable words in this. If you uploaded a file, it may be a scan or use fonts that don't copy properly: try opening it, selecting all the text and pasting it in instead.`,
+      message: `Work-ly couldn't find readable words in this. If you uploaded a file, it may be a scan or use fonts that don't copy properly: try opening it, selecting all the text and pasting it in instead.`,
     };
   }
 
@@ -619,17 +619,17 @@ function buildMessage(
 
   if (verdict === "accept") {
     return kind === "resume"
-      ? "This looks like a CV. Workly will use it to build your profile, so check the parsed details before you rely on them."
-      : "This looks like a job description. Workly will use it to compare against your profile.";
+      ? "This looks like a CV. Work-ly will use it to build your profile, so check the parsed details before you rely on them."
+      : "This looks like a job description. Work-ly will use it to compare against your profile.";
   }
 
   if (verdict === "warn") {
     return kind === "resume"
-      ? "This might not be a CV, or it might be formatted in a way Workly can't read well. Check the parsed details carefully before relying on any scores."
-      : "This might not be a job description, or it might be formatted in a way Workly can't read well. Check the parsed details carefully before relying on any match score.";
+      ? "This might not be a CV, or it might be formatted in a way Work-ly can't read well. Check the parsed details carefully before relying on any scores."
+      : "This might not be a job description, or it might be formatted in a way Work-ly can't read well. Check the parsed details carefully before relying on any match score.";
   }
 
-  const found = missing ? ` Workly couldn't find ${missing} in it.` : "";
+  const found = missing ? ` Work-ly couldn't find ${missing} in it.` : "";
   return kind === "resume"
     ? `This doesn't look like a ${noun}.${found} Upload the document you'd actually send to an employer.`
     : `This doesn't look like a ${noun}.${found} Paste the job description as it appears on the employer's site, including the requirements.`;

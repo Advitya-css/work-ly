@@ -20,7 +20,7 @@ export function ShareScoreButton({ score, roleTitle, companyName, className }: S
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "My Workly Fit Score",
+          title: "My Work-ly Fit Score",
           text: text,
           url: "https://workly.in",
         });

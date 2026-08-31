@@ -59,7 +59,7 @@ export async function parseDocumentAndBuildProfile(
 
   // COST CONTROL: never re-run extraction on a document already parsed.
   //
-  // Resume extraction is one of only two paths in Workly that actually
+  // Resume extraction is one of only two paths in Work-ly that actually
   // calls a model, and it's the expensive one - a whole CV is a large
   // prompt. Without this guard, a double-clicked button, a retried request
   // or a refreshed tab each bought another call AND appended a second copy

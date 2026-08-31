@@ -18,7 +18,7 @@ import type { NormalizedListing, RawListing } from "@/lib/discovery/types";
  * Nothing here invents data. Where a source doesn't state a field, the
  * result is null - never a guess. The one piece of inference is skill and
  * requirement extraction from the description, which reuses the same
- * heuristic parser used everywhere else in Workly and only ever lifts text
+ * heuristic parser used everywhere else in Work-ly and only ever lifts text
  * that is literally present.
  */
 
@@ -167,7 +167,7 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
         : { min: null, max: null, currency: null };
 
   // Skills/requirements come from the same heuristic extractor the rest of
-  // Workly uses, so a discovered job scores identically to one the user
+  // Work-ly uses, so a discovered job scores identically to one the user
   // pasted in by hand.
   let requiredSkills: string[] = [];
   let preferredSkills: string[] = [];

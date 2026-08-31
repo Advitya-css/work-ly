@@ -6,7 +6,7 @@ import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discover
  *
  * LEGAL BASIS: a commercial job-data provider used under its own API terms
  * with an issued key. The user brings their own credentials, which means
- * the licence relationship is between them and the provider, and Workly
+ * the licence relationship is between them and the provider, and Work-ly
  * simply consumes what that licence permits.
  *
  * Implemented against Adzuna's documented search API as the reference

@@ -692,7 +692,7 @@ export interface Application {
 
   /// Snapshotted when the application was created, NOT read live. See the
   /// schema comment - reading live scores would corrupt the correlation
-  /// between what Workly predicted and what actually happened.
+  /// between what Work-ly predicted and what actually happened.
   fitScoreAtApply: number | null;
   priorityScoreAtApply: number | null;
 

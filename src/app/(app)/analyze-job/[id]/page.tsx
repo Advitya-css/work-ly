@@ -124,7 +124,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
 
   const breakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
-  // Below this, Workly couldn't reliably assess the role at all - an empty
+  // Below this, Work-ly couldn't reliably assess the role at all - an empty
   // gaps/strengths list here means "nothing to go on," not "clean bill of
   // health," and the copy below must say so rather than implying the latter.
   const lowCoverage = coverageOf(breakdown) < MIN_COVERAGE_FOR_SCORE;
@@ -190,7 +190,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
               {analysis.strengths.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Workly didn't have enough information from your profile and this posting to identify strengths - see the note above."
+                    ? "Work-ly didn't have enough information from your profile and this posting to identify strengths - see the note above."
                     : "No strong matches were found for this role."}
                 </p>
               ) : (
@@ -218,7 +218,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
               {analysis.gaps.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Workly didn't have enough information to identify gaps - see the note above."
+                    ? "Work-ly didn't have enough information to identify gaps - see the note above."
                     : "No significant gaps identified."}
                 </p>
               ) : (
@@ -257,7 +257,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
                       ) : req.status === "not-met" ? (
                         <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
                       ) : (
-                        /* Unknown is not a failure. A requirement Workly could
+                        /* Unknown is not a failure. A requirement Work-ly could
                            not verify must never be drawn as a red cross. */
                         <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                       )}

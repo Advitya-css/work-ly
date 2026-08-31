@@ -71,7 +71,7 @@ export function JobInputForm() {
             {state.fieldErrors?.url && <p className="text-xs text-destructive">{state.fieldErrors.url}</p>}
             <p className="text-xs text-muted-foreground">
               We&apos;ll fetch the public page as-is. If it requires sign-in or blocks automated requests,
-              we&apos;ll ask you to paste the description instead. Workly never bypasses logins or bot
+              we&apos;ll ask you to paste the description instead. Work-ly never bypasses logins or bot
               detection.
             </p>
           </div>

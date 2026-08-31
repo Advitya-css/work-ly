@@ -69,7 +69,7 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Freelance & Gig Economy</CardTitle>
-          <CardDescription>Tailor Workly for musicians, contractors, and freelancers.</CardDescription>
+          <CardDescription>Tailor Work-ly for musicians, contractors, and freelancers.</CardDescription>
         </CardHeader>
         <CardContent>
           <FreelanceSettingsForm isFreelanceMode={profile?.isFreelanceMode ?? false} />
@@ -111,7 +111,7 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Session</CardTitle>
-          <CardDescription>Sign out of Workly on this device.</CardDescription>
+          <CardDescription>Sign out of Work-ly on this device.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={signOutAction}>

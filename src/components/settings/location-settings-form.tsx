@@ -41,7 +41,7 @@ export function LocationSettingsForm({ profile }: { profile: CareerProfile | nul
           placeholder="Manchester, United Kingdom"
         />
         <p className="text-xs text-muted-foreground">
-          Anchors location matching everywhere in Workly.
+          Anchors location matching everywhere in Work-ly.
         </p>
       </div>
 

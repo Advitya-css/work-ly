@@ -11,7 +11,7 @@ export default function GuidePage() {
   return (
     <div className="flex flex-col gap-12 max-w-5xl mx-auto pb-24">
       <PageHeader
-        title="Welcome to Workly"
+        title="Welcome to Work-ly"
         description="Your AI-powered career intelligence platform. Here is everything you need to know to land your dream job."
       />
 
@@ -59,7 +59,7 @@ export default function GuidePage() {
       </section>
 
       <section className="space-y-6">
-        <h2 className="text-2xl font-semibold tracking-tight">How to use Workly</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">How to use Work-ly</h2>
         
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
@@ -76,7 +76,7 @@ export default function GuidePage() {
               <CardTitle className="text-lg">2. Discover Jobs</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Go to the Discover tab. Workly aggressively filters out irrelevant industries and only shows you jobs that actually match your background. 
+              Go to the Discover tab. Work-ly aggressively filters out irrelevant industries and only shows you jobs that actually match your background. 
             </CardContent>
           </Card>
           

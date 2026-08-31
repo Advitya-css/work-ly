@@ -97,7 +97,7 @@ export function DiscoveryBoard({
           // good matches sitting right there.
           (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
           r.score >= 0.58 && // Solid relevance floor
-          // A job Workly itself has bucketed Low Priority or Skip has no
+          // A job Work-ly itself has bucketed Low Priority or Skip has no
           // business calling itself a "Top Pick" even if its blended
           // relevance score alone happens to clear the floor above - that
           // was exactly the "top match is actually a Low Priority job"
@@ -539,7 +539,7 @@ function DiscoveryCard({
                 // fitCoverage is null for rows scored before this field
                 // existed - fall back to showing the score rather than
                 // hiding every pre-existing listing's badge. A real
-                // coverage value below the threshold means Workly couldn't
+                // coverage value below the threshold means Work-ly couldn't
                 // actually assess this listing, so don't show a number
                 // that looks like a measurement.
                 (job.fitCoverage == null || job.fitCoverage >= MIN_COVERAGE_FOR_SCORE) && (

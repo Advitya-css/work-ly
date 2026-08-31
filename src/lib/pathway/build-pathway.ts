@@ -202,7 +202,7 @@ export function buildPathway(input: BuildPathwayInput): NewPathway {
       description:
         analysis && analysis.readinessScore >= 70
           ? "No significant gaps were found between your profile and this target. The main lever left is applying, with a tailored application per role."
-          : "Add more detail to your career profile (or analyze a target job) so Workly can identify concrete gaps to work on.",
+          : "Add more detail to your career profile (or analyze a target job) so Work-ly can identify concrete gaps to work on.",
       gapType: null,
       relatedSkill: null,
       unlockedOpportunityCount: 0,

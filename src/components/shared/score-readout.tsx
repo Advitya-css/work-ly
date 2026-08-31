@@ -8,7 +8,7 @@ import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
  *
  * This component exists to make one mistake impossible: showing a large,
  * confident number that was computed from almost no data. A big "19/100"
- * reads as a measurement of the person. When Workly could only assess two
+ * reads as a measurement of the person. When Work-ly could only assess two
  * of seven criteria, that number is a percentage of very little, and the
  * precision is exactly what makes it persuasive.
  *
@@ -42,7 +42,7 @@ export function ScoreReadout({
         <AlertCircle className="size-6 text-muted-foreground" />
         <p className="text-sm font-medium text-foreground">Not enough information</p>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Workly could only assess {Math.round(coverage * 100)}% of the criteria here, so it is not
+          Work-ly could only assess {Math.round(coverage * 100)}% of the criteria here, so it is not
           giving a score.
           {unassessed.length > 0 && (
             <>

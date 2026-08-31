@@ -16,7 +16,7 @@ export function UploadStep() {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Add your resume</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Upload a CV and Workly will draft your career profile. Education, experience, projects, and skills.
+          Upload a CV and Work-ly will draft your career profile. Education, experience, projects, and skills.
           You&apos;ll review and confirm everything before it&apos;s final.
         </p>
       </div>

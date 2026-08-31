@@ -164,7 +164,7 @@ export function PrivacyControls() {
           <div>
             <p className="font-medium text-foreground">What is sent to AI</p>
             <p>
-              Nothing, unless you configure an AI provider. Out of the box, Workly reads CVs and job
+              Nothing, unless you configure an AI provider. Out of the box, Work-ly reads CVs and job
               postings with built-in pattern matching that runs entirely on this machine, and every
               score: fit, priority, readiness, gap analysis ,  is calculated by ordinary code, not a
               model. If you do add an API key, only the CV text and job descriptions you submit are
@@ -174,14 +174,14 @@ export function PrivacyControls() {
           <div>
             <p className="font-medium text-foreground">AI Processing</p>
             <p>
-              Your data (including your CV) is processed securely by Workly AI to provide tailored
+              Your data (including your CV) is processed securely by Work-ly AI to provide tailored
               job recommendations, interview prep, and career insights. We do not use your personal
               information to train underlying public AI models.
               
             </p>
           </div>
           <div>
-            <p className="font-medium text-foreground">What Workly never does</p>
+            <p className="font-medium text-foreground">What Work-ly never does</p>
             <p>
               It does not scrape sites that prohibit it, does not sell or share your data, and does
               not estimate your chance of being hired. Every score is a stated-fact comparison, not
@@ -215,7 +215,7 @@ export function PrivacyControls() {
             description="Removes your career profile, goals, analyzed jobs, opportunities, dream jobs, pathways, applications and discovered listings. Your login stays."
             buttonLabel="Delete career data"
             confirmTitle="Delete all career data?"
-            confirmBody="Everything Workly knows about your career will be permanently deleted, including your application history and its outcomes. Your account will remain, empty, as if newly created."
+            confirmBody="Everything Work-ly knows about your career will be permanently deleted, including your application history and its outcomes. Your account will remain, empty, as if newly created."
             typeToConfirm="DELETE DATA"
             onConfirm={deleteCareerDataAction}
           />

@@ -83,7 +83,7 @@ export function AnalyticsPanel({
           <CardTitle>
             What&apos;s working
           </CardTitle>
-          <CardDescription>Patterns Workly can see in your own outcomes.</CardDescription>
+          <CardDescription>Patterns Work-ly can see in your own outcomes.</CardDescription>
         </CardHeader>
         <CardContent>
           {insights.notEnoughData ? (
@@ -94,7 +94,7 @@ export function AnalyticsPanel({
               </p>
               <p className="text-xs text-muted-foreground">
                 You&apos;ve sent {insights.sentCount} application
-                {insights.sentCount === 1 ? "" : "s"}. Workly waits until{" "}
+                {insights.sentCount === 1 ? "" : "s"}. Work-ly waits until{" "}
                 {INSIGHT_THRESHOLDS.MIN_SENT} before drawing any conclusions , {" "}
                 {insights.needed} more to go.
               </p>

@@ -33,12 +33,12 @@ export async function sendVerificationCodeEmail(to: string, code: string): Promi
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `Workly <noreply@${fromDomain}>`,
+      from: `Work-ly <noreply@${fromDomain}>`,
       to,
-      subject: `${code} is your Workly verification code`,
+      subject: `${code} is your Work-ly verification code`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-          <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">Welcome to Workly</h1>
+          <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">Welcome to Work-ly</h1>
           <p style="font-size: 16px; color: #6b6560; line-height: 1.5; margin-bottom: 24px;">
             Enter this code to verify your email address and finish creating your account.
           </p>
@@ -46,7 +46,7 @@ export async function sendVerificationCodeEmail(to: string, code: string): Promi
             ${code}
           </div>
           <p style="font-size: 13px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
-            If you didn't create a Workly account, you can safely ignore this email.
+            If you didn't create a Work-ly account, you can safely ignore this email.
             This code expires in 10 minutes.
           </p>
         </div>
@@ -83,9 +83,9 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `Workly <noreply@${fromDomain}>`,
+      from: `Work-ly <noreply@${fromDomain}>`,
       to,
-      subject: "Reset your Workly password",
+      subject: "Reset your Work-ly password",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
           <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">Password Reset Request</h1>
@@ -137,21 +137,21 @@ export async function sendJobAlertEmail(to: string, targetRole: string, newJobsC
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `Workly <noreply@${fromDomain}>`,
+      from: `Work-ly <noreply@${fromDomain}>`,
       to,
       subject: `${newJobsCount} New Jobs Found for ${targetRole}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
           <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">New Job Matches Found!</h1>
           <p style="font-size: 16px; color: #6b6560; line-height: 1.5; margin-bottom: 16px;">
-            Workly's discovery engine just found <strong>${newJobsCount} new jobs</strong> matching your target role of <em>${targetRole}</em>.
+            Work-ly's discovery engine just found <strong>${newJobsCount} new jobs</strong> matching your target role of <em>${targetRole}</em>.
           </p>
           ${highlight}
           <a href="${dashboardUrl}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
             View Your Jobs
           </a>
           <p style="font-size: 13px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
-            You are receiving this because you set a Career Goal on Workly.
+            You are receiving this because you set a Career Goal on Work-ly.
           </p>
         </div>
       `,

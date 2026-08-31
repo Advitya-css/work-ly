@@ -22,7 +22,7 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
         <CardHeader>
           <CardTitle>Facts about you</CardTitle>
           <CardDescription>
-            Everything here is entered by you directly. Workly never invents experience,
+            Everything here is entered by you directly. Work-ly never invents experience,
             skills, or achievements on your behalf.
           </CardDescription>
         </CardHeader>

@@ -9,7 +9,7 @@ import { XMLParser } from "fast-xml-parser";
  * LEGAL BASIS: an RSS or Atom feed exists for exactly one reason - so
  * other software can read it. Publishing one is an explicit invitation to
  * consume it programmatically. This is categorically different from
- * scraping a site's HTML against its terms, which Workly does not do.
+ * scraping a site's HTML against its terms, which Work-ly does not do.
  *
  * The three adapters below share one parser and differ only in how they're
  * labelled, because the kind matters for provenance display and for the

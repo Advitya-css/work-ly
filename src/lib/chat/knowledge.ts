@@ -1,5 +1,5 @@
 /**
- * What Workly can explain about itself without calling a model.
+ * What Work-ly can explain about itself without calling a model.
  *
  * This exists because the most common questions a new user has are not really
  * career questions at all. They are "what is this number", "why is that job
@@ -9,7 +9,7 @@
  *
  * So the curated answers below are checked FIRST, and the model is only asked
  * about things genuinely outside this list. That has three benefits: answers
- * about how Workly works are always correct, they cost nothing, and the help
+ * about how Work-ly works are always correct, they cost nothing, and the help
  * still works with no API key configured at all.
  */
 
@@ -30,7 +30,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     ],
     question: "What does the Fit score mean?",
     answer:
-      "Fit is how closely your profile lines up with what a posting asks for, out of 100. It is built from seven parts with fixed weights: skills (30), experience (25), industry relevance (15), education (10), seniority (10), evidence behind your skills (5) and location (5).\n\nIt is a measure of overlap, not a prediction. Workly will never tell you your chances of being hired, because nothing in your profile or the posting can support that claim.",
+      "Fit is how closely your profile lines up with what a posting asks for, out of 100. It is built from seven parts with fixed weights: skills (30), experience (25), industry relevance (15), education (10), seniority (10), evidence behind your skills (5) and location (5).\n\nIt is a measure of overlap, not a prediction. Work-ly will never tell you your chances of being hired, because nothing in your profile or the posting can support that claim.",
   },
   {
     id: "priority-score",
@@ -56,7 +56,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["what should i do", "where do i start", "what next", "getting started", "how do i use", "first step"],
     question: "What should I do first?",
     answer:
-      "In this order:\n\n1. Upload your CV on Career Profile. Everything else reads from it.\n2. Set a goal on Career Goals, even a rough one. Without it Workly can score how well you match a job, but not whether the job is worth pursuing.\n3. Analyze a job you are actually considering, or press Discover to pull some in.\n4. Once you have a few, open Career Path to see what is standing between you and the roles you want.",
+      "In this order:\n\n1. Upload your CV on Career Profile. Everything else reads from it.\n2. Set a goal on Career Goals, even a rough one. Without it Work-ly can score how well you match a job, but not whether the job is worth pursuing.\n3. Analyze a job you are actually considering, or press Discover to pull some in.\n4. Once you have a few, open Career Path to see what is standing between you and the roles you want.",
   },
   {
     id: "why-ranked",
@@ -75,7 +75,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "gap",
     triggers: ["gap", "missing", "what am i missing", "readiness"],
-    question: "How does Workly decide what I am missing?",
+    question: "How does Work-ly decide what I am missing?",
     answer:
       "It compares the requirements it read out of a posting against what is on your profile, and separates three things: requirements you meet with evidence, requirements you have stated but not evidenced, and requirements you do not have at all.\n\nThat middle category matters. A skill listed on your CV with nothing behind it scores lower than the same skill attached to a project or an achievement, which is usually the cheapest gap to close.",
   },
@@ -91,7 +91,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["application", "track", "outcome", "interview rate", "applied"],
     question: "How does application tracking work?",
     answer:
-      "Log a role once and move it through the stages as things happen. Workly records each milestone permanently rather than only your current status, so an interview that later ended in rejection still counts toward your interview rate. Otherwise someone interviewing steadily but not converting would see 0%, which is both wrong and demoralising.\n\nIt holds off on drawing conclusions until there are at least 8 sent applications, and at least 3 in any group it wants to compare.",
+      "Log a role once and move it through the stages as things happen. Work-ly records each milestone permanently rather than only your current status, so an interview that later ended in rejection still counts toward your interview rate. Otherwise someone interviewing steadily but not converting would see 0%, which is both wrong and demoralising.\n\nIt holds off on drawing conclusions until there are at least 8 sent applications, and at least 3 in any group it wants to compare.",
   },
   {
     id: "privacy",
@@ -117,7 +117,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["wrong", "inaccurate", "mistake", "not right", "bad parse", "misread"],
     question: "The parsed information is wrong. What do I do?",
     answer:
-      "Edit it. Every section of your career profile is editable, and anything Workly extracted rather than you entering is flagged as unverified until you confirm it.\n\nIf a lot came out wrong, the likely cause is that no AI provider is configured, so a pattern-matching fallback read the document. It is deliberately cautious and will not guess. Your scores improve immediately once the profile is corrected.",
+      "Edit it. Every section of your career profile is editable, and anything Work-ly extracted rather than you entering is flagged as unverified until you confirm it.\n\nIf a lot came out wrong, the likely cause is that no AI provider is configured, so a pattern-matching fallback read the document. It is deliberately cautious and will not guess. Your scores improve immediately once the profile is corrected.",
   },
 ];
 

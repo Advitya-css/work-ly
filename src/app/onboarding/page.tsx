@@ -19,7 +19,7 @@ const steps = [
   {
     icon: FileText,
     title: "Build your career profile",
-    description: "Add your experience and preferences so Workly understands where you stand.",
+    description: "Add your experience and preferences so Work-ly understands where you stand.",
   },
   {
     icon: Compass,
@@ -65,7 +65,7 @@ export default async function OnboardingPage({
         <>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Welcome to Workly{user.name ? `, ${user.name.split(" ")[0]}` : ""}
+              Welcome to Work-ly{user.name ? `, ${user.name.split(" ")[0]}` : ""}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Are you here as a student looking for campus/grad roles, or an established professional?

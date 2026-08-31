@@ -11,7 +11,7 @@ import { arbeitnowSource, remotiveSource, jobicySource, himalayasSource, museSou
 import type { JobSourceAdapter } from "@/lib/discovery/types";
 
 /**
- * Registry of every adapter Workly knows how to run.
+ * Registry of every adapter Work-ly knows how to run.
  *
  * All seven source kinds from the Phase 8 spec are represented. What
  * differs is what each needs before it can actually run:

@@ -35,7 +35,7 @@ export function ProductPreview() {
                   <path d="M4 12L10 18L20 6" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
-              <span className="text-xs font-semibold text-sidebar-foreground">Workly</span>
+              <span className="text-xs font-semibold text-sidebar-foreground">Work-ly</span>
             </div>
             <div className="flex flex-col gap-0.5">
               {miniNav.map((item) => (

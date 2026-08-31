@@ -139,7 +139,7 @@ function fitScoreInsight(sent: Application[]): Insight | null {
 
   return {
     dimension: "fit_score",
-    text: "Roles where Workly scored your fit higher are the ones getting you interviews.",
+    text: "Roles where Work-ly scored your fit higher are the ones getting you interviews.",
     sampleSize: scored.length,
     supportingDetail: `Average Candidate Fit was ${withMean}/100 for applications that reached interview, versus ${withoutMean}/100 for those that didn't.`,
   };

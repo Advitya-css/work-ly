@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
       <p className="text-sm italic">Last updated: August 31, 2026</p>
 
       <p>
-        Workly (work-ly.in) is operated by Advitya Bansal, based in India. Workly is used by people around the
+        Work-ly (work-ly.in) is operated by Advitya Bansal, based in India. Work-ly is used by people around the
         world, so this policy is written to address the EU/UK GDPR, India&apos;s Digital Personal Data Protection
         Act 2023 (DPDPA), the California Consumer Privacy Act (CCPA/CPRA), Canada&apos;s PIPEDA, and Australia&apos;s
         Privacy Act &mdash; whichever applies to you.
@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
         <li>To show job opportunities and calculate Fit/Priority scores and skills-gap analysis based on your profile.</li>
         <li>To let you save, apply to, and track opportunities, and to generate AI-assisted content you request, like a tailored cover letter.</li>
         <li>To send service-related emails (via our email provider) and secure the service against fraud and abuse.</li>
-        <li>To maintain, diagnose, and improve Workly, and to comply with legal obligations.</li>
+        <li>To maintain, diagnose, and improve Work-ly, and to comply with legal obligations.</li>
       </ul>
       <p>
         <strong className="text-foreground">We don&apos;t use your career data to serve you third-party ads, and we
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
       <h2 className="text-2xl font-bold text-foreground mt-4">3. Automated scoring &amp; AI features</h2>
       <p>
         Fit/Priority scores and career suggestions are generated automatically from your profile and job data.
-        They&apos;re informational only &mdash; no employer receives or relies on a Workly score as part of their
+        They&apos;re informational only &mdash; no employer receives or relies on a Work-ly score as part of their
         hiring process, and you&apos;re never subject to a solely-automated decision with a legal or similarly
         significant effect on you. You can review, correct, or delete the underlying profile data anytime in
         Settings.
@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
 
       <h2 className="text-2xl font-bold text-foreground mt-4">5. International transfers</h2>
       <p>
-        Because Workly is operated from India and uses cloud infrastructure providers, your data may be processed
+        Because Work-ly is operated from India and uses cloud infrastructure providers, your data may be processed
         in India, the United States, or other countries with different data protection laws than your own. Where
         we transfer personal data of EU/UK/EEA users internationally, we rely on appropriate safeguards with our
         service providers.
@@ -94,7 +94,7 @@ export default function PrivacyPolicy() {
 
       <h2 className="text-2xl font-bold text-foreground mt-4">9. Children</h2>
       <p>
-        Workly isn&apos;t directed at anyone under 18, and we don&apos;t knowingly collect data from anyone under
+        Work-ly isn&apos;t directed at anyone under 18, and we don&apos;t knowingly collect data from anyone under
         18. If we learn we have, we&apos;ll delete it &mdash; contact us if you believe this has happened.
       </p>
 

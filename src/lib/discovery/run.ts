@@ -48,7 +48,7 @@ import { profileSearchText } from "@/lib/discovery/profile-text";
  * run 173 analyses, and it doesn't.
  *
  * This is written as an awaited async function rather than a queued job
- * because Workly has no worker process. The seam is deliberate: everything
+ * because Work-ly has no worker process. The seam is deliberate: everything
  * below is pure orchestration over the database, so moving it behind a
  * queue later means changing the caller, not this function.
  */
@@ -477,7 +477,7 @@ export async function runDiscovery(
         embeddingModel: embeddingProvider.name,
         fitScore: fit?.fitScore ?? null,
         // Lets the discovery feed withhold the fit badge for a listing
-        // Workly couldn't actually assess, instead of showing the fitScore
+        // Work-ly couldn't actually assess, instead of showing the fitScore
         // the engine collapses to when coverage is insufficient (which
         // otherwise reads as a genuine, if low, score).
         fitCoverage: fit ? coverageOf(fit.scoreBreakdown) : null,

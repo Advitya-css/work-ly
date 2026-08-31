@@ -8,7 +8,7 @@ import { LEGAL_DISCLAIMER, type LegalLimit } from "@/lib/student/legal-limits";
  * The source link is not decoration. A student is being told something that
  * could affect their visa, and the only responsible version of that is one
  * where they can click through and read the rule themselves in thirty
- * seconds. Same principle as job listings elsewhere in Workly always
+ * seconds. Same principle as job listings elsewhere in Work-ly always
  * carrying their origin.
  */
 export function LegalNote({ limit }: { limit: LegalLimit }) {

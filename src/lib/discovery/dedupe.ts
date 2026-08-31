@@ -4,7 +4,7 @@ import type { NormalizedListing } from "@/lib/discovery/types";
 /**
  * CROSS-SOURCE DEDUPLICATION
  *
- * The same job reaches Workly from several directions: the company's ATS
+ * The same job reaches Work-ly from several directions: the company's ATS
  * board, an aggregator API, an RSS feed, and possibly the user pasting it
  * in. Showing it five times is the single fastest way to make a discovery
  * feed useless, so this runs on every ingest.

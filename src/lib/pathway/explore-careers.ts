@@ -163,7 +163,7 @@ export function exploreCareers(params: {
       isMeasured: true,
       requiredSkills,
       matchedSkills: requiredSkills.filter((r) => confirmed.some((s) => skillsMatch(s.name, r))),
-      typicalEntryRoute: "You already have real postings for this role in Workly. Open them to see exactly which requirements you meet.",
+      typicalEntryRoute: "You already have real postings for this role in Work-ly. Open them to see exactly which requirements you meet.",
       relevantJobCount: group.length,
       relevantJobTitles: group
         .slice(0, 5)

@@ -52,7 +52,7 @@ export function PartTimeSettingsForm({ profile }: { profile: CareerProfile | nul
               placeholder="e.g. Weekends only, Evenings after 5pm, MWF mornings"
             />
             <p className="text-xs text-muted-foreground">
-              Workly will flag jobs that conflict with your availability.
+              Work-ly will flag jobs that conflict with your availability.
             </p>
           </div>
         )}

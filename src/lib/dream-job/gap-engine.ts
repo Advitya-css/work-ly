@@ -578,7 +578,7 @@ export function buildGapAnalysis(params: {
     gapPriorities.length > 0
       ? gapPriorities.slice(0, 3).map((g) => (g.gapType === "SKILL_GAP" ? `Missing: ${g.title}` : g.title))
       : dreamJobLike.requiredSkills.length === 0 && fit.mandatoryRequirements.length === 0
-        ? ["Workly could not identify any specific requirements or skills in the pasted job description."]
+        ? ["Work-ly could not identify any specific requirements or skills in the pasted job description."]
         : ["No significant obstacles identified. Your profile already lines up well with this dream role."];
 
   const topGap = gapPriorities[0];

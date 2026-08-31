@@ -29,7 +29,7 @@ import { PIPELINE_COLUMNS, APPLICATION_STATUS_LABEL } from "@/lib/applications/l
 import type { ApplicationStatus } from "@/lib/db/types";
 
 /**
- * Logs a role applied to outside Workly. The tracker would be far less
+ * Logs a role applied to outside Work-ly. The tracker would be far less
  * useful if it only knew about jobs that happened to be analyzed here -
  * and the outcome analytics would be skewed toward them.
  */
@@ -81,7 +81,7 @@ export function NewApplicationDialog() {
         <DialogHeader>
           <DialogTitle>Log an application</DialogTitle>
           <DialogDescription>
-            For roles you applied to outside Workly. Anything you analyzed here can be tracked
+            For roles you applied to outside Work-ly. Anything you analyzed here can be tracked
             straight from its opportunity page instead.
           </DialogDescription>
         </DialogHeader>
@@ -153,7 +153,7 @@ export function NewApplicationDialog() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Starting further along the pipeline is fine. Workly backfills the stages you passed
+            Starting further along the pipeline is fine. Work-ly backfills the stages you passed
             through so your interview rate stays accurate.
           </p>
         </div>

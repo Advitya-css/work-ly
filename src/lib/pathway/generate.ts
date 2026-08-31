@@ -47,7 +47,7 @@ export async function generatePathway(
   if (!hasTarget) {
     return {
       error:
-        "Workly needs a target before it can build a pathway. Analyze a dream job, or set a career goal with a target role.",
+        "Work-ly needs a target before it can build a pathway. Analyze a dream job, or set a career goal with a target role.",
     };
   }
 

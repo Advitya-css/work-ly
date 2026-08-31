@@ -15,7 +15,7 @@ export function MarketingNavbar() {
             How it works
           </a>
           <a href="#not-a-job-board" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Why Workly
+            Why Work-ly
           </a>
         </nav>
         <div className="flex items-center gap-2">

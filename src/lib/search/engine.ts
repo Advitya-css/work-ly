@@ -30,7 +30,7 @@ import type {
  *   SEMANTIC (25%)    Fuzzy overlap for phrasing the keyword pass misses.
  *                     Bounded at a quarter of the score precisely because
  *                     the default embedding is lexical, not learned.
- *   PREFERENCES (15%) What the user told Workly they want, which no amount
+ *   PREFERENCES (15%) What the user told Work-ly they want, which no amount
  *                     of text analysis can infer.
  *
  * Role-graph expansion (see role-graph.ts) runs before scoring and is what
@@ -89,7 +89,7 @@ export interface ScoredJob {
 // Five signals now, not four: VALUES (Values & Culture Matching) was added
 // as its own weighted component rather than folded into `preferences`,
 // because it answers a different question - preferences is what the
-// candidate explicitly told Workly via CareerGoal (target role, countries,
+// candidate explicitly told Work-ly via CareerGoal (target role, countries,
 // salary floor); values is what their CV's own history suggests they
 // gravitate toward (see lib/values/value-graph.ts), which most candidates
 // never state explicitly anywhere. Every mode's weights were rescaled

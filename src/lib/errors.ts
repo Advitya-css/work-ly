@@ -64,12 +64,12 @@ const KNOWN: { test: RegExp; message: string }[] = [
   {
     test: /AI provider request failed \(4\d\d\)/i,
     message:
-      "The AI provider rejected the request. Usually an invalid or expired API key. Workly has fallen back to its built-in parsing.",
+      "The AI provider rejected the request. Usually an invalid or expired API key. Work-ly has fallen back to its built-in parsing.",
   },
   {
     test: /AI provider request failed \(5\d\d\)|AI_API_KEY is required/i,
     message:
-      "The AI provider is unavailable. Workly has fallen back to its built-in parsing, so nothing is blocked.",
+      "The AI provider is unavailable. Work-ly has fallen back to its built-in parsing, so nothing is blocked.",
   },
   {
     test: /Payload Too Large|file is too large/i,

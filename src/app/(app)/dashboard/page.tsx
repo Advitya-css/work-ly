@@ -156,7 +156,7 @@ export default async function DashboardPage() {
               <EmptyState
                 icon={IconGoal}
                 title="No goals set"
-                description="Add a goal so Workly knows what to prioritize."
+                description="Add a goal so Work-ly knows what to prioritize."
                 action={{ label: "Add a goal", href: "/career-goals" }}
                 className="border-0 px-0 py-2 text-left items-start"
               />

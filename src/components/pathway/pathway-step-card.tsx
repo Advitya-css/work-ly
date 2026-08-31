@@ -212,7 +212,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
           <DialogHeader>
             <DialogTitle>Edit step</DialogTitle>
             <DialogDescription>
-              Make this step your own. Workly generated it, but you know your situation better.
+              Make this step your own. Work-ly generated it, but you know your situation better.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">

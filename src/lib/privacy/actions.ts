@@ -17,7 +17,7 @@ import { safeMessage } from "@/lib/errors";
  * they are genuinely different requests:
  *
  *   deleteCv          - remove uploaded files, keep the profile they built
- *   deleteCareerData  - remove everything Workly derived or tracked, keep
+ *   deleteCareerData  - remove everything Work-ly derived or tracked, keep
  *                       the account
  *   deleteAccount     - remove everything, including the login
  *
@@ -97,7 +97,7 @@ export async function deleteCvAction(): Promise<PrivacyActionState> {
 }
 
 /**
- * Deletes everything Workly holds about the user's career - profile,
+ * Deletes everything Work-ly holds about the user's career - profile,
  * skills, jobs, analyses, opportunities, pathways, applications,
  * discovered listings - while keeping the account itself.
  *

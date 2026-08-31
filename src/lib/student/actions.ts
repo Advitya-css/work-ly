@@ -13,7 +13,7 @@ import { isSupportedStudentCountry } from "@/lib/student/country-rules-db";
  * Student mode is a switch on the profile rather than a separate account
  * type. Someone who graduates should keep every application, every score
  * and every document they built up as a student, so leaving student mode
- * changes what Workly shows and nothing else about their data.
+ * changes what Work-ly shows and nothing else about their data.
  */
 
 function revalidateStudentViews() {
@@ -29,7 +29,7 @@ function revalidateStudentViews() {
  *
  * The first version let a database error propagate out of the action, and
  * Next rendered it as a crashed page showing the raw Postgres text
- * (`column "isStudent" ... does not exist`) to the user. Workly's rule is
+ * (`column "isStudent" ... does not exist`) to the user. Work-ly's rule is
  * that a driver error never reaches a screen, so these catch, hand the
  * error to safeMessage, and let the caller show a sentence.
  *
@@ -93,10 +93,10 @@ export async function saveStudentProfileAction(
   }
 
   const country = parsed.data.studentCountry || null;
-  // A country Workly has no sourced rules for would produce a screen that
+  // A country Work-ly has no sourced rules for would produce a screen that
   // silently shows no limits, which reads as "there are none". Reject it.
   if (country && !(await isSupportedStudentCountry(country))) {
-    return { error: "Workly does not have sourced work rules for that country yet." };
+    return { error: "Work-ly does not have sourced work rules for that country yet." };
   }
 
   try {

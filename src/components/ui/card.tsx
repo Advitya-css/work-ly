@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * A card: rounded, bordered, lifted. The familiar shape, because it is easy
  * to scan and easy to learn.
  *
- * What makes it Workly's rather than any component library's is `area`. Pass
+ * What makes it Work-ly's rather than any component library's is `area`. Pass
  * an area and the card gets that part of the product's colour: a tinted wash
  * behind the header, and the same colour available to the icon and section
  * markers inside it. Opportunities are amber, career is plum, the pathway is

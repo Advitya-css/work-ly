@@ -28,7 +28,7 @@ function buildSteps(data: TransitionRoadmapData) {
       desc: foundationDone
         ? "Your resume is uploaded and your profile has a headline and summary. This step is done."
         : !data.hasResume
-          ? "Upload your resume and fill in your headline and summary so Workly (and anyone reviewing your profile) has something to work from."
+          ? "Upload your resume and fill in your headline and summary so Work-ly (and anyone reviewing your profile) has something to work from."
           : "Add a headline and summary to your career profile - your resume is uploaded, but a profile without one reads as unfinished.",
       done: foundationDone,
     },

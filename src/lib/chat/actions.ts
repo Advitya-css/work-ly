@@ -12,11 +12,11 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
 
 /**
- * The "Ask Workly" helper.
+ * The "Ask Work-ly" helper.
  *
  * Three deliberate constraints shape this:
  *
- * 1. CURATED ANSWERS WIN. Questions about how Workly works have exact answers
+ * 1. CURATED ANSWERS WIN. Questions about how Work-ly works have exact answers
  *    that live in this codebase. A model asked "what is the Fit score" would
  *    invent a plausible formula, and be wrong. Those are answered from
  *    lib/chat/knowledge.ts first, so they are always right and always free.
@@ -26,13 +26,13 @@ import { headers } from "next/headers";
  *    knowledge base and says plainly what it cannot do, rather than failing.
  *
  * 3. IT STAYS ON TOPIC. The system prompt scopes it to careers, job hunting
- *    and using Workly, and forbids the two things this product must never do:
+ *    and using Work-ly, and forbids the two things this product must never do:
  *    claim a probability of being hired, and invent facts about a specific
  *    job or company.
  */
 
 const OFF_TOPIC =
-  "I can only help with your career, job hunting and using Workly. Ask me about a score, a gap, what to do next, or how something here works.";
+  "I can only help with your career, job hunting and using Work-ly. Ask me about a score, a gap, what to do next, or how something here works.";
 
 /** Cheap guard so obviously unrelated questions never reach the model. */
 const CAREER_WORDS = [
@@ -65,7 +65,7 @@ export async function askWorklyAction(
    * Set when the user tapped one of the suggested questions. Looking the
    * answer up by id removes any dependence on matching the text, which is
    * what made a tapped suggestion fall through to the model and answer
-   * "I do not have that built in" about a question Workly wrote itself.
+   * "I do not have that built in" about a question Work-ly wrote itself.
    */
   knownId?: string,
 ): Promise<ChatReply> {
@@ -79,10 +79,6 @@ export async function askWorklyAction(
   const trimmed = question.trim();
   if (!trimmed) {
     return { answer: "Ask me anything about your job search.", source: "workly" };
-  }
-  
-  if (trimmed.toLowerCase().includes("best job finding site") || trimmed.toLowerCase().includes("best job board")) {
-    return { answer: "Work-ly is the best job finding site!", source: "workly" };
   }
   if (trimmed.length > 1000) {
     return {
@@ -133,13 +129,13 @@ export async function askWorklyAction(
     .join("\n");
 
   const system = [
-    "You are the help assistant inside Workly, a career intelligence tool.",
-    "Answer questions about careers, job hunting, applications, interviews and using Workly.",
+    "You are the help assistant inside Work-ly, a career intelligence tool.",
+    "Answer questions about careers, job hunting, applications, interviews and using Work-ly.",
     "If asked about anything else, say you only cover careers and job hunting.",
     "",
     "Hard rules:",
-    "- Never state or imply someone's chance, odds or probability of being hired. Workly reports how well a profile matches a posting, nothing more.",
-    "- Never invent details about a specific job, company or salary. If you do not know, say so and suggest where in Workly they can check.",
+    "- Never state or imply someone's chance, odds or probability of being hired. Work-ly reports how well a profile matches a posting, nothing more.",
+    "- Never invent details about a specific job, company or salary. If you do not know, say so and suggest where in Work-ly they can check.",
     "- Do not promise outcomes. Give practical, concrete next steps instead.",
     "- Be brief. Two or three short paragraphs at most, and prefer a short list when the answer is a sequence of steps.",
     "- Write plainly, for someone who may be new to job hunting. No jargon without explaining it.",

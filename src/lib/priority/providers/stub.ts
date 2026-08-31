@@ -44,7 +44,7 @@ function scoreCandidateFit(analysis: JobAnalysis) {
   // legacy value can arrive non-finite. Previously that produced NaN
   // priority points and a confident ranking built on nothing.
   if (!Number.isFinite(analysis.fitScore)) {
-    return unavailable(WEIGHTS.candidateFit, "Workly does not have a usable Candidate Fit for this role.");
+    return unavailable(WEIGHTS.candidateFit, "Work-ly does not have a usable Candidate Fit for this role.");
   }
 
   // If Fit itself declined to give a number, Priority must not launder that
@@ -54,7 +54,7 @@ function scoreCandidateFit(analysis: JobAnalysis) {
   if (!isReliable(analysis.scoreBreakdown)) {
     return unavailable(
       WEIGHTS.candidateFit,
-      "Workly could not assess enough of this role against your profile to produce a Candidate Fit, so it is not scoring one here either.",
+      "Work-ly could not assess enough of this role against your profile to produce a Candidate Fit, so it is not scoring one here either.",
     );
   }
 
@@ -73,7 +73,7 @@ function scoreCareerValue(job: Job, careerGoal: CareerGoal | null) {
   if (!hasTargeting) {
     return unavailable(
       WEIGHTS.careerValue,
-      "You have not set a target role or industry yet, so Workly cannot judge whether this role moves you toward it.",
+      "You have not set a target role or industry yet, so Work-ly cannot judge whether this role moves you toward it.",
     );
   }
 
@@ -114,7 +114,7 @@ function scoreCareerValue(job: Job, careerGoal: CareerGoal | null) {
   return component(
     0.25 * WEIGHTS.careerValue,
     WEIGHTS.careerValue,
-    "This role doesn't clearly match the role or industry you told Workly you're targeting.",
+    "This role doesn't clearly match the role or industry you told Work-ly you're targeting.",
   );
 }
 
@@ -132,7 +132,7 @@ function scoreCompetitiveness(analysis: JobAnalysis) {
   if (checkable.length === 0) {
     return unavailable(
       WEIGHTS.competitiveness,
-      "Workly could not verify any of this posting's mandatory requirements automatically, so it cannot judge how contested the role is.",
+      "Work-ly could not verify any of this posting's mandatory requirements automatically, so it cannot judge how contested the role is.",
     );
   }
   const met = checkable.filter((r) => r.status === "met").length;
@@ -140,7 +140,7 @@ function scoreCompetitiveness(analysis: JobAnalysis) {
   return component(
     ratio * WEIGHTS.competitiveness,
     WEIGHTS.competitiveness,
-    `You clearly meet ${met} of the ${checkable.length} mandatory requirement${checkable.length === 1 ? "" : "s"} Workly could check.`,
+    `You clearly meet ${met} of the ${checkable.length} mandatory requirement${checkable.length === 1 ? "" : "s"} Work-ly could check.`,
   );
 }
 
@@ -183,13 +183,13 @@ function scoreSalary(job: Job, careerGoal: CareerGoal | null) {
   if (!job.salaryCurrency || !careerGoal.salaryCurrency) {
     return unavailable(
       WEIGHTS.salary,
-      "Workly does not know the currency on both sides here, so comparing the figures would be meaningless.",
+      "Work-ly does not know the currency on both sides here, so comparing the figures would be meaningless.",
     );
   }
   if (job.salaryCurrency.toUpperCase() !== careerGoal.salaryCurrency.toUpperCase()) {
     return unavailable(
       WEIGHTS.salary,
-      `This role pays in ${job.salaryCurrency} and your target is in ${careerGoal.salaryCurrency}. Workly does not convert currencies, so it will not guess.`,
+      `This role pays in ${job.salaryCurrency} and your target is in ${careerGoal.salaryCurrency}. Work-ly does not convert currencies, so it will not guess.`,
     );
   }
 
@@ -229,7 +229,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (!anyPreference) {
     return unavailable(
       WEIGHTS.location,
-      "You have not told Workly where you want to work, so it cannot judge this role's location.",
+      "You have not told Work-ly where you want to work, so it cannot judge this role's location.",
     );
   }
 
@@ -250,7 +250,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (checks.length === 0) {
     return unavailable(
       WEIGHTS.location,
-      "This posting does not say where the role is based, so Workly cannot check it against your preferences.",
+      "This posting does not say where the role is based, so Work-ly cannot check it against your preferences.",
     );
   }
 
@@ -269,7 +269,7 @@ function scoreCareerProgression(job: Job, profile: FullCareerProfile, careerGoal
   if (!job.seniority) {
     return unavailable(
       WEIGHTS.careerProgression,
-      "Workly could not identify a seniority level in this posting, so it cannot judge progression.",
+      "Work-ly could not identify a seniority level in this posting, so it cannot judge progression.",
     );
   }
   const candidateYears = estimateYearsExperience(profile);
@@ -277,7 +277,7 @@ function scoreCareerProgression(job: Job, profile: FullCareerProfile, careerGoal
   if (!candidateLevel) {
     return unavailable(
       WEIGHTS.careerProgression,
-      "Workly does not know your current level yet, so it cannot say whether this is a step up.",
+      "Work-ly does not know your current level yet, so it cannot say whether this is a step up.",
     );
   }
   const candidateIdx = seniorityIndex(candidateLevel);
@@ -286,7 +286,7 @@ function scoreCareerProgression(job: Job, profile: FullCareerProfile, careerGoal
   // produced a confident "this role is a step down from your current level"
   // about a comparison that never happened.
   if (candidateIdx < 0 || jobIdx < 0) {
-    return unavailable(WEIGHTS.careerProgression, "Workly could not place one of these on its seniority scale.");
+    return unavailable(WEIGHTS.careerProgression, "Work-ly could not place one of these on its seniority scale.");
   }
   const diff = jobIdx - candidateIdx;
 

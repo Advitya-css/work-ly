@@ -6,27 +6,27 @@ export default function TermsOfService() {
 
       <p>
         These Terms of Service (&quot;Terms&quot;) are an agreement between you and Advitya Bansal, operating
-        Workly (work-ly.in) as an individual based in India (&quot;Workly,&quot; &quot;we,&quot; &quot;us&quot;). By creating an account or
-        using Workly, you agree to these Terms, our <a href="/legal/privacy" className="text-foreground underline underline-offset-2">Privacy Policy</a>, and our{" "}
-        <a href="/legal/cookies" className="text-foreground underline underline-offset-2">Cookie Policy</a>. If you don&apos;t agree, please don&apos;t use Workly.
+        Work-ly (work-ly.in) as an individual based in India (&quot;Work-ly,&quot; &quot;we,&quot; &quot;us&quot;). By creating an account or
+        using Work-ly, you agree to these Terms, our <a href="/legal/privacy" className="text-foreground underline underline-offset-2">Privacy Policy</a>, and our{" "}
+        <a href="/legal/cookies" className="text-foreground underline underline-offset-2">Cookie Policy</a>. If you don&apos;t agree, please don&apos;t use Work-ly.
       </p>
 
-      <h2 className="text-2xl font-bold text-foreground mt-4">1. What Workly is</h2>
+      <h2 className="text-2xl font-bold text-foreground mt-4">1. What Work-ly is</h2>
       <p>
-        Workly is an AI-assisted career intelligence platform that helps you build a career profile, discover job
+        Work-ly is an AI-assisted career intelligence platform that helps you build a career profile, discover job
         opportunities from third-party sources, see how well a role matches your profile, and track your
-        applications. Workly is a tool to support your job search &mdash; it is not a recruiter, staffing agency, or
+        applications. Work-ly is a tool to support your job search &mdash; it is not a recruiter, staffing agency, or
         employer, and it does not guarantee you a job, an interview, or any particular outcome.
       </p>
       <p>
-        Workly is currently free to use. If we introduce a paid &quot;Work-ly Pro&quot; tier, billing (processed
+        Work-ly is currently free to use. If we introduce a paid &quot;Work-ly Pro&quot; tier, billing (processed
         through our payment provider, Lemon Squeezy) and refund terms will be presented to you separately before
         you&apos;re charged, and using a paid feature means you accept those terms too.
       </p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">2. Eligibility and your account</h2>
       <p>
-        You must be at least 18 years old to use Workly. You&apos;re responsible for the accuracy of your account
+        You must be at least 18 years old to use Work-ly. You&apos;re responsible for the accuracy of your account
         information, for keeping your password and sign-in credentials confidential, and for all activity on your
         account. Contact us right away at{" "}
         <a href="mailto:advitya@work-ly.in" className="text-foreground underline underline-offset-2">advitya@work-ly.in</a>{" "}
@@ -36,7 +36,7 @@ export default function TermsOfService() {
       <h2 className="text-2xl font-bold text-foreground mt-4">3. Your content</h2>
       <p>
         You own your résumé, career profile, and everything else you submit (&quot;Your Content&quot;). By using
-        Workly you give us a limited license to host, store, and process Your Content solely to provide the
+        Work-ly you give us a limited license to host, store, and process Your Content solely to provide the
         service to you &mdash; for example, parsing a résumé, building your profile, scoring a job, or drafting a
         cover letter you asked for. We don&apos;t sell Your Content, and we don&apos;t use it to train third-party AI
         models beyond what&apos;s needed to generate the specific output you requested. Don&apos;t upload anyone
@@ -68,7 +68,7 @@ export default function TermsOfService() {
 
       <h2 className="text-2xl font-bold text-foreground mt-4">5. Third-party job listings</h2>
       <p>
-        Listings on Workly come from third-party job boards and data providers (including Adzuna, Reed, Remotive,
+        Listings on Work-ly come from third-party job boards and data providers (including Adzuna, Reed, Remotive,
         Jobicy, and similar licensed sources), with the original source and a link shown wherever a listing
         appears. We don&apos;t control or verify third-party listings and aren&apos;t responsible for their
         accuracy or availability. Always confirm details at the original source before applying.
@@ -78,27 +78,27 @@ export default function TermsOfService() {
       <p>You agree not to:</p>
       <ul className="list-disc pl-6 flex flex-col gap-2">
         <li>Submit false or fraudulent information, or impersonate someone else.</li>
-        <li>Scrape, reverse-engineer, or attempt to extract Workly&apos;s source code or underlying models.</li>
-        <li>Use bots or scripts to access Workly outside of normal individual use, or try to bypass rate limits or security controls.</li>
+        <li>Scrape, reverse-engineer, or attempt to extract Work-ly&apos;s source code or underlying models.</li>
+        <li>Use bots or scripts to access Work-ly outside of normal individual use, or try to bypass rate limits or security controls.</li>
         <li>Attempt to access another user&apos;s data, account, or content.</li>
-        <li>Upload malicious code or attempt to disrupt Workly&apos;s infrastructure.</li>
-        <li>Use Workly to build a competing product, or resell or redistribute access without our permission.</li>
+        <li>Upload malicious code or attempt to disrupt Work-ly&apos;s infrastructure.</li>
+        <li>Use Work-ly to build a competing product, or resell or redistribute access without our permission.</li>
       </ul>
       <p>We may suspend or terminate accounts that violate this section.</p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">7. Intellectual property</h2>
       <p>
-        Workly&apos;s software, design, branding, and underlying technology belong to us or our licensors. These
-        Terms don&apos;t grant you any rights in them beyond using Workly as intended.
+        Work-ly&apos;s software, design, branding, and underlying technology belong to us or our licensors. These
+        Terms don&apos;t grant you any rights in them beyond using Work-ly as intended.
       </p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">8. Disclaimers &amp; limitation of liability</h2>
       <p>
-        Workly is provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind. We
+        Work-ly is provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind. We
         don&apos;t guarantee the service will be uninterrupted, error-free, or that using it will lead to any job
         offer, interview, or employment outcome. To the maximum extent permitted by law, we won&apos;t be liable
         for indirect, incidental, or consequential damages, and our total liability to you is limited to the
-        amount you&apos;ve paid us in the past 12 months (or the equivalent of INR 5,000, given Workly is currently
+        amount you&apos;ve paid us in the past 12 months (or the equivalent of INR 5,000, given Work-ly is currently
         free). Nothing here limits any right you can&apos;t lawfully waive under the law that applies to you
         (for example, statutory consumer guarantees in your country).
       </p>

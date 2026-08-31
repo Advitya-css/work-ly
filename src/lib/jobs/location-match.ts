@@ -4,7 +4,7 @@
  * remote counts.
  *
  * Deliberately forgiving in one direction. A job with no location text at
- * all passes, because Workly has no basis to say it does NOT match, only
+ * all passes, because Work-ly has no basis to say it does NOT match, only
  * that it cannot confirm it does, and hiding it would be a guess dressed up
  * as a filter. A job with a stated location that matches nothing the user
  * gave is the only case this excludes.

@@ -12,7 +12,7 @@ export default function SignupPage() {
           Analyze your career
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Create your Workly account to get started
+          Create your Work-ly account to get started
         </p>
       </div>
       <SignUpForm />

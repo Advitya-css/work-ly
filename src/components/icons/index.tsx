@@ -1,7 +1,7 @@
 import type { SVGProps } from "react";
 
 /**
- * Workly's own icons.
+ * Work-ly's own icons.
  *
  * Drawn here rather than pulled from an icon library, for two reasons. The
  * first is that a stock outline set is instantly recognisable as a stock

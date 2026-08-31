@@ -35,7 +35,7 @@ export default async function DreamJobPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="How close are you to your dream job?"
-        description="Paste a posting for the role you're ultimately aiming for. Workly compares it against your career profile and shows exactly what's already there, what's missing, and the highest-impact next step to close the gap."
+        description="Paste a posting for the role you're ultimately aiming for. Work-ly compares it against your career profile and shows exactly what's already there, what's missing, and the highest-impact next step to close the gap."
       />
 
       <SectionTabs section="career" />

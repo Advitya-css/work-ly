@@ -17,7 +17,7 @@ const initialState: StudentActionState = {};
 /**
  * Four fields, and only the first two do much work.
  *
- * University is what lets Workly recognise a campus job: an employer name
+ * University is what lets Work-ly recognise a campus job: an employer name
  * matching your own institution is the single strongest signal that a role
  * is on-campus, which in turn determines which work rules apply to it.
  *
@@ -89,7 +89,7 @@ export function StudentSetupForm({
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            Work-hour rules differ by country, so Workly shows none until it knows which apply.
+            Work-hour rules differ by country, so Work-ly shows none until it knows which apply.
           </p>
         </div>
       </div>

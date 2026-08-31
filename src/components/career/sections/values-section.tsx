@@ -12,7 +12,7 @@ import type { CandidateValueSignal } from "@/lib/db/types";
  * surfacing as a line of reasoning on a job card that happens to match.
  * That was the actual product gap behind "I don't see it": the inference
  * was real and already scoring jobs, but nothing on the Career Profile
- * page let a user look at what Workly thinks it learned about them, or
+ * page let a user look at what Work-ly thinks it learned about them, or
  * check the evidence behind it - the one place every other inferred thing
  * on this page (skills, transferable skills) already gets that treatment.
  *
@@ -29,7 +29,7 @@ export function ValuesSection({ values }: { values: CandidateValueSignal[] }) {
       <CardHeader>
         <CardTitle>Work Values</CardTitle>
         <CardDescription>
-          What Workly has inferred you care about from your CV, and why - this feeds a Values Alignment
+          What Work-ly has inferred you care about from your CV, and why - this feeds a Values Alignment
           boost or penalty into every job's Fit score.
         </CardDescription>
       </CardHeader>
@@ -38,7 +38,7 @@ export function ValuesSection({ values }: { values: CandidateValueSignal[] }) {
           <EmptyState
             icon={Compass}
             title="No work values inferred yet"
-            description="Upload or re-parse your CV and Workly will look for signals like sustainability, mission-driven work, or startup pace - always with the evidence shown here, never invented."
+            description="Upload or re-parse your CV and Work-ly will look for signals like sustainability, mission-driven work, or startup pace - always with the evidence shown here, never invented."
           />
         ) : (
           <ul className="flex flex-col divide-y divide-border">

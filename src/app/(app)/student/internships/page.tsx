@@ -88,7 +88,7 @@ export default async function InternshipsPage() {
             ))}
           </ul>
           <p className="mt-2.5 text-sm text-muted-foreground">
-            Without all three, Workly can list internships but cannot honestly tell you which ones move
+            Without all three, Work-ly can list internships but cannot honestly tell you which ones move
             you toward anything.
           </p>
         </div>

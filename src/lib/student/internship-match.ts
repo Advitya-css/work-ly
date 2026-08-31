@@ -18,7 +18,7 @@ import type { OpportunityWithJob, Skill } from "@/lib/db/types";
  *
  * Everything below is deterministic string matching against skills that
  * were extracted from real posting text. Nothing is inferred about the
- * student, no model is called, and, as everywhere else in Workly, no
+ * student, no model is called, and, as everywhere else in Work-ly, no
  * statement is made about the chance of being hired.
  */
 

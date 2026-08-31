@@ -54,7 +54,7 @@ export function FeedbackButton() {
         <DialogHeader>
           <DialogTitle>Beta Feedback</DialogTitle>
           <DialogDescription>
-            Help us improve Workly. Found a bug or have a suggestion? Let us know.
+            Help us improve Work-ly. Found a bug or have a suggestion? Let us know.
           </DialogDescription>
         </DialogHeader>
         {success ? (

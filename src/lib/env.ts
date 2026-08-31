@@ -68,7 +68,7 @@ export function checkEnvironment(): EnvProblem[] {
   }
 
   // --- AI provider ------------------------------------------------------
-  // Not fatal in either environment: Workly is designed to run fully
+  // Not fatal in either environment: Work-ly is designed to run fully
   // without an AI key (heuristic parsing, deterministic scoring). This
   // only catches the half-configured state, which silently falls back and
   // looks like the feature is broken.
@@ -117,7 +117,7 @@ export function assertEnvironment(): void {
     const detail = fatal
       .map((p) => `  ✗ ${p.variable}: ${p.message}\n    Fix: ${p.fix}`)
       .join("\n\n");
-    const message = `Workly cannot start, ${fatal.length} environment problem(s):\n\n${detail}\n`;
+    const message = `Work-ly cannot start, ${fatal.length} environment problem(s):\n\n${detail}\n`;
     console.error(`[workly:env]\n${message}`);
     if (process.env.NODE_ENV === "production") {
       throw new Error(message);

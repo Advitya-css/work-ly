@@ -11,7 +11,7 @@ import { toArray } from "@/lib/db/array";
 
 export const metadata: Metadata = {
   title: "Career Profile",
-  description: "View my professional profile on Workly",
+  description: "View my professional profile on Work-ly",
   // Reachable by anyone with the link (that's the point of "Share Profile"),
   // but not opted into search-engine indexing - that's a separate decision
   // nobody's made yet, and this is still personal data.

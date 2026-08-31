@@ -49,7 +49,7 @@ export default async function CareerGoalsPage() {
         <EmptyState
           illustration={IllustrationPathway}
           title="No career goals yet"
-          description="Add a goal to tell Workly what you're aiming for. A role, industries, locations, or just that you're still figuring it out."
+          description="Add a goal to tell Work-ly what you're aiming for. A role, industries, locations, or just that you're still figuring it out."
         />
       ) : (
         <div className="stagger-children grid gap-3 sm:grid-cols-2">

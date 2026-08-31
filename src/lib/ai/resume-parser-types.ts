@@ -86,7 +86,7 @@ export interface ExtractedTransferableSkill {
 export interface ExtractedWorkValue {
   /** A WORK_VALUES catalog key, e.g. "sustainability_climate". */
   value: string;
-  /** 0-1: how clearly the CV supports this, not how much Workly likes it. */
+  /** 0-1: how clearly the CV supports this, not how much Work-ly likes it. */
   confidence: number;
   /** What in the CV supports this inference - shown to the user as "why". */
   evidence: string;

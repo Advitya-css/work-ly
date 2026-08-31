@@ -112,7 +112,7 @@ export default async function ApplicationDetailPage({
                 Application details
               </CardTitle>
               <CardDescription>
-                What you sent and when. Recording the CV version is what lets Workly eventually tell
+                What you sent and when. Recording the CV version is what lets Work-ly eventually tell
                 you which positioning actually works.
               </CardDescription>
             </CardHeader>
@@ -224,7 +224,7 @@ export default async function ApplicationDetailPage({
               </div>
               {application.fitScoreAtApply == null && (
                 <p className="text-xs text-muted-foreground">
-                  Logged manually, so there are no Workly scores for this one.
+                  Logged manually, so there are no Work-ly scores for this one.
                 </p>
               )}
               {opportunity && (

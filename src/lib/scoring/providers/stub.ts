@@ -121,7 +121,7 @@ function scoreSkills(job: Job, profileSkills: Skill[]) {
     return {
       breakdown: unavailable(
         WEIGHTS.skills,
-        "Workly could not identify specific skills in this posting, so there is nothing to match against. Check the original posting if it clearly lists them.",
+        "Work-ly could not identify specific skills in this posting, so there is nothing to match against. Check the original posting if it clearly lists them.",
       ),
       requiredMatches,
       preferredMatches,
@@ -163,7 +163,7 @@ function scoreSkills(job: Job, profileSkills: Skill[]) {
   // no longer carry the same weight as a real, multi-skill comparison. The
   // points this removes are not redistributed anywhere: they simply drop
   // out of both `earned` and `possible` in totalFrom, which is exactly
-  // what shrinks `coverage` for a job Workly only got a thin read on - the
+  // what shrinks `coverage` for a job Work-ly only got a thin read on - the
   // same "missing data reduces how much of the picture we claim to have"
   // principle this file states for fully-unavailable components, applied
   // here to a component that is available but too thin to trust fully.
@@ -187,13 +187,13 @@ function scoreExperience(job: Job, candidateYears: number | null) {
   if (candidateYears == null) {
     return unavailable(
       WEIGHTS.experience,
-      "Workly does not have your years of experience yet. Add dates to your roles, or set it directly on your profile, and this will score.",
+      "Work-ly does not have your years of experience yet. Add dates to your roles, or set it directly on your profile, and this will score.",
     );
   }
   if (required == null) {
     return unavailable(
       WEIGHTS.experience,
-      "Workly could not find a required years of experience in this posting, so there is no bar to compare you against.",
+      "Work-ly could not find a required years of experience in this posting, so there is no bar to compare you against.",
     );
   }
 
@@ -256,7 +256,7 @@ function scoreEducation(job: Job, profile: FullCareerProfile) {
   if (!requirementText.trim()) {
     return unavailable(
       WEIGHTS.education,
-      "Workly could not find an education requirement in this posting, so there is nothing to compare your qualifications against.",
+      "Work-ly could not find an education requirement in this posting, so there is nothing to compare your qualifications against.",
     );
   }
   if (profile.educations.length === 0) {
@@ -278,7 +278,7 @@ function scoreEducation(job: Job, profile: FullCareerProfile) {
   if (requiredLevel == null || bestHeld == null) {
     return unavailable(
       WEIGHTS.education,
-      "Workly could not read a qualification level from either the posting or your profile, so it is not scoring this. Check it yourself against the posting.",
+      "Work-ly could not read a qualification level from either the posting or your profile, so it is not scoring this. Check it yourself against the posting.",
     );
   }
 
@@ -303,7 +303,7 @@ function scoreIndustry(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (!job.industry) {
     return unavailable(
       WEIGHTS.industryRelevance,
-      "Workly could not identify an industry for this posting, so it cannot judge how relevant your background is.",
+      "Work-ly could not identify an industry for this posting, so it cannot judge how relevant your background is.",
     );
   }
 
@@ -343,7 +343,7 @@ function scoreSeniority(job: Job, candidateYears: number | null, careerGoal: Car
   if (!job.seniority) {
     return unavailable(
       WEIGHTS.seniority,
-      "Workly could not identify a seniority level in this posting.",
+      "Work-ly could not identify a seniority level in this posting.",
     );
   }
 
@@ -351,7 +351,7 @@ function scoreSeniority(job: Job, candidateYears: number | null, careerGoal: Car
   if (!candidateLevel) {
     return unavailable(
       WEIGHTS.seniority,
-      "Workly does not know your current level yet. Set a seniority on your career goal, or add dated roles, and this will score.",
+      "Work-ly does not know your current level yet. Set a seniority on your career goal, or add dated roles, and this will score.",
     );
   }
 
@@ -362,7 +362,7 @@ function scoreSeniority(job: Job, candidateYears: number | null, careerGoal: Car
   // fabricated distance, which in the Priority engine surfaced as a
   // confident "this role is a step down from your current level".
   if (candidateIdx < 0 || jobIdx < 0) {
-    return unavailable(WEIGHTS.seniority, "Workly could not place one of these on its seniority scale.");
+    return unavailable(WEIGHTS.seniority, "Work-ly could not place one of these on its seniority scale.");
   }
 
   const distance = Math.abs(candidateIdx - jobIdx);
@@ -407,7 +407,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (!anyPreference) {
     return unavailable(
       WEIGHTS.location,
-      "You have not told Workly where you want to work, so it cannot judge this role's location.",
+      "You have not told Work-ly where you want to work, so it cannot judge this role's location.",
     );
   }
 
@@ -431,7 +431,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (checks.length === 0) {
     return unavailable(
       WEIGHTS.location,
-      "This posting does not say where the role is based, so Workly cannot check it against your preferences.",
+      "This posting does not say where the role is based, so Work-ly cannot check it against your preferences.",
     );
   }
 
@@ -534,7 +534,7 @@ function buildRequirementChecklist(
         return {
           text: item.text,
           status: "unknown",
-          detail: "Workly could not read a qualification level here. Check this one yourself.",
+          detail: "Work-ly could not read a qualification level here. Check this one yourself.",
         };
       }
       return bestHeld >= requiredLevel
@@ -549,7 +549,7 @@ function buildRequirementChecklist(
           return {
             text: item.text,
             status: "unknown",
-            detail: "Workly does not know your years of experience yet, so it cannot check this.",
+            detail: "Work-ly does not know your years of experience yet, so it cannot check this.",
           };
         }
         const required = Number(yearsMatch[1]);
@@ -613,7 +613,7 @@ function buildRequirementChecklist(
     return {
       text: item.text,
       status: "unknown",
-      detail: "Workly could not check this one automatically. Review it yourself.",
+      detail: "Work-ly could not check this one automatically. Review it yourself.",
     };
   });
 }
@@ -738,7 +738,7 @@ function buildRecommendation(
     return {
       recommendation: "STRETCH",
       reasoning:
-        "Workly could only assess a small part of this role against your profile. Click 'Analyze Job' to run the deep AI parser.",
+        "Work-ly could only assess a small part of this role against your profile. Click 'Analyze Job' to run the deep AI parser.",
     };
   }
   
@@ -746,14 +746,14 @@ function buildRecommendation(
   if (coverage < 0.40) {
     return {
       recommendation: fitScore >= 55 ? "STRETCH" : "LOW_PRIORITY",
-      reasoning: `Workly could only assess ${Math.round(coverage * 100)}% of this role's requirements. Based on what is visible, Candidate Fit is ${fitScore}/100, making it a stretch at best.`,
+      reasoning: `Work-ly could only assess ${Math.round(coverage * 100)}% of this role's requirements. Based on what is visible, Candidate Fit is ${fitScore}/100, making it a stretch at best.`,
     };
   }
 
   const basis =
     mandatoryMetRatio != null
-      ? `You clearly meet ${Math.round(mandatoryMetRatio * 100)}% of the ${checkedCount} mandatory requirement${checkedCount === 1 ? "" : "s"} Workly could check, with a Candidate Fit of ${fitScore}/100.`
-      : `Workly could not verify any mandatory requirements automatically. Candidate Fit is ${fitScore}/100.`;
+      ? `You clearly meet ${Math.round(mandatoryMetRatio * 100)}% of the ${checkedCount} mandatory requirement${checkedCount === 1 ? "" : "s"} Work-ly could check, with a Candidate Fit of ${fitScore}/100.`
+      : `Work-ly could not verify any mandatory requirements automatically. Candidate Fit is ${fitScore}/100.`;
 
   // With no requirement signal, decide on fit alone rather than on an
   // invented ratio, and say that is what happened.
@@ -951,7 +951,7 @@ function analyzeFit({
     }
   }
   if (unknownCount > 0) {
-    risks.push(`${unknownCount} mandatory requirement${unknownCount === 1 ? "" : "s"} Workly could not check automatically. Read those in the posting yourself.`);
+    risks.push(`${unknownCount} mandatory requirement${unknownCount === 1 ? "" : "s"} Work-ly could not check automatically. Read those in the posting yourself.`);
   }
   if (evidence.confidence === "measured" && evidence.score < WEIGHTS.evidence * 0.5) {
     risks.push("Weak evidence behind your core skill claims could hurt you in a screen or interview.");
@@ -965,7 +965,7 @@ function analyzeFit({
   // or recommendation for a non-student profile - isStudent defaults to
   // false and this whole block is a no-op when it is.
   //
-  // A student who has told Workly they're looking for part-time/campus
+  // A student who has told Work-ly they're looking for part-time/campus
   // work (isPartTimeMode) still gets full-time roles surfaced by
   // keyword-matching sources. Applying to one wastes their time at best;
   // at worst it's a role their visa or course doesn't permit the hours
@@ -1022,7 +1022,7 @@ function analyzeFit({
   // which could be shown to someone with no profile at all.
   if (total.missing.length > 0) {
     improvements.push(
-      `Workly could not assess ${total.missing.length} part${total.missing.length === 1 ? "" : "s"} of this comparison. Filling in the gaps noted above will make the score meaningful.`,
+      `Work-ly could not assess ${total.missing.length} part${total.missing.length === 1 ? "" : "s"} of this comparison. Filling in the gaps noted above will make the score meaningful.`,
     );
   }
 

@@ -4,7 +4,7 @@ import type { DiscoveredJob } from "@/lib/db/types";
  * Same ordering as BUCKETS in discovery/labels.ts - Apply Now, then Strong,
  * then Stretch, then everything else. "Top Matches (For You)" used to sort
  * purely by the blended relevance score (keyword/structured/semantic/
- * preferences), which treats a job Workly couldn't assess ("not enough
+ * preferences), which treats a job Work-ly couldn't assess ("not enough
  * data, defaulting to Low Priority" - see scoring/providers/stub.ts) as
  * merely neutral rather than actually low-priority, since a sparse job's
  * missing signals fall back to ~0.5 on every component instead of being
@@ -33,7 +33,7 @@ export function recommendationRank(recommendation: string | null): number {
 /**
  * The "Top Matches (For You)" sort: recommendation tier first (Apply Now >
  * Strong > Stretch > Low Priority/Skip/unscored), the blended relevance
- * score only as a tiebreaker inside a tier. Never lets a job Workly has
+ * score only as a tiebreaker inside a tier. Never lets a job Work-ly has
  * itself bucketed as low priority outrank one it has recommended.
  */
 export function comparePriority(

@@ -44,7 +44,7 @@ function revalidateApplicationViews(id?: string) {
  *
  * Copies the job facts and BOTH scores onto the application row at this
  * moment. That snapshot is the entire basis of the outcome analytics: it
- * records what Workly believed at the time you applied, which is the only
+ * records what Work-ly believed at the time you applied, which is the only
  * version of those numbers that can be honestly compared against what
  * happened next.
  */
@@ -91,7 +91,7 @@ export interface ManualApplicationInput {
   status?: ApplicationStatus;
 }
 
-/** For roles applied to outside Workly - the tracker shouldn't only work for jobs it analyzed. */
+/** For roles applied to outside Work-ly - the tracker shouldn't only work for jobs it analyzed. */
 export async function createManualApplicationAction(
   input: ManualApplicationInput,
 ): Promise<{ applicationId: string } | { error: string }> {

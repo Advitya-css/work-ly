@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { addSourceAction } from "@/lib/discovery/actions";
 
 /**
- * Lets a student point Workly at their own university's public vacancies
+ * Lets a student point Work-ly at their own university's public vacancies
  * feed. The backend already has a dedicated adapter for this (`kind:
  * "UNIVERSITY"`, id "university-feed" - see lib/discovery/sources/feeds.ts)
  * with its own legal basis, it just had no UI anywhere in the product.

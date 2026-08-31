@@ -38,7 +38,7 @@ export function calculateProfileCompleteness(
       label: "Resume uploaded",
       weight: 15,
       met: hasParsedResume,
-      hint: "Upload your CV so Workly can build a first draft of your profile.",
+      hint: "Upload your CV so Work-ly can build a first draft of your profile.",
     },
     {
       key: "basics",
@@ -83,7 +83,7 @@ export function calculateProfileCompleteness(
       label: "Career goals",
       weight: 15,
       met: careerGoals.length > 0,
-      hint: "Set a career goal so Workly knows what you're working toward.",
+      hint: "Set a career goal so Work-ly knows what you're working toward.",
     },
   ];
 
@@ -126,7 +126,7 @@ export function calculateCareerReadiness(completeness: ProfileCompleteness): Car
   if (percentage >= 85) {
     return {
       label: "Ready to explore opportunities",
-      explanation: "Your profile has enough depth for Workly to start surfacing well-matched opportunities.",
+      explanation: "Your profile has enough depth for Work-ly to start surfacing well-matched opportunities.",
     };
   }
   if (percentage >= 60) {

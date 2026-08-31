@@ -33,7 +33,7 @@ export interface NavGroup {
  *
  * The sidebar used to list every screen in the product, grouped under four
  * headings. That is a directory, not a navigation: you had to already know
- * what Workly called a thing to find it, and the eye had ten equally
+ * what Work-ly called a thing to find it, and the eye had ten equally
  * weighted targets to sort through on every page load.
  *
  * Now the sidebar answers "which part of my job search am I in", and the

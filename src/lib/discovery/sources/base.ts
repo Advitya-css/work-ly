@@ -90,7 +90,7 @@ export async function fetchWithGuards(
     const response = await guardedFetch(url, {
       method: (init.method as string | undefined) ?? "GET",
       headers: {
-        "User-Agent": "Workly/0.1 (+career-intelligence; contact via app owner)",
+        "User-Agent": "Work-ly/0.1 (+career-intelligence; contact via app owner)",
         Accept: "application/json, application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
         ...(init.headers as Record<string, string> | undefined ?? {}),
       },

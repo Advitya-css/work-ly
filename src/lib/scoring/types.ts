@@ -20,7 +20,7 @@ import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 
 export interface JobFitAnalysis {
   /**
-   * 0-100, computed ONLY over the components Workly could actually assess.
+   * 0-100, computed ONLY over the components Work-ly could actually assess.
    * Read it as "of what could be compared, how much do you meet", not as
    * "you scored X out of everything possible".
    *

@@ -6,7 +6,7 @@ const steps = [
     icon: UserRound,
     title: "Understand yourself",
     description:
-      "Your career profile captures real experience, skills, and preferences. Entered by you. Workly never invents qualifications you don't have.",
+      "Your career profile captures real experience, skills, and preferences. Entered by you. Work-ly never invents qualifications you don't have.",
   },
   {
     number: "02",

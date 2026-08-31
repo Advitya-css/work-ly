@@ -155,7 +155,7 @@ export async function addSourceAction(input: AddSourceInput): Promise<{ error?: 
   if (input.rawText?.trim()) config.rawText = input.rawText.trim();
 
   // A feed URL must be a real http(s) URL - this is the one place a user
-  // can point Workly at an arbitrary address, so it's validated here
+  // can point Work-ly at an arbitrary address, so it's validated here
   // rather than trusted at fetch time.
   if (config.feedUrl && !/^https?:\/\//i.test(String(config.feedUrl))) {
     return { error: "The feed URL must start with http:// or https://" };

@@ -135,7 +135,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
 
   const salary = formatSalaryRange(dreamJob.salaryMin, dreamJob.salaryMax, dreamJob.salaryCurrency);
   const topGaps = analysis.gapPriorities.slice(0, 5);
-  // Below this, Workly couldn't reliably assess the role at all - an empty
+  // Below this, Work-ly couldn't reliably assess the role at all - an empty
   // gaps list here means "nothing to go on," not "you're a perfect match,"
   // and the copy below must say so rather than implying the latter.
   const lowCoverage = coverageOf(analysis.scoreBreakdown) < MIN_COVERAGE_FOR_SCORE;
@@ -165,7 +165,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             caption={readinessCopy(analysis.readinessScore)}
           />
           <p className="text-xs text-muted-foreground">
-            This is your Candidate Fit for this role. Not a hiring probability. Workly never estimates your odds of
+            This is your Candidate Fit for this role. Not a hiring probability. Work-ly never estimates your odds of
             being hired.
           </p>
           <Badge variant={COMPETITIVENESS_VARIANT[analysis.competitiveness]} className="mt-1">
@@ -218,7 +218,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             {topGaps.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {lowCoverage
-                  ? "Workly didn't have enough information to prioritize gaps - see Current Readiness above."
+                  ? "Work-ly didn't have enough information to prioritize gaps - see Current Readiness above."
                   : "No significant gaps identified."}
               </p>
             ) : (
@@ -267,7 +267,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               {analysis.gaps.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Workly didn't have enough information to classify gaps - see Current Readiness above."
+                    ? "Work-ly didn't have enough information to classify gaps - see Current Readiness above."
                     : "No significant gaps identified."}
                 </p>
               ) : (
@@ -301,7 +301,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               {analysis.gapPriorities.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Workly didn't have enough information to prioritize gaps - see Current Readiness above."
+                    ? "Work-ly didn't have enough information to prioritize gaps - see Current Readiness above."
                     : "No significant gaps identified."}
                 </p>
               ) : (

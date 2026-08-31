@@ -56,7 +56,7 @@ export default async function StudentJobsPage() {
       {!country && (
         <div className="rounded-xl border border-border bg-muted/40 p-4">
           <p className="text-sm text-foreground">
-            Workly does not know where you study, so it is not showing any work-hour limits.
+            Work-ly does not know where you study, so it is not showing any work-hour limits.
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
             Those rules are national, and showing the wrong country&apos;s would be worse than showing
@@ -70,7 +70,7 @@ export default async function StudentJobsPage() {
 
       {rules?.unverified && (
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Workly could not confirm {rules.label} hour limits from an official page, so the notes below
+          Work-ly could not confirm {rules.label} hour limits from an official page, so the notes below
           link to the source instead of printing a figure. Repeating a number it cannot cite is not
           something this product does.
         </p>

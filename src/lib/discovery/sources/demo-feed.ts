@@ -20,7 +20,7 @@ export const demoFeedSource: JobSourceAdapter = {
   ...sourceDefaults,
   kind: "DEMO",
   id: "demo-feed",
-  name: "Workly demo listings (fictional)",
+  name: "Work-ly demo listings (fictional)",
   legalBasis:
     "Fictional listings written for this project. No third party is involved and nothing is fetched.",
 

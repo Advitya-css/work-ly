@@ -64,7 +64,7 @@ export default async function CareerPathPage() {
           <EmptyState
             illustration={IllustrationPathway}
             title="No pathway yet"
-            description="Workly builds your pathway from the gaps between your profile and your target role. Analyze a dream job first, then generate a pathway here."
+            description="Work-ly builds your pathway from the gaps between your profile and your target role. Analyze a dream job first, then generate a pathway here."
             action={{ label: "Analyze your dream job", href: "/dream-job" }}
             className="w-full"
           />

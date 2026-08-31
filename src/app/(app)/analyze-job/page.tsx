@@ -30,7 +30,7 @@ export default async function AnalyzeJobPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Analyze a Job"
-        description="Paste a job description or its public URL. Workly compares it against your career profile and tells you how you stack up."
+        description="Paste a job description or its public URL. Work-ly compares it against your career profile and tells you how you stack up."
         action={
           <Button asChild variant="outline" size="sm">
             <Link href="/opportunities">

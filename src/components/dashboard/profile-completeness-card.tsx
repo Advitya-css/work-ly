@@ -14,7 +14,7 @@ export function ProfileCompletenessCard({ completeness }: { completeness: Profil
     <Card>
       <CardHeader>
         <CardTitle>Career profile</CardTitle>
-        <CardDescription>What Workly currently knows about you.</CardDescription>
+        <CardDescription>What Work-ly currently knows about you.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div>

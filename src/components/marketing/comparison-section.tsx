@@ -21,7 +21,7 @@ export function ComparisonSection() {
         <div className="mx-auto max-w-xl text-center">
           <span className="text-sm font-medium text-primary">Not another job board.</span>
           <h2 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground">
-            Job boards show you listings. Workly tells you what to do with them.
+            Job boards show you listings. Work-ly tells you what to do with them.
           </h2>
         </div>
 
@@ -39,7 +39,7 @@ export function ComparisonSection() {
           </div>
 
           <div className="rounded-xl border border-primary/30 bg-accent/40 p-6">
-            <p className="text-sm font-semibold text-foreground">Workly</p>
+            <p className="text-sm font-semibold text-foreground">Work-ly</p>
             <ul className="mt-4 flex flex-col gap-3">
               {worklyPoints.map((point) => (
                 <li key={point} className="flex items-start gap-2.5 text-sm text-foreground">

@@ -15,7 +15,7 @@ import type { AICompletionRequest, AICompletionResult, AIProvider } from "@/lib/
  * ("google/..."), Google's own OpenAI-compatibility endpoint does not.
  * Pointing a Google AI Studio key at OpenRouter's URL (or vice versa) is
  * the most common misconfiguration - it fails with a 401/404 from the
- * endpoint rather than anything Workly can diagnose for you, so the
+ * endpoint rather than anything Work-ly can diagnose for you, so the
  * request logging below prints the resolved config once per process.
  */
 

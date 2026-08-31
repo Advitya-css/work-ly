@@ -143,7 +143,7 @@ export function NewCareerGoalDialog({ goal, homeLocation }: { goal?: CareerGoal;
                 I&apos;m not sure yet
               </Label>
               <p className="text-xs text-muted-foreground">
-                Fine to leave the details below blank or partial. Workly will treat this goal as exploratory
+                Fine to leave the details below blank or partial. Work-ly will treat this goal as exploratory
                 rather than assuming a firm target.
               </p>
             </div>
