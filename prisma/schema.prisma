@@ -1295,3 +1295,14 @@ model Feedback {
 
   @@map("feedbacks")
 }
+
+model BetaCode {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  isUsed       Boolean   @default(false)
+  usedByUserId String?
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@map("beta_codes")
+}

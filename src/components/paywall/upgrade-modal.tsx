@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Sparkles, CheckCircle2, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { createCheckoutUrl } from "@/lib/payments/lemonsqueezy";
+import { redeemBetaCodeAction } from "@/lib/beta/actions";
 
 export function UpgradeModal({ 
   children,
@@ -17,6 +19,24 @@ export function UpgradeModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showBeta, setShowBeta] = useState(false);
+  const [betaCode, setBetaCode] = useState("");
+  const [betaLoading, setBetaLoading] = useState(false);
+  const [betaError, setBetaError] = useState("");
+
+
+  const handleRedeemBeta = async () => {
+    if (!betaCode.trim()) return;
+    setBetaLoading(true);
+    setBetaError("");
+    const result = await redeemBetaCodeAction(betaCode);
+    if (result.error) {
+      setBetaError(result.error);
+      setBetaLoading(false);
+    } else {
+      window.location.reload(); // Refresh to apply Pro state globally
+    }
+  };
 
   const handleUpgrade = async () => {
     try {
@@ -71,6 +91,30 @@ export function UpgradeModal({
           <p className="text-xs text-center text-muted-foreground mt-2">
             Secure checkout powered by Lemon Squeezy. Cancel anytime.
           </p>
+
+          {showBeta ? (
+            <div className="mt-4 flex flex-col gap-2 pt-4 border-t border-border">
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Enter beta access code" 
+                  value={betaCode} 
+                  onChange={(e) => setBetaCode(e.target.value)}
+                  className="uppercase"
+                />
+                <Button onClick={handleRedeemBeta} disabled={betaLoading || !betaCode.trim()}>
+                  {betaLoading ? <Loader2 className="size-4 animate-spin" /> : "Redeem"}
+                </Button>
+              </div>
+              {betaError && <p className="text-xs text-destructive">{betaError}</p>}
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowBeta(true)}
+              className="mt-2 text-xs text-center text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors"
+            >
+              Have a beta invite code?
+            </button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
