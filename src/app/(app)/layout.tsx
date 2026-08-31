@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { FeedbackButton } from "@/components/shared/feedback-button";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AppShell user={user} student={profile?.isStudent ?? false}>
       {children}
+      <FeedbackButton />
     </AppShell>
   );
 }

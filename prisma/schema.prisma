@@ -49,6 +49,7 @@ model User {
   opportunities    Opportunity[]
   dreamJobs        DreamJob[]
   dreamJobAnalyses DreamJobAnalysis[]
+  feedbacks        Feedback[]
   careerPathways   CareerPathway[]
   applications     Application[]
   jobSourceConfigs JobSourceConfig[]
@@ -1281,4 +1282,16 @@ model RateLimit {
   expires_at DateTime
 
   @@map("rate_limits")
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "BUG", "FEATURE_REQUEST", "GENERAL"
+  message   String
+  url       String?  // The page they were on when they submitted it
+  createdAt DateTime @default(now())
+
+  @@map("feedbacks")
 }
