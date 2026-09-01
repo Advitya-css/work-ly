@@ -84,43 +84,33 @@ export function UpgradeModal({
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview Simulator & Tech Sandbox</span></li>
           </ul>
 
-          <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
+          <div className="mt-4 p-4 rounded-lg bg-muted border border-border flex items-center justify-between opacity-80">
             <div className="flex flex-col">
-              <span className="font-semibold text-lg">Work-ly Pro</span>
+              <span className="font-semibold text-lg line-through">Work-ly Pro</span>
               <span className="text-sm text-muted-foreground">$15 / month</span>
             </div>
-            <Button onClick={handleUpgrade} disabled={loading} size="lg" className="gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : "Upgrade Now"}
-              {!loading && <ArrowRight className="size-4" />}
+            <Button disabled variant="outline" size="lg" className="gap-2 cursor-not-allowed">
+              Coming Soon
             </Button>
           </div>
-          <p className="text-xs text-center text-muted-foreground mt-2">
-            Secure checkout powered by Lemon Squeezy. Cancel anytime.
-          </p>
 
-          {showBeta ? (
-            <div className="mt-4 flex flex-col gap-2 pt-4 border-t border-border">
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Enter beta access code" 
-                  value={betaCode} 
-                  onChange={(e) => setBetaCode(e.target.value)}
-                  className="uppercase"
-                />
-                <Button onClick={handleRedeemBeta} disabled={betaLoading || !betaCode.trim()}>
-                  {betaLoading ? <Loader2 className="size-4 animate-spin" /> : "Redeem"}
-                </Button>
-              </div>
-              {betaError && <p className="text-xs text-destructive">{betaError}</p>}
+          <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
+            <p className="text-sm font-medium text-foreground text-center">
+              Want early access? Become a beta tester.
+            </p>
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Enter beta invite code" 
+                value={betaCode} 
+                onChange={(e) => setBetaCode(e.target.value)}
+                className="uppercase"
+              />
+              <Button onClick={handleRedeemBeta} disabled={betaLoading || !betaCode.trim()}>
+                {betaLoading ? <Loader2 className="size-4 animate-spin" /> : "Redeem"}
+              </Button>
             </div>
-          ) : (
-            <button 
-              onClick={() => setShowBeta(true)}
-              className="mt-2 text-xs text-center text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors"
-            >
-              Have a beta invite code?
-            </button>
-          )}
+            {betaError && <p className="text-xs text-center text-destructive">{betaError}</p>}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
