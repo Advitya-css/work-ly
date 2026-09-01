@@ -39,13 +39,7 @@ export async function PlanSettings() {
                 </span>
               )}
             </div>
-            {isPro && (
-              <Button variant="outline" asChild>
-                <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noopener noreferrer">
-                  Manage Subscription
-                </a>
-              </Button>
-            )}
+            
           </div>
 
           {isPro && proUntil && (
