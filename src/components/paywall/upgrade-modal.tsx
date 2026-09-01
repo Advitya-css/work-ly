@@ -110,6 +110,9 @@ export function UpgradeModal({
               </Button>
             </div>
             {betaError && <p className="text-xs text-center text-destructive">{betaError}</p>}
+            <p className="text-xs text-center text-muted-foreground mt-1">
+              Don't have a code? <a href="mailto:advitya@work-ly.in?subject=Work-ly%20Beta%20Access%20Request" className="underline hover:text-primary transition-colors">Email us to request one.</a>
+            </p>
           </div>
         </div>
       </DialogContent>
