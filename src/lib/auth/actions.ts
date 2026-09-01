@@ -35,7 +35,14 @@ export async function signUpAction(
     return { fieldErrors };
   }
 
+  
+  const agreeTerms = formData.get("agreeTerms") === "on";
+  const agreeAge = formData.get("agreeAge") === "on";
+  if (!agreeTerms || !agreeAge) {
+    return { error: "You must agree to the Terms of Service and confirm you are 18 or older." };
+  }
   const rememberMe = formData.get("rememberMe") === "on";
+
   const result = await authProvider.signUp({ ...parsed.data, rememberMe });
   if (result.error) {
     return { error: result.error };

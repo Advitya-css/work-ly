@@ -191,7 +191,26 @@ export function PrivacyControls() {
         </CardContent>
       </Card>
 
+      
+      {/* Export */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Export your data</CardTitle>
+          <CardDescription>
+            Download a copy of your career profile, jobs, and application history as a JSON file.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <a href="/api/users/me/export" download>
+              Download my data
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Deletion */}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Delete your data</CardTitle>

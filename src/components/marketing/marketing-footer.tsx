@@ -12,6 +12,9 @@ export function MarketingFooter() {
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <Link href="/legal/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
           <Link href="/legal/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link href="/legal/refunds" className="hover:text-foreground transition-colors">Refunds</Link>
+          <Link href="/legal/subprocessors" className="hover:text-foreground transition-colors">Sub-processors</Link>
+          <Link href="/legal/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
           <Link href="/legal/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
         </div>
       </div>

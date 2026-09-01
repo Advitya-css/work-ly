@@ -69,6 +69,11 @@ export function FollowUpTemplateCard({ application }: { application: Application
         {template && (
           <div className="flex flex-col gap-3">
             <div className="bg-background rounded-lg p-4 text-sm whitespace-pre-wrap border border-border">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground border border-accent/20">
+                <Sparkles className="size-3" />
+                AI-generated — review before use
+              </div>
+
               {template}
             </div>
             <Button variant="outline" onClick={handleCopy} className="w-fit gap-2">

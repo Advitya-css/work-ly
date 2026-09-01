@@ -67,6 +67,10 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
         ) : (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
             <div className="p-5 bg-muted/30 rounded-lg border shadow-sm prose dark:prose-invert max-w-none text-sm leading-relaxed">
+              <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground border border-accent/20">
+                <Sparkles className="size-3" />
+                AI-generated — review before use
+              </div>
               <MarkdownRenderer content={content} />
             </div>
             <Button variant="outline" onClick={() => setContent(null)} className="w-full sm:w-auto">

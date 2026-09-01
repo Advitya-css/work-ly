@@ -39,6 +39,8 @@ model User {
   updatedAt                   DateTime  @updatedAt
 
   isPro           Boolean   @default(false)
+  termsAcceptedAt DateTime?
+  termsVersion    String?
   proUntil        DateTime?
   lastAlertSentAt DateTime?
 

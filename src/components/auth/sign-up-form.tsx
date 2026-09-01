@@ -66,7 +66,36 @@ export function SignUpForm() {
         </Label>
       </div>
 
+      
+      <div className="flex flex-col gap-3 my-2">
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="agreeTerms"
+            name="agreeTerms"
+            required
+            className="mt-1 size-4 rounded border-border accent-primary"
+          />
+          <Label htmlFor="agreeTerms" className="text-sm font-normal text-muted-foreground leading-snug">
+            I agree to the <Link href="/legal/terms" className="underline hover:text-foreground">Terms of Service</Link> and <Link href="/legal/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
+          </Label>
+        </div>
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="agreeAge"
+            name="agreeAge"
+            required
+            className="mt-1 size-4 rounded border-border accent-primary"
+          />
+          <Label htmlFor="agreeAge" className="text-sm font-normal text-muted-foreground leading-snug">
+            I confirm I am at least 18 years old
+          </Label>
+        </div>
+      </div>
+
       <Button type="submit" className="mt-1 w-full" disabled={pending}>
+
         {pending ? "Creating account…" : "Create account"}
       </Button>
 
