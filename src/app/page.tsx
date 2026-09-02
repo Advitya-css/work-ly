@@ -1,5 +1,6 @@
 import { MarketingNavbar } from "@/components/marketing/marketing-navbar";
 import { Hero } from "@/components/marketing/hero";
+import { InteractiveDemo } from "@/components/marketing/interactive-demo";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { ComparisonSection } from "@/components/marketing/comparison-section";
 import { CtaSection } from "@/components/marketing/cta-section";
@@ -24,6 +25,7 @@ export default function LandingPage() {
         <MarketingNavbar />
         <main className="flex-1">
           <Hero />
+          <InteractiveDemo />
           <HowItWorks />
           <ComparisonSection />
           <CtaSection />
