@@ -64,7 +64,11 @@ export const supabaseAuthProvider: AuthProvider = {
       options: { data: { name } },
     });
     if (error || !data.user) return { error: error?.message ?? "Sign up failed." };
-    return { user: toAuthUser(data.user) };
+    return { 
+      user: toAuthUser(data.user),
+      needsVerification: !data.session,
+      verificationEmail: data.user.email
+    };
   },
 
   async signIn({ email, password }): Promise<AuthResult> {

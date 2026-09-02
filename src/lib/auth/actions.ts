@@ -48,10 +48,12 @@ export async function signUpAction(
     return { error: result.error };
   }
 
-  // No session yet - signUp only ever creates the account and emails a
-  // code now. redirect() throws internally, so this never falls through
-  // to a state the form could render.
-  redirect(`/verify-email?email=${encodeURIComponent(result.verificationEmail ?? parsed.data.email)}`);
+  if (result.needsVerification) {
+    redirect(`/verify-email?email=${encodeURIComponent(result.verificationEmail ?? parsed.data.email)}`);
+  }
+
+  // Automatically logged in (if confirm email is disabled or using local auth patch)
+  redirect("/discovery");
 }
 
 export async function signInAction(

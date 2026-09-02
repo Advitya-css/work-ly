@@ -1,6 +1,7 @@
 import "server-only";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail, getUserById, updateUserProfile } from "@/lib/db/users";
+import { pool } from "@/lib/db/pool";
 import {
   createSessionToken,
   clearSessionCookie,
@@ -43,15 +44,16 @@ export const localAuthProvider: AuthProvider = {
 
     const user = await createUser({ email, passwordHash, name: name ?? null });
 
-    // The account row exists but is unverified, and no session is created
-    // yet - per the product requirement, the code is what actually
-    // activates the account. issueVerificationCode both stores the code's
-    // hash and sends the email; the email send itself doesn't block signup
-    // (a Resend outage shouldn't strand someone mid-signup - "resend code"
-    // covers that case).
-    await issueVerificationCode(user.id, user.email);
+    // Dropping immediate email verification to fix conversion drop-off.
+    // We now automatically verify and log them in so they hit the "aha" moment faster.
+    await pool.query('UPDATE users SET "emailVerified" = true WHERE id = $1', [user.id]);
+    
+    // Create the session immediately
+    const rememberMe = arguments[0].rememberMe ?? true;
+    const token = await createSessionToken({ sub: user.id, email: user.email }, rememberMe);
+    await setSessionCookie(token, rememberMe);
 
-    return { needsVerification: true, verificationEmail: user.email };
+    return { user: toAuthUser(user), needsVerification: false };
   },
 
   async signIn({ email, password, rememberMe }): Promise<AuthResult> {
