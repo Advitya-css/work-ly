@@ -53,7 +53,7 @@ export async function signUpAction(
   }
 
   // Automatically logged in (if confirm email is disabled or using local auth patch)
-  redirect("/discovery");
+  redirect("/onboarding");
 }
 
 export async function signInAction(
