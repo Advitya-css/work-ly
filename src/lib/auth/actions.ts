@@ -129,7 +129,7 @@ export async function forgotPasswordAction(
     const token = randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await setResetPasswordToken(user.id, token, expiresAt);
-    sendPasswordResetEmail(user.email, token).catch((err) => {
+    await sendPasswordResetEmail(user.email, token).catch((err) => {
       console.error("[workly:email] Failed to send reset email:", err);
     });
   }
