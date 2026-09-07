@@ -22,7 +22,7 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start sm:items-end gap-2 text-left sm:text-right">
       
       {!isPro ? (
         <UpgradeModal title="Unlock The Dream Pathway" description="Get a personalized 30-day action plan with direct Coursera links and AI coaching.">
@@ -45,7 +45,7 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
       )}
   
       {hasExisting && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground max-w-[320px]">
           Regenerating starts a fresh plan from your current profile. Your previous pathway is archived,
           not deleted.
         </p>

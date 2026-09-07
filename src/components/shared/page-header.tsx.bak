@@ -42,7 +42,7 @@ export function PageHeader({
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-1 items-start sm:items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3">
           {Icon && (
             <span
               className="area-chip size-10 shrink-0"
