@@ -52,6 +52,13 @@ export function SidebarNav({
                 ? pathname === "/student"
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
+            // The tour (tour-provider.tsx) targets these sidebar entries by
+            // a `tour-{route}` className derived from the href - e.g.
+            // "/career-profile" -> "tour-career-profile". Keep this in sync
+            // with any future rename; it's the only place that class is
+            // added, and losing it silently breaks every tour step that
+            // isn't the two body-centered ones.
+            const tourClassName = `tour-${item.href.replace(/^\//, "").replace(/\//g, "-")}`;
             return (
               <Link
                 key={item.href}
@@ -59,6 +66,7 @@ export function SidebarNav({
                 onClick={onNavigate}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
+                  tourClassName,
                   "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-all active:scale-[0.98]",
                   isActive
                     ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
