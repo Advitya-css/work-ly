@@ -58,6 +58,8 @@ export const ModelName = {
   Experience: 'Experience',
   Project: 'Project',
   Skill: 'Skill',
+  CandidateValueSignal: 'CandidateValueSignal',
+  StudentCountryRule: 'StudentCountryRule',
   Achievement: 'Achievement',
   Certification: 'Certification',
   CareerGoal: 'CareerGoal',
@@ -72,7 +74,10 @@ export const ModelName = {
   Application: 'Application',
   JobSourceConfig: 'JobSourceConfig',
   DiscoveredJob: 'DiscoveredJob',
-  DiscoveryRun: 'DiscoveryRun'
+  DiscoveryRun: 'DiscoveryRun',
+  RateLimit: 'RateLimit',
+  Feedback: 'Feedback',
+  BetaCode: 'BetaCode'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -98,9 +103,20 @@ export const UserScalarFieldEnum = {
   name: 'name',
   avatarUrl: 'avatarUrl',
   onboardedAt: 'onboardedAt',
+  emailVerified: 'emailVerified',
+  verificationToken: 'verificationToken',
+  verificationTokenExpiresAt: 'verificationTokenExpiresAt',
+  verificationCodeHash: 'verificationCodeHash',
+  verificationCodeExpiresAt: 'verificationCodeExpiresAt',
+  verificationAttempts: 'verificationAttempts',
+  resetPasswordToken: 'resetPasswordToken',
+  resetPasswordTokenExpiresAt: 'resetPasswordTokenExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   isPro: 'isPro',
+  termsAcceptedAt: 'termsAcceptedAt',
+  termsVersion: 'termsVersion',
+  proUntil: 'proUntil',
   lastAlertSentAt: 'lastAlertSentAt'
 } as const
 
@@ -135,6 +151,7 @@ export const CareerProfileScalarFieldEnum = {
   isPartTimeMode: 'isPartTimeMode',
   isFreelanceMode: 'isFreelanceMode',
   availability: 'availability',
+  isPublic: 'isPublic',
   skills: 'skills',
   resumeFileName: 'resumeFileName',
   resumeFileUrl: 'resumeFileUrl',
@@ -226,6 +243,32 @@ export const SkillScalarFieldEnum = {
 } as const
 
 export type SkillScalarFieldEnum = (typeof SkillScalarFieldEnum)[keyof typeof SkillScalarFieldEnum]
+
+
+export const CandidateValueSignalScalarFieldEnum = {
+  id: 'id',
+  careerProfileId: 'careerProfileId',
+  value: 'value',
+  confidence: 'confidence',
+  evidence: 'evidence',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CandidateValueSignalScalarFieldEnum = (typeof CandidateValueSignalScalarFieldEnum)[keyof typeof CandidateValueSignalScalarFieldEnum]
+
+
+export const StudentCountryRuleScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  label: 'label',
+  unverified: 'unverified',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StudentCountryRuleScalarFieldEnum = (typeof StudentCountryRuleScalarFieldEnum)[keyof typeof StudentCountryRuleScalarFieldEnum]
 
 
 export const AchievementScalarFieldEnum = {
@@ -603,6 +646,39 @@ export const DiscoveryRunScalarFieldEnum = {
 } as const
 
 export type DiscoveryRunScalarFieldEnum = (typeof DiscoveryRunScalarFieldEnum)[keyof typeof DiscoveryRunScalarFieldEnum]
+
+
+export const RateLimitScalarFieldEnum = {
+  key: 'key',
+  count: 'count',
+  expires_at: 'expires_at'
+} as const
+
+export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
+
+
+export const FeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  message: 'message',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type FeedbackScalarFieldEnum = (typeof FeedbackScalarFieldEnum)[keyof typeof FeedbackScalarFieldEnum]
+
+
+export const BetaCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  isUsed: 'isUsed',
+  usedByUserId: 'usedByUserId',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type BetaCodeScalarFieldEnum = (typeof BetaCodeScalarFieldEnum)[keyof typeof BetaCodeScalarFieldEnum]
 
 
 export const SortOrder = {

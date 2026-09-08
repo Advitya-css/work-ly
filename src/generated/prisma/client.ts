@@ -83,6 +83,28 @@ export type Project = Prisma.ProjectModel
  */
 export type Skill = Prisma.SkillModel
 /**
+ * Model CandidateValueSignal
+ * A candidate's inferred work-culture preference, e.g. "sustainability_climate"
+ * or "startup_pace" - see lib/values/value-graph.ts for the catalog these
+ * keys come from. Always AI-inferred (real model or the lexical heuristic
+ * fallback), never a fact the user stated directly - kept as its own model
+ * rather than folded into Skill, since a value is a judgment about the
+ * person's history as a whole, not a discrete competency.
+ */
+export type CandidateValueSignal = Prisma.CandidateValueSignalModel
+/**
+ * Model StudentCountryRule
+ * Which countries Workly currently has sourced student work-hour rules
+ * for. Deliberately just the picker list (code/label/unverified) - the
+ * actual sourced legal text (headline/detail/confirmWith/sourceUrl per
+ * job kind) stays in src/lib/student/legal-limits.ts, since that content
+ * requires a human to read and cite an official government source before
+ * it changes. Seeded idempotently in migration 20261014000000; see
+ * src/lib/student/country-rules-db.ts for how it's read, with the static
+ * COUNTRY_RULES list as a fallback if the table is ever empty.
+ */
+export type StudentCountryRule = Prisma.StudentCountryRuleModel
+/**
  * Model Achievement
  * 
  */
@@ -200,3 +222,18 @@ export type DiscoveredJob = Prisma.DiscoveredJobModel
  * guessing.
  */
 export type DiscoveryRun = Prisma.DiscoveryRunModel
+/**
+ * Model RateLimit
+ * 
+ */
+export type RateLimit = Prisma.RateLimitModel
+/**
+ * Model Feedback
+ * 
+ */
+export type Feedback = Prisma.FeedbackModel
+/**
+ * Model BetaCode
+ * 
+ */
+export type BetaCode = Prisma.BetaCodeModel

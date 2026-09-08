@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, Lock, Zap, Sparkles } from "lucide-react";
+import { CheckCircle2, Lock, Zap, Sparkles, GraduationCap, Settings as SettingsIcon } from "lucide-react";
 import {
   IconGuide,
   IconProfile,
@@ -80,6 +80,8 @@ export default function GuidePage() {
             <TabsTrigger value="jobs">Discover &amp; Jobs</TabsTrigger>
             <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="path">Career Path</TabsTrigger>
+            <TabsTrigger value="student">Student Mode</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           {/* ---------------------------------------------------------- */}
@@ -296,6 +298,56 @@ export default function GuidePage() {
                   target — without touching your real profile; results are always labelled as a
                   simulation and never saved automatically.
                 </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ---------------------------------------------------------- */}
+          <TabsContent value="student" className="flex flex-col gap-4">
+            <Card className="border-t-4 border-t-purple-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="size-5 text-purple-500" />
+                  Student Mode
+                </CardTitle>
+                <CardDescription>Tailored tools for campus jobs, internships, and university requirements.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
+                <p>
+                  Work-ly adapts completely when you turn on <span className="font-medium text-foreground">Student Mode</span> from Settings. It changes the scoring engine to focus on coursework and side projects rather than years of enterprise experience.
+                </p>
+                <p>
+                  You get a dedicated <span className="font-medium text-foreground">Student Home</span> tab to manage on-campus jobs, off-campus roles, and internships.
+                </p>
+                <ul className="ml-4 list-disc space-y-1.5 marker:text-purple-500">
+                  <li><span className="font-medium text-foreground">University Feeds</span> — Add your university's public job board feed directly into Work-ly, and it will scrape campus jobs into your Discovery queue.</li>
+                  <li><span className="font-medium text-foreground">Legal Limits Tracking</span> — Input your student country, and Work-ly automatically warns you if an off-campus job exceeds your visa's permitted working hours.</li>
+                  <li><span className="font-medium text-foreground">Auto-Classification</span> — The AI instantly categorizes new roles into On-Campus, Off-Campus, and Internships.</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ---------------------------------------------------------- */}
+          <TabsContent value="settings" className="flex flex-col gap-4">
+            <Card className="border-t-4 border-t-slate-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <SettingsIcon className="size-5 text-slate-500" />
+                  Settings & Preferences
+                </CardTitle>
+                <CardDescription>Control how Work-ly's discovery and scoring engines behave.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
+                <p>
+                  Settings is where you steer the underlying AI models by setting your <span className="font-medium text-foreground">Locations</span>, and configuring the engine for specific working styles.
+                </p>
+                <ul className="ml-4 list-disc space-y-1.5 marker:text-slate-500">
+                  <li><span className="font-medium text-foreground">Part-Time & Shift Work</span> — Optimize the discovery engine for hourly work, shift availability, and retail/service sector parsing.</li>
+                  <li><span className="font-medium text-foreground">Freelance & Gig Economy</span> — Tailor Work-ly for contractors and freelancers, focusing the AI on finding contract roles and parsing portfolios over traditional CVs.</li>
+                  <li><span className="font-medium text-foreground">Student Mode Toggle</span> — Instantly swap the app between full-time career tracking and student-focused discovery.</li>
+                  <li><span className="font-medium text-foreground">Privacy Controls</span> — Manage your data, export your profile, or completely delete your account. Work-ly keeps you in control.</li>
+                </ul>
               </CardContent>
             </Card>
           </TabsContent>

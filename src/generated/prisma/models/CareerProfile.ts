@@ -46,6 +46,7 @@ export type CareerProfileMinAggregateOutputType = {
   isPartTimeMode: boolean | null
   isFreelanceMode: boolean | null
   availability: string | null
+  isPublic: boolean | null
   resumeFileName: string | null
   resumeFileUrl: string | null
   resumeUploadedAt: Date | null
@@ -71,6 +72,7 @@ export type CareerProfileMaxAggregateOutputType = {
   isPartTimeMode: boolean | null
   isFreelanceMode: boolean | null
   availability: string | null
+  isPublic: boolean | null
   resumeFileName: string | null
   resumeFileUrl: string | null
   resumeUploadedAt: Date | null
@@ -96,6 +98,7 @@ export type CareerProfileCountAggregateOutputType = {
   isPartTimeMode: number
   isFreelanceMode: number
   availability: number
+  isPublic: number
   skills: number
   resumeFileName: number
   resumeFileUrl: number
@@ -134,6 +137,7 @@ export type CareerProfileMinAggregateInputType = {
   isPartTimeMode?: true
   isFreelanceMode?: true
   availability?: true
+  isPublic?: true
   resumeFileName?: true
   resumeFileUrl?: true
   resumeUploadedAt?: true
@@ -159,6 +163,7 @@ export type CareerProfileMaxAggregateInputType = {
   isPartTimeMode?: true
   isFreelanceMode?: true
   availability?: true
+  isPublic?: true
   resumeFileName?: true
   resumeFileUrl?: true
   resumeUploadedAt?: true
@@ -184,6 +189,7 @@ export type CareerProfileCountAggregateInputType = {
   isPartTimeMode?: true
   isFreelanceMode?: true
   availability?: true
+  isPublic?: true
   skills?: true
   resumeFileName?: true
   resumeFileUrl?: true
@@ -299,6 +305,7 @@ export type CareerProfileGroupByOutputType = {
   isPartTimeMode: boolean
   isFreelanceMode: boolean
   availability: string | null
+  isPublic: boolean
   skills: string[]
   resumeFileName: string | null
   resumeFileUrl: string | null
@@ -350,6 +357,7 @@ export type CareerProfileWhereInput = {
   isPartTimeMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   isFreelanceMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
+  isPublic?: Prisma.BoolFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
@@ -371,6 +379,7 @@ export type CareerProfileWhereInput = {
   skillEntries?: Prisma.SkillListRelationFilter
   achievements?: Prisma.AchievementListRelationFilter
   certifications?: Prisma.CertificationListRelationFilter
+  candidateValues?: Prisma.CandidateValueSignalListRelationFilter
 }
 
 export type CareerProfileOrderByWithRelationInput = {
@@ -385,6 +394,7 @@ export type CareerProfileOrderByWithRelationInput = {
   isPartTimeMode?: Prisma.SortOrder
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -406,6 +416,7 @@ export type CareerProfileOrderByWithRelationInput = {
   skillEntries?: Prisma.SkillOrderByRelationAggregateInput
   achievements?: Prisma.AchievementOrderByRelationAggregateInput
   certifications?: Prisma.CertificationOrderByRelationAggregateInput
+  candidateValues?: Prisma.CandidateValueSignalOrderByRelationAggregateInput
 }
 
 export type CareerProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -423,6 +434,7 @@ export type CareerProfileWhereUniqueInput = Prisma.AtLeast<{
   isPartTimeMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   isFreelanceMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
+  isPublic?: Prisma.BoolFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
@@ -444,6 +456,7 @@ export type CareerProfileWhereUniqueInput = Prisma.AtLeast<{
   skillEntries?: Prisma.SkillListRelationFilter
   achievements?: Prisma.AchievementListRelationFilter
   certifications?: Prisma.CertificationListRelationFilter
+  candidateValues?: Prisma.CandidateValueSignalListRelationFilter
 }, "id" | "userId">
 
 export type CareerProfileOrderByWithAggregationInput = {
@@ -458,6 +471,7 @@ export type CareerProfileOrderByWithAggregationInput = {
   isPartTimeMode?: Prisma.SortOrder
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -494,6 +508,7 @@ export type CareerProfileScalarWhereWithAggregatesInput = {
   isPartTimeMode?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
   isFreelanceMode?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
+  isPublic?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
@@ -521,6 +536,7 @@ export type CareerProfileCreateInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -542,6 +558,7 @@ export type CareerProfileCreateInput = {
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateInput = {
@@ -556,6 +573,7 @@ export type CareerProfileUncheckedCreateInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -576,6 +594,7 @@ export type CareerProfileUncheckedCreateInput = {
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUpdateInput = {
@@ -589,6 +608,7 @@ export type CareerProfileUpdateInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -610,6 +630,7 @@ export type CareerProfileUpdateInput = {
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateInput = {
@@ -624,6 +645,7 @@ export type CareerProfileUncheckedUpdateInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -644,6 +666,7 @@ export type CareerProfileUncheckedUpdateInput = {
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateManyInput = {
@@ -658,6 +681,7 @@ export type CareerProfileCreateManyInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -685,6 +709,7 @@ export type CareerProfileUpdateManyMutationInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -713,6 +738,7 @@ export type CareerProfileUncheckedUpdateManyInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -754,6 +780,7 @@ export type CareerProfileCountOrderByAggregateInput = {
   isPartTimeMode?: Prisma.SortOrder
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
@@ -786,6 +813,7 @@ export type CareerProfileMaxOrderByAggregateInput = {
   isPartTimeMode?: Prisma.SortOrder
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
   resumeUploadedAt?: Prisma.SortOrder
@@ -811,6 +839,7 @@ export type CareerProfileMinOrderByAggregateInput = {
   isPartTimeMode?: Prisma.SortOrder
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
+  isPublic?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
   resumeUploadedAt?: Prisma.SortOrder
@@ -947,6 +976,20 @@ export type CareerProfileUpdateOneRequiredWithoutSkillEntriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CareerProfileUpdateToOneWithWhereWithoutSkillEntriesInput, Prisma.CareerProfileUpdateWithoutSkillEntriesInput>, Prisma.CareerProfileUncheckedUpdateWithoutSkillEntriesInput>
 }
 
+export type CareerProfileCreateNestedOneWithoutCandidateValuesInput = {
+  create?: Prisma.XOR<Prisma.CareerProfileCreateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedCreateWithoutCandidateValuesInput>
+  connectOrCreate?: Prisma.CareerProfileCreateOrConnectWithoutCandidateValuesInput
+  connect?: Prisma.CareerProfileWhereUniqueInput
+}
+
+export type CareerProfileUpdateOneRequiredWithoutCandidateValuesNestedInput = {
+  create?: Prisma.XOR<Prisma.CareerProfileCreateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedCreateWithoutCandidateValuesInput>
+  connectOrCreate?: Prisma.CareerProfileCreateOrConnectWithoutCandidateValuesInput
+  upsert?: Prisma.CareerProfileUpsertWithoutCandidateValuesInput
+  connect?: Prisma.CareerProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CareerProfileUpdateToOneWithWhereWithoutCandidateValuesInput, Prisma.CareerProfileUpdateWithoutCandidateValuesInput>, Prisma.CareerProfileUncheckedUpdateWithoutCandidateValuesInput>
+}
+
 export type CareerProfileCreateNestedOneWithoutAchievementsInput = {
   create?: Prisma.XOR<Prisma.CareerProfileCreateWithoutAchievementsInput, Prisma.CareerProfileUncheckedCreateWithoutAchievementsInput>
   connectOrCreate?: Prisma.CareerProfileCreateOrConnectWithoutAchievementsInput
@@ -986,6 +1029,7 @@ export type CareerProfileCreateWithoutUserInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1006,6 +1050,7 @@ export type CareerProfileCreateWithoutUserInput = {
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutUserInput = {
@@ -1019,6 +1064,7 @@ export type CareerProfileUncheckedCreateWithoutUserInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1039,6 +1085,7 @@ export type CareerProfileUncheckedCreateWithoutUserInput = {
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutUserInput = {
@@ -1068,6 +1115,7 @@ export type CareerProfileUpdateWithoutUserInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1088,6 +1136,7 @@ export type CareerProfileUpdateWithoutUserInput = {
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutUserInput = {
@@ -1101,6 +1150,7 @@ export type CareerProfileUncheckedUpdateWithoutUserInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1121,6 +1171,7 @@ export type CareerProfileUncheckedUpdateWithoutUserInput = {
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutEducationsInput = {
@@ -1134,6 +1185,7 @@ export type CareerProfileCreateWithoutEducationsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1154,6 +1206,7 @@ export type CareerProfileCreateWithoutEducationsInput = {
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutEducationsInput = {
@@ -1168,6 +1221,7 @@ export type CareerProfileUncheckedCreateWithoutEducationsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1187,6 +1241,7 @@ export type CareerProfileUncheckedCreateWithoutEducationsInput = {
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutEducationsInput = {
@@ -1216,6 +1271,7 @@ export type CareerProfileUpdateWithoutEducationsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1236,6 +1292,7 @@ export type CareerProfileUpdateWithoutEducationsInput = {
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutEducationsInput = {
@@ -1250,6 +1307,7 @@ export type CareerProfileUncheckedUpdateWithoutEducationsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1269,6 +1327,7 @@ export type CareerProfileUncheckedUpdateWithoutEducationsInput = {
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutExperiencesInput = {
@@ -1282,6 +1341,7 @@ export type CareerProfileCreateWithoutExperiencesInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1302,6 +1362,7 @@ export type CareerProfileCreateWithoutExperiencesInput = {
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutExperiencesInput = {
@@ -1316,6 +1377,7 @@ export type CareerProfileUncheckedCreateWithoutExperiencesInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1335,6 +1397,7 @@ export type CareerProfileUncheckedCreateWithoutExperiencesInput = {
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutExperiencesInput = {
@@ -1364,6 +1427,7 @@ export type CareerProfileUpdateWithoutExperiencesInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1384,6 +1448,7 @@ export type CareerProfileUpdateWithoutExperiencesInput = {
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutExperiencesInput = {
@@ -1398,6 +1463,7 @@ export type CareerProfileUncheckedUpdateWithoutExperiencesInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1417,6 +1483,7 @@ export type CareerProfileUncheckedUpdateWithoutExperiencesInput = {
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutProjectsInput = {
@@ -1430,6 +1497,7 @@ export type CareerProfileCreateWithoutProjectsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1450,6 +1518,7 @@ export type CareerProfileCreateWithoutProjectsInput = {
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutProjectsInput = {
@@ -1464,6 +1533,7 @@ export type CareerProfileUncheckedCreateWithoutProjectsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1483,6 +1553,7 @@ export type CareerProfileUncheckedCreateWithoutProjectsInput = {
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutProjectsInput = {
@@ -1512,6 +1583,7 @@ export type CareerProfileUpdateWithoutProjectsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1532,6 +1604,7 @@ export type CareerProfileUpdateWithoutProjectsInput = {
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutProjectsInput = {
@@ -1546,6 +1619,7 @@ export type CareerProfileUncheckedUpdateWithoutProjectsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1565,6 +1639,7 @@ export type CareerProfileUncheckedUpdateWithoutProjectsInput = {
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutSkillEntriesInput = {
@@ -1578,6 +1653,7 @@ export type CareerProfileCreateWithoutSkillEntriesInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1598,6 +1674,7 @@ export type CareerProfileCreateWithoutSkillEntriesInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutSkillEntriesInput = {
@@ -1612,6 +1689,7 @@ export type CareerProfileUncheckedCreateWithoutSkillEntriesInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1631,6 +1709,7 @@ export type CareerProfileUncheckedCreateWithoutSkillEntriesInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutSkillEntriesInput = {
@@ -1660,6 +1739,7 @@ export type CareerProfileUpdateWithoutSkillEntriesInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1680,6 +1760,7 @@ export type CareerProfileUpdateWithoutSkillEntriesInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutSkillEntriesInput = {
@@ -1694,6 +1775,7 @@ export type CareerProfileUncheckedUpdateWithoutSkillEntriesInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1713,6 +1795,163 @@ export type CareerProfileUncheckedUpdateWithoutSkillEntriesInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
+}
+
+export type CareerProfileCreateWithoutCandidateValuesInput = {
+  id?: string
+  headline?: string | null
+  summary?: string | null
+  location?: string | null
+  currentRole?: string | null
+  currentCompany?: string | null
+  yearsExperience?: number | null
+  isPartTimeMode?: boolean
+  isFreelanceMode?: boolean
+  availability?: string | null
+  isPublic?: boolean
+  skills?: Prisma.CareerProfileCreateskillsInput | string[]
+  resumeFileName?: string | null
+  resumeFileUrl?: string | null
+  resumeUploadedAt?: Date | string | null
+  parsedData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isStudent?: boolean
+  university?: string | null
+  major?: string | null
+  expectedGraduation?: string | null
+  studentCountry?: string | null
+  preferredLocations?: Prisma.CareerProfileCreatepreferredLocationsInput | string[]
+  openToRemote?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutCareerProfileInput
+  educations?: Prisma.EducationCreateNestedManyWithoutCareerProfileInput
+  experiences?: Prisma.ExperienceCreateNestedManyWithoutCareerProfileInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutCareerProfileInput
+  skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
+  achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
+  certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+}
+
+export type CareerProfileUncheckedCreateWithoutCandidateValuesInput = {
+  id?: string
+  userId: string
+  headline?: string | null
+  summary?: string | null
+  location?: string | null
+  currentRole?: string | null
+  currentCompany?: string | null
+  yearsExperience?: number | null
+  isPartTimeMode?: boolean
+  isFreelanceMode?: boolean
+  availability?: string | null
+  isPublic?: boolean
+  skills?: Prisma.CareerProfileCreateskillsInput | string[]
+  resumeFileName?: string | null
+  resumeFileUrl?: string | null
+  resumeUploadedAt?: Date | string | null
+  parsedData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isStudent?: boolean
+  university?: string | null
+  major?: string | null
+  expectedGraduation?: string | null
+  studentCountry?: string | null
+  preferredLocations?: Prisma.CareerProfileCreatepreferredLocationsInput | string[]
+  openToRemote?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  educations?: Prisma.EducationUncheckedCreateNestedManyWithoutCareerProfileInput
+  experiences?: Prisma.ExperienceUncheckedCreateNestedManyWithoutCareerProfileInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCareerProfileInput
+  skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
+  achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
+  certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+}
+
+export type CareerProfileCreateOrConnectWithoutCandidateValuesInput = {
+  where: Prisma.CareerProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.CareerProfileCreateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedCreateWithoutCandidateValuesInput>
+}
+
+export type CareerProfileUpsertWithoutCandidateValuesInput = {
+  update: Prisma.XOR<Prisma.CareerProfileUpdateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedUpdateWithoutCandidateValuesInput>
+  create: Prisma.XOR<Prisma.CareerProfileCreateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedCreateWithoutCandidateValuesInput>
+  where?: Prisma.CareerProfileWhereInput
+}
+
+export type CareerProfileUpdateToOneWithWhereWithoutCandidateValuesInput = {
+  where?: Prisma.CareerProfileWhereInput
+  data: Prisma.XOR<Prisma.CareerProfileUpdateWithoutCandidateValuesInput, Prisma.CareerProfileUncheckedUpdateWithoutCandidateValuesInput>
+}
+
+export type CareerProfileUpdateWithoutCandidateValuesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  headline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentCompany?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  skills?: Prisma.CareerProfileUpdateskillsInput | string[]
+  resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parsedData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isStudent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  university?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expectedGraduation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredLocations?: Prisma.CareerProfileUpdatepreferredLocationsInput | string[]
+  openToRemote?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutCareerProfileNestedInput
+  educations?: Prisma.EducationUpdateManyWithoutCareerProfileNestedInput
+  experiences?: Prisma.ExperienceUpdateManyWithoutCareerProfileNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutCareerProfileNestedInput
+  skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
+  achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
+  certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+}
+
+export type CareerProfileUncheckedUpdateWithoutCandidateValuesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  headline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentCompany?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  skills?: Prisma.CareerProfileUpdateskillsInput | string[]
+  resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parsedData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  isStudent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  university?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  major?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expectedGraduation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studentCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredLocations?: Prisma.CareerProfileUpdatepreferredLocationsInput | string[]
+  openToRemote?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  educations?: Prisma.EducationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  experiences?: Prisma.ExperienceUncheckedUpdateManyWithoutCareerProfileNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutCareerProfileNestedInput
+  skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
+  achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
+  certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutAchievementsInput = {
@@ -1726,6 +1965,7 @@ export type CareerProfileCreateWithoutAchievementsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1746,6 +1986,7 @@ export type CareerProfileCreateWithoutAchievementsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCareerProfileInput
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutAchievementsInput = {
@@ -1760,6 +2001,7 @@ export type CareerProfileUncheckedCreateWithoutAchievementsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1779,6 +2021,7 @@ export type CareerProfileUncheckedCreateWithoutAchievementsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCareerProfileInput
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   certifications?: Prisma.CertificationUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutAchievementsInput = {
@@ -1808,6 +2051,7 @@ export type CareerProfileUpdateWithoutAchievementsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1828,6 +2072,7 @@ export type CareerProfileUpdateWithoutAchievementsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCareerProfileNestedInput
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutAchievementsInput = {
@@ -1842,6 +2087,7 @@ export type CareerProfileUncheckedUpdateWithoutAchievementsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1861,6 +2107,7 @@ export type CareerProfileUncheckedUpdateWithoutAchievementsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCareerProfileNestedInput
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   certifications?: Prisma.CertificationUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileCreateWithoutCertificationsInput = {
@@ -1874,6 +2121,7 @@ export type CareerProfileCreateWithoutCertificationsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1894,6 +2142,7 @@ export type CareerProfileCreateWithoutCertificationsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCareerProfileInput
   skillEntries?: Prisma.SkillCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileUncheckedCreateWithoutCertificationsInput = {
@@ -1908,6 +2157,7 @@ export type CareerProfileUncheckedCreateWithoutCertificationsInput = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: string | null
+  isPublic?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1927,6 +2177,7 @@ export type CareerProfileUncheckedCreateWithoutCertificationsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCareerProfileInput
   skillEntries?: Prisma.SkillUncheckedCreateNestedManyWithoutCareerProfileInput
   achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutCareerProfileInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedCreateNestedManyWithoutCareerProfileInput
 }
 
 export type CareerProfileCreateOrConnectWithoutCertificationsInput = {
@@ -1956,6 +2207,7 @@ export type CareerProfileUpdateWithoutCertificationsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1976,6 +2228,7 @@ export type CareerProfileUpdateWithoutCertificationsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCareerProfileNestedInput
   skillEntries?: Prisma.SkillUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUpdateManyWithoutCareerProfileNestedInput
 }
 
 export type CareerProfileUncheckedUpdateWithoutCertificationsInput = {
@@ -1990,6 +2243,7 @@ export type CareerProfileUncheckedUpdateWithoutCertificationsInput = {
   isPartTimeMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2009,6 +2263,7 @@ export type CareerProfileUncheckedUpdateWithoutCertificationsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCareerProfileNestedInput
   skillEntries?: Prisma.SkillUncheckedUpdateManyWithoutCareerProfileNestedInput
   achievements?: Prisma.AchievementUncheckedUpdateManyWithoutCareerProfileNestedInput
+  candidateValues?: Prisma.CandidateValueSignalUncheckedUpdateManyWithoutCareerProfileNestedInput
 }
 
 
@@ -2023,6 +2278,7 @@ export type CareerProfileCountOutputType = {
   skillEntries: number
   achievements: number
   certifications: number
+  candidateValues: number
 }
 
 export type CareerProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2032,6 +2288,7 @@ export type CareerProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Ext
   skillEntries?: boolean | CareerProfileCountOutputTypeCountSkillEntriesArgs
   achievements?: boolean | CareerProfileCountOutputTypeCountAchievementsArgs
   certifications?: boolean | CareerProfileCountOutputTypeCountCertificationsArgs
+  candidateValues?: boolean | CareerProfileCountOutputTypeCountCandidateValuesArgs
 }
 
 /**
@@ -2086,6 +2343,13 @@ export type CareerProfileCountOutputTypeCountCertificationsArgs<ExtArgs extends 
   where?: Prisma.CertificationWhereInput
 }
 
+/**
+ * CareerProfileCountOutputType without action
+ */
+export type CareerProfileCountOutputTypeCountCandidateValuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CandidateValueSignalWhereInput
+}
+
 
 export type CareerProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2099,6 +2363,7 @@ export type CareerProfileSelect<ExtArgs extends runtime.Types.Extensions.Interna
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: boolean
+  isPublic?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2120,6 +2385,7 @@ export type CareerProfileSelect<ExtArgs extends runtime.Types.Extensions.Interna
   skillEntries?: boolean | Prisma.CareerProfile$skillEntriesArgs<ExtArgs>
   achievements?: boolean | Prisma.CareerProfile$achievementsArgs<ExtArgs>
   certifications?: boolean | Prisma.CareerProfile$certificationsArgs<ExtArgs>
+  candidateValues?: boolean | Prisma.CareerProfile$candidateValuesArgs<ExtArgs>
   _count?: boolean | Prisma.CareerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["careerProfile"]>
 
@@ -2135,6 +2401,7 @@ export type CareerProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: boolean
+  isPublic?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2164,6 +2431,7 @@ export type CareerProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: boolean
+  isPublic?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2193,6 +2461,7 @@ export type CareerProfileSelectScalar = {
   isPartTimeMode?: boolean
   isFreelanceMode?: boolean
   availability?: boolean
+  isPublic?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2209,7 +2478,7 @@ export type CareerProfileSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CareerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "headline" | "summary" | "location" | "currentRole" | "currentCompany" | "yearsExperience" | "isPartTimeMode" | "isFreelanceMode" | "availability" | "skills" | "resumeFileName" | "resumeFileUrl" | "resumeUploadedAt" | "parsedData" | "isStudent" | "university" | "major" | "expectedGraduation" | "studentCountry" | "preferredLocations" | "openToRemote" | "createdAt" | "updatedAt", ExtArgs["result"]["careerProfile"]>
+export type CareerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "headline" | "summary" | "location" | "currentRole" | "currentCompany" | "yearsExperience" | "isPartTimeMode" | "isFreelanceMode" | "availability" | "isPublic" | "skills" | "resumeFileName" | "resumeFileUrl" | "resumeUploadedAt" | "parsedData" | "isStudent" | "university" | "major" | "expectedGraduation" | "studentCountry" | "preferredLocations" | "openToRemote" | "createdAt" | "updatedAt", ExtArgs["result"]["careerProfile"]>
 export type CareerProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   educations?: boolean | Prisma.CareerProfile$educationsArgs<ExtArgs>
@@ -2218,6 +2487,7 @@ export type CareerProfileInclude<ExtArgs extends runtime.Types.Extensions.Intern
   skillEntries?: boolean | Prisma.CareerProfile$skillEntriesArgs<ExtArgs>
   achievements?: boolean | Prisma.CareerProfile$achievementsArgs<ExtArgs>
   certifications?: boolean | Prisma.CareerProfile$certificationsArgs<ExtArgs>
+  candidateValues?: boolean | Prisma.CareerProfile$candidateValuesArgs<ExtArgs>
   _count?: boolean | Prisma.CareerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CareerProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2237,6 +2507,7 @@ export type $CareerProfilePayload<ExtArgs extends runtime.Types.Extensions.Inter
     skillEntries: Prisma.$SkillPayload<ExtArgs>[]
     achievements: Prisma.$AchievementPayload<ExtArgs>[]
     certifications: Prisma.$CertificationPayload<ExtArgs>[]
+    candidateValues: Prisma.$CandidateValueSignalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2250,6 +2521,7 @@ export type $CareerProfilePayload<ExtArgs extends runtime.Types.Extensions.Inter
     isPartTimeMode: boolean
     isFreelanceMode: boolean
     availability: string | null
+    isPublic: boolean
     skills: string[]
     resumeFileName: string | null
     resumeFileUrl: string | null
@@ -2665,6 +2937,7 @@ export interface Prisma__CareerProfileClient<T, Null = never, ExtArgs extends ru
   skillEntries<T extends Prisma.CareerProfile$skillEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CareerProfile$skillEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SkillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   achievements<T extends Prisma.CareerProfile$achievementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CareerProfile$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   certifications<T extends Prisma.CareerProfile$certificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CareerProfile$certificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CertificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  candidateValues<T extends Prisma.CareerProfile$candidateValuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CareerProfile$candidateValuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CandidateValueSignalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2705,6 +2978,7 @@ export interface CareerProfileFieldRefs {
   readonly isPartTimeMode: Prisma.FieldRef<"CareerProfile", 'Boolean'>
   readonly isFreelanceMode: Prisma.FieldRef<"CareerProfile", 'Boolean'>
   readonly availability: Prisma.FieldRef<"CareerProfile", 'String'>
+  readonly isPublic: Prisma.FieldRef<"CareerProfile", 'Boolean'>
   readonly skills: Prisma.FieldRef<"CareerProfile", 'String[]'>
   readonly resumeFileName: Prisma.FieldRef<"CareerProfile", 'String'>
   readonly resumeFileUrl: Prisma.FieldRef<"CareerProfile", 'String'>
@@ -3261,6 +3535,30 @@ export type CareerProfile$certificationsArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.CertificationScalarFieldEnum | Prisma.CertificationScalarFieldEnum[]
+}
+
+/**
+ * CareerProfile.candidateValues
+ */
+export type CareerProfile$candidateValuesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CandidateValueSignal
+   */
+  select?: Prisma.CandidateValueSignalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CandidateValueSignal
+   */
+  omit?: Prisma.CandidateValueSignalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CandidateValueSignalInclude<ExtArgs> | null
+  where?: Prisma.CandidateValueSignalWhereInput
+  orderBy?: Prisma.CandidateValueSignalOrderByWithRelationInput | Prisma.CandidateValueSignalOrderByWithRelationInput[]
+  cursor?: Prisma.CandidateValueSignalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CandidateValueSignalScalarFieldEnum | Prisma.CandidateValueSignalScalarFieldEnum[]
 }
 
 /**

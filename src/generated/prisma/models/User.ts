@@ -20,8 +20,18 @@ export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayloa
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
+}
+
+export type UserAvgAggregateOutputType = {
+  verificationAttempts: number | null
+}
+
+export type UserSumAggregateOutputType = {
+  verificationAttempts: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -31,9 +41,20 @@ export type UserMinAggregateOutputType = {
   name: string | null
   avatarUrl: string | null
   onboardedAt: Date | null
+  emailVerified: boolean | null
+  verificationToken: string | null
+  verificationTokenExpiresAt: Date | null
+  verificationCodeHash: string | null
+  verificationCodeExpiresAt: Date | null
+  verificationAttempts: number | null
+  resetPasswordToken: string | null
+  resetPasswordTokenExpiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   isPro: boolean | null
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  proUntil: Date | null
   lastAlertSentAt: Date | null
 }
 
@@ -44,9 +65,20 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   avatarUrl: string | null
   onboardedAt: Date | null
+  emailVerified: boolean | null
+  verificationToken: string | null
+  verificationTokenExpiresAt: Date | null
+  verificationCodeHash: string | null
+  verificationCodeExpiresAt: Date | null
+  verificationAttempts: number | null
+  resetPasswordToken: string | null
+  resetPasswordTokenExpiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   isPro: boolean | null
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  proUntil: Date | null
   lastAlertSentAt: Date | null
 }
 
@@ -57,13 +89,32 @@ export type UserCountAggregateOutputType = {
   name: number
   avatarUrl: number
   onboardedAt: number
+  emailVerified: number
+  verificationToken: number
+  verificationTokenExpiresAt: number
+  verificationCodeHash: number
+  verificationCodeExpiresAt: number
+  verificationAttempts: number
+  resetPasswordToken: number
+  resetPasswordTokenExpiresAt: number
   createdAt: number
   updatedAt: number
   isPro: number
+  termsAcceptedAt: number
+  termsVersion: number
+  proUntil: number
   lastAlertSentAt: number
   _all: number
 }
 
+
+export type UserAvgAggregateInputType = {
+  verificationAttempts?: true
+}
+
+export type UserSumAggregateInputType = {
+  verificationAttempts?: true
+}
 
 export type UserMinAggregateInputType = {
   id?: true
@@ -72,9 +123,20 @@ export type UserMinAggregateInputType = {
   name?: true
   avatarUrl?: true
   onboardedAt?: true
+  emailVerified?: true
+  verificationToken?: true
+  verificationTokenExpiresAt?: true
+  verificationCodeHash?: true
+  verificationCodeExpiresAt?: true
+  verificationAttempts?: true
+  resetPasswordToken?: true
+  resetPasswordTokenExpiresAt?: true
   createdAt?: true
   updatedAt?: true
   isPro?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  proUntil?: true
   lastAlertSentAt?: true
 }
 
@@ -85,9 +147,20 @@ export type UserMaxAggregateInputType = {
   name?: true
   avatarUrl?: true
   onboardedAt?: true
+  emailVerified?: true
+  verificationToken?: true
+  verificationTokenExpiresAt?: true
+  verificationCodeHash?: true
+  verificationCodeExpiresAt?: true
+  verificationAttempts?: true
+  resetPasswordToken?: true
+  resetPasswordTokenExpiresAt?: true
   createdAt?: true
   updatedAt?: true
   isPro?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  proUntil?: true
   lastAlertSentAt?: true
 }
 
@@ -98,9 +171,20 @@ export type UserCountAggregateInputType = {
   name?: true
   avatarUrl?: true
   onboardedAt?: true
+  emailVerified?: true
+  verificationToken?: true
+  verificationTokenExpiresAt?: true
+  verificationCodeHash?: true
+  verificationCodeExpiresAt?: true
+  verificationAttempts?: true
+  resetPasswordToken?: true
+  resetPasswordTokenExpiresAt?: true
   createdAt?: true
   updatedAt?: true
   isPro?: true
+  termsAcceptedAt?: true
+  termsVersion?: true
+  proUntil?: true
   lastAlertSentAt?: true
   _all?: true
 }
@@ -143,6 +227,18 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UserAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UserSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UserMinAggregateInputType
@@ -173,6 +269,8 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: UserCountAggregateInputType | true
+  _avg?: UserAvgAggregateInputType
+  _sum?: UserSumAggregateInputType
   _min?: UserMinAggregateInputType
   _max?: UserMaxAggregateInputType
 }
@@ -184,11 +282,24 @@ export type UserGroupByOutputType = {
   name: string | null
   avatarUrl: string | null
   onboardedAt: Date | null
+  emailVerified: boolean
+  verificationToken: string | null
+  verificationTokenExpiresAt: Date | null
+  verificationCodeHash: string | null
+  verificationCodeExpiresAt: Date | null
+  verificationAttempts: number
+  resetPasswordToken: string | null
+  resetPasswordTokenExpiresAt: Date | null
   createdAt: Date
   updatedAt: Date
   isPro: boolean
+  termsAcceptedAt: Date | null
+  termsVersion: string | null
+  proUntil: Date | null
   lastAlertSentAt: Date | null
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
 }
@@ -218,9 +329,20 @@ export type UserWhereInput = {
   name?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   onboardedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  emailVerified?: Prisma.BoolFilter<"User"> | boolean
+  verificationToken?: Prisma.StringNullableFilter<"User"> | string | null
+  verificationTokenExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
+  verificationCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationAttempts?: Prisma.IntFilter<"User"> | number
+  resetPasswordToken?: Prisma.StringNullableFilter<"User"> | string | null
+  resetPasswordTokenExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   isPro?: Prisma.BoolFilter<"User"> | boolean
+  termsAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableFilter<"User"> | string | null
+  proUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastAlertSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   careerProfile?: Prisma.XOR<Prisma.CareerProfileNullableScalarRelationFilter, Prisma.CareerProfileWhereInput> | null
   careerGoals?: Prisma.CareerGoalListRelationFilter
@@ -230,6 +352,7 @@ export type UserWhereInput = {
   opportunities?: Prisma.OpportunityListRelationFilter
   dreamJobs?: Prisma.DreamJobListRelationFilter
   dreamJobAnalyses?: Prisma.DreamJobAnalysisListRelationFilter
+  feedbacks?: Prisma.FeedbackListRelationFilter
   careerPathways?: Prisma.CareerPathwayListRelationFilter
   applications?: Prisma.ApplicationListRelationFilter
   jobSourceConfigs?: Prisma.JobSourceConfigListRelationFilter
@@ -244,9 +367,20 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   onboardedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailVerified?: Prisma.SortOrder
+  verificationToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationTokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationAttempts?: Prisma.SortOrder
+  resetPasswordToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordTokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   isPro?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  proUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   careerProfile?: Prisma.CareerProfileOrderByWithRelationInput
   careerGoals?: Prisma.CareerGoalOrderByRelationAggregateInput
@@ -256,6 +390,7 @@ export type UserOrderByWithRelationInput = {
   opportunities?: Prisma.OpportunityOrderByRelationAggregateInput
   dreamJobs?: Prisma.DreamJobOrderByRelationAggregateInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisOrderByRelationAggregateInput
+  feedbacks?: Prisma.FeedbackOrderByRelationAggregateInput
   careerPathways?: Prisma.CareerPathwayOrderByRelationAggregateInput
   applications?: Prisma.ApplicationOrderByRelationAggregateInput
   jobSourceConfigs?: Prisma.JobSourceConfigOrderByRelationAggregateInput
@@ -273,9 +408,20 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringNullableFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   onboardedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  emailVerified?: Prisma.BoolFilter<"User"> | boolean
+  verificationToken?: Prisma.StringNullableFilter<"User"> | string | null
+  verificationTokenExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
+  verificationCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  verificationAttempts?: Prisma.IntFilter<"User"> | number
+  resetPasswordToken?: Prisma.StringNullableFilter<"User"> | string | null
+  resetPasswordTokenExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   isPro?: Prisma.BoolFilter<"User"> | boolean
+  termsAcceptedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableFilter<"User"> | string | null
+  proUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastAlertSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   careerProfile?: Prisma.XOR<Prisma.CareerProfileNullableScalarRelationFilter, Prisma.CareerProfileWhereInput> | null
   careerGoals?: Prisma.CareerGoalListRelationFilter
@@ -285,6 +431,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   opportunities?: Prisma.OpportunityListRelationFilter
   dreamJobs?: Prisma.DreamJobListRelationFilter
   dreamJobAnalyses?: Prisma.DreamJobAnalysisListRelationFilter
+  feedbacks?: Prisma.FeedbackListRelationFilter
   careerPathways?: Prisma.CareerPathwayListRelationFilter
   applications?: Prisma.ApplicationListRelationFilter
   jobSourceConfigs?: Prisma.JobSourceConfigListRelationFilter
@@ -299,13 +446,26 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   onboardedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailVerified?: Prisma.SortOrder
+  verificationToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationTokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationAttempts?: Prisma.SortOrder
+  resetPasswordToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordTokenExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   isPro?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  proUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
+  _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
+  _sum?: Prisma.UserSumOrderByAggregateInput
 }
 
 export type UserScalarWhereWithAggregatesInput = {
@@ -318,9 +478,20 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   onboardedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  verificationToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  verificationTokenExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  verificationCodeHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  verificationCodeExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  verificationAttempts?: Prisma.IntWithAggregatesFilter<"User"> | number
+  resetPasswordToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  resetPasswordTokenExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   isPro?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  termsAcceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  termsVersion?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  proUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   lastAlertSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
@@ -331,9 +502,20 @@ export type UserCreateInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -343,6 +525,7 @@ export type UserCreateInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -357,9 +540,20 @@ export type UserUncheckedCreateInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -369,6 +563,7 @@ export type UserUncheckedCreateInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -383,9 +578,20 @@ export type UserUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -395,6 +601,7 @@ export type UserUpdateInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -409,9 +616,20 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -421,6 +639,7 @@ export type UserUncheckedUpdateInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -435,9 +654,20 @@ export type UserCreateManyInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
 }
 
@@ -448,9 +678,20 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -461,9 +702,20 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -474,10 +726,25 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   onboardedAt?: Prisma.SortOrder
+  emailVerified?: Prisma.SortOrder
+  verificationToken?: Prisma.SortOrder
+  verificationTokenExpiresAt?: Prisma.SortOrder
+  verificationCodeHash?: Prisma.SortOrder
+  verificationCodeExpiresAt?: Prisma.SortOrder
+  verificationAttempts?: Prisma.SortOrder
+  resetPasswordToken?: Prisma.SortOrder
+  resetPasswordTokenExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   isPro?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  proUntil?: Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrder
+}
+
+export type UserAvgOrderByAggregateInput = {
+  verificationAttempts?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -487,9 +754,20 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   onboardedAt?: Prisma.SortOrder
+  emailVerified?: Prisma.SortOrder
+  verificationToken?: Prisma.SortOrder
+  verificationTokenExpiresAt?: Prisma.SortOrder
+  verificationCodeHash?: Prisma.SortOrder
+  verificationCodeExpiresAt?: Prisma.SortOrder
+  verificationAttempts?: Prisma.SortOrder
+  resetPasswordToken?: Prisma.SortOrder
+  resetPasswordTokenExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   isPro?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  proUntil?: Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrder
 }
 
@@ -500,10 +778,25 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
   onboardedAt?: Prisma.SortOrder
+  emailVerified?: Prisma.SortOrder
+  verificationToken?: Prisma.SortOrder
+  verificationTokenExpiresAt?: Prisma.SortOrder
+  verificationCodeHash?: Prisma.SortOrder
+  verificationCodeExpiresAt?: Prisma.SortOrder
+  verificationAttempts?: Prisma.SortOrder
+  resetPasswordToken?: Prisma.SortOrder
+  resetPasswordTokenExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   isPro?: Prisma.SortOrder
+  termsAcceptedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
+  proUntil?: Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrder
+}
+
+export type UserSumOrderByAggregateInput = {
+  verificationAttempts?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -523,12 +816,20 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type UserCreateNestedOneWithoutDocumentsInput = {
@@ -713,6 +1014,20 @@ export type UserUpdateOneRequiredWithoutDiscoveryRunsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDiscoveryRunsInput, Prisma.UserUpdateWithoutDiscoveryRunsInput>, Prisma.UserUncheckedUpdateWithoutDiscoveryRunsInput>
 }
 
+export type UserCreateNestedOneWithoutFeedbacksInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFeedbacksInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutFeedbacksNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFeedbacksInput
+  upsert?: Prisma.UserUpsertWithoutFeedbacksInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFeedbacksInput, Prisma.UserUpdateWithoutFeedbacksInput>, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+}
+
 export type UserCreateWithoutDocumentsInput = {
   id?: string
   email: string
@@ -720,9 +1035,20 @@ export type UserCreateWithoutDocumentsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -731,6 +1057,7 @@ export type UserCreateWithoutDocumentsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -745,9 +1072,20 @@ export type UserUncheckedCreateWithoutDocumentsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -756,6 +1094,7 @@ export type UserUncheckedCreateWithoutDocumentsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -786,9 +1125,20 @@ export type UserUpdateWithoutDocumentsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -797,6 +1147,7 @@ export type UserUpdateWithoutDocumentsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -811,9 +1162,20 @@ export type UserUncheckedUpdateWithoutDocumentsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -822,6 +1184,7 @@ export type UserUncheckedUpdateWithoutDocumentsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -836,9 +1199,20 @@ export type UserCreateWithoutCareerProfileInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
@@ -847,6 +1221,7 @@ export type UserCreateWithoutCareerProfileInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -861,9 +1236,20 @@ export type UserUncheckedCreateWithoutCareerProfileInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
@@ -872,6 +1258,7 @@ export type UserUncheckedCreateWithoutCareerProfileInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -902,9 +1289,20 @@ export type UserUpdateWithoutCareerProfileInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
@@ -913,6 +1311,7 @@ export type UserUpdateWithoutCareerProfileInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -927,9 +1326,20 @@ export type UserUncheckedUpdateWithoutCareerProfileInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
@@ -938,6 +1348,7 @@ export type UserUncheckedUpdateWithoutCareerProfileInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -952,9 +1363,20 @@ export type UserCreateWithoutCareerGoalsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
@@ -963,6 +1385,7 @@ export type UserCreateWithoutCareerGoalsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -977,9 +1400,20 @@ export type UserUncheckedCreateWithoutCareerGoalsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
@@ -988,6 +1422,7 @@ export type UserUncheckedCreateWithoutCareerGoalsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1018,9 +1453,20 @@ export type UserUpdateWithoutCareerGoalsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
@@ -1029,6 +1475,7 @@ export type UserUpdateWithoutCareerGoalsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1043,9 +1490,20 @@ export type UserUncheckedUpdateWithoutCareerGoalsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
@@ -1054,6 +1512,7 @@ export type UserUncheckedUpdateWithoutCareerGoalsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1068,9 +1527,20 @@ export type UserCreateWithoutJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1079,6 +1549,7 @@ export type UserCreateWithoutJobsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -1093,9 +1564,20 @@ export type UserUncheckedCreateWithoutJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1104,6 +1586,7 @@ export type UserUncheckedCreateWithoutJobsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1134,9 +1617,20 @@ export type UserUpdateWithoutJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1145,6 +1639,7 @@ export type UserUpdateWithoutJobsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1159,9 +1654,20 @@ export type UserUncheckedUpdateWithoutJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1170,6 +1676,7 @@ export type UserUncheckedUpdateWithoutJobsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1184,9 +1691,20 @@ export type UserCreateWithoutJobAnalysesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1195,6 +1713,7 @@ export type UserCreateWithoutJobAnalysesInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -1209,9 +1728,20 @@ export type UserUncheckedCreateWithoutJobAnalysesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1220,6 +1750,7 @@ export type UserUncheckedCreateWithoutJobAnalysesInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1250,9 +1781,20 @@ export type UserUpdateWithoutJobAnalysesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1261,6 +1803,7 @@ export type UserUpdateWithoutJobAnalysesInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1275,9 +1818,20 @@ export type UserUncheckedUpdateWithoutJobAnalysesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1286,6 +1840,7 @@ export type UserUncheckedUpdateWithoutJobAnalysesInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1300,9 +1855,20 @@ export type UserCreateWithoutOpportunitiesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1311,6 +1877,7 @@ export type UserCreateWithoutOpportunitiesInput = {
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -1325,9 +1892,20 @@ export type UserUncheckedCreateWithoutOpportunitiesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1336,6 +1914,7 @@ export type UserUncheckedCreateWithoutOpportunitiesInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1366,9 +1945,20 @@ export type UserUpdateWithoutOpportunitiesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1377,6 +1967,7 @@ export type UserUpdateWithoutOpportunitiesInput = {
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1391,9 +1982,20 @@ export type UserUncheckedUpdateWithoutOpportunitiesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1402,6 +2004,7 @@ export type UserUncheckedUpdateWithoutOpportunitiesInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1416,9 +2019,20 @@ export type UserCreateWithoutDreamJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1427,6 +2041,7 @@ export type UserCreateWithoutDreamJobsInput = {
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -1441,9 +2056,20 @@ export type UserUncheckedCreateWithoutDreamJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1452,6 +2078,7 @@ export type UserUncheckedCreateWithoutDreamJobsInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1482,9 +2109,20 @@ export type UserUpdateWithoutDreamJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1493,6 +2131,7 @@ export type UserUpdateWithoutDreamJobsInput = {
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1507,9 +2146,20 @@ export type UserUncheckedUpdateWithoutDreamJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1518,6 +2168,7 @@ export type UserUncheckedUpdateWithoutDreamJobsInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1532,9 +2183,20 @@ export type UserCreateWithoutDreamJobAnalysesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1543,6 +2205,7 @@ export type UserCreateWithoutDreamJobAnalysesInput = {
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -1557,9 +2220,20 @@ export type UserUncheckedCreateWithoutDreamJobAnalysesInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1568,6 +2242,7 @@ export type UserUncheckedCreateWithoutDreamJobAnalysesInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -1598,9 +2273,20 @@ export type UserUpdateWithoutDreamJobAnalysesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1609,6 +2295,7 @@ export type UserUpdateWithoutDreamJobAnalysesInput = {
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -1623,9 +2310,20 @@ export type UserUncheckedUpdateWithoutDreamJobAnalysesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1634,6 +2332,7 @@ export type UserUncheckedUpdateWithoutDreamJobAnalysesInput = {
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -1648,9 +2347,20 @@ export type UserCreateWithoutCareerPathwaysInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1660,6 +2370,7 @@ export type UserCreateWithoutCareerPathwaysInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobCreateNestedManyWithoutUserInput
@@ -1673,9 +2384,20 @@ export type UserUncheckedCreateWithoutCareerPathwaysInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1685,6 +2407,7 @@ export type UserUncheckedCreateWithoutCareerPathwaysInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedCreateNestedManyWithoutUserInput
@@ -1714,9 +2437,20 @@ export type UserUpdateWithoutCareerPathwaysInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1726,6 +2460,7 @@ export type UserUpdateWithoutCareerPathwaysInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUpdateManyWithoutUserNestedInput
@@ -1739,9 +2474,20 @@ export type UserUncheckedUpdateWithoutCareerPathwaysInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1751,6 +2497,7 @@ export type UserUncheckedUpdateWithoutCareerPathwaysInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
@@ -1764,9 +2511,20 @@ export type UserCreateWithoutApplicationsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1776,6 +2534,7 @@ export type UserCreateWithoutApplicationsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobCreateNestedManyWithoutUserInput
@@ -1789,9 +2548,20 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1801,6 +2571,7 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedCreateNestedManyWithoutUserInput
@@ -1830,9 +2601,20 @@ export type UserUpdateWithoutApplicationsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1842,6 +2624,7 @@ export type UserUpdateWithoutApplicationsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUpdateManyWithoutUserNestedInput
@@ -1855,9 +2638,20 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1867,6 +2661,7 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
@@ -1880,9 +2675,20 @@ export type UserCreateWithoutJobSourceConfigsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -1892,6 +2698,7 @@ export type UserCreateWithoutJobSourceConfigsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobCreateNestedManyWithoutUserInput
@@ -1905,9 +2712,20 @@ export type UserUncheckedCreateWithoutJobSourceConfigsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -1917,6 +2735,7 @@ export type UserUncheckedCreateWithoutJobSourceConfigsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedCreateNestedManyWithoutUserInput
@@ -1946,9 +2765,20 @@ export type UserUpdateWithoutJobSourceConfigsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -1958,6 +2788,7 @@ export type UserUpdateWithoutJobSourceConfigsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUpdateManyWithoutUserNestedInput
@@ -1971,9 +2802,20 @@ export type UserUncheckedUpdateWithoutJobSourceConfigsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -1983,6 +2825,7 @@ export type UserUncheckedUpdateWithoutJobSourceConfigsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
@@ -1996,9 +2839,20 @@ export type UserCreateWithoutDiscoveredJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -2008,6 +2862,7 @@ export type UserCreateWithoutDiscoveredJobsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -2021,9 +2876,20 @@ export type UserUncheckedCreateWithoutDiscoveredJobsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -2033,6 +2899,7 @@ export type UserUncheckedCreateWithoutDiscoveredJobsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -2062,9 +2929,20 @@ export type UserUpdateWithoutDiscoveredJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -2074,6 +2952,7 @@ export type UserUpdateWithoutDiscoveredJobsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -2087,9 +2966,20 @@ export type UserUncheckedUpdateWithoutDiscoveredJobsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -2099,6 +2989,7 @@ export type UserUncheckedUpdateWithoutDiscoveredJobsInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -2112,9 +3003,20 @@ export type UserCreateWithoutDiscoveryRunsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
@@ -2124,6 +3026,7 @@ export type UserCreateWithoutDiscoveryRunsInput = {
   opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
@@ -2137,9 +3040,20 @@ export type UserUncheckedCreateWithoutDiscoveryRunsInput = {
   name?: string | null
   avatarUrl?: string | null
   onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
@@ -2149,6 +3063,7 @@ export type UserUncheckedCreateWithoutDiscoveryRunsInput = {
   opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
   dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
   careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
   applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
@@ -2178,9 +3093,20 @@ export type UserUpdateWithoutDiscoveryRunsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
@@ -2190,6 +3116,7 @@ export type UserUpdateWithoutDiscoveryRunsInput = {
   opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
@@ -2203,9 +3130,184 @@ export type UserUncheckedUpdateWithoutDiscoveryRunsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
+  jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
+  jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
+  dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
+  careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
+  applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
+  discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutFeedbacksInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+  onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
+  lastAlertSentAt?: Date | string | null
+  careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
+  jobs?: Prisma.JobCreateNestedManyWithoutUserInput
+  jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
+  dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
+  applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
+  jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
+  discoveredJobs?: Prisma.DiscoveredJobCreateNestedManyWithoutUserInput
+  discoveryRuns?: Prisma.DiscoveryRunCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutFeedbacksInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+  onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
+  lastAlertSentAt?: Date | string | null
+  careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
+  jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
+  jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
+  dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
+  applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
+  discoveredJobs?: Prisma.DiscoveredJobUncheckedCreateNestedManyWithoutUserInput
+  discoveryRuns?: Prisma.DiscoveryRunUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutFeedbacksInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+}
+
+export type UserUpsertWithoutFeedbacksInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutFeedbacksInput, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutFeedbacksInput, Prisma.UserUncheckedCreateWithoutFeedbacksInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutFeedbacksInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutFeedbacksInput, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
+}
+
+export type UserUpdateWithoutFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
+  jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
+  jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
+  dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
+  applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
+  discoveredJobs?: Prisma.DiscoveredJobUpdateManyWithoutUserNestedInput
+  discoveryRuns?: Prisma.DiscoveryRunUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
@@ -2219,6 +3321,7 @@ export type UserUncheckedUpdateWithoutDiscoveryRunsInput = {
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
   discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
+  discoveryRuns?: Prisma.DiscoveryRunUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -2234,6 +3337,7 @@ export type UserCountOutputType = {
   opportunities: number
   dreamJobs: number
   dreamJobAnalyses: number
+  feedbacks: number
   careerPathways: number
   applications: number
   jobSourceConfigs: number
@@ -2249,6 +3353,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   opportunities?: boolean | UserCountOutputTypeCountOpportunitiesArgs
   dreamJobs?: boolean | UserCountOutputTypeCountDreamJobsArgs
   dreamJobAnalyses?: boolean | UserCountOutputTypeCountDreamJobAnalysesArgs
+  feedbacks?: boolean | UserCountOutputTypeCountFeedbacksArgs
   careerPathways?: boolean | UserCountOutputTypeCountCareerPathwaysArgs
   applications?: boolean | UserCountOutputTypeCountApplicationsArgs
   jobSourceConfigs?: boolean | UserCountOutputTypeCountJobSourceConfigsArgs
@@ -2318,6 +3423,13 @@ export type UserCountOutputTypeCountDreamJobAnalysesArgs<ExtArgs extends runtime
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountFeedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FeedbackWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountCareerPathwaysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CareerPathwayWhereInput
 }
@@ -2358,9 +3470,20 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   avatarUrl?: boolean
   onboardedAt?: boolean
+  emailVerified?: boolean
+  verificationToken?: boolean
+  verificationTokenExpiresAt?: boolean
+  verificationCodeHash?: boolean
+  verificationCodeExpiresAt?: boolean
+  verificationAttempts?: boolean
+  resetPasswordToken?: boolean
+  resetPasswordTokenExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   isPro?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  proUntil?: boolean
   lastAlertSentAt?: boolean
   careerProfile?: boolean | Prisma.User$careerProfileArgs<ExtArgs>
   careerGoals?: boolean | Prisma.User$careerGoalsArgs<ExtArgs>
@@ -2370,6 +3493,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   opportunities?: boolean | Prisma.User$opportunitiesArgs<ExtArgs>
   dreamJobs?: boolean | Prisma.User$dreamJobsArgs<ExtArgs>
   dreamJobAnalyses?: boolean | Prisma.User$dreamJobAnalysesArgs<ExtArgs>
+  feedbacks?: boolean | Prisma.User$feedbacksArgs<ExtArgs>
   careerPathways?: boolean | Prisma.User$careerPathwaysArgs<ExtArgs>
   applications?: boolean | Prisma.User$applicationsArgs<ExtArgs>
   jobSourceConfigs?: boolean | Prisma.User$jobSourceConfigsArgs<ExtArgs>
@@ -2385,9 +3509,20 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   avatarUrl?: boolean
   onboardedAt?: boolean
+  emailVerified?: boolean
+  verificationToken?: boolean
+  verificationTokenExpiresAt?: boolean
+  verificationCodeHash?: boolean
+  verificationCodeExpiresAt?: boolean
+  verificationAttempts?: boolean
+  resetPasswordToken?: boolean
+  resetPasswordTokenExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   isPro?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  proUntil?: boolean
   lastAlertSentAt?: boolean
 }, ExtArgs["result"]["user"]>
 
@@ -2398,9 +3533,20 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   avatarUrl?: boolean
   onboardedAt?: boolean
+  emailVerified?: boolean
+  verificationToken?: boolean
+  verificationTokenExpiresAt?: boolean
+  verificationCodeHash?: boolean
+  verificationCodeExpiresAt?: boolean
+  verificationAttempts?: boolean
+  resetPasswordToken?: boolean
+  resetPasswordTokenExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   isPro?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  proUntil?: boolean
   lastAlertSentAt?: boolean
 }, ExtArgs["result"]["user"]>
 
@@ -2411,13 +3557,24 @@ export type UserSelectScalar = {
   name?: boolean
   avatarUrl?: boolean
   onboardedAt?: boolean
+  emailVerified?: boolean
+  verificationToken?: boolean
+  verificationTokenExpiresAt?: boolean
+  verificationCodeHash?: boolean
+  verificationCodeExpiresAt?: boolean
+  verificationAttempts?: boolean
+  resetPasswordToken?: boolean
+  resetPasswordTokenExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   isPro?: boolean
+  termsAcceptedAt?: boolean
+  termsVersion?: boolean
+  proUntil?: boolean
   lastAlertSentAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "avatarUrl" | "onboardedAt" | "createdAt" | "updatedAt" | "isPro" | "lastAlertSentAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "avatarUrl" | "onboardedAt" | "emailVerified" | "verificationToken" | "verificationTokenExpiresAt" | "verificationCodeHash" | "verificationCodeExpiresAt" | "verificationAttempts" | "resetPasswordToken" | "resetPasswordTokenExpiresAt" | "createdAt" | "updatedAt" | "isPro" | "termsAcceptedAt" | "termsVersion" | "proUntil" | "lastAlertSentAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   careerProfile?: boolean | Prisma.User$careerProfileArgs<ExtArgs>
   careerGoals?: boolean | Prisma.User$careerGoalsArgs<ExtArgs>
@@ -2427,6 +3584,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   opportunities?: boolean | Prisma.User$opportunitiesArgs<ExtArgs>
   dreamJobs?: boolean | Prisma.User$dreamJobsArgs<ExtArgs>
   dreamJobAnalyses?: boolean | Prisma.User$dreamJobAnalysesArgs<ExtArgs>
+  feedbacks?: boolean | Prisma.User$feedbacksArgs<ExtArgs>
   careerPathways?: boolean | Prisma.User$careerPathwaysArgs<ExtArgs>
   applications?: boolean | Prisma.User$applicationsArgs<ExtArgs>
   jobSourceConfigs?: boolean | Prisma.User$jobSourceConfigsArgs<ExtArgs>
@@ -2448,6 +3606,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     opportunities: Prisma.$OpportunityPayload<ExtArgs>[]
     dreamJobs: Prisma.$DreamJobPayload<ExtArgs>[]
     dreamJobAnalyses: Prisma.$DreamJobAnalysisPayload<ExtArgs>[]
+    feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
     careerPathways: Prisma.$CareerPathwayPayload<ExtArgs>[]
     applications: Prisma.$ApplicationPayload<ExtArgs>[]
     jobSourceConfigs: Prisma.$JobSourceConfigPayload<ExtArgs>[]
@@ -2461,9 +3620,20 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string | null
     avatarUrl: string | null
     onboardedAt: Date | null
+    emailVerified: boolean
+    verificationToken: string | null
+    verificationTokenExpiresAt: Date | null
+    verificationCodeHash: string | null
+    verificationCodeExpiresAt: Date | null
+    verificationAttempts: number
+    resetPasswordToken: string | null
+    resetPasswordTokenExpiresAt: Date | null
     createdAt: Date
     updatedAt: Date
     isPro: boolean
+    termsAcceptedAt: Date | null
+    termsVersion: string | null
+    proUntil: Date | null
     lastAlertSentAt: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
@@ -2867,6 +4037,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   opportunities<T extends Prisma.User$opportunitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$opportunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OpportunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dreamJobs<T extends Prisma.User$dreamJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$dreamJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DreamJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dreamJobAnalyses<T extends Prisma.User$dreamJobAnalysesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$dreamJobAnalysesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DreamJobAnalysisPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  feedbacks<T extends Prisma.User$feedbacksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   careerPathways<T extends Prisma.User$careerPathwaysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$careerPathwaysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CareerPathwayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   applications<T extends Prisma.User$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   jobSourceConfigs<T extends Prisma.User$jobSourceConfigsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$jobSourceConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobSourceConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2907,9 +4078,20 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly avatarUrl: Prisma.FieldRef<"User", 'String'>
   readonly onboardedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
+  readonly verificationToken: Prisma.FieldRef<"User", 'String'>
+  readonly verificationTokenExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly verificationCodeHash: Prisma.FieldRef<"User", 'String'>
+  readonly verificationCodeExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly verificationAttempts: Prisma.FieldRef<"User", 'Int'>
+  readonly resetPasswordToken: Prisma.FieldRef<"User", 'String'>
+  readonly resetPasswordTokenExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly isPro: Prisma.FieldRef<"User", 'Boolean'>
+  readonly termsAcceptedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly termsVersion: Prisma.FieldRef<"User", 'String'>
+  readonly proUntil: Prisma.FieldRef<"User", 'DateTime'>
   readonly lastAlertSentAt: Prisma.FieldRef<"User", 'DateTime'>
 }
     
@@ -3488,6 +4670,30 @@ export type User$dreamJobAnalysesArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.DreamJobAnalysisScalarFieldEnum | Prisma.DreamJobAnalysisScalarFieldEnum[]
+}
+
+/**
+ * User.feedbacks
+ */
+export type User$feedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Feedback
+   */
+  select?: Prisma.FeedbackSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Feedback
+   */
+  omit?: Prisma.FeedbackOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FeedbackInclude<ExtArgs> | null
+  where?: Prisma.FeedbackWhereInput
+  orderBy?: Prisma.FeedbackOrderByWithRelationInput | Prisma.FeedbackOrderByWithRelationInput[]
+  cursor?: Prisma.FeedbackWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FeedbackScalarFieldEnum | Prisma.FeedbackScalarFieldEnum[]
 }
 
 /**
