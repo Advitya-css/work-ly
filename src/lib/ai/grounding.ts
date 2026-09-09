@@ -427,6 +427,11 @@ class GroundingRun {
  *   - `headline` and `summary` are synthesised prose. A good summary uses
  *     words the CV never used; checking it would delete the useful ones and
  *     drag the ratio down for doing its job. Excluded from the ratio too.
+ *   - `location` IS checked, unlike headline/summary: it's a short, specific
+ *     claim (like a company name), not synthesised prose, and it directly
+ *     drives a prompt offering to overwrite the user's real Settings
+ *     location - so a hallucinated city is worse here than almost anywhere
+ *     else in this extraction.
  *   - `yearsExperience` is computed from the parsed dates rather than
  *     quoted from the document, so a digit search says nothing about it.
  *   - Dates, descriptions and categories ride along with their parent
@@ -440,6 +445,14 @@ export function groundResumeExtraction(
 ): GroundingReport<ExtractedCareerProfile> {
   const index = buildSourceIndex(sourceText);
   const run = new GroundingRun(index);
+
+  // Same reasoning as experience.company below: a hallucinated location
+  // would otherwise flow straight into the "update your location?" prompt
+  // and, if accepted, overwrite a real Settings value with an invented one.
+  const location =
+    extracted.location && extracted.location.trim().length > 0 && run.check("location", extracted.location)
+      ? extracted.location
+      : undefined;
 
   const skills = extracted.skills.filter((s) => run.check("skills", s.name));
 
@@ -495,6 +508,7 @@ export function groundResumeExtraction(
   return {
     grounded: {
       ...extracted,
+      location,
       skills,
       experience,
       education,

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useTransition } from "react";
 import { Bookmark, Loader2, ClipboardCheck, Send, RotateCcw } from "lucide-react";
 
@@ -37,7 +38,7 @@ export function OpportunityStatusControls({ id, isSaved, status }: { id: string;
           disabled={isPending}
           onClick={() => startTransition(() => setOpportunityStatusAction(id, "PREPARING"))}
         >
-          {isPending ? <Loader2 className="animate-spin" /> : <ClipboardCheck />}
+          {isPending ? <WorklyLoader className="animate-spin" /> : <ClipboardCheck />}
           Mark as preparing
         </Button>
       )}
@@ -49,7 +50,7 @@ export function OpportunityStatusControls({ id, isSaved, status }: { id: string;
           disabled={isPending}
           onClick={() => startTransition(() => setOpportunityStatusAction(id, "APPLIED"))}
         >
-          {isPending ? <Loader2 className="animate-spin" /> : <Send />}
+          {isPending ? <WorklyLoader className="animate-spin" /> : <Send />}
           Mark as applied
         </Button>
       )}

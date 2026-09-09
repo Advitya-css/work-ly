@@ -237,3 +237,8 @@ export type Feedback = Prisma.FeedbackModel
  * 
  */
 export type BetaCode = Prisma.BetaCodeModel
+/**
+ * Model CareerPivot
+ * 
+ */
+export type CareerPivot = Prisma.CareerPivotModel

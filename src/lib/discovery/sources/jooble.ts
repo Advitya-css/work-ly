@@ -18,8 +18,21 @@ export const joobleSource: JobSourceAdapter = {
     if (!key) return [];
 
     const loc = context.homeLocation || "";
+
+    // Jooble's public API doesn't expose a documented employment-type
+    // filter, so - same idea as Adzuna's `what` bias just above it in this
+    // file tree - Part-Time Mode / Gig & Musician Mode bias the keyword
+    // search itself toward those categories rather than doing nothing.
+    let keywords = context.query || "";
+    if (context.isFreelanceMode) {
+      keywords = keywords ? `${keywords} freelance contract` : "freelance contract gig";
+    }
+    if (context.isPartTimeMode) {
+      keywords = keywords ? `${keywords} part-time` : "part-time";
+    }
+
     const body = JSON.stringify({
-      keywords: context.query || "",
+      keywords,
       location: loc,
       page: 1
     });

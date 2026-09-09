@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ export function AddFeedForm() {
           {error && <p className="text-xs text-destructive">{error}</p>}
           <div className="flex gap-2">
             <Button type="submit" size="sm" disabled={pending || !url.trim()}>
-              {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {pending && <WorklyLoader className="mr-2 h-4 w-4 animate-spin" />}
               Add Source
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsOpen(false)} disabled={pending}>

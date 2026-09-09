@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 
@@ -28,7 +29,7 @@ export function SeedDemoButton() {
   return (
     <div className="flex flex-col items-center gap-2">
       <Button type="button" variant="outline" size="sm" onClick={handleClick} disabled={pending}>
-        {pending ? <Loader2 className="animate-spin" /> : <Sparkles />}
+        {pending ? <WorklyLoader className="animate-spin" /> : <Sparkles />}
         {pending ? "Loading demo jobs…" : "Load demo opportunities"}
       </Button>
       {message && <p className="text-xs text-muted-foreground">{message}</p>}

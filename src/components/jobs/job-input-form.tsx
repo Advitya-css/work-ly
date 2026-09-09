@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useActionState, useState } from "react";
 import { Loader2, ScanSearch, AlertCircle } from "lucide-react";
 
@@ -81,7 +82,7 @@ export function JobInputForm() {
       <Button type="submit" disabled={pending} className="w-fit">
         {pending ? (
           <>
-            <Loader2 className="animate-spin" />
+            <WorklyLoader className="animate-spin" />
             Analyzing…
           </>
         ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, Plus, Trash2, Save } from "lucide-react";
 
@@ -35,7 +36,7 @@ export function StatusPicker({ application }: { application: Application }) {
   const [pending, startTransition] = useTransition();
   return (
     <div className="flex items-center gap-2">
-      {pending && <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
+      {pending && <WorklyLoader className="size-3.5 animate-spin text-muted-foreground" />}
       <Select
         value={application.status}
         onValueChange={(v) =>
@@ -153,7 +154,7 @@ export function ApplicationEditor({ application }: { application: Application })
 
       <div className="flex items-center gap-2">
         <Button type="button" size="sm" onClick={save} disabled={pending}>
-          {pending ? <Loader2 className="animate-spin" /> : <Save />}
+          {pending ? <WorklyLoader className="animate-spin" /> : <Save />}
           Save
         </Button>
         {saved && !pending && <span className="text-xs text-success">Saved</span>}
@@ -219,7 +220,7 @@ export function ContactsEditor({ application }: { application: Application }) {
         <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
       </div>
       <Button type="button" variant="outline" size="sm" className="w-fit" onClick={add} disabled={pending || !name.trim()}>
-        {pending ? <Loader2 className="animate-spin" /> : <Plus />}
+        {pending ? <WorklyLoader className="animate-spin" /> : <Plus />}
         Add contact
       </Button>
     </div>
@@ -284,7 +285,7 @@ export function InterviewsEditor({ application }: { application: Application }) 
         <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
       </div>
       <Button type="button" variant="outline" size="sm" className="w-fit" onClick={add} disabled={pending || !date}>
-        {pending ? <Loader2 className="animate-spin" /> : <Plus />}
+        {pending ? <WorklyLoader className="animate-spin" /> : <Plus />}
         Add interview
       </Button>
     </div>

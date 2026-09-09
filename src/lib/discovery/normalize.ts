@@ -54,6 +54,20 @@ function matchFirst<T>(text: string | null | undefined, patterns: [RegExp, T][])
   return null;
 }
 
+/**
+ * Classifies employment type from raw text, using the exact same patterns
+ * normalizeListing() itself applies below. Exported so an adapter's
+ * ingest() can pre-filter toward Part-Time Mode / Gig & Musician
+ * (Freelance) Mode using the identical rule that will later decide how the
+ * listing is actually classified and displayed - rather than a second,
+ * competing definition of what counts as "part-time" or "freelance". Like
+ * normalizeListing(), this never invents anything: it only reads words
+ * already present in the text it's given.
+ */
+export function classifyEmploymentTypeFromText(text: string | null | undefined): EmploymentType | null {
+  return matchFirst(text, EMPLOYMENT_PATTERNS);
+}
+
 /** Strips HTML that feed-based sources routinely embed, without pulling in a parser dependency. */
 export function stripHtml(input: string): string {
   return input

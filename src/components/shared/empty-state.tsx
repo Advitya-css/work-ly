@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ interface EmptyStateProps {
   illustration?: React.ComponentType<{ className?: string }>;
   /** Legacy single icon. Still accepted so existing call sites keep working. */
   icon?: React.ComponentType<IconProps>;
+  botImage?: boolean;
   title: string;
   description: string;
   action?: EmptyStateAction;
@@ -55,6 +57,7 @@ export function EmptyState({
   secondaryAction,
   area,
   className,
+  botImage,
 }: EmptyStateProps) {
   const accent = area ? AREA_VAR[area] : null;
   const style = accent
@@ -74,9 +77,11 @@ export function EmptyState({
         className,
       )}
     >
-      {Scene ? (
-        // Sized generously on purpose: at 76px it read as a stray icon
-        // floating in a large panel rather than as the point of the state.
+            {botImage ? (
+        <div className="relative mb-5 h-[120px] w-[120px] opacity-80 mix-blend-screen drop-shadow-md transition-opacity hover:opacity-100 animate-float">
+          <Image src="/workly-bot.png" alt="Bot" fill className="object-contain" />
+        </div>
+      ) : Scene ? (
         <Scene className="mb-5 h-[104px] w-[140px] text-[var(--area-color,var(--primary))]/70" />
       ) : (
         Icon && (

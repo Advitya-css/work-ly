@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Send, Loader2, Users, Network } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -52,7 +53,7 @@ export function AlumniNetworkingCard() {
               <Input placeholder="e.g. Stripe, Google, or Deloitte" value={target} onChange={e => setTarget(e.target.value)} />
             </div>
             <Button onClick={handleGenerate} disabled={loading || !target} className="w-full sm:w-auto gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Send className="size-4" />}
               {loading ? "Drafting Email..." : "Draft Alumni Email"}
             </Button>
           </div>

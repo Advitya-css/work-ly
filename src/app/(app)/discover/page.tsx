@@ -33,11 +33,28 @@ export default async function DiscoverPage() {
     getLatestRun(user.id),
   ]);
 
-  const jobs = rawJobs.filter(job => matchesLocationPreference(job.location, job.workMode, {
+  const jobs = rawJobs.filter(job => {
+    // Strict part-time filtering
+    if (profile.profile?.isPartTimeMode && job.employmentType === "FULL_TIME") {
+      return false;
+    }
+    // Strict Gig & Musician (Freelance) Mode filtering: this mode means
+    // real freelance/contract and gig-economy work, not an ordinary
+    // full-time role, so anything the classifier didn't actually read as
+    // CONTRACT or FREELANCE is left out rather than shown as if it matched.
+    if (
+      profile.profile?.isFreelanceMode &&
+      job.employmentType !== "CONTRACT" &&
+      job.employmentType !== "FREELANCE"
+    ) {
+      return false;
+    }
+    return matchesLocationPreference(job.location, job.workMode, {
     homeLocation: profile.profile?.location ?? null,
     preferredLocations: profile.profile?.preferredLocations ?? [],
     openToRemote: profile.profile?.openToRemote ?? true
-  }));
+    });
+  });
 
   const profileText = profileSearchText(profile);
   const candidateYears = estimateYearsExperience(profile);
@@ -65,6 +82,7 @@ export default async function DiscoverPage() {
     candidateSeniority: deriveCandidateSeniority(candidateYears, careerGoal),
     careerGoal,
     profileLocation: profile.profile?.location ?? null,
+    availability: profile.profile?.availability ?? null,
     profileValues: profile.workValues.map((v) => ({ value: v.value, confidence: v.confidence })),
   };
 

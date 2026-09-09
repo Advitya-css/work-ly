@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Loader2, Code2, Play, CheckCircle2, RefreshCw, BriefcaseBusiness } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
-        <Loader2 className="size-8 animate-spin" />
+        <WorklyLoader className="size-8 animate-spin" />
         <p>Analyzing job description and writing custom scenario...</p>
       </div>
     );
@@ -108,7 +109,7 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
               {isTechnical ? "solution.ts" : "Your Response"}
             </span>
             <Button size="sm" onClick={submitCode} disabled={evaluating} className="h-7 text-xs">
-              {evaluating ? <Loader2 className="size-3 animate-spin mr-2" /> : <Play className="size-3 mr-2" />}
+              {evaluating ? <WorklyLoader className="size-3 animate-spin mr-2" /> : <Play className="size-3 mr-2" />}
               Submit for Review
             </Button>
           </div>

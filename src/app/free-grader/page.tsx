@@ -1,10 +1,13 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Loader2, Lock, ArrowRight, ShieldCheck, FileText, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AnimatedNumber } from "@/components/shared/animated-number";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -52,7 +55,30 @@ export default function FreeGraderPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-12 sm:py-20">
-        <div className="text-center mb-12">
+
+      {pending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-32 h-32 flex items-center justify-center">
+              {/* The AI Aura */}
+              <div className="absolute inset-0 bg-primary/40 blur-3xl rounded-full animate-pulse mix-blend-screen scale-150" />
+              <div className="absolute inset-2 bg-blue-500/30 blur-2xl rounded-full animate-pulse delay-75 mix-blend-screen scale-125" />
+              
+              {/* The Bot */}
+              <div className="relative w-full h-full animate-float">
+                <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
+              </div>
+            </div>
+            <h3 className="text-xl font-bold animate-pulse text-primary">Simulating ATS filters...</h3>
+            <p className="text-sm text-muted-foreground">This takes about 5 seconds.</p>
+          </div>
+        </div>
+      )}
+
+        <div className="text-center mb-12 flex flex-col items-center">
+          <div className={`relative w-24 h-24 mb-4 drop-shadow-xl transition-all duration-300 hover:rotate-12 hover:scale-110 cursor-pointer ${pending ? "animate-pulse scale-105" : "animate-float"}`}>
+            <Image src="/workly-bot.png" alt="Work-ly Bot" fill className="object-contain" />
+          </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
             Will your resume survive the ATS?
           </h1>
@@ -69,12 +95,20 @@ export default function FreeGraderPage() {
                 <CardDescription>Paste the raw text of the role you want.</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="relative">
                 <Textarea 
                   placeholder="e.g. We are looking for a Senior Product Manager with 5+ years of experience in B2B SaaS..." 
                   className="min-h-[300px] font-mono text-sm resize-y"
                   value={jobText}
                   onChange={(e) => setJobText(e.target.value)}
                 />
+                {pending && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-md border-2 border-primary/50">
+                    <div className="absolute left-0 right-0 h-1 bg-primary/80 shadow-[0_0_15px_3px_rgba(var(--primary),0.5)] animate-scan z-10" />
+                    <div className="absolute inset-0 bg-primary/5 animate-pulse" />
+                  </div>
+                )}
+                </div>
               </CardContent>
             </Card>
 
@@ -84,12 +118,20 @@ export default function FreeGraderPage() {
                 <CardDescription>Paste the raw text of your current resume.</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="relative">
                 <Textarea 
                   placeholder="e.g. ACME Corp | Product Manager | Jan 2020 - Present..." 
                   className="min-h-[300px] font-mono text-sm resize-y"
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                 />
+                {pending && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-md border-2 border-primary/50">
+                    <div className="absolute left-0 right-0 h-1 bg-primary/80 shadow-[0_0_15px_3px_rgba(var(--primary),0.5)] animate-scan z-10" />
+                    <div className="absolute inset-0 bg-primary/5 animate-pulse" />
+                  </div>
+                )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -162,7 +204,7 @@ export default function FreeGraderPage() {
               </Alert>
             )}
             <Button size="lg" className="w-full max-w-sm font-semibold text-base" onClick={handleScore} disabled={pending}>
-              {pending ? <Loader2 className="animate-spin mr-2" /> : null}
+              {pending ? <WorklyLoader className="animate-spin mr-2" /> : null}
               {pending ? "Analyzing ATS Match..." : "Score My Resume"}
             </Button>
           </div>

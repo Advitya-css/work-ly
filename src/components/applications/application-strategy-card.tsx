@@ -1,4 +1,5 @@
 "use client";
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useState } from "react";
@@ -57,7 +58,7 @@ export function ApplicationStrategyCard({ applicationId }: ApplicationStrategyCa
         
         {loading && (
           <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin" />
+            <WorklyLoader className="size-6 animate-spin" />
             <span className="ml-3">Work-ly AI is writing your cover letter and optimizing your resume...</span>
           </div>
         )}

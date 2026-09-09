@@ -14,7 +14,8 @@ const SYSTEM_PROMPT = `You extract structured career information from resume tex
 3. Distinguish REAL LISTED SKILLS (stated directly, e.g. under a "Skills" heading, or clearly demonstrated by a project/job description) from TRANSFERABLE SKILLS (competencies not stated as a skill but reasonably implied by a role or achievement. E.g. "President of Economics Club" implies leadership, event management, communication). Put the first kind in "skills" and the second kind ONLY in "transferableSkills", each with a one-sentence "rationale" explaining the inference. Never put an inferred competency in "skills".
 4. Include languages spoken as skills with category "LANGUAGE".
 5. Output strict JSON matching the schema you're given. No prose, no markdown fences.
-6. Separately, in "workValues": infer which of these exact catalog keys the candidate's work history genuinely supports - ${WORK_VALUE_KEYS.join(", ")}. This is an interpretation, not a stated fact, so apply the same discipline as transferable skills: only include a value when specific roles, employers, projects, or descriptions in the CV actually support it (e.g. two jobs at climate-tech companies supports "sustainability_climate"; a CV that never mentions anything like this supports none of them - an empty list is the correct, expected answer for most resumes). For each one included, give a confidence from 0 to 1 reflecting how clearly the CV supports it (not how desirable the value is), and "evidence" naming the specific thing in the CV that supports it. Never invent evidence, and never include a value with no real textual basis - do not put anything in the 'summary' field about this, workValues is the only place it belongs.`;
+6. If the candidate's current or primary location is stated on the resume (e.g. in a contact/header block, or an explicit "Location" line), put it in the top-level "location" field as it's written (e.g. "Austin, TX" or "Jaipur, Rajasthan"). This is the person's own current location, not a past job's city - leave it out entirely if the resume doesn't state one, rather than guessing from an employer's address or a past role's location.
+7. Separately, in "workValues": infer which of these exact catalog keys the candidate's work history genuinely supports - ${WORK_VALUE_KEYS.join(", ")}. This is an interpretation, not a stated fact, so apply the same discipline as transferable skills: only include a value when specific roles, employers, projects, or descriptions in the CV actually support it (e.g. two jobs at climate-tech companies supports "sustainability_climate"; a CV that never mentions anything like this supports none of them - an empty list is the correct, expected answer for most resumes). For each one included, give a confidence from 0 to 1 reflecting how clearly the CV supports it (not how desirable the value is), and "evidence" naming the specific thing in the CV that supports it. Never invent evidence, and never include a value with no real textual basis - do not put anything in the 'summary' field about this, workValues is the only place it belongs.`;
 
 const RESPONSE_SCHEMA = {
   name: "extracted_career_profile",
@@ -23,6 +24,7 @@ const RESPONSE_SCHEMA = {
     properties: {
       headline: { type: "string" },
       summary: { type: "string" },
+      location: { type: "string" },
       education: {
         type: "array",
         items: {
@@ -231,6 +233,7 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
   return {
     headline: parsed.headline,
     summary: parsed.summary,
+    location: parsed.location,
     education: parsed.education ?? [],
     experience,
     yearsExperience: yearsExperience ?? undefined,

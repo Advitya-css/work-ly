@@ -66,11 +66,27 @@ export default async function DashboardPage() {
     ? await Promise.all([listDiscoveredJobsByUserId(user.id), getLatestRun(user.id)])
     : [[], null];
     
-  const discovered = rawDiscovered.filter(job => matchesLocationPreference(job.location, job.workMode, {
-    homeLocation: fullProfile.profile?.location ?? null,
-    preferredLocations: fullProfile.profile?.preferredLocations ?? [],
-    openToRemote: fullProfile.profile?.openToRemote ?? true
-  }));
+  const discovered = rawDiscovered.filter(job => {
+    // Mirrors the strict Part-Time / Gig & Musician (Freelance) filtering on
+    // the Discover page, so the dashboard's counts and top find agree with
+    // what actually shows up there instead of counting jobs the mode would
+    // then hide.
+    if (fullProfile.profile?.isPartTimeMode && job.employmentType === "FULL_TIME") {
+      return false;
+    }
+    if (
+      fullProfile.profile?.isFreelanceMode &&
+      job.employmentType !== "CONTRACT" &&
+      job.employmentType !== "FREELANCE"
+    ) {
+      return false;
+    }
+    return matchesLocationPreference(job.location, job.workMode, {
+      homeLocation: fullProfile.profile?.location ?? null,
+      preferredLocations: fullProfile.profile?.preferredLocations ?? [],
+      openToRemote: fullProfile.profile?.openToRemote ?? true
+    });
+  });
   const discoveryBuckets = bucketJobs(discovered);
   const discoveryAlert = buildAlert(latestRun, discovered);
 

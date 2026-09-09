@@ -54,6 +54,12 @@ export interface RoleCluster {
  */
 export const ROLE_CLUSTERS: RoleCluster[] = [
   {
+    aliases: ["musician", "singer", "vocalist", "artist", "band member", "performer"],
+    roles: ["Session Musician", "Vocalist", "Composer", "Audio Engineer", "Live Performer", "Gig Musician", "Music Teacher"],
+    affinitySignals: ["music", "sing", "band", "instrument", "guitar", "piano", "vocals", "choir", "gig", "tour"],
+    rationale: "Roles for performing artists and session musicians.",
+  },
+  {
     aliases: ["documentary filmmaking", "documentary", "documentary film", "factual television", "docs"],
     roles: [
       "Documentary Producer",

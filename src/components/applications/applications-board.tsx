@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { LayoutGrid, Table2, GripVertical, ArrowRight, Loader2 } from "lucide-react";
@@ -344,7 +345,7 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
 
       {pending && (
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Loader2 className="size-3 animate-spin" />
+          <WorklyLoader className="size-3 animate-spin" />
           Saving…
         </p>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2 } from "lucide-react";
@@ -163,7 +164,7 @@ export function NewApplicationDialog() {
             Cancel
           </Button>
           <Button type="button" onClick={submit} disabled={pending || !roleTitle.trim()}>
-            {pending && <Loader2 className="animate-spin" />}
+            {pending && <WorklyLoader className="animate-spin" />}
             Add application
           </Button>
         </DialogFooter>

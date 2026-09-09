@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 
@@ -123,7 +124,7 @@ function DangerAction({
                 })
               }
             >
-              {pending && <Loader2 className="animate-spin" />}
+              {pending && <WorklyLoader className="animate-spin" />}
               {buttonLabel}
             </Button>
           </DialogFooter>

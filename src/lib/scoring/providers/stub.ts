@@ -841,7 +841,31 @@ function analyzeFit({
   // Hard Industry Gate: If no core concepts overlap, obliterate the score (0.01 multiplier).
   // This completely removes completely irrelevant roles (like Nursing for a City Planner) 
   // from ever passing the discovery thresholds.
+  
+  // Part-Time & Schedule Penalty
+  let schedulePenalty = 1.0;
+  const isPartTime = profile.profile?.isPartTimeMode || false;
+  const availability = profile.profile?.availability?.toLowerCase() || "";
+  const jobText = ((job.title || "") + " " + (job.description || "")).toLowerCase();
+  
+  if (isPartTime || availability) {
+    const isFlexible = jobText.includes("flexible hours") || jobText.includes("asynchronous") || jobText.includes("work when you want") || jobText.includes("choose your own hours");
+    const isRigid = jobText.includes("9 to 5") || jobText.includes("9-5") || jobText.includes("core hours") || jobText.includes("business hours") || jobText.includes("est overlap");
+    
+    if (isRigid && !isFlexible) {
+      schedulePenalty = 0.2; // Massive penalty for rigid 9-5 jobs if they requested part-time/availability
+    } else if (isFlexible) {
+      schedulePenalty = 1.1; // Small boost
+    }
+    
+    // If they strictly want weekends/evenings and the job says monday-friday
+    if ((availability.includes("weekend") || availability.includes("evening")) && (jobText.includes("monday to friday") || jobText.includes("mon-fri") || jobText.includes("mon - fri"))) {
+      schedulePenalty = 0.1;
+    }
+  }
+
   const severeMismatchPenalty = (titleWords.size > 0 && !hasIntersection) ? 0.01 : 1.0;
+
 
 
   const skills = scoreSkills(job, profile.skills);

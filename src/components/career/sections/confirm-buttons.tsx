@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ export function ConfirmEntityButton({ id, type }: ConfirmButtonProps) {
       disabled={pending}
       title="Confirm this entry is correct"
     >
-      {pending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+      {pending ? <WorklyLoader className="size-4 animate-spin" /> : <Check className="size-4" />}
       <span className="ml-2">Confirm</span>
     </Button>
   );

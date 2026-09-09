@@ -1,7 +1,10 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
+import { ScrambleText } from "@/components/shared/scramble-text";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   Loader2,
@@ -270,7 +273,7 @@ export function DiscoveryBoard({
             searchMode === "major" ? "bg-green-600 hover:bg-green-700 text-white" :
             ""
           }>
-            {pending ? <Loader2 className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : searchMode === "company" || searchMode === "major" ? <Search className="size-4" /> : <Radar />)}
+            {pending ? <WorklyLoader className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : searchMode === "company" || searchMode === "major" ? <Search className="size-4" /> : <Radar />)}
             {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : searchMode === "company" ? "Search Company" : searchMode === "major" ? "Find Roles" : "Discover")}
           </Button>
           <div className="flex items-center gap-2 border rounded-md px-3 py-1.5 bg-background shadow-sm">
@@ -459,11 +462,14 @@ export function DiscoveryBoard({
       )}
       
       {visible.length === 0 ? (
-        <Card>
-          <CardContent className="px-6 py-10 text-center">
-            <p className="text-sm text-muted-foreground">
+        <Card className="hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+          <CardContent className="px-6 py-16 text-center flex flex-col items-center justify-center gap-4">
+            <div className="relative w-32 h-32 opacity-70 hover:opacity-100 transition-opacity">
+              <Image src="/workly-bot.png" alt="Bot" fill className="object-contain" />
+            </div>
+            <p className="text-sm text-muted-foreground font-medium">
               {jobs.length === 0
-                ? "Nothing discovered yet. Press Discover to run your sources."
+                ? "Nothing discovered yet. I'm ready to find you jobs, just press Discover!"
                 : activeBucket == null && searchResult.results.length > 0
                 ? "No highly relevant listings found. Check the Low Priority bucket to review filtered jobs, or run a new search."
                 : "No listings match this search."}
@@ -534,7 +540,9 @@ function DiscoveryCard({
               {bucket && (
                 <bucket.icon className={cn("size-4 shrink-0", bucket.tone)} aria-label={bucket.label} />
               )}
-              <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{job.title}</p>
+              <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">
+                {bucket?.key === "applyNow" ? <ScrambleText text={job.title} active={true} /> : job.title}
+              </p>
               {job.fitScore != null &&
                 // fitCoverage is null for rows scored before this field
                 // existed - fall back to showing the score rather than
@@ -614,7 +622,7 @@ function DiscoveryCard({
             </Button>
           ) : (
             <Button type="button" size="sm" onClick={onTrack} disabled={pending}>
-              {pending ? <Loader2 className="animate-spin" /> : null}
+              {pending ? <WorklyLoader className="animate-spin" /> : null}
               Analyze &amp; track
             </Button>
           )}

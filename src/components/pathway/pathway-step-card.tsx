@@ -1,4 +1,5 @@
 "use client";
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useState, useTransition } from "react";
@@ -58,7 +59,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
         >
           {step.status === "COMPLETED" ? <Check className="size-4" /> : step.order}
         </div>
-        {!isLast && <div className="w-px flex-1 bg-border" aria-hidden />}
+        {!isLast && <div className="relative w-px flex-1 bg-border overflow-hidden" aria-hidden><div className="absolute left-0 w-full h-10 bg-gradient-to-b from-transparent via-primary to-transparent animate-circuit shadow-[0_0_8px_2px_rgba(var(--primary),0.5)]" /></div>}
       </div>
 
       {/* Body */}
@@ -152,7 +153,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
                 disabled={pending}
                 onClick={() => startTransition(() => setStepStatusAction(step.id, "COMPLETED"))}
               >
-                {pending ? <Loader2 className="animate-spin" /> : <Check />}
+                {pending ? <WorklyLoader className="animate-spin" /> : <Check />}
                 Complete
               </Button>
             )}
@@ -244,7 +245,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
                 })
               }
             >
-              {pending && <Loader2 className="animate-spin" />}
+              {pending && <WorklyLoader className="animate-spin" />}
               Save
             </Button>
           </DialogFooter>
@@ -275,7 +276,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
                 })
               }
             >
-              {pending && <Loader2 className="animate-spin" />}
+              {pending && <WorklyLoader className="animate-spin" />}
               Save note
             </Button>
           </DialogFooter>

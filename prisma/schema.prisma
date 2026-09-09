@@ -45,6 +45,7 @@ model User {
   lastAlertSentAt DateTime?
 
   careerProfile    CareerProfile?
+  careerPivot      CareerPivot?
   careerGoals      CareerGoal[]
   documents        Document[]
   jobs             Job[]
@@ -1308,4 +1309,27 @@ model BetaCode {
   createdAt    DateTime  @default(now())
 
   @@map("beta_codes")
+}
+
+model CareerPivot {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetRole     String
+  targetIndustry String
+
+  // The AI output stored as JSON
+  competencyMapping Json?
+  translatedBullets Json?
+  hardGaps          Json?
+  superpowerPitch   String?
+  
+  beforeScore       Int?
+  afterScore        Int?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("career_pivots")
 }

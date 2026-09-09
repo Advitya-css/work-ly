@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Plus, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -77,7 +78,7 @@ export function AddUniversityFeedForm() {
         />
       </div>
       <Button type="submit" disabled={pending || !url.trim()} className="gap-2">
-        {pending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+        {pending ? <WorklyLoader className="size-4 animate-spin" /> : <Plus className="size-4" />}
         Add feed
       </Button>
       {error && <p className="text-sm text-destructive sm:basis-full">{error}</p>}

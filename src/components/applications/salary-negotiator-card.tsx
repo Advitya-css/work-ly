@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Handshake, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +77,7 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
               />
             </div>
             <Button onClick={handleGenerate} disabled={loading || !baseOffer || !targetSalary} className="w-full bg-green-600 hover:bg-green-700 text-white gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
               Generate Counter-Offer Email
             </Button>
             {error && (

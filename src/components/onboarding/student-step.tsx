@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { GraduationCap, MapPin, BookOpen, Loader2, Target } from "lucide-react";
 
@@ -104,7 +105,7 @@ export function StudentStep({ countries }: { countries: SupportedStudentCountry[
             </div>
 
             <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+              {loading ? <WorklyLoader className="mr-2 size-4 animate-spin" /> : null}
               Complete Setup
             </Button>
           </form>

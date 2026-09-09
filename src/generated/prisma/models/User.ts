@@ -345,6 +345,7 @@ export type UserWhereInput = {
   proUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastAlertSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   careerProfile?: Prisma.XOR<Prisma.CareerProfileNullableScalarRelationFilter, Prisma.CareerProfileWhereInput> | null
+  careerPivot?: Prisma.XOR<Prisma.CareerPivotNullableScalarRelationFilter, Prisma.CareerPivotWhereInput> | null
   careerGoals?: Prisma.CareerGoalListRelationFilter
   documents?: Prisma.DocumentListRelationFilter
   jobs?: Prisma.JobListRelationFilter
@@ -383,6 +384,7 @@ export type UserOrderByWithRelationInput = {
   proUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   lastAlertSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   careerProfile?: Prisma.CareerProfileOrderByWithRelationInput
+  careerPivot?: Prisma.CareerPivotOrderByWithRelationInput
   careerGoals?: Prisma.CareerGoalOrderByRelationAggregateInput
   documents?: Prisma.DocumentOrderByRelationAggregateInput
   jobs?: Prisma.JobOrderByRelationAggregateInput
@@ -424,6 +426,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   proUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastAlertSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   careerProfile?: Prisma.XOR<Prisma.CareerProfileNullableScalarRelationFilter, Prisma.CareerProfileWhereInput> | null
+  careerPivot?: Prisma.XOR<Prisma.CareerPivotNullableScalarRelationFilter, Prisma.CareerPivotWhereInput> | null
   careerGoals?: Prisma.CareerGoalListRelationFilter
   documents?: Prisma.DocumentListRelationFilter
   jobs?: Prisma.JobListRelationFilter
@@ -518,6 +521,7 @@ export type UserCreateInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -556,6 +560,7 @@ export type UserUncheckedCreateInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -594,6 +599,7 @@ export type UserUpdateInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -632,6 +638,7 @@ export type UserUncheckedUpdateInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -1028,6 +1035,20 @@ export type UserUpdateOneRequiredWithoutFeedbacksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFeedbacksInput, Prisma.UserUpdateWithoutFeedbacksInput>, Prisma.UserUncheckedUpdateWithoutFeedbacksInput>
 }
 
+export type UserCreateNestedOneWithoutCareerPivotInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCareerPivotInput, Prisma.UserUncheckedCreateWithoutCareerPivotInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCareerPivotInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCareerPivotNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCareerPivotInput, Prisma.UserUncheckedCreateWithoutCareerPivotInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCareerPivotInput
+  upsert?: Prisma.UserUpsertWithoutCareerPivotInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCareerPivotInput, Prisma.UserUpdateWithoutCareerPivotInput>, Prisma.UserUncheckedUpdateWithoutCareerPivotInput>
+}
+
 export type UserCreateWithoutDocumentsInput = {
   id?: string
   email: string
@@ -1051,6 +1072,7 @@ export type UserCreateWithoutDocumentsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
@@ -1088,6 +1110,7 @@ export type UserUncheckedCreateWithoutDocumentsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
@@ -1141,6 +1164,7 @@ export type UserUpdateWithoutDocumentsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
@@ -1178,6 +1202,7 @@ export type UserUncheckedUpdateWithoutDocumentsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
@@ -1214,6 +1239,7 @@ export type UserCreateWithoutCareerProfileInput = {
   termsVersion?: string | null
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -1251,6 +1277,7 @@ export type UserUncheckedCreateWithoutCareerProfileInput = {
   termsVersion?: string | null
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -1304,6 +1331,7 @@ export type UserUpdateWithoutCareerProfileInput = {
   termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -1341,6 +1369,7 @@ export type UserUncheckedUpdateWithoutCareerProfileInput = {
   termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -1379,6 +1408,7 @@ export type UserCreateWithoutCareerGoalsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
@@ -1416,6 +1446,7 @@ export type UserUncheckedCreateWithoutCareerGoalsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
@@ -1469,6 +1500,7 @@ export type UserUpdateWithoutCareerGoalsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
@@ -1506,6 +1538,7 @@ export type UserUncheckedUpdateWithoutCareerGoalsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
@@ -1543,6 +1576,7 @@ export type UserCreateWithoutJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
@@ -1580,6 +1614,7 @@ export type UserUncheckedCreateWithoutJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
@@ -1633,6 +1668,7 @@ export type UserUpdateWithoutJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
@@ -1670,6 +1706,7 @@ export type UserUncheckedUpdateWithoutJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
@@ -1707,6 +1744,7 @@ export type UserCreateWithoutJobAnalysesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -1744,6 +1782,7 @@ export type UserUncheckedCreateWithoutJobAnalysesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -1797,6 +1836,7 @@ export type UserUpdateWithoutJobAnalysesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -1834,6 +1874,7 @@ export type UserUncheckedUpdateWithoutJobAnalysesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -1871,6 +1912,7 @@ export type UserCreateWithoutOpportunitiesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -1908,6 +1950,7 @@ export type UserUncheckedCreateWithoutOpportunitiesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -1961,6 +2004,7 @@ export type UserUpdateWithoutOpportunitiesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -1998,6 +2042,7 @@ export type UserUncheckedUpdateWithoutOpportunitiesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2035,6 +2080,7 @@ export type UserCreateWithoutDreamJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2072,6 +2118,7 @@ export type UserUncheckedCreateWithoutDreamJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2125,6 +2172,7 @@ export type UserUpdateWithoutDreamJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2162,6 +2210,7 @@ export type UserUncheckedUpdateWithoutDreamJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2199,6 +2248,7 @@ export type UserCreateWithoutDreamJobAnalysesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2236,6 +2286,7 @@ export type UserUncheckedCreateWithoutDreamJobAnalysesInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2289,6 +2340,7 @@ export type UserUpdateWithoutDreamJobAnalysesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2326,6 +2378,7 @@ export type UserUncheckedUpdateWithoutDreamJobAnalysesInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2363,6 +2416,7 @@ export type UserCreateWithoutCareerPathwaysInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2400,6 +2454,7 @@ export type UserUncheckedCreateWithoutCareerPathwaysInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2453,6 +2508,7 @@ export type UserUpdateWithoutCareerPathwaysInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2490,6 +2546,7 @@ export type UserUncheckedUpdateWithoutCareerPathwaysInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2527,6 +2584,7 @@ export type UserCreateWithoutApplicationsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2564,6 +2622,7 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2617,6 +2676,7 @@ export type UserUpdateWithoutApplicationsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2654,6 +2714,7 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2691,6 +2752,7 @@ export type UserCreateWithoutJobSourceConfigsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2728,6 +2790,7 @@ export type UserUncheckedCreateWithoutJobSourceConfigsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2781,6 +2844,7 @@ export type UserUpdateWithoutJobSourceConfigsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2818,6 +2882,7 @@ export type UserUncheckedUpdateWithoutJobSourceConfigsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -2855,6 +2920,7 @@ export type UserCreateWithoutDiscoveredJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -2892,6 +2958,7 @@ export type UserUncheckedCreateWithoutDiscoveredJobsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -2945,6 +3012,7 @@ export type UserUpdateWithoutDiscoveredJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -2982,6 +3050,7 @@ export type UserUncheckedUpdateWithoutDiscoveredJobsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -3019,6 +3088,7 @@ export type UserCreateWithoutDiscoveryRunsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -3056,6 +3126,7 @@ export type UserUncheckedCreateWithoutDiscoveryRunsInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -3109,6 +3180,7 @@ export type UserUpdateWithoutDiscoveryRunsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -3146,6 +3218,7 @@ export type UserUncheckedUpdateWithoutDiscoveryRunsInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -3183,6 +3256,7 @@ export type UserCreateWithoutFeedbacksInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobCreateNestedManyWithoutUserInput
@@ -3220,6 +3294,7 @@ export type UserUncheckedCreateWithoutFeedbacksInput = {
   proUntil?: Date | string | null
   lastAlertSentAt?: Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerPivot?: Prisma.CareerPivotUncheckedCreateNestedOneWithoutUserInput
   careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
   documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
   jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
@@ -3273,6 +3348,7 @@ export type UserUpdateWithoutFeedbacksInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
@@ -3310,6 +3386,7 @@ export type UserUncheckedUpdateWithoutFeedbacksInput = {
   proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerPivot?: Prisma.CareerPivotUncheckedUpdateOneWithoutUserNestedInput
   careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
   documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
   jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
@@ -3317,6 +3394,174 @@ export type UserUncheckedUpdateWithoutFeedbacksInput = {
   opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
   dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
   dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
+  applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
+  discoveredJobs?: Prisma.DiscoveredJobUncheckedUpdateManyWithoutUserNestedInput
+  discoveryRuns?: Prisma.DiscoveryRunUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCareerPivotInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+  onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
+  lastAlertSentAt?: Date | string | null
+  careerProfile?: Prisma.CareerProfileCreateNestedOneWithoutUserInput
+  careerGoals?: Prisma.CareerGoalCreateNestedManyWithoutUserInput
+  documents?: Prisma.DocumentCreateNestedManyWithoutUserInput
+  jobs?: Prisma.JobCreateNestedManyWithoutUserInput
+  jobAnalyses?: Prisma.JobAnalysisCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityCreateNestedManyWithoutUserInput
+  dreamJobs?: Prisma.DreamJobCreateNestedManyWithoutUserInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackCreateNestedManyWithoutUserInput
+  careerPathways?: Prisma.CareerPathwayCreateNestedManyWithoutUserInput
+  applications?: Prisma.ApplicationCreateNestedManyWithoutUserInput
+  jobSourceConfigs?: Prisma.JobSourceConfigCreateNestedManyWithoutUserInput
+  discoveredJobs?: Prisma.DiscoveredJobCreateNestedManyWithoutUserInput
+  discoveryRuns?: Prisma.DiscoveryRunCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCareerPivotInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+  onboardedAt?: Date | string | null
+  emailVerified?: boolean
+  verificationToken?: string | null
+  verificationTokenExpiresAt?: Date | string | null
+  verificationCodeHash?: string | null
+  verificationCodeExpiresAt?: Date | string | null
+  verificationAttempts?: number
+  resetPasswordToken?: string | null
+  resetPasswordTokenExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  isPro?: boolean
+  termsAcceptedAt?: Date | string | null
+  termsVersion?: string | null
+  proUntil?: Date | string | null
+  lastAlertSentAt?: Date | string | null
+  careerProfile?: Prisma.CareerProfileUncheckedCreateNestedOneWithoutUserInput
+  careerGoals?: Prisma.CareerGoalUncheckedCreateNestedManyWithoutUserInput
+  documents?: Prisma.DocumentUncheckedCreateNestedManyWithoutUserInput
+  jobs?: Prisma.JobUncheckedCreateNestedManyWithoutUserInput
+  jobAnalyses?: Prisma.JobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  opportunities?: Prisma.OpportunityUncheckedCreateNestedManyWithoutUserInput
+  dreamJobs?: Prisma.DreamJobUncheckedCreateNestedManyWithoutUserInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedCreateNestedManyWithoutUserInput
+  feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutUserInput
+  careerPathways?: Prisma.CareerPathwayUncheckedCreateNestedManyWithoutUserInput
+  applications?: Prisma.ApplicationUncheckedCreateNestedManyWithoutUserInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUncheckedCreateNestedManyWithoutUserInput
+  discoveredJobs?: Prisma.DiscoveredJobUncheckedCreateNestedManyWithoutUserInput
+  discoveryRuns?: Prisma.DiscoveryRunUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCareerPivotInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCareerPivotInput, Prisma.UserUncheckedCreateWithoutCareerPivotInput>
+}
+
+export type UserUpsertWithoutCareerPivotInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCareerPivotInput, Prisma.UserUncheckedUpdateWithoutCareerPivotInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCareerPivotInput, Prisma.UserUncheckedCreateWithoutCareerPivotInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCareerPivotInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCareerPivotInput, Prisma.UserUncheckedUpdateWithoutCareerPivotInput>
+}
+
+export type UserUpdateWithoutCareerPivotInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerProfile?: Prisma.CareerProfileUpdateOneWithoutUserNestedInput
+  careerGoals?: Prisma.CareerGoalUpdateManyWithoutUserNestedInput
+  documents?: Prisma.DocumentUpdateManyWithoutUserNestedInput
+  jobs?: Prisma.JobUpdateManyWithoutUserNestedInput
+  jobAnalyses?: Prisma.JobAnalysisUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUpdateManyWithoutUserNestedInput
+  dreamJobs?: Prisma.DreamJobUpdateManyWithoutUserNestedInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUpdateManyWithoutUserNestedInput
+  careerPathways?: Prisma.CareerPathwayUpdateManyWithoutUserNestedInput
+  applications?: Prisma.ApplicationUpdateManyWithoutUserNestedInput
+  jobSourceConfigs?: Prisma.JobSourceConfigUpdateManyWithoutUserNestedInput
+  discoveredJobs?: Prisma.DiscoveredJobUpdateManyWithoutUserNestedInput
+  discoveryRuns?: Prisma.DiscoveryRunUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCareerPivotInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  onboardedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  resetPasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordTokenExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  isPro?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  proUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastAlertSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  careerProfile?: Prisma.CareerProfileUncheckedUpdateOneWithoutUserNestedInput
+  careerGoals?: Prisma.CareerGoalUncheckedUpdateManyWithoutUserNestedInput
+  documents?: Prisma.DocumentUncheckedUpdateManyWithoutUserNestedInput
+  jobs?: Prisma.JobUncheckedUpdateManyWithoutUserNestedInput
+  jobAnalyses?: Prisma.JobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  opportunities?: Prisma.OpportunityUncheckedUpdateManyWithoutUserNestedInput
+  dreamJobs?: Prisma.DreamJobUncheckedUpdateManyWithoutUserNestedInput
+  dreamJobAnalyses?: Prisma.DreamJobAnalysisUncheckedUpdateManyWithoutUserNestedInput
+  feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutUserNestedInput
   careerPathways?: Prisma.CareerPathwayUncheckedUpdateManyWithoutUserNestedInput
   applications?: Prisma.ApplicationUncheckedUpdateManyWithoutUserNestedInput
   jobSourceConfigs?: Prisma.JobSourceConfigUncheckedUpdateManyWithoutUserNestedInput
@@ -3486,6 +3731,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   proUntil?: boolean
   lastAlertSentAt?: boolean
   careerProfile?: boolean | Prisma.User$careerProfileArgs<ExtArgs>
+  careerPivot?: boolean | Prisma.User$careerPivotArgs<ExtArgs>
   careerGoals?: boolean | Prisma.User$careerGoalsArgs<ExtArgs>
   documents?: boolean | Prisma.User$documentsArgs<ExtArgs>
   jobs?: boolean | Prisma.User$jobsArgs<ExtArgs>
@@ -3577,6 +3823,7 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "name" | "avatarUrl" | "onboardedAt" | "emailVerified" | "verificationToken" | "verificationTokenExpiresAt" | "verificationCodeHash" | "verificationCodeExpiresAt" | "verificationAttempts" | "resetPasswordToken" | "resetPasswordTokenExpiresAt" | "createdAt" | "updatedAt" | "isPro" | "termsAcceptedAt" | "termsVersion" | "proUntil" | "lastAlertSentAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   careerProfile?: boolean | Prisma.User$careerProfileArgs<ExtArgs>
+  careerPivot?: boolean | Prisma.User$careerPivotArgs<ExtArgs>
   careerGoals?: boolean | Prisma.User$careerGoalsArgs<ExtArgs>
   documents?: boolean | Prisma.User$documentsArgs<ExtArgs>
   jobs?: boolean | Prisma.User$jobsArgs<ExtArgs>
@@ -3599,6 +3846,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     careerProfile: Prisma.$CareerProfilePayload<ExtArgs> | null
+    careerPivot: Prisma.$CareerPivotPayload<ExtArgs> | null
     careerGoals: Prisma.$CareerGoalPayload<ExtArgs>[]
     documents: Prisma.$DocumentPayload<ExtArgs>[]
     jobs: Prisma.$JobPayload<ExtArgs>[]
@@ -4030,6 +4278,7 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   careerProfile<T extends Prisma.User$careerProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$careerProfileArgs<ExtArgs>>): Prisma.Prisma__CareerProfileClient<runtime.Types.Result.GetResult<Prisma.$CareerProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  careerPivot<T extends Prisma.User$careerPivotArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$careerPivotArgs<ExtArgs>>): Prisma.Prisma__CareerPivotClient<runtime.Types.Result.GetResult<Prisma.$CareerPivotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   careerGoals<T extends Prisma.User$careerGoalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$careerGoalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CareerGoalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   documents<T extends Prisma.User$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   jobs<T extends Prisma.User$jobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4502,6 +4751,25 @@ export type User$careerProfileArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   include?: Prisma.CareerProfileInclude<ExtArgs> | null
   where?: Prisma.CareerProfileWhereInput
+}
+
+/**
+ * User.careerPivot
+ */
+export type User$careerPivotArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CareerPivot
+   */
+  select?: Prisma.CareerPivotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CareerPivot
+   */
+  omit?: Prisma.CareerPivotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CareerPivotInclude<ExtArgs> | null
+  where?: Prisma.CareerPivotWhereInput
 }
 
 /**

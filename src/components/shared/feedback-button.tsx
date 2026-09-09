@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { MessageSquare, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,7 @@ export function FeedbackButton() {
               onChange={(e) => setMessage(e.target.value)}
             />
             <Button onClick={handleSubmit} disabled={loading || !message.trim()} className="w-full">
-              {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {loading && <WorklyLoader className="mr-2 size-4 animate-spin" />}
               Submit Feedback
             </Button>
           </div>

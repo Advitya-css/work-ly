@@ -1,5 +1,29 @@
 import { fetchWithGuards, sourceDefaults, asString } from "@/lib/discovery/sources/base";
+import { classifyEmploymentTypeFromText } from "@/lib/discovery/normalize";
 import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discovery/types";
+
+/**
+ * Local mode filter for Part-Time Mode / Gig & Musician (Freelance) Mode.
+ *
+ * None of these boards expose an employment-type search parameter, so
+ * without this, turning either mode on had no effect: the first N listings
+ * a board happened to return (almost always full-time roles) filled up
+ * `context.limit` before a real part-time or freelance listing further down
+ * the list ever got a chance. The only honest way to bias toward those
+ * categories is to read the same text a listing will eventually be
+ * classified from (title, whatever type-ish field the source provides, and
+ * description) with the exact classifier normalize.ts uses - never
+ * inventing a category the text doesn't itself support. A listing that
+ * can't be read as PART_TIME (for Part-Time Mode) or CONTRACT/FREELANCE
+ * (for Gig & Musician Mode) is left out rather than guessed into place.
+ */
+function passesModeFilter(haystack: string, context: Pick<IngestContext, "isPartTimeMode" | "isFreelanceMode">): boolean {
+  if (!context.isPartTimeMode && !context.isFreelanceMode) return true;
+  const type = classifyEmploymentTypeFromText(haystack);
+  const matchesPartTime = Boolean(context.isPartTimeMode) && type === "PART_TIME";
+  const matchesFreelance = Boolean(context.isFreelanceMode) && (type === "FREELANCE" || type === "CONTRACT");
+  return matchesPartTime || matchesFreelance;
+}
 
 /**
  * KEYLESS PUBLIC JOB BOARDS.
@@ -55,13 +79,20 @@ export const arbeitnowSource: JobSourceAdapter = {
     const jobs = parsed.data ?? [];
 
     const keyword = context.query?.toLowerCase().trim();
-    const filtered = keyword
+    const keywordFiltered = keyword
       ? jobs.filter((job) =>
           [job.title, job.company_name, ...(job.tags ?? [])]
             .filter((field): field is string => Boolean(field))
             .some((field) => field.toLowerCase().includes(keyword)),
         )
       : jobs;
+
+    const filtered = keywordFiltered.filter((job) =>
+      passesModeFilter(
+        [job.title, job.job_types?.join(" "), job.description].filter(Boolean).join(" \n "),
+        context,
+      ),
+    );
 
     return filtered.slice(0, context.limit).map((job) => ({
       externalId: `arbeitnow:${job.slug ?? job.url ?? job.title}`,
@@ -91,7 +122,10 @@ export const remotiveSource: JobSourceAdapter = {
     const url = keyword ? `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(keyword)}` : "https://remotive.com/api/remote-jobs?limit=100";
     const body = await fetchWithGuards(url);
     const parsed = JSON.parse(body);
-    const jobs = parsed.jobs ?? [];
+    const rawJobs = parsed.jobs ?? [];
+    const jobs = rawJobs.filter((job: any) =>
+      passesModeFilter([job.title, job.job_type, job.description].filter(Boolean).join(" \n "), context),
+    );
     return jobs.slice(0, context.limit).map((job: any) => ({
       externalId: `remotive:${job.id}`,
       title: asString(job.title) ?? "Untitled role",
@@ -143,6 +177,9 @@ export const jobicySource: JobSourceAdapter = {
         textOf(j.jobIndustry).toLowerCase().includes(kw)
       );
     }
+    jobs = jobs.filter((j: any) =>
+      passesModeFilter([textOf(j.jobTitle), textOf(j.jobType), j.jobDescription].filter(Boolean).join(" \n "), context),
+    );
     return jobs.map((job: any) => ({
       externalId: `jobicy:${job.id}`,
       title: asString(job.jobTitle) ?? "Untitled role",
@@ -183,6 +220,9 @@ export const himalayasSource: JobSourceAdapter = {
         textOf(j.excerpt).toLowerCase().includes(kw)
       );
     }
+    jobs = jobs.filter((j: any) =>
+      passesModeFilter([textOf(j.title), textOf(j.employmentType), j.description ?? j.excerpt].filter(Boolean).join(" \n "), context),
+    );
     return jobs.map((job: any) => ({
       externalId: `himalayas:${job.guid ?? job.applicationLink}`,
       title: asString(job.title) ?? "Untitled role",
@@ -240,7 +280,14 @@ export const museSource: JobSourceAdapter = {
         textOf(j.contents).toLowerCase().includes(keyword)
       );
     }
-    
+
+    filtered = filtered.filter((j: any) =>
+      passesModeFilter(
+        [textOf(j.name), textOf(j.type), j.contents].filter(Boolean).join(" \n "),
+        context,
+      ),
+    );
+
     return filtered.slice(0, context.limit).map((job: any) => ({
       externalId: `themuse:${job.id}`,
       title: asString(job.name) ?? "Untitled role",
@@ -278,7 +325,14 @@ export const remoteokSource: JobSourceAdapter = {
         (j.tags && j.tags.some((t: string) => t.toLowerCase().includes(kw)))
       );
     }
-    
+
+    jobs = jobs.filter((j: any) =>
+      passesModeFilter(
+        [textOf(j.position), j.tags?.join(" "), j.description].filter(Boolean).join(" \n "),
+        context,
+      ),
+    );
+
     return jobs.slice(0, context.limit).map((job: any) => ({
       externalId: `remoteok:${job.id}`,
       title: asString(job.position) ?? "Untitled role",
@@ -317,7 +371,14 @@ export const workingNomadsSource: JobSourceAdapter = {
         textOf(j.tags).toLowerCase().includes(kw)
       );
     }
-    
+
+    filtered = filtered.filter((j: any) =>
+      passesModeFilter(
+        [textOf(j.title), textOf(j.tags), j.description].filter(Boolean).join(" \n "),
+        context,
+      ),
+    );
+
     return filtered.slice(0, context.limit).map((job: any) => ({
       externalId: `workingnomads:${job.url}`,
       title: asString(job.title) ?? "Untitled role",

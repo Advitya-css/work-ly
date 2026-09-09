@@ -1,6 +1,7 @@
 
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Loader2, Sparkles, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,7 @@ export function RunStudentDiscoveryButton({ type }: { type: StudentDiscoveryType
   return (
     <div className="flex flex-col gap-2">
       <Button onClick={handleRun} disabled={loading} className="w-fit gap-2">
-        {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+        {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
         {loading ? "Discovering Local Roles..." : "Auto-Discover Roles"}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}

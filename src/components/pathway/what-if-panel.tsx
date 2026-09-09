@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { FlaskConical, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -75,7 +76,7 @@ export function WhatIfPanel({ dreamJobId }: { dreamJobId: string }) {
             }}
           />
           <Button type="button" size="sm" onClick={run} disabled={pending || !value.trim()}>
-            {pending ? <Loader2 className="animate-spin" /> : <FlaskConical />}
+            {pending ? <WorklyLoader className="animate-spin" /> : <FlaskConical />}
             Simulate
           </Button>
         </div>

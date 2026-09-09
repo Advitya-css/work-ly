@@ -1,7 +1,9 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useCallback, useRef, useState } from "react";
-import { FileText, Loader2, UploadCloud, AlertCircle, CheckCircle2, X } from "lucide-react";
+import Link from "next/link";
+import { FileText, Loader2, UploadCloud, AlertCircle, CheckCircle2, X, Sparkles, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -9,8 +11,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { validateResumeFile, MAX_RESUME_SIZE_BYTES } from "@/lib/validations/document";
 import { saveLocationAction } from "@/lib/career/actions";
+import { runDiscoveryAction } from "@/lib/discovery/actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import type { ParseDocumentResult } from "@/lib/career/parse-document";
+
+type DiscoveryPromptState =
+  | { kind: "idle" }
+  | { kind: "running" }
+  | { kind: "found"; count: number }
+  | { kind: "none" };
 
 type Status = "idle" | "dragover" | "uploading" | "parsing" | "success" | "error";
 
@@ -53,6 +62,7 @@ export function ResumeUploader({
   const [fileName, setFileName] = useState<string | null>(null);
   const [extractedLocation, setExtractedLocation] = useState<string | null>(null);
   const [locationSaving, setLocationSaving] = useState(false);
+  const [discoveryPrompt, setDiscoveryPrompt] = useState<DiscoveryPromptState>({ kind: "idle" });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(async (file: File) => {
@@ -85,6 +95,26 @@ export function ResumeUploader({
         setExtractedLocation(location);
       }
       onComplete?.(parseBody as ParseDocumentResult);
+
+      // The user shouldn't have to type a keyword to see what they came
+      // here for: as soon as the resume is read, look for their best
+      // matches in the background and surface a way to see them, reusing
+      // the same rate-limited action and no-query "smart default" search
+      // (see suggestIdealJobSearches in lib/ai/providers/interest-titles.ts)
+      // the manual Discover button already uses. Best-effort only - a
+      // failure or an exhausted daily limit here shouldn't disrupt an
+      // otherwise-successful resume upload, so it's swallowed rather than
+      // surfaced as an error.
+      setDiscoveryPrompt({ kind: "running" });
+      runDiscoveryAction()
+        .then((result) => {
+          if (result.error) {
+            setDiscoveryPrompt({ kind: "none" });
+            return;
+          }
+          setDiscoveryPrompt({ kind: "found", count: result.found ?? 0 });
+        })
+        .catch(() => setDiscoveryPrompt({ kind: "none" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("error");
@@ -96,6 +126,7 @@ export function ResumeUploader({
     setError(null);
     setProgress(0);
     setFileName(null);
+    setDiscoveryPrompt({ kind: "idle" });
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -176,7 +207,7 @@ export function ResumeUploader({
 
         {status === "parsing" && (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <WorklyLoader className="size-6 animate-spin text-primary" />
             <p className="text-sm font-medium text-foreground">Reading your resume…</p>
             <p className="text-xs text-muted-foreground">This usually takes a few seconds.</p>
           </div>
@@ -202,6 +233,33 @@ export function ResumeUploader({
           </AlertDescription>
         </Alert>
       )}
+
+      {status === "success" && discoveryPrompt.kind === "running" && (
+        <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <WorklyLoader className="size-4 animate-spin" />
+          Finding your best matches…
+        </div>
+      )}
+
+      {status === "success" && discoveryPrompt.kind === "found" && (
+        <Alert className="mt-3">
+          <Sparkles className="size-4" />
+          <AlertDescription className="flex w-full flex-wrap items-center justify-between gap-3">
+            <span>
+              {discoveryPrompt.count > 0
+                ? `Found ${discoveryPrompt.count} opportunit${discoveryPrompt.count === 1 ? "y" : "ies"} matched to your resume.`
+                : "Nothing new matched yet - check back as more listings come in, or search directly."}
+            </span>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/discover">
+                View top matches
+                <ArrowRight />
+              </Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Dialog open={!!extractedLocation} onOpenChange={(open) => { if (!open) setExtractedLocation(null); }}>
         <DialogContent>
           <DialogHeader>
@@ -219,7 +277,7 @@ export function ResumeUploader({
               setLocationSaving(false);
               setExtractedLocation(null);
             }}>
-              {locationSaving ? <Loader2 className="animate-spin size-4 mr-2" /> : null}
+              {locationSaving ? <WorklyLoader className="animate-spin size-4 mr-2" /> : null}
               Save Location
             </Button>
           </DialogFooter>

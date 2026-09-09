@@ -18,7 +18,12 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { listCareerGoalsByUserId } from "@/lib/db/career-goals";
 import { calculateCareerReadiness, calculateProfileCompleteness } from "@/lib/career/completeness";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { ShareProfileButton } from "@/components/career/share-profile-button";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { Lock } from "lucide-react";
 
 export const metadata: Metadata = { title: "Career Profile" };
 
@@ -41,9 +46,26 @@ export default async function CareerProfilePage() {
         title="Career Profile"
         description="The single source of truth Work-ly uses to understand where you stand today."
         action={
-          full.profile ? (
-            <ShareProfileButton profileId={full.profile.id} initialIsPublic={Boolean(full.profile.isPublic)} />
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {!user.isPro ? (
+              <UpgradeModal title="Unlock Career Pivot" description="Get a tailored AI strategy to transition your career, map your competencies, and generate a superpower pitch.">
+                <Button variant="outline" size="sm" className="border-purple-500/30 bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300">
+                  <Lock className="mr-2 size-3.5" />
+                  Pivot Career (Pro)
+                </Button>
+              </UpgradeModal>
+            ) : (
+              <Button asChild variant="outline" size="sm" className="border-purple-500/30 bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300">
+                <Link href="/career-pivot">
+                  <Sparkles className="mr-2 size-3.5" />
+                  Pivot Career
+                </Link>
+              </Button>
+            )}
+            {full.profile ? (
+              <ShareProfileButton profileId={full.profile.id} initialIsPublic={Boolean(full.profile.isPublic)} />
+            ) : null}
+          </div>
         }
       />
 

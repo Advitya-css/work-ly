@@ -53,7 +53,7 @@ export async function ensureDefaultSourcesAction() {
   await pool.query(`DELETE FROM discovered_jobs WHERE "sourceKind" = 'DEMO' AND "userId" = $1`, [user.id]);
 
   // All keyless boards to add
-  const keylessIds = ["remotive", "jobicy", "arbeitnow", "himalayas", "themuse"];
+  const keylessIds = ["remotive", "jobicy", "arbeitnow", "himalayas", "themuse", "remoteok", "workingnomads"];
   for (const id of keylessIds) {
     if (!existing.some((s) => s.config?.adapterId === id)) {
       const adapter = getAdapter(id);

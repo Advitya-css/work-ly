@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useEffect } from "react";
 import { Sparkles, ArrowRight, CheckCircle2, Search, Briefcase, FileText, Target, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,7 +94,7 @@ export function InteractiveDemo() {
                 {!showResult ? (
                   <div className="mt-auto flex flex-col items-center justify-center py-6">
                     <Button onClick={handleSimulate} disabled={isSimulating} size="lg" className="w-full sm:w-auto">
-                      {isSimulating ? <Loader2 className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />}
+                      {isSimulating ? <WorklyLoader className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />}
                       {isSimulating ? "Tailoring for ATS..." : "Run AI Tailor Demo"}
                     </Button>
                   </div>
@@ -138,7 +139,7 @@ export function InteractiveDemo() {
                 {!showResult ? (
                   <div className="mt-auto flex flex-col items-center justify-center py-6">
                     <Button onClick={handleSimulate} disabled={isSimulating} size="lg" className="w-full sm:w-auto">
-                      {isSimulating ? <Loader2 className="size-4 animate-spin mr-2" /> : <Target className="size-4 mr-2" />}
+                      {isSimulating ? <WorklyLoader className="size-4 animate-spin mr-2" /> : <Target className="size-4 mr-2" />}
                       {isSimulating ? "Analyzing Skill Gaps..." : "Analyze My Gaps Demo"}
                     </Button>
                   </div>
@@ -184,7 +185,7 @@ export function InteractiveDemo() {
                 {!showResult ? (
                   <div className="mt-auto flex flex-col items-center justify-center py-6">
                     <Button onClick={handleSimulate} disabled={isSimulating} size="lg" className="w-full sm:w-auto">
-                      {isSimulating ? <Loader2 className="size-4 animate-spin mr-2" /> : <Search className="size-4 mr-2" />}
+                      {isSimulating ? <WorklyLoader className="size-4 animate-spin mr-2" /> : <Search className="size-4 mr-2" />}
                       {isSimulating ? "Scoring Jobs..." : "Find My Best Matches Demo"}
                     </Button>
                   </div>

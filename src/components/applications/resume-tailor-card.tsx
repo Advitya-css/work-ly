@@ -1,10 +1,12 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { FileText, Loader2, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
+import { TypewriterMarkdown } from "@/components/shared/typewriter-markdown";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Lock } from "lucide-react";
 
@@ -60,7 +62,7 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
             </UpgradeModal>
           ) : (
             <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
               {loading ? "Analyzing Job & Profile..." : "Tailor Resume for this Job"}
             </Button>
           )
@@ -71,7 +73,7 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
                 <Sparkles className="size-3" />
                 AI-generated — review before use
               </div>
-              <MarkdownRenderer content={content} />
+              <TypewriterMarkdown content={content} speed={8} />
             </div>
             <Button variant="outline" onClick={() => setContent(null)} className="w-full sm:w-auto">
               Reset

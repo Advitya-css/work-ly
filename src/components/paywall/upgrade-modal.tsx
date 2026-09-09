@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Sparkles, CheckCircle2, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -106,7 +107,7 @@ export function UpgradeModal({
                 className="uppercase"
               />
               <Button onClick={handleRedeemBeta} disabled={betaLoading || !betaCode.trim()}>
-                {betaLoading ? <Loader2 className="size-4 animate-spin" /> : "Redeem"}
+                {betaLoading ? <WorklyLoader className="size-4 animate-spin" /> : "Redeem"}
               </Button>
             </div>
             {betaError && <p className="text-xs text-center text-destructive">{betaError}</p>}

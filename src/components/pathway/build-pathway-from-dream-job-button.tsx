@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, Route } from "lucide-react";
 
@@ -42,7 +43,7 @@ export function BuildPathwayFromDreamJobButton({ dreamJobId, isPro = false }: { 
         </UpgradeModal>
       ) : (
         <Button type="button" size="sm" className="shrink-0" onClick={handleClick} disabled={pending}>
-        {pending ? <Loader2 className="animate-spin" /> : <Route />}
+        {pending ? <WorklyLoader className="animate-spin" /> : <Route />}
         {pending ? "Building your pathway…" : "Build My Dream Pathway"}
       </Button>
       )}

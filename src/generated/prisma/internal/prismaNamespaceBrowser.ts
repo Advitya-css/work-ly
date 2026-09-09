@@ -77,7 +77,8 @@ export const ModelName = {
   DiscoveryRun: 'DiscoveryRun',
   RateLimit: 'RateLimit',
   Feedback: 'Feedback',
-  BetaCode: 'BetaCode'
+  BetaCode: 'BetaCode',
+  CareerPivot: 'CareerPivot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -679,6 +680,24 @@ export const BetaCodeScalarFieldEnum = {
 } as const
 
 export type BetaCodeScalarFieldEnum = (typeof BetaCodeScalarFieldEnum)[keyof typeof BetaCodeScalarFieldEnum]
+
+
+export const CareerPivotScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  targetRole: 'targetRole',
+  targetIndustry: 'targetIndustry',
+  competencyMapping: 'competencyMapping',
+  translatedBullets: 'translatedBullets',
+  hardGaps: 'hardGaps',
+  superpowerPitch: 'superpowerPitch',
+  beforeScore: 'beforeScore',
+  afterScore: 'afterScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareerPivotScalarFieldEnum = (typeof CareerPivotScalarFieldEnum)[keyof typeof CareerPivotScalarFieldEnum]
 
 
 export const SortOrder = {

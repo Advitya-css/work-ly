@@ -332,13 +332,58 @@ function extractWorkValues(resumeText: string): ExtractedWorkValue[] {
     });
 }
 
+/**
+ * Best-effort current location, read straight off the page - never
+ * inferred. Two patterns, tried in order:
+ *
+ *   1. An explicit label ("Location: Austin, TX", "Based in: Remote")
+ *      anywhere in the document - the strongest signal, since the
+ *      candidate said it outright.
+ *   2. The header block most resumes open with (name, email, phone, city),
+ *      where a short two-part "City, ST" / "City, Country" line commonly
+ *      sits on its own. Deliberately narrow: skip anything with an "@"
+ *      (email), a digit (phone number, postal code), or a URL, and require
+ *      exactly one comma, so a job title or a sentence can't be mistaken
+ *      for a place.
+ *
+ * Returns undefined - never a guess - when neither pattern is found.
+ */
+function extractLocationHint(resumeText: string): string | undefined {
+  const lines = resumeText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    const labeled = line.match(/^(?:location|based in|city)\s*[:\-]\s*(.+)$/i);
+    const value = labeled?.[1]?.trim();
+    if (value && value.length > 0 && value.length < 60) {
+      return value;
+    }
+  }
+
+  for (const line of lines.slice(0, 8)) {
+    if (line.includes("@") || /\d/.test(line) || /https?:\/\//i.test(line)) continue;
+    const parts = line.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length !== 2) continue;
+    const [city, region] = parts;
+    const looksLikePlace = (s: string) => s.length >= 2 && s.length <= 30 && /^[A-Za-z][A-Za-z.\s'-]*$/.test(s);
+    if (looksLikePlace(city) && looksLikePlace(region)) {
+      return `${city}, ${region}`;
+    }
+  }
+
+  return undefined;
+}
+
 // A real resume is never anywhere near this long; capping input before the
 // line-by-line regex matching below runs bounds the worst case regardless
 // of any individual pattern's own behavior on pathological input.
 const MAX_HEURISTIC_CHARS = 30_000;
 
 async function run(resumeText: string): Promise<ExtractedCareerProfile> {
-  const sections = splitIntoSections(resumeText.slice(0, MAX_HEURISTIC_CHARS));
+  const truncated = resumeText.slice(0, MAX_HEURISTIC_CHARS);
+  const sections = splitIntoSections(truncated);
 
   const skills = [
     ...extractSkills(sections.skills ?? [], "TECHNICAL"),
@@ -348,6 +393,7 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
   const experience = extractExperience(sections.experience ?? []);
 
   return {
+    location: extractLocationHint(truncated),
     yearsExperience: estimateYears(experience),
     education: extractEducation(sections.education ?? []),
     experience,

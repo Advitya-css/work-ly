@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, RefreshCw, Route } from "lucide-react";
 
@@ -39,7 +40,7 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
         onClick={handleClick}
         disabled={pending}
       >
-        {pending ? <Loader2 className="animate-spin" /> : hasExisting ? <RefreshCw /> : <Route />}
+        {pending ? <WorklyLoader className="animate-spin" /> : hasExisting ? <RefreshCw /> : <Route />}
         {pending ? "Building your pathway…" : hasExisting ? "Regenerate Action Plan" : "Build my pathway"}
       </Button>
       )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useRef, useEffect } from "react";
 import { Mic, Loader2, Sparkles, Send, Play, CheckCircle2, ChevronRight, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -124,7 +125,7 @@ export function HotSeatClient({ applicationId }: { applicationId: string }) {
           </CardHeader>
           <CardContent>
             <Button onClick={handleGenerate} disabled={loading} className="gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
               Generate Interview Questions
             </Button>
           </CardContent>
@@ -193,7 +194,7 @@ export function HotSeatClient({ applicationId }: { applicationId: string }) {
                     {transcript}
                   </div>
                   <Button onClick={submitAnswer} disabled={evaluating} className="w-full gap-2" size="lg">
-                    {evaluating ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
+                    {evaluating ? <WorklyLoader className="size-5 animate-spin" /> : <Send className="size-5" />}
                     {evaluating ? "Evaluating..." : "Submit for Feedback"}
                   </Button>
                 </div>

@@ -140,7 +140,7 @@ export default async function CareerPathPage() {
               <p className="text-sm font-medium text-foreground">{pathway.currentStateLabel}</p>
             </div>
           </div>
-          <div className="ml-4 h-6 w-px bg-border" aria-hidden />
+          <div className="relative ml-4 h-6 w-px bg-border overflow-hidden" aria-hidden><div className="absolute left-0 w-full h-full bg-gradient-to-b from-transparent via-primary to-transparent animate-circuit" /></div>
 
           {pathway.steps.map((step, index) => (
             <PathwayStepCard key={step.id} step={step} isLast={index === pathway.steps.length - 1} actions={pathway.actions.filter((a: any) => a.stepId === step.id)} />

@@ -423,7 +423,8 @@ export const ModelName = {
   DiscoveryRun: 'DiscoveryRun',
   RateLimit: 'RateLimit',
   Feedback: 'Feedback',
-  BetaCode: 'BetaCode'
+  BetaCode: 'BetaCode',
+  CareerPivot: 'CareerPivot'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -439,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "document" | "careerProfile" | "education" | "experience" | "project" | "skill" | "candidateValueSignal" | "studentCountryRule" | "achievement" | "certification" | "careerGoal" | "job" | "jobAnalysis" | "opportunity" | "dreamJob" | "dreamJobAnalysis" | "careerPathway" | "pathwayStep" | "pathwayAction" | "application" | "jobSourceConfig" | "discoveredJob" | "discoveryRun" | "rateLimit" | "feedback" | "betaCode"
+    modelProps: "user" | "document" | "careerProfile" | "education" | "experience" | "project" | "skill" | "candidateValueSignal" | "studentCountryRule" | "achievement" | "certification" | "careerGoal" | "job" | "jobAnalysis" | "opportunity" | "dreamJob" | "dreamJobAnalysis" | "careerPathway" | "pathwayStep" | "pathwayAction" | "application" | "jobSourceConfig" | "discoveredJob" | "discoveryRun" | "rateLimit" | "feedback" | "betaCode" | "careerPivot"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2441,6 +2442,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CareerPivot: {
+      payload: Prisma.$CareerPivotPayload<ExtArgs>
+      fields: Prisma.CareerPivotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CareerPivotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CareerPivotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        findFirst: {
+          args: Prisma.CareerPivotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CareerPivotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        findMany: {
+          args: Prisma.CareerPivotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>[]
+        }
+        create: {
+          args: Prisma.CareerPivotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        createMany: {
+          args: Prisma.CareerPivotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CareerPivotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>[]
+        }
+        delete: {
+          args: Prisma.CareerPivotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        update: {
+          args: Prisma.CareerPivotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        deleteMany: {
+          args: Prisma.CareerPivotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CareerPivotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CareerPivotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>[]
+        }
+        upsert: {
+          args: Prisma.CareerPivotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareerPivotPayload>
+        }
+        aggregate: {
+          args: Prisma.CareerPivotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCareerPivot>
+        }
+        groupBy: {
+          args: Prisma.CareerPivotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareerPivotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CareerPivotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareerPivotCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3063,6 +3138,24 @@ export const BetaCodeScalarFieldEnum = {
 } as const
 
 export type BetaCodeScalarFieldEnum = (typeof BetaCodeScalarFieldEnum)[keyof typeof BetaCodeScalarFieldEnum]
+
+
+export const CareerPivotScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  targetRole: 'targetRole',
+  targetIndustry: 'targetIndustry',
+  competencyMapping: 'competencyMapping',
+  translatedBullets: 'translatedBullets',
+  hardGaps: 'hardGaps',
+  superpowerPitch: 'superpowerPitch',
+  beforeScore: 'beforeScore',
+  afterScore: 'afterScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareerPivotScalarFieldEnum = (typeof CareerPivotScalarFieldEnum)[keyof typeof CareerPivotScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3737,6 +3830,7 @@ export type GlobalOmitConfig = {
   rateLimit?: Prisma.RateLimitOmit
   feedback?: Prisma.FeedbackOmit
   betaCode?: Prisma.BetaCodeOmit
+  careerPivot?: Prisma.CareerPivotOmit
 }
 
 /* Types for Logging */

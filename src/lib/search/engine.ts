@@ -61,6 +61,7 @@ export interface SearchContext {
   candidateSeniority: SeniorityLevel | null;
   careerGoal: CareerGoal | null;
   profileLocation: string | null;
+  availability?: string | null;
   /**
    * Work-culture preferences inferred from the candidate's CV (real AI, or
    * the lexical heuristic fallback - see resume-ai.ts / resume-heuristic.ts

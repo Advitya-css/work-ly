@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Sparkles, FileText, CheckCircle2, ChevronRight, X, Loader2, Copy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
           <div className="flex-1 p-6 overflow-y-auto">
             {loading && (
               <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
-                <Loader2 className="size-8 animate-spin text-primary" />
+                <WorklyLoader className="size-8 animate-spin text-primary" />
                 <p>Analyzing job requirements & rewriting profile...</p>
               </div>
             )}

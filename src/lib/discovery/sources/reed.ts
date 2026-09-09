@@ -20,7 +20,14 @@ export const reedSource: JobSourceAdapter = {
     const params = new URLSearchParams();
     if (context.query) params.set("keywords", context.query);
     if (context.homeLocation) params.set("locationName", context.homeLocation);
-    
+
+    // Reed's own documented search API supports these as real boolean
+    // filters (not a keyword hack), so Part-Time Mode / Gig & Musician Mode
+    // ask Reed itself for the right category instead of biasing the query
+    // text and hoping.
+    if (context.isPartTimeMode) params.set("partTimeOnly", "true");
+    if (context.isFreelanceMode) params.set("contractOnly", "true");
+
     // Reed specifically is a massive non-remote job board.
     const url = `https://www.reed.co.uk/api/1.0/search?${params.toString()}`;
 

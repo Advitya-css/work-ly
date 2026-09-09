@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { Check, SkipForward, RotateCcw, Pencil, StickyNote, Loader2, Clock, Zap } from "lucide-react";
@@ -92,7 +93,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
             disabled={pending}
             onClick={() => startTransition(() => setActionStatusAction(action.id, "COMPLETED"))}
           >
-            {pending ? <Loader2 className="animate-spin" /> : <Check />}
+            {pending ? <WorklyLoader className="animate-spin" /> : <Check />}
             Complete
           </Button>
         )}
@@ -182,7 +183,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
                 })
               }
             >
-              {pending && <Loader2 className="animate-spin" />}
+              {pending && <WorklyLoader className="animate-spin" />}
               Save
             </Button>
           </DialogFooter>
@@ -210,7 +211,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
                 })
               }
             >
-              {pending && <Loader2 className="animate-spin" />}
+              {pending && <WorklyLoader className="animate-spin" />}
               Save note
             </Button>
           </DialogFooter>

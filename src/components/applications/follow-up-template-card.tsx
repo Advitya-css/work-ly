@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Mail, Loader2, Sparkles, Copy, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,7 @@ export function FollowUpTemplateCard({ application }: { application: Application
         )}
         {loading && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Loader2 className="size-4 animate-spin text-primary" />
+            <WorklyLoader className="size-4 animate-spin text-primary" />
             Drafting email...
           </div>
         )}

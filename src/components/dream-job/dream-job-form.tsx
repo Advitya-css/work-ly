@@ -1,5 +1,6 @@
 "use client";
 
+import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useActionState } from "react";
 import { Loader2, Sparkles, AlertCircle } from "lucide-react";
 
@@ -67,7 +68,7 @@ export function DreamJobForm({ isPro = false }: { isPro?: boolean }) {
         <Button type="submit" disabled={pending} className="w-fit gap-2">
           {pending ? (
             <>
-              <Loader2 className="animate-spin size-4" />
+              <WorklyLoader className="animate-spin size-4" />
               Analyzing…
             </>
           ) : (
