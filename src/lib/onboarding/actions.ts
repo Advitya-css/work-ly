@@ -47,3 +47,13 @@ export async function setupStudentProfileAction(formData: FormData): Promise<{ e
   await markUserOnboarded(user.id);
   redirect("/student");
 }
+
+
+export async function completeOnboardingAndGoToDiscoverAction(): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+  await markUserOnboarded(user.id);
+  redirect("/discover");
+}

@@ -16,14 +16,13 @@ export function UploadStep() {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Add your resume</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Upload a CV and Work-ly will draft your career profile. Education, experience, projects, and skills.
-          You&apos;ll review and confirm everything before it&apos;s final.
+          Drop your resume below. Work-ly will instantly extract your profile and run a personalized AI search to find your top 5 matching jobs in seconds.
         </p>
       </div>
 
       <Card>
         <CardContent>
-          <ResumeUploader onComplete={() => router.push("/onboarding?step=review")} />
+          <ResumeUploader autoOnboardAndRedirect={true} />
         </CardContent>
       </Card>
 
@@ -33,11 +32,7 @@ export function UploadStep() {
             Skip for now: I&apos;ll add this later
           </Button>
         </form>
-        <span className="text-border">·</span>
-        <Button type="button" variant="link" size="sm" onClick={() => router.push("/onboarding?step=review")}>
-          Enter details manually
-          <ArrowRight className="size-3.5" />
-        </Button>
+
       </div>
     </div>
   );

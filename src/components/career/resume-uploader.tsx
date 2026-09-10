@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { validateResumeFile, MAX_RESUME_SIZE_BYTES } from "@/lib/validations/document";
 import { saveLocationAction } from "@/lib/career/actions";
 import { runDiscoveryAction } from "@/lib/discovery/actions";
+import { completeOnboardingAndGoToDiscoverAction } from "@/lib/onboarding/actions";
+import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import type { ParseDocumentResult } from "@/lib/career/parse-document";
 
@@ -55,6 +57,7 @@ export function ResumeUploader({
   onComplete,
 }: {
   onComplete?: (result: ParseDocumentResult) => void;
+  autoOnboardAndRedirect?: boolean;
 }) {
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState(0);
@@ -64,6 +67,7 @@ export function ResumeUploader({
   const [locationSaving, setLocationSaving] = useState(false);
   const [discoveryPrompt, setDiscoveryPrompt] = useState<DiscoveryPromptState>({ kind: "idle" });
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const handleFile = useCallback(async (file: File) => {
     const validation = validateResumeFile({ name: file.name, type: file.type, size: file.size });
