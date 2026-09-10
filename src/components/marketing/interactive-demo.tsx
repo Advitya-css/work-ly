@@ -106,7 +106,7 @@ export function InteractiveDemo() {
                         <span>Optimized for ATS Match</span>
                       </div>
                       <p className="text-sm font-mono leading-relaxed bg-background p-3 rounded border border-border">
-                        "Engineered responsive frontend architectures using React and global state management (Zustand), optimizing core web vitals to increase page load speeds by 40%."
+                        "Engineered responsive frontend architectures using React and global state management (Zustand), optimizing core web vitals and reducing time-to-interactive."
                       </p>
                       <p className="text-xs text-muted-foreground mt-3">
                         <span className="font-semibold text-foreground">Keywords injected:</span> frontend engineer, state management, Zustand, core web vitals

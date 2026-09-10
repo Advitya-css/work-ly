@@ -19,6 +19,9 @@ import { runDiscovery } from "@/lib/discovery/run";
 import { getAdapter, SOURCE_ADAPTERS } from "@/lib/discovery/registry";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
+import { calculateProfileCompleteness } from "@/lib/career/completeness";
+import { listCareerGoalsByUserId } from "@/lib/db/career-goals";
 
 function revalidateDiscoveryViews() {
   revalidatePath("/discover");
@@ -105,6 +108,16 @@ export async function runDiscoveryAction(
   if (!user.isPro && dailyRuns >= 5) { return { error: "You have reached your free daily limit of 5 AI discoveries.", upgradeRequired: true }; }
   if (user.isPro && dailyRuns >= 30) {
     return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
+  }
+
+  // Block discovery on empty profiles to prevent AI hallucination
+  if (!query || query.trim() === "") {
+    const profile = await getFullCareerProfile(user.id);
+    const goals = await listCareerGoalsByUserId(user.id);
+    const completeness = calculateProfileCompleteness(profile, goals);
+    if (completeness.percentage < 15) {
+      return { error: "Your profile is empty! Build your Career Profile first (upload your resume or add experience) so the AI knows what jobs to look for." };
+    }
   }
 
   // Guarantees there's at least one real source to run against, with no
