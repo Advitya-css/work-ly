@@ -40,7 +40,7 @@ export function SignInForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="you@company.com" autoComplete="email" required />
+        <Input id="email" name="email" type="email" placeholder="you@company.com" autoComplete="email" defaultValue={state.values?.email as string | undefined} required />
         {state.fieldErrors?.email && (
           <p className="text-xs text-destructive">{state.fieldErrors.email}</p>
         )}
@@ -70,6 +70,7 @@ export function SignInForm() {
           type="checkbox"
           id="rememberMe"
           name="rememberMe"
+          defaultChecked={state.values?.rememberMe as boolean | undefined}
           className="size-4 rounded border-border accent-primary"
         />
         <Label htmlFor="rememberMe" className="text-sm font-normal text-muted-foreground cursor-pointer">

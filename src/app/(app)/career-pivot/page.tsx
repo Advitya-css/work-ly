@@ -30,7 +30,7 @@ export default async function CareerPivotPage() {
           icon={Lock}
           title="Career Pivot is a Pro feature"
           description="Unlock the Career Pivot Copilot to get a tailored AI strategy to transition your career, map your transferable competencies, and generate a customized superpower pitch."
-          action={{ label: "Upgrade to Pro", href: "/settings/plan" }}
+          action={{ label: "Upgrade to Pro", href: "/settings" }}
         />
       </div>
     );

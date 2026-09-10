@@ -26,13 +26,13 @@ export function SignUpForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Full name</Label>
-        <Input id="name" name="name" type="text" placeholder="Jane Doe" autoComplete="name" required />
+        <Input id="name" name="name" type="text" placeholder="Jane Doe" autoComplete="name" defaultValue={state.values?.name as string | undefined} required />
         {state.fieldErrors?.name && <p className="text-xs text-destructive">{state.fieldErrors.name}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="you@company.com" autoComplete="email" required />
+        <Input id="email" name="email" type="email" placeholder="you@company.com" autoComplete="email" defaultValue={state.values?.email as string | undefined} required />
         {state.fieldErrors?.email && (
           <p className="text-xs text-destructive">{state.fieldErrors.email}</p>
         )}
@@ -59,6 +59,7 @@ export function SignUpForm() {
           type="checkbox"
           id="rememberMe"
           name="rememberMe"
+          defaultChecked={state.values?.rememberMe as boolean | undefined}
           className="size-4 rounded border-border accent-primary"
         />
         <Label htmlFor="rememberMe" className="text-sm font-normal text-muted-foreground cursor-pointer">
@@ -74,6 +75,7 @@ export function SignUpForm() {
             id="agreeTerms"
             name="agreeTerms"
             required
+            defaultChecked={state.values?.agreeTerms as boolean | undefined}
             className="mt-1 size-4 rounded border-border accent-primary"
           />
           <Label htmlFor="agreeTerms" className="text-sm font-normal text-muted-foreground leading-snug">
@@ -86,6 +88,7 @@ export function SignUpForm() {
             id="agreeAge"
             name="agreeAge"
             required
+            defaultChecked={state.values?.agreeAge as boolean | undefined}
             className="mt-1 size-4 rounded border-border accent-primary"
           />
           <Label htmlFor="agreeAge" className="text-sm font-normal text-muted-foreground leading-snug">

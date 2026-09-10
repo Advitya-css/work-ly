@@ -11,6 +11,7 @@ export interface AuthActionState {
   fieldErrors?: Record<string, string>;
   success?: boolean;
   unverifiedEmail?: string;
+  values?: Record<string, any>;
 }
 
 export async function signUpAction(
@@ -19,7 +20,7 @@ export async function signUpAction(
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
   if (!(await checkRateLimit(`auth_login_${ip}`, 5, 60))) {
-    return { error: "Too many attempts. Please try again later." };
+    return { error: "Too many attempts. Please try again later.", values: { name: formData.get("name"), email: formData.get("email") } };
   }
   const parsed = signUpSchema.safeParse({
     name: formData.get("name"),
@@ -32,20 +33,47 @@ export async function signUpAction(
     for (const issue of parsed.error.issues) {
       fieldErrors[String(issue.path[0])] = issue.message;
     }
-    return { fieldErrors };
+    return { 
+      fieldErrors, 
+      values: { 
+        name: formData.get("name"), 
+        email: formData.get("email"),
+        rememberMe: formData.get("rememberMe") === "on",
+        agreeTerms: formData.get("agreeTerms") === "on",
+        agreeAge: formData.get("agreeAge") === "on"
+      } 
+    };
   }
 
   
   const agreeTerms = formData.get("agreeTerms") === "on";
   const agreeAge = formData.get("agreeAge") === "on";
   if (!agreeTerms || !agreeAge) {
-    return { error: "You must agree to the Terms of Service and confirm you are 18 or older." };
+    return { 
+      error: "You must agree to the Terms of Service and confirm you are 18 or older.",
+      values: { 
+        name: formData.get("name"), 
+        email: formData.get("email"),
+        rememberMe: formData.get("rememberMe") === "on",
+        agreeTerms,
+        agreeAge
+      }
+    };
   }
   const rememberMe = formData.get("rememberMe") === "on";
 
   const result = await authProvider.signUp({ ...parsed.data, rememberMe });
   if (result.error) {
-    return { error: result.error };
+    return { 
+      error: result.error,
+      values: { 
+        name: formData.get("name"), 
+        email: formData.get("email"),
+        rememberMe,
+        agreeTerms,
+        agreeAge
+      }
+    };
   }
 
   if (result.needsVerification) {
@@ -74,7 +102,13 @@ export async function signInAction(
     for (const issue of parsed.error.issues) {
       fieldErrors[String(issue.path[0])] = issue.message;
     }
-    return { fieldErrors };
+    return { 
+      fieldErrors,
+      values: {
+        email: formData.get("email"),
+        rememberMe: formData.get("rememberMe") === "on"
+      }
+    };
   }
 
   const rememberMe = formData.get("rememberMe") === "on";
