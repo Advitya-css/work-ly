@@ -25,7 +25,7 @@ export async function redeemBetaCodeAction(code: string) {
       }
 
       const result = await pool.query(
-        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '1 year' WHERE id = $1`,
+        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '1 month' WHERE id = $1`,
         [user.id]
       );
       
@@ -60,7 +60,7 @@ export async function redeemBetaCodeAction(code: string) {
 
       // Single-use codes get 1 year too now!
       const result = await client.query(
-        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '1 year' WHERE id = $1`,
+        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '1 month' WHERE id = $1`,
         [user.id]
       );
       
