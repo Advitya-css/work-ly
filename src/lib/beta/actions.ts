@@ -20,8 +20,8 @@ export async function redeemBetaCodeAction(code: string) {
       );
       const proCount = parseInt(countRows[0].total, 10);
       
-      if (proCount >= 600) { // 500 new + a buffer for existing/testing
-        return { error: "This beta code has reached its maximum limit of 500 redemptions. Please join the waitlist!" };
+      if (proCount >= 100) { // Capped at 50-100 total to protect AI API costs
+        return { error: "This beta code has reached its maximum limit of 50 redemptions. Please join the waitlist!" };
       }
 
       const result = await pool.query(
