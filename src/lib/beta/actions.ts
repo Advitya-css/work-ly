@@ -13,7 +13,7 @@ export async function redeemBetaCodeAction(code: string) {
     const cleanCode = code.trim().toUpperCase();
     
     // UNIVERSAL REDDIT CODES (Bypass the database beta_codes table)
-    if (cleanCode === "CODE" || cleanCode === "UN-GHOST" || cleanCode === "REDDITPRO") {
+    if (cleanCode === "CODE" || cleanCode === "UN-GHOST" || cleanCode === "REDDITPRO" || cleanCode === "PIVOT") {
       // PREVENT ABUSE: Cap total redemptions
       const { rows: countRows } = await pool.query(
         `SELECT count(*) as total FROM users WHERE "isPro" = true`
