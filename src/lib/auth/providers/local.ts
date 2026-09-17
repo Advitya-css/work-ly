@@ -22,6 +22,11 @@ function toAuthUser(user: {
   isPro?: boolean;
   proUntil?: Date | null;
 }): AuthUser {
+  let isPro = user.isPro ?? false;
+  if (isPro && user.proUntil && new Date(user.proUntil) < new Date()) {
+    isPro = false;
+  }
+
   return {
     id: user.id,
     email: user.email,
@@ -29,7 +34,7 @@ function toAuthUser(user: {
     avatarUrl: user.avatarUrl,
     onboardedAt: user.onboardedAt,
     emailVerified: user.emailVerified ?? false,
-    isPro: user.isPro ?? false,
+    isPro,
     proUntil: user.proUntil ?? null,
   };
 }

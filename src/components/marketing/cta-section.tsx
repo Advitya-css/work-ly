@@ -11,7 +11,7 @@ export function CtaSection() {
           See where you actually stand
         </h2>
         <p className="max-w-md text-muted-foreground">
-          Build your career profile and get a clear-eyed read on what you already qualify for , 
+          Build your career profile and get a clear-eyed read on what you already qualify for, 
           and what to work on next.
         </p>
         <Button asChild size="lg">

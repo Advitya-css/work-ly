@@ -231,9 +231,9 @@ export function InteractiveDemo() {
             {showResult && (
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-card via-card to-transparent pt-12 flex justify-center">
                 <Button asChild size="lg" className="shadow-xl shadow-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <a href="/sign-up">
+                  <Link href="/signup">
                     Try it with your own data <ArrowRight className="ml-2 size-4" />
-                  </a>
+                  </Link>
                 </Button>
               </div>
             )}
