@@ -1,4 +1,5 @@
-import { Crown, Zap } from "lucide-react";
+import { Crown, Zap, Users } from "lucide-react";
+import { CopyReferralLink } from "@/components/paywall/copy-referral-link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,20 @@ export async function PlanSettings() {
               )}
             </div>
             
+          </div>
+
+          
+          <div className="flex flex-col gap-3 p-5 bg-primary/5 rounded-xl border border-primary/20 mt-2">
+            <div className="flex items-center gap-2">
+              <Users className="size-5 text-primary" />
+              <h3 className="font-semibold text-lg text-foreground">Earn free months of Pro</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Share your personal invite link below. When a friend signs up using your link, <strong>both of you get 1 free month of Pro automatically.</strong> There is no limit to how many free months you can earn!
+            </p>
+            <div className="mt-2">
+              <CopyReferralLink link={`https://www.work-ly.in/signup?ref=${user.id}`} />
+            </div>
           </div>
 
           {isPro && proUntil && (
