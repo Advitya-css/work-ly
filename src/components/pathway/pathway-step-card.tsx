@@ -63,7 +63,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
       </div>
 
       {/* Body */}
-      <div className={cn("flex-1 pb-8", resolved && "opacity-70")}>
+      <div className={cn("min-w-0 flex-1 pb-8", resolved && "opacity-70")}>
         <div className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3.5">
           <div className="flex flex-wrap items-center gap-2">
             <p

@@ -277,9 +277,14 @@ export function ResumeUploader({
             <Button disabled={locationSaving} onClick={async () => {
               if (!extractedLocation) return;
               setLocationSaving(true);
-              await saveLocationAction(extractedLocation);
-              setLocationSaving(false);
-              setExtractedLocation(null);
+              try {
+                await saveLocationAction(extractedLocation);
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setLocationSaving(false);
+                setExtractedLocation(null);
+              }
             }}>
               {locationSaving ? <WorklyLoader className="animate-spin size-4 mr-2" /> : null}
               Save Location

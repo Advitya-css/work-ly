@@ -108,7 +108,7 @@ export function AskWorkly() {
         aria-expanded={open}
         aria-controls="ask-workly-panel"
         className={cn(
-          "fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full py-3 pr-5 pl-4 shadow-lg transition-all",
+          "fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full p-3 sm:py-3 sm:pr-5 sm:pl-4 shadow-lg transition-all",
           "bg-primary text-primary-foreground hover:-translate-y-0.5 hover:shadow-xl",
           "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
           open && "opacity-0 pointer-events-none",
@@ -123,7 +123,7 @@ export function AskWorkly() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
           </span>
         </div>
-        <span className="text-sm font-medium">Ask Work-ly</span>
+        <span className="hidden text-sm font-medium sm:inline-block">Ask Work-ly</span>
       </button>
 
       {/* --------------------------------------------------------- panel */}
