@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { signUpAction, type AuthActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -12,11 +14,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const initialState: AuthActionState = {};
 
+
+function ReferralInput() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams?.get("ref") || "";
+  return <input type="hidden" name="refCode" value={refCode} />;
+}
+
 export function SignUpForm() {
   const [state, formAction, pending] = useActionState(signUpAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
+      <Suspense fallback={null}><ReferralInput /></Suspense>
       {state.error && (
         <Alert variant="destructive">
           <AlertCircle className="size-4" />
