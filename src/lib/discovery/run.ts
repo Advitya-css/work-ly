@@ -223,7 +223,7 @@ export async function runDiscovery(
     // board for "any job in this city" (which returns physicians and truck drivers). 
     // Proactively read their profile and search for highly targeted jobs.
     if (!query || query.trim() === "") {
-      const idealTitles = await suggestIdealJobSearches(profileText, careerGoal?.primaryTargetRole ?? null);
+      const idealTitles = await suggestIdealJobSearches(profileText, careerGoal?.primaryTargetRole ?? null, profile.profile?.location ?? null);
       if (idealTitles.length > 0) {
         searchTerms = idealTitles;
       }

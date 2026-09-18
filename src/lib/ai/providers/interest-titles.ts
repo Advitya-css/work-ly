@@ -71,10 +71,11 @@ export async function suggestTitlesForInterest(interestText: string): Promise<st
   }
 }
 
-const IDEAL_SYSTEM_PROMPT = `You are an expert technical recruiter and career coach. Your task is to read a candidate's full resume/profile and their target role (if provided), and generate exactly 3 highly specific, searchable job titles that this candidate is overwhelmingly qualified for.
+const IDEAL_SYSTEM_PROMPT = `You are an expert technical recruiter and local career coach. Your task is to read a candidate's full resume/profile and their target role (if provided), and generate exactly 3 highly specific, searchable job titles that this candidate is overwhelmingly qualified for.
+- CRITICAL: You must adapt the job titles to match the standard market terminology in the candidate's TARGET LOCATION (if provided). If they are relocating to a new country, translate their past titles into the most common equivalents for their target market.
 - Do NOT generate generic titles like "Data Analyst" or "Manager".
 - DO generate highly specific titles like "Senior Spatial Data Analyst", "Urban Planning Data Scientist", "Geospatial Analyst", etc.
-- The titles MUST be real titles used on job boards.
+- The titles MUST be real, actively used titles on job boards in their target location.
 - Output ONLY the array of titles.`;
 
 const IDEAL_SCHEMA = {
@@ -88,9 +89,10 @@ const IDEAL_SCHEMA = {
   },
 };
 
-export async function suggestIdealJobSearches(profileText: string, targetRole: string | null): Promise<string[]> {
+export async function suggestIdealJobSearches(profileText: string, targetRole: string | null, targetLocation: string | null): Promise<string[]> {
   try {
     const prompt = `TARGET ROLE: ${targetRole || 'None'}
+TARGET LOCATION: ${targetLocation || 'Global / Remote'}
 
 PROFILE:
 ${profileText.slice(0, 3000)}`;

@@ -48,7 +48,7 @@ export async function GET(req: Request) {
         const profile = await getFullCareerProfile(userId);
         const text = profileSearchText(profile);
         
-        const idealTitles = await suggestIdealJobSearches(text, targetRole);
+        const idealTitles = await suggestIdealJobSearches(text, targetRole, profile.profile?.location ?? null);
         const queries = idealTitles.length > 0 ? idealTitles : [targetRole];
         
         // Auto-provision keyless boards if they don't have them
