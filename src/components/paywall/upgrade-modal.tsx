@@ -12,13 +12,11 @@ import { redeemBetaCodeAction } from "@/lib/beta/actions";
 export function UpgradeModal({ 
   children,
   title = "Unlock Work-ly Pro",
-  description = "Get the ultimate unfair advantage in your job hunt.",
-  interval = "monthly"
+  description = "Get the ultimate unfair advantage in your job hunt."
 }: { 
   children: React.ReactNode,
   title?: string,
-  description?: string,
-  interval?: "monthly" | "yearly"
+  description?: string
 }) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -50,7 +48,7 @@ export function UpgradeModal({
   const handleUpgrade = async () => {
     try {
       setLoading(true);
-      const { url } = await createCheckoutUrl(interval);
+      const { url } = await createCheckoutUrl();
       if (url) window.location.href = url;
     } catch (error) {
       console.error(error);
@@ -87,14 +85,13 @@ export function UpgradeModal({
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview Simulator & Tech Sandbox</span></li>
           </ul>
 
-          <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="mt-4 p-4 rounded-lg bg-muted border border-border flex items-center justify-between opacity-80">
             <div className="flex flex-col">
-              <span className="font-semibold text-lg">Work-ly Pro</span>
-              <span className="text-sm text-muted-foreground">{interval === 'yearly' ? '$120 / year' : '$15 / month'}</span>
+              <span className="font-semibold text-lg line-through">Work-ly Pro</span>
+              <span className="text-sm text-muted-foreground">$15 / month</span>
             </div>
-            <Button onClick={handleUpgrade} disabled={loading} size="lg" className="gap-2 w-full sm:w-auto">
-              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Upgrade Now
+            <Button disabled variant="outline" size="lg" className="gap-2 cursor-not-allowed">
+              Coming Soon
             </Button>
           </div>
 
