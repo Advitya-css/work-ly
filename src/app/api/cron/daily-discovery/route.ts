@@ -25,12 +25,22 @@ export async function GET(req: Request) {
     // Feature 1: The silent background scraper.
     // Constantly hunts for jobs for active users (up to 20 a run to stay within Vercel limits).
     // It silently drops matches into the database so the "Top Picks" feed is always fresh.
+    //
+    // Shares "lastAlertSentAt" with /api/cron/job-alerts (the existing,
+    // Pro-only, high-priority-gated alert cron) rather than keeping its own
+    // cooldown column. That's deliberate: this cron is the broader, lower
+    // bar "wake everyone up" version, and without a shared cooldown the two
+    // crons could both email the same person on the same day. A 3-day gate
+    // here keeps it frequent enough to be a real retention hook without
+    // being the second email of the day for someone job-alerts already
+    // reached this week.
     const { rows } = await pool.query(`
       SELECT u.id, u.email, cg."primaryTargetRole"
       FROM users u
       JOIN career_goals cg ON cg."userId" = u.id
-      WHERE cg.status = 'ACTIVE' 
+      WHERE cg.status = 'ACTIVE'
         AND cg."primaryTargetRole" IS NOT NULL
+        AND (u."lastAlertSentAt" IS NULL OR u."lastAlertSentAt" < NOW() - INTERVAL '3 days')
       ORDER BY RANDOM()
       LIMIT 20
     `);
@@ -80,8 +90,11 @@ export async function GET(req: Request) {
         
         if (userNewJobs > 0 && email) {
           await sendJobAlertEmail(email, targetRole, userNewJobs, 0);
+          // Same column job-alerts uses, so whichever cron reaches this user
+          // first starts both crons' cooldowns - see the comment above.
+          await pool.query(`UPDATE users SET "lastAlertSentAt" = NOW() WHERE id = $1`, [userId]);
         }
-        
+
         usersProcessed++;
       } catch (err) {
         console.error(`[workly:cron] Failed daily discovery for user ${userId}:`, err);

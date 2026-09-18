@@ -134,6 +134,13 @@ model CareerProfile {
   // this - see 20261012000000_career_profile_public_opt_in for why.
   isPublic Boolean @default(false)
 
+  // --- Onboarding "try with a sample profile" ---
+  // True while the facts above are the fabricated demo profile rather than
+  // something the user provided. Set by loadSampleProfileAction, cleared by
+  // upsertCareerProfile the moment real facts are saved - see
+  // 20260918000000_career_profile_sample_data_flag for why this exists.
+  isSampleData Boolean @default(false)
+
   // Deprecated as of Phase 2 — superseded by the structured Skill model
   // below (name/category/proficiency/evidence/source/recency). Left in
   // place so Phase 1 data already saved isn't dropped; no longer written

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { TourProvider } from "@/components/tour/tour-provider";
 import { FeedbackButton } from "@/components/shared/feedback-button";
+import { SampleDataBanner } from "@/components/shared/sample-data-banner";
 import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
@@ -33,6 +34,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <TourProvider>
+      {profile?.isSampleData && <SampleDataBanner />}
       <AppShell user={user} student={profile?.isStudent ?? false}>
         {children}
         {user.isPro ? (

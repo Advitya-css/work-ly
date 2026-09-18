@@ -138,18 +138,39 @@ export async function parseDocumentAndBuildProfile(
 
     // Fill headline/summary only if the user hasn't already set their own -
     // CV-derived text never overwrites a fact the user entered themselves.
-    if ((extraction.headline || extraction.summary) && !profile.headline && !profile.summary) {
-      await upsertCareerProfile(userId, {
-        headline: extraction.headline || profile.headline,
-        summary: extraction.summary || profile.summary,
-      });
-    }
-
-    // Same rule for years of experience. Leaving this unset made every fit
+    // Same rule for years of experience: leaving it unset made every fit
     // score report "You have 0 years of experience" straight after a CV
     // listing seven years of work had been read successfully.
-    if (extraction.yearsExperience != null && profile.yearsExperience == null) {
-      await upsertCareerProfile(userId, { yearsExperience: extraction.yearsExperience });
+    //
+    // Both merge into ONE upsertCareerProfile call carrying every field's
+    // current value. upsertCareerProfile is a documented whole-row
+    // overwrite (a field a caller omits is treated as a deliberate clear),
+    // so two separate partial calls here used to clobber each other -
+    // whichever ran second wiped location/currentRole/currentCompany/skills
+    // back to null, and if both conditions below were true in the same
+    // parse, the second call also erased the headline/summary the first
+    // call had just written.
+    const nextHeadline = !profile.headline && !profile.summary && extraction.headline ? extraction.headline : profile.headline;
+    const nextSummary = !profile.headline && !profile.summary && extraction.summary ? extraction.summary : profile.summary;
+    const nextYearsExperience =
+      profile.yearsExperience == null && extraction.yearsExperience != null
+        ? extraction.yearsExperience
+        : profile.yearsExperience;
+
+    if (
+      nextHeadline !== profile.headline ||
+      nextSummary !== profile.summary ||
+      nextYearsExperience !== profile.yearsExperience
+    ) {
+      await upsertCareerProfile(userId, {
+        headline: nextHeadline,
+        summary: nextSummary,
+        location: profile.location,
+        currentRole: profile.currentRole,
+        currentCompany: profile.currentCompany,
+        yearsExperience: nextYearsExperience,
+        skills: profile.skills,
+      });
     }
 
     await Promise.all([

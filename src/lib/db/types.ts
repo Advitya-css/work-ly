@@ -71,6 +71,8 @@ export interface CareerProfile {
   availability?: string | null;
   /** Explicit, revocable opt-in gating the /p/[id] public share page. */
   isPublic?: boolean;
+  /** True while these facts are the onboarding demo profile, not the user's own. */
+  isSampleData?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

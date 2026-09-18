@@ -28,10 +28,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS "student_country_rules_code_key" ON "student_c
 -- writing. Fixed literal ids (rather than a DB-generated uuid) so this
 -- doesn't depend on any particular Postgres extension being enabled.
 -- ON CONFLICT means re-applying this migration is a no-op.
-INSERT INTO "student_country_rules" ("id", "code", "label", "unverified")
+INSERT INTO "student_country_rules" ("id", "code", "label", "unverified", "updatedAt")
 VALUES
-    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000001', 'US', 'United States', false),
-    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000002', 'GB', 'United Kingdom', true),
-    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000003', 'CA', 'Canada', false),
-    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000004', 'AU', 'Australia', false)
+    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000001', 'US', 'United States', false, now()),
+    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000002', 'GB', 'United Kingdom', true, now()),
+    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000003', 'CA', 'Canada', false, now()),
+    ('4d1f7b8e-3a2c-4b8d-9e1a-000000000004', 'AU', 'Australia', false, now())
 ON CONFLICT ("code") DO NOTHING;

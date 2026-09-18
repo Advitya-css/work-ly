@@ -64,14 +64,20 @@ export async function loadSampleProfileAction(): Promise<void> {
 
   const profile = await getOrCreateCareerProfile(user.id);
 
-  // Pre-fill a robust sample profile for a Senior PM
+  // Pre-fill a robust sample profile for a Senior PM. Flagged isSampleData so
+  // the rest of the app can tell this is a fabricated demo, not something
+  // the user provided - see the isSampleData migration for why that matters.
+  // upsertCareerProfile (the real-data path used by resume parsing and the
+  // profile form) always clears this flag back to false the moment real
+  // facts are saved, so it can't linger once the user uploads their resume.
   await pool.query(
-    `UPDATE career_profiles 
+    `UPDATE career_profiles
      SET headline = 'Senior Product Manager',
          location = 'San Francisco, CA',
          "currentRole" = 'Product Manager',
          "yearsExperience" = 6,
          skills = $1,
+         "isSampleData" = true,
          "updatedAt" = now()
      WHERE id = $2`,
     [JSON.stringify(["Product Strategy", "Agile Methodologies", "User Research", "A/B Testing", "Go-to-Market Strategy", "SQL", "Jira"]), profile.id]

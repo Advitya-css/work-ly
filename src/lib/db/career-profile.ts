@@ -30,6 +30,7 @@ function mapRow(row: Record<string, unknown>): CareerProfile {
     isFreelanceMode: Boolean(row.isFreelanceMode),
     availability: (row.availability as string | null) ?? null,
     isPublic: Boolean(row.isPublic),
+    isSampleData: Boolean(row.isSampleData),
     createdAt: row.createdAt as Date,
     updatedAt: row.updatedAt as Date,
   };
@@ -84,6 +85,12 @@ export type CareerProfileInput = Partial<
  * Creates the profile row on first save, otherwise replaces it in place.
  * Callers always send the full form state, so this is a plain overwrite
  * (an empty field is a deliberate clear, not "leave unchanged").
+ *
+ * This is the one place real facts get written, whether typed into the
+ * profile form or extracted from an uploaded resume (see parse-document.ts),
+ * so it's also the one place that clears isSampleData - the moment real
+ * facts are saved, the onboarding demo profile is gone regardless of how it
+ * got there.
  */
 export async function upsertCareerProfile(
   userId: string,
@@ -92,8 +99,8 @@ export async function upsertCareerProfile(
   const id = randomUUID();
   const { rows } = await pool.query(
     `INSERT INTO career_profiles
-       (id, "userId", headline, summary, location, "currentRole", "currentCompany", "yearsExperience", skills, "updatedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
+       (id, "userId", headline, summary, location, "currentRole", "currentCompany", "yearsExperience", skills, "isSampleData", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false, now())
      ON CONFLICT ("userId") DO UPDATE SET
        headline = EXCLUDED.headline,
        summary = EXCLUDED.summary,
@@ -102,6 +109,7 @@ export async function upsertCareerProfile(
        "currentCompany" = EXCLUDED."currentCompany",
        "yearsExperience" = EXCLUDED."yearsExperience",
        skills = EXCLUDED.skills,
+       "isSampleData" = false,
        "updatedAt" = now()
      RETURNING *`,
     [
