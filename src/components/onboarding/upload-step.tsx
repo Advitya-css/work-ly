@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ResumeUploader } from "@/components/career/resume-uploader";
-import { completeOnboardingAction } from "@/lib/onboarding/actions";
+import { completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 
 export function UploadStep() {
   const router = useRouter();
@@ -26,13 +26,17 @@ export function UploadStep() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-center gap-4 text-sm">
-        <form action={completeOnboardingAction}>
-          <Button type="submit" variant="link" size="sm" className="text-muted-foreground">
-            Skip for now: I&apos;ll add this later
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm">
+        <form action={loadSampleProfileAction}>
+          <Button type="submit" variant="outline" size="sm" className="text-muted-foreground font-medium">
+            Just looking around? Try with a sample profile
           </Button>
         </form>
-
+        <form action={completeOnboardingAction}>
+          <Button type="submit" variant="link" size="sm" className="text-muted-foreground">
+            Skip for now
+          </Button>
+        </form>
       </div>
     </div>
   );

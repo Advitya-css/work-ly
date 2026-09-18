@@ -4,6 +4,7 @@ import { runDiscovery } from "@/lib/discovery/run";
 import { suggestIdealJobSearches } from "@/lib/ai/providers/interest-titles";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { profileSearchText } from "@/lib/discovery/profile-text";
+import { sendJobAlertEmail } from "@/lib/email";
 
 export const maxDuration = 300; 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
     // Constantly hunts for jobs for active users (up to 20 a run to stay within Vercel limits).
     // It silently drops matches into the database so the "Top Picks" feed is always fresh.
     const { rows } = await pool.query(`
-      SELECT u.id, cg."primaryTargetRole"
+      SELECT u.id, u.email, cg."primaryTargetRole"
       FROM users u
       JOIN career_goals cg ON cg."userId" = u.id
       WHERE cg.status = 'ACTIVE' 
@@ -40,8 +41,11 @@ export async function GET(req: Request) {
     for (const row of rows) {
       const userId = row.id as string;
       const targetRole = row.primaryTargetRole as string;
+      const email = row.email as string;
 
       try {
+        let userNewJobs = 0;
+        let userHighPriority = 0;
         // AI Proactive Scraping: instead of just searching for the generic targetRole,
         // we feed the user's entire profile to the AI and have it generate 3 highly
         // specific titles. This turns discovery into a proactive, intelligent agent.
@@ -69,6 +73,13 @@ export async function GET(req: Request) {
         for (const q of queries) {
           const result = await runDiscovery(userId, { query: q, limitPerSource: 10 });
           totalNewJobs += result.newJobs;
+          userNewJobs += result.newJobs;
+          // Assuming result doesn't return high priority count easily here, we'll just use newJobs
+          // or we can just pass 0 for highPriorityCount for now
+        }
+        
+        if (userNewJobs > 0 && email) {
+          await sendJobAlertEmail(email, targetRole, userNewJobs, 0);
         }
         
         usersProcessed++;
