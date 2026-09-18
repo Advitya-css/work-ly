@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FileText, Loader2, UploadCloud, AlertCircle, CheckCircle2, X, Sparkles, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,8 @@ export function ResumeUploader({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [extractedLocation, setExtractedLocation] = useState<string | null>(null);
+  const [needsLocationConfirmation, setNeedsLocationConfirmation] = useState(false);
+  const [locationInput, setLocationInput] = useState("");
   const [locationSaving, setLocationSaving] = useState(false);
   const [discoveryPrompt, setDiscoveryPrompt] = useState<DiscoveryPromptState>({ kind: "idle" });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -96,8 +98,9 @@ export function ResumeUploader({
       setStatus("success");
       const location = parseBody.extraction?.location;
       if (location) {
-        setExtractedLocation(location);
+        setLocationInput(location);
       }
+      setNeedsLocationConfirmation(true);
       onComplete?.(parseBody as ParseDocumentResult);
 
       // The user shouldn't have to type a keyword to see what they came
@@ -109,16 +112,7 @@ export function ResumeUploader({
       // failure or an exhausted daily limit here shouldn't disrupt an
       // otherwise-successful resume upload, so it's swallowed rather than
       // surfaced as an error.
-      setDiscoveryPrompt({ kind: "running" });
-      runDiscoveryAction()
-        .then((result) => {
-          if (result.error) {
-            setDiscoveryPrompt({ kind: "none" });
-            return;
-          }
-          setDiscoveryPrompt({ kind: "found", count: result.found ?? 0 });
-        })
-        .catch(() => setDiscoveryPrompt({ kind: "none" }));
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("error");
@@ -264,30 +258,50 @@ export function ResumeUploader({
         </Alert>
       )}
 
-      <Dialog open={!!extractedLocation} onOpenChange={(open) => { if (!open) setExtractedLocation(null); }}>
+      <Dialog open={needsLocationConfirmation} onOpenChange={(open) => { if (!open) setNeedsLocationConfirmation(false); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update your location?</DialogTitle>
+            <DialogTitle>Where are you looking for roles?</DialogTitle>
             <DialogDescription>
-              We found <strong>{extractedLocation}</strong> on your resume. Would you like to save this as your primary location?
+              We successfully extracted your profile. Before we find your best matches, confirm your target location.
             </DialogDescription>
           </DialogHeader>
+          <div className="py-4">
+            <Input 
+              value={locationInput} 
+              onChange={(e) => setLocationInput(e.target.value)} 
+              placeholder="e.g. Singapore, Remote, or New York" 
+            />
+          </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setExtractedLocation(null)}>Skip</Button>
             <Button disabled={locationSaving} onClick={async () => {
-              if (!extractedLocation) return;
               setLocationSaving(true);
               try {
-                await saveLocationAction(extractedLocation);
+                if (locationInput.trim()) {
+                  await saveLocationAction(locationInput.trim());
+                }
+                setNeedsLocationConfirmation(false);
+                
+                // Now run discovery with the correct location
+                setDiscoveryPrompt({ kind: "running" });
+                runDiscoveryAction()
+                  .then((result) => {
+                    if (result.error) {
+                      setDiscoveryPrompt({ kind: "none" });
+                      return;
+                    }
+                    setDiscoveryPrompt({ kind: "found", count: result.found ?? 0 });
+                  })
+                  .catch(() => setDiscoveryPrompt({ kind: "none" }));
+                  
               } catch (err) {
                 console.error(err);
               } finally {
                 setLocationSaving(false);
-                setExtractedLocation(null);
               }
             }}>
               {locationSaving ? <WorklyLoader className="animate-spin size-4 mr-2" /> : null}
-              Save Location
+              Find my matches
             </Button>
           </DialogFooter>
         </DialogContent>

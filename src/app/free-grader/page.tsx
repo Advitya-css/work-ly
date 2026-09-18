@@ -200,7 +200,14 @@ export default function FreeGraderPage() {
           <div className="flex flex-col items-center justify-center gap-4">
             {error && (
               <Alert variant="destructive" className="max-w-md">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="flex flex-col items-start gap-3">
+                  <span>{error}</span>
+                  {error.includes("Create a free account") && (
+                    <Button asChild size="sm" className="font-bold">
+                      <Link href="/signup">Create free account <ArrowRight className="size-4 ml-1" /></Link>
+                    </Button>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
             <Button size="lg" className="w-full max-w-sm font-semibold text-base" onClick={handleScore} disabled={pending}>

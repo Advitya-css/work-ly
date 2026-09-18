@@ -21,6 +21,7 @@ export function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [type, setType] = useState("GENERAL");
   const [message, setMessage] = useState("");
   const pathname = usePathname();
@@ -28,8 +29,13 @@ export function FeedbackButton() {
   const handleSubmit = async () => {
     if (!message.trim()) return;
     setLoading(true);
-    await submitFeedbackAction({ type, message, url: pathname });
+    setSubmitError(null);
+    const result = await submitFeedbackAction({ type, message, url: pathname });
     setLoading(false);
+    if (result?.error) {
+      setSubmitError("Couldn't send that - please try again in a moment.");
+      return;
+    }
     setSuccess(true);
     setTimeout(() => {
       setOpen(false);
@@ -65,6 +71,9 @@ export function FeedbackButton() {
           </div>
         ) : (
           <div className="grid gap-4 py-4">
+            {submitError && (
+              <p className="text-sm text-destructive">{submitError}</p>
+            )}
             <Select value={type} onValueChange={setType}>
               <SelectTrigger>
                 <SelectValue placeholder="What kind of feedback?" />
