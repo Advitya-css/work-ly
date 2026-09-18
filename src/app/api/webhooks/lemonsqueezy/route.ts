@@ -21,8 +21,11 @@ export async function POST(req: Request) {
     const customData = payload.meta.custom_data;
 
     // We only care when a subscription is successfully created or renewed
-    if (eventName === "subscription_created" || eventName === "order_created") {
+    if (eventName === "subscription_created" || eventName === "order_created" || eventName === "subscription_updated") {
       const userId = customData?.user_id;
+      const variantId = payload.data?.attributes?.variant_id?.toString();
+      const isYearly = variantId === process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID;
+      const intervalAmount = isYearly ? "1 year" : "1 month";
       
       if (!userId) {
         console.error("No user_id found in Lemon Squeezy custom data");
@@ -31,11 +34,11 @@ export async function POST(req: Request) {
 
       // Upgrade the user to Pro in our database
       await pool.query(
-        `UPDATE users SET "isPro" = true, "updatedAt" = now() WHERE id = $1`,
+        `UPDATE users SET "isPro" = true, "proUntil" = now() + interval '${intervalAmount}', "updatedAt" = now() WHERE id = $1`,
         [userId]
       );
       
-      console.log(`Successfully upgraded user ${userId} to Pro!`);
+      console.log(`Successfully upgraded user ${userId} to Pro! Interval: ${intervalAmount}`);
     }
 
     // Handle cancellations (optional but good practice)

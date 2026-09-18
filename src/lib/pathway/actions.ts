@@ -66,6 +66,8 @@ export interface GeneratePathwayState {
 export async function generatePathwayAction(): Promise<GeneratePathwayState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  
+  if (!user.isPro) return { error: "The Dream Pathway is a Pro feature. Upgrade to unlock your personalized 30-day action plan." };
 
   const result = await generatePathway(user.id);
   if ("error" in result) return { error: result.error };
@@ -87,6 +89,8 @@ export async function generatePathwayAction(): Promise<GeneratePathwayState> {
 export async function generatePathwayFromDreamJobAction(dreamJobId: string): Promise<GeneratePathwayState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  
+  if (!user.isPro) return { error: "The Dream Pathway is a Pro feature. Upgrade to unlock your personalized 30-day action plan." };
 
   const result = await generatePathway(user.id, { dreamJobId });
   if ("error" in result) return { error: result.error };

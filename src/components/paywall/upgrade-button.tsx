@@ -10,10 +10,14 @@ interface UpgradeButtonProps {
 
 export function UpgradeButton({ interval = "monthly" }: UpgradeButtonProps) {
   return (
-    <UpgradeModal title="Work-ly Pro (Coming Soon)" description="Public checkouts are temporarily paused. Beta testers can redeem their invite codes below.">
+    <UpgradeModal 
+      interval={interval}
+      title="Unlock Work-ly Pro" 
+      description="Get the ultimate unfair advantage in your job hunt."
+    >
       <Button size="lg" className="gap-2 w-full sm:w-auto">
         <Sparkles className="size-4" />
-        Join Beta Waitlist
+        Upgrade Now
       </Button>
     </UpgradeModal>
   );
