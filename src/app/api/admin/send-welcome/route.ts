@@ -50,7 +50,7 @@ export async function GET(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `Work-ly <noreply@${fromDomain}>`,
+          from: `Advitya <advitya@${fromDomain}>`,
           to: user.email,
           subject: "Thank you for being one of our first 50 users!",
           html: `
