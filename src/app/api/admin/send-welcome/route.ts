@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db/pool";
 
 export async function GET(req: Request) {
-  // Security check
   const { searchParams } = new URL(req.url);
   if (searchParams.get("secret") !== "launch123") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,7 +15,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing RESEND_API_KEY" }, { status: 500 });
   }
 
-  // 🔴 1. ADD THE EMAILS YOU WANT TO EXCLUDE HERE (used during the real send):
   const excludedEmails = [
     "advitya@yourdomain.com", 
     "testaccount@gmail.com",
@@ -26,12 +24,9 @@ export async function GET(req: Request) {
   try {
     let users = [];
 
-    // If you pass ?testEmail=..., send ONLY to that email. Otherwise, fetch from DB.
     if (testEmail) {
-      console.log(`--- RUNNING IN TEST MODE FOR: ${testEmail} ---`);
       users = [{ email: testEmail, id: "test-id" }];
     } else {
-      console.log(`--- RUNNING IN PRODUCTION MODE ---`);
       const { rows } = await pool.query(`
         SELECT email, id FROM users 
         WHERE email IS NOT NULL 
@@ -42,15 +37,10 @@ export async function GET(req: Request) {
     }
 
     let sentCount = 0;
+    let lastError = null;
 
     for (const user of users) {
-      // 🔴 2. SKIP EXCLUDED EMAILS (Only applies during the real send)
-      if (!testEmail && excludedEmails.includes(user.email)) {
-        console.log(`Skipping excluded email: ${user.email}`);
-        continue;
-      }
-
-      // Stop once we actually send 50 emails
+      if (!testEmail && excludedEmails.includes(user.email)) continue;
       if (sentCount >= 50) break;
 
       const res = await fetch("https://api.resend.com/emails", {
@@ -60,7 +50,7 @@ export async function GET(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: `Advitya from Work-ly <advitya@${fromDomain}>`,
+          from: `Work-ly <noreply@${fromDomain}>`,
           to: user.email,
           subject: "Thank you for being one of our first 50 users!",
           html: `
@@ -83,20 +73,20 @@ export async function GET(req: Request) {
 
       if (res.ok) {
         sentCount++;
-        console.log(`Sent to ${user.email}`);
       } else {
-        const err = await res.text();
-        console.error(`Failed to send to ${user.email}:`, err);
+        lastError = await res.text();
       }
       
-      // Brief pause to avoid hitting Resend rate limits
       await new Promise(r => setTimeout(r, 200)); 
+    }
+
+    if (sentCount === 0 && lastError) {
+      return NextResponse.json({ success: false, error: lastError, mode: testEmail ? "test" : "production" });
     }
 
     return NextResponse.json({ success: true, totalSent: sentCount, mode: testEmail ? "test" : "production" });
 
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
