@@ -1,145 +1,139 @@
+import { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { Briefcase, MapPin, GraduationCap } from "lucide-react";
+import { getFullPathwayById } from "@/lib/pathway/get-full-pathway";
+import { getUserById } from "@/lib/db/users";
+import { MapPin, Flag, ArrowRight, Sparkles, Compass, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ACTION_WINDOW_LABEL, ACTION_WINDOW_ORDER } from "@/lib/pathway/labels";
 
-import { pool } from "@/lib/db/pool";
-import { Logo } from "@/components/shared/logo";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { toArray } from "@/lib/db/array";
+interface PageProps {
+  params: { id: string };
+}
 
-export const metadata: Metadata = {
-  title: "Career Profile",
-  description: "View my professional profile on Work-ly",
-  // Reachable by anyone with the link (that's the point of "Share Profile"),
-  // but not opted into search-engine indexing - that's a separate decision
-  // nobody's made yet, and this is still personal data.
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const pathway = await getFullPathwayById(params.id).catch(() => null);
+  if (!pathway) return { title: "Pathway not found" };
+  const user = await getUserById(pathway.userId);
+  const name = user?.name ? user.name.split(" ")[0] : "Someone";
+  return {
+    title: `${name}'s 30-Day Pathway to ${pathway.targetStateLabel} | Work-ly`,
+    description: `A personalized AI career transition plan from ${pathway.currentStateLabel} to ${pathway.targetStateLabel}.`,
+  };
+}
 
-export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  
-  const { rows } = await pool.query(
-    `SELECT cp.*, u.name, u."avatarUrl"
-     FROM career_profiles cp
-     JOIN users u ON cp."userId" = u.id
-     WHERE cp.id = $1 AND cp."isPublic" = true`,
-    [id]
-  );
-
-  const profile = rows[0];
-  // Same response whether the id doesn't exist or the owner never made it
-  // public - never confirm to a visitor that a given id is a real, private
-  // profile.
-  if (!profile) notFound();
-
-  const skills = profile.skills ? toArray(profile.skills) : [];
-  const initials = (profile.name || "U").charAt(0).toUpperCase();
+export default async function PublicPathwayPage({ params }: PageProps) {
+  const pathway = await getFullPathwayById(params.id).catch(() => null);
+  if (!pathway) notFound();
+  const user = await getUserById(pathway.userId);
+  const firstName = user?.name ? user.name.split(" ")[0] : "A Work-ly User";
 
   return (
-    <div className="min-h-screen bg-muted/10 flex flex-col">
-      <header className="flex h-14 items-center border-b border-border bg-background/50 backdrop-blur-md px-4 sm:px-6 sticky top-0 z-10">
-        <Logo />
-        <span className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">Public Profile</span>
-      </header>
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 selection:bg-primary/30 pb-32">
+      {/* Abstract background glows */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full bg-rose-500/10 blur-[120px]" />
+      </div>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 py-12 sm:py-24 relative overflow-hidden">
-        
-        {/* Decorative background meshes to make it look premium even when empty */}
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        
-        <Card className="w-full max-w-2xl overflow-hidden border-border/40 shadow-xl bg-background/80 backdrop-blur-xl relative z-10">
-          {/* Subtle gradient banner */}
-          <div className="h-32 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/30"></div>
+      <div className="relative z-10 max-w-3xl mx-auto px-6 pt-16 md:pt-24">
+        {/* Header section */}
+        <div className="mb-16">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-400 hover:text-zinc-100 transition-colors mb-12">
+            <Compass className="size-5 text-primary" />
+            Work-ly
+          </Link>
           
-          <CardContent className="relative px-6 pb-10 pt-0 sm:px-12">
-            <div className="flex flex-col items-center -mt-16 mb-6 text-center">
-              <Avatar className="size-32 border-4 border-background shadow-lg mb-4 bg-muted">
-                {profile.avatarUrl && (
-                  <AvatarImage src={profile.avatarUrl} alt={profile.name ?? "User"} referrerPolicy="no-referrer" />
-                )}
-                <AvatarFallback className="text-4xl font-semibold text-muted-foreground bg-muted">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                {profile.name || "Anonymous Professional"}
-              </h1>
-              
-              {profile.headline && (
-                <p className="mt-3 text-lg font-medium text-foreground/80 max-w-md">
-                  {profile.headline}
-                </p>
-              )}
-              
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-                {profile.location && (
-                  <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full"><MapPin className="size-4" />{profile.location}</span>
-                )}
-                {profile.currentRole && (
-                  <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full"><Briefcase className="size-4" />{profile.currentRole} {profile.currentCompany && `at ${profile.currentCompany}`}</span>
-                )}
-                {profile.university && (
-                  <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full"><GraduationCap className="size-4" />{profile.university}</span>
-                )}
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-500 mb-6 leading-tight">
+            {firstName}&apos;s Action Plan
+          </h1>
+          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-lg md:text-xl font-medium text-zinc-300 bg-white/5 p-4 md:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700">
+                <MapPin className="size-5 text-zinc-400" />
               </div>
+              <span className="line-clamp-1">{pathway.currentStateLabel}</span>
             </div>
+            <ArrowRight className="hidden sm:block size-5 text-zinc-500 shrink-0" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/20 border border-primary/30">
+                <Flag className="size-5 text-primary" />
+              </div>
+              <span className="line-clamp-1 text-white">{pathway.targetStateLabel}</span>
+            </div>
+          </div>
+        </div>
 
-            {/* Content Body - Only renders if data exists */}
-            <div className="flex flex-col gap-8 mt-10">
-              {profile.summary && (
-                <div className="text-center max-w-lg mx-auto">
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">About</h2>
-                  <div className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                    {profile.summary}
+        {/* Steps Timeline */}
+        <div className="space-y-12">
+          {pathway.steps.map((step, index) => {
+            const stepActions = pathway.actions.filter(a => a.stepId === step.id);
+            return (
+              <div key={step.id} className="relative group">
+                <div className="absolute -inset-y-6 -inset-x-6 bg-white/5 opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity duration-500" />
+                <div className="relative flex gap-6">
+                  {/* Timeline line */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex size-10 items-center justify-center rounded-full bg-zinc-900 border-2 border-zinc-800 text-zinc-500 font-bold tabular-nums">
+                      {index + 1}
+                    </div>
+                    {index !== pathway.steps.length - 1 && (
+                      <div className="w-0.5 h-full bg-gradient-to-b from-zinc-800 to-transparent mt-4 mb-2" />
+                    )}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 pb-8">
+                    <h2 className="text-2xl font-bold text-white mb-2">{step.title}</h2>
+                    <p className="text-zinc-400 text-lg leading-relaxed mb-6">{step.description}</p>
+                    
+                    {stepActions.length > 0 && (
+                      <div className="grid gap-3">
+                        {stepActions.map(action => (
+                          <div key={action.id} className="flex items-start gap-4 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
+                            <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-800">
+                              <CheckCircle2 className="size-4 text-zinc-500" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-zinc-200">{action.title}</p>
+                              <p className="text-sm text-zinc-500 mt-1">{action.description}</p>
+                              <div className="mt-3 flex items-center gap-2">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-800 text-zinc-300">
+                                  {ACTION_WINDOW_LABEL[action.window]}
+                                </span>
+                                
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-              {skills.length > 0 && (
-                <div className="text-center mt-2">
-                  <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-                    {skills.map((s) => (
-                      <Badge key={s} variant="secondary" className="font-medium text-xs px-2.5 py-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/10">
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(profile.experience || profile.education) && (
-                <div className="grid sm:grid-cols-2 gap-10 pt-10 border-t border-border/30 text-left">
-                  {profile.experience && (
-                    <div>
-                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                        <Briefcase className="size-4" /> Experience
-                      </h2>
-                      <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
-                        {profile.experience}
-                      </div>
-                    </div>
-                  )}
-                  {profile.education && (
-                    <div>
-                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                        <GraduationCap className="size-4" /> Education
-                      </h2>
-                      <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
-                        {profile.education}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </main>
+      {/* Sticky Bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-50 pointer-events-none">
+        <div className="max-w-3xl mx-auto flex items-center justify-between p-4 md:px-8 md:py-5 bg-zinc-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
+          <div className="hidden sm:block">
+            <p className="font-semibold text-white">Want your own action plan?</p>
+            <p className="text-sm text-zinc-400">Stop getting ghosted. AI career mapping for free.</p>
+          </div>
+          <div className="w-full sm:w-auto flex justify-center">
+            <Button asChild size="lg" className="rounded-full w-full sm:w-auto font-bold bg-white text-black hover:bg-zinc-200">
+              <Link href="/signup">
+                Generate My Pathway
+                <Sparkles className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
