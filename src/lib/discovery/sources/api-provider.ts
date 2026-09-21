@@ -53,15 +53,25 @@ export const apiProviderSource: JobSourceAdapter = {
 
         let defaultCountry = "gb";
     const loc = (context.homeLocation || "").toLowerCase();
-    if (loc.includes("san francisco") || loc.includes("new york") || loc.includes("california") || loc.includes("usa") || loc.includes("united states") || loc.endsWith(", us") || loc.endsWith(" us") || loc === "us") defaultCountry = "us";
+    
+    if (loc.includes("singapore") || loc === "sg" || loc.endsWith(", sg") || loc.endsWith(" sg")) defaultCountry = "sg";
+    else if (loc.includes("san francisco") || loc.includes("new york") || loc.includes("california") || loc.includes("usa") || loc.includes("united states") || loc.endsWith(", us") || loc.endsWith(" us") || loc === "us") defaultCountry = "us";
     else if (loc.includes("canada") || loc.endsWith(", ca") || loc.endsWith(" ca")) defaultCountry = "ca";
-    else if (loc.includes("united states") || loc.includes("usa") || loc.endsWith(", us") || loc.endsWith(" us")) defaultCountry = "us";
     else if (loc.includes("australia") || loc.endsWith(", au") || loc.endsWith(" au")) defaultCountry = "au";
     else if (loc.includes("india") || loc.endsWith(", in") || loc.endsWith(" in")) defaultCountry = "in";
     else if (loc.includes("germany") || loc.endsWith(", de") || loc.endsWith(" de")) defaultCountry = "de";
     else if (loc.includes("france") || loc.endsWith(", fr") || loc.endsWith(" fr")) defaultCountry = "fr";
     else if (loc.includes("new zealand") || loc.endsWith(", nz") || loc.endsWith(" nz")) defaultCountry = "nz";
     else if (loc.includes("south africa") || loc.endsWith(", za") || loc.endsWith(" za")) defaultCountry = "za";
+    else if (loc.includes("netherlands") || loc.includes("amsterdam") || loc.endsWith(", nl") || loc.endsWith(" nl")) defaultCountry = "nl";
+    else if (loc.includes("italy") || loc.endsWith(", it") || loc.endsWith(" it")) defaultCountry = "it";
+    else if (loc.includes("spain") || loc.endsWith(", es") || loc.endsWith(" es")) defaultCountry = "es";
+    else if (loc.includes("poland") || loc.endsWith(", pl") || loc.endsWith(" pl")) defaultCountry = "pl";
+    else if (loc.includes("brazil") || loc.endsWith(", br") || loc.endsWith(" br")) defaultCountry = "br";
+    else if (loc.includes("mexico") || loc.endsWith(", mx") || loc.endsWith(" mx")) defaultCountry = "mx";
+    else if (loc.includes("austria") || loc.endsWith(", at") || loc.endsWith(" at")) defaultCountry = "at";
+    else if (loc.includes("switzerland") || loc.endsWith(", ch") || loc.endsWith(" ch")) defaultCountry = "ch";
+    else if (loc.includes("belgium") || loc.endsWith(", be") || loc.endsWith(" be")) defaultCountry = "be";
 
     const country = String(context.config.country ?? defaultCountry).toLowerCase();
     let what = String(context.config.keyword ?? context.query ?? "").trim();
@@ -80,7 +90,7 @@ export const apiProviderSource: JobSourceAdapter = {
     if (where) {
       // Adzuna API is already scoped by country in the URL. Passing the country in the 'where' 
       // parameter frequently breaks its geocoding. Strip known countries.
-      where = where.replace(/,\s*(canada|ca|united states|usa|us|australia|au|india|in|germany|de|france|fr|new zealand|nz|south africa|za)$/i, '').trim();
+      where = where.replace(/,\s*(canada|ca|united states|usa|us|australia|au|india|in|germany|de|france|fr|new zealand|nz|south africa|za|singapore|sg|netherlands|nl|italy|it|spain|es|poland|pl|brazil|br|mexico|mx|austria|at|switzerland|ch|belgium|be)$/i, '').trim();
       params.set("where", where);
     }
     if (context.isPartTimeMode) {
