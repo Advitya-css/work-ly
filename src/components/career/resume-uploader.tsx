@@ -17,6 +17,7 @@ import { completeOnboardingAndGoToDiscoverAction } from "@/lib/onboarding/action
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import type { ParseDocumentResult } from "@/lib/career/parse-document";
+import { LocationAutocomplete } from "@/components/career/location-autocomplete";
 
 type DiscoveryPromptState =
   | { kind: "idle" }
@@ -267,10 +268,11 @@ export function ResumeUploader({
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Input 
-              value={locationInput} 
-              onChange={(e) => setLocationInput(e.target.value)} 
-              placeholder="e.g. Singapore, Remote, or New York" 
+            <LocationAutocomplete
+              id="location"
+              name="location"
+              defaultValue={locationInput}
+              onChange={(v) => setLocationInput(v)}
             />
           </div>
           <DialogFooter>

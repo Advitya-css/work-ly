@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { CareerProfile } from "@/lib/db/types";
+import { LocationAutocomplete } from "@/components/career/location-autocomplete";
 
 const initialState: CareerActionState = {};
 
@@ -39,11 +40,10 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="location">Home location</Label>
-              <Input
+              <LocationAutocomplete
                 id="location"
                 name="location"
                 defaultValue={profile?.location ?? ""}
-                placeholder="Bengaluru, India"
               />
               <p className="text-xs text-muted-foreground">
                 Anchors location matching on Opportunities and Discovery. Add other places you would also
