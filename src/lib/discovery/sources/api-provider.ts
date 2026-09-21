@@ -51,27 +51,46 @@ export const apiProviderSource: JobSourceAdapter = {
     const appKey = process.env.ADZUNA_APP_KEY;
     if (!appId || !appKey) return [];
 
-        let defaultCountry = "gb";
-    const loc = (context.homeLocation || "").toLowerCase();
-    
-    if (loc.includes("singapore") || loc === "sg" || loc.endsWith(", sg") || loc.endsWith(" sg")) defaultCountry = "sg";
-    else if (loc.includes("san francisco") || loc.includes("new york") || loc.includes("california") || loc.includes("usa") || loc.includes("united states") || loc.endsWith(", us") || loc.endsWith(" us") || loc === "us") defaultCountry = "us";
-    else if (loc.includes("canada") || loc.endsWith(", ca") || loc.endsWith(" ca")) defaultCountry = "ca";
-    else if (loc.includes("australia") || loc.endsWith(", au") || loc.endsWith(" au")) defaultCountry = "au";
-    else if (loc.includes("india") || loc.endsWith(", in") || loc.endsWith(" in")) defaultCountry = "in";
-    else if (loc.includes("germany") || loc.endsWith(", de") || loc.endsWith(" de")) defaultCountry = "de";
-    else if (loc.includes("france") || loc.endsWith(", fr") || loc.endsWith(" fr")) defaultCountry = "fr";
-    else if (loc.includes("new zealand") || loc.endsWith(", nz") || loc.endsWith(" nz")) defaultCountry = "nz";
-    else if (loc.includes("south africa") || loc.endsWith(", za") || loc.endsWith(" za")) defaultCountry = "za";
-    else if (loc.includes("netherlands") || loc.includes("amsterdam") || loc.endsWith(", nl") || loc.endsWith(" nl")) defaultCountry = "nl";
-    else if (loc.includes("italy") || loc.endsWith(", it") || loc.endsWith(" it")) defaultCountry = "it";
-    else if (loc.includes("spain") || loc.endsWith(", es") || loc.endsWith(" es")) defaultCountry = "es";
-    else if (loc.includes("poland") || loc.endsWith(", pl") || loc.endsWith(" pl")) defaultCountry = "pl";
-    else if (loc.includes("brazil") || loc.endsWith(", br") || loc.endsWith(" br")) defaultCountry = "br";
-    else if (loc.includes("mexico") || loc.endsWith(", mx") || loc.endsWith(" mx")) defaultCountry = "mx";
-    else if (loc.includes("austria") || loc.endsWith(", at") || loc.endsWith(" at")) defaultCountry = "at";
-    else if (loc.includes("switzerland") || loc.endsWith(", ch") || loc.endsWith(" ch")) defaultCountry = "ch";
-    else if (loc.includes("belgium") || loc.endsWith(", be") || loc.endsWith(" be")) defaultCountry = "be";
+        
+    const loc = (context.homeLocation || "").toLowerCase().trim();
+    let defaultCountry = "us"; // US is a better global default than GB for tech jobs if unrecognized
+
+    // Extensive mapping of global cities, regions, and countries to Adzuna's 20 supported country codes
+    const geoMap: Record<string, string[]> = {
+      us: ["us", "usa", "united states", "new york", "san francisco", "los angeles", "chicago", "boston", "seattle", "austin", "california", "texas", "ny", "sf", "bay area", "atlanta", "denver", "miami", "washington", "dallas", "houston"],
+      ca: ["ca", "canada", "toronto", "vancouver", "montreal", "calgary", "ottawa", "ontario", "bc", "quebec", "alberta", "waterloo"],
+      gb: ["gb", "uk", "united kingdom", "london", "manchester", "edinburgh", "birmingham", "scotland", "wales", "england", "glasgow"],
+      au: ["au", "australia", "sydney", "melbourne", "brisbane", "perth", "adelaide", "nsw", "victoria", "queensland"],
+      in: ["in", "india", "bangalore", "bengaluru", "mumbai", "delhi", "hyderabad", "pune", "chennai", "gurgaon", "noida", "kerala"],
+      sg: ["sg", "singapore"],
+      de: ["de", "germany", "berlin", "munich", "hamburg", "frankfurt", "cologne", "stuttgart"],
+      fr: ["fr", "france", "paris", "lyon", "marseille", "toulouse"],
+      nl: ["nl", "netherlands", "amsterdam", "rotterdam", "the hague", "utrecht", "holland"],
+      za: ["za", "south africa", "cape town", "johannesburg", "pretoria", "durban"],
+      nz: ["nz", "new zealand", "auckland", "wellington", "christchurch"],
+      it: ["it", "italy", "rome", "milan", "naples", "turin"],
+      es: ["es", "spain", "madrid", "barcelona", "valencia", "seville"],
+      pl: ["pl", "poland", "warsaw", "krakow", "wroclaw"],
+      br: ["br", "brazil", "sao paulo", "rio de janeiro", "brasilia"],
+      mx: ["mx", "mexico", "mexico city", "guadalajara", "monterrey"],
+      at: ["at", "austria", "vienna", "salzburg"],
+      ch: ["ch", "switzerland", "zurich", "geneva", "basel"],
+      be: ["be", "belgium", "brussels", "antwerp"],
+      ru: ["ru", "russia", "moscow", "st petersburg"]
+    };
+
+    // Detect country by checking exact matches and includes
+    for (const [code, terms] of Object.entries(geoMap)) {
+      if (terms.some(term => 
+        loc === term || 
+        loc.endsWith(`, ${term}`) || 
+        loc.endsWith(` ${term}`) ||
+        loc.includes(`${term},`)
+      )) {
+        defaultCountry = code;
+        break;
+      }
+    }
 
     const country = String(context.config.country ?? defaultCountry).toLowerCase();
     let what = String(context.config.keyword ?? context.query ?? "").trim();
@@ -90,7 +109,7 @@ export const apiProviderSource: JobSourceAdapter = {
     if (where) {
       // Adzuna API is already scoped by country in the URL. Passing the country in the 'where' 
       // parameter frequently breaks its geocoding. Strip known countries.
-      where = where.replace(/,\s*(canada|ca|united states|usa|us|australia|au|india|in|germany|de|france|fr|new zealand|nz|south africa|za|singapore|sg|netherlands|nl|italy|it|spain|es|poland|pl|brazil|br|mexico|mx|austria|at|switzerland|ch|belgium|be)$/i, '').trim();
+      where = where.replace(/,\s*(canada|ca|united states|usa|us|australia|au|india|in|germany|de|france|fr|new zealand|nz|south africa|za|singapore|sg|netherlands|nl|italy|it|spain|es|poland|pl|brazil|br|mexico|mx|austria|at|switzerland|ch|belgium|be|uk|united kingdom|gb|england|russia|ru)$/i, '').trim();
       params.set("where", where);
     }
     if (context.isPartTimeMode) {
