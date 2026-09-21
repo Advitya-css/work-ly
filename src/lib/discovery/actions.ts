@@ -274,3 +274,13 @@ export async function listAvailableAdaptersAction() {
     readyWithoutSetup: adapter.id === "demo-feed",
   }));
 }
+
+export async function clearAllDiscoveredJobsAction(): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Unauthorized");
+  await pool.query(
+    `DELETE FROM discovered_jobs WHERE "userId" = $1 AND "status" != 'CONVERTED'`,
+    [user.id]
+  );
+  revalidatePath("/discover");
+}

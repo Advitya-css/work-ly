@@ -23,7 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { runDiscoveryAction, dismissDiscoveredJobAction, trackDiscoveredJobAction } from "@/lib/discovery/actions";
+import { runDiscoveryAction, dismissDiscoveredJobAction, trackDiscoveredJobAction, clearAllDiscoveredJobsAction } from "@/lib/discovery/actions";
+import { Trash2 } from "lucide-react";
 import { BUCKETS, SOURCE_KIND_LABEL } from "@/lib/discovery/labels";
 import { searchJobs, type SearchContext } from "@/lib/search/engine";
 import { formatSalaryRange } from "@/lib/format";
@@ -267,6 +268,19 @@ export function DiscoveryBoard({
             <option value="SENIOR">Senior</option>
             <option value="EXECUTIVE">Executive</option>
           </select>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="text-muted-foreground"
+            onClick={async () => {
+              if (confirm("Are you sure you want to clear your discovery pipeline?")) {
+                await clearAllDiscoveredJobsAction();
+              }
+            }}
+          >
+            <Trash2 className="size-4" />
+            Clear
+          </Button>
           <Button type="button" onClick={discover} disabled={pending} className={
             searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
             searchMode === "company" ? "bg-blue-600 hover:bg-blue-700 text-white" :
