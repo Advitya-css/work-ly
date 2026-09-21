@@ -13,6 +13,7 @@ import {
   type LocationActionState,
 } from "@/lib/settings/location-actions";
 import type { CareerProfile } from "@/lib/db/types";
+import { LocationAutocomplete } from "@/components/career/location-autocomplete";
 
 const initialState: LocationActionState = {};
 
@@ -34,11 +35,10 @@ export function LocationSettingsForm({ profile }: { profile: CareerProfile | nul
     <form action={formAction} className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="settings-location">Where you are now</Label>
-        <Input
+        <LocationAutocomplete
           id="settings-location"
           name="location"
           defaultValue={profile?.location ?? ""}
-          placeholder="Manchester, United Kingdom"
         />
         <p className="text-xs text-muted-foreground">
           Anchors location matching everywhere in Work-ly.
