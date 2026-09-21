@@ -259,8 +259,8 @@ export function ResumeUploader({
         </Alert>
       )}
 
-      <Dialog open={needsLocationConfirmation}>
-        <DialogContent onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()} className="[&>button]:hidden">
+      <Dialog open={needsLocationConfirmation} onOpenChange={(open) => { if (!open) setNeedsLocationConfirmation(false); }}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Where are you looking for roles?</DialogTitle>
             <DialogDescription>
