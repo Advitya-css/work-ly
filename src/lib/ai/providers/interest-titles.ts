@@ -71,11 +71,11 @@ export async function suggestTitlesForInterest(interestText: string): Promise<st
   }
 }
 
-const IDEAL_SYSTEM_PROMPT = `You are an expert technical recruiter and local career coach. Your task is to read a candidate's full resume/profile and their target role (if provided), and generate exactly 3 highly specific, searchable job titles that this candidate is overwhelmingly qualified for.
-- CRITICAL: You must adapt the job titles to match the standard market terminology in the candidate's TARGET LOCATION (if provided). If they are relocating to a new country, translate their past titles into the most common equivalents for their target market.
-- Do NOT generate generic titles like "Data Analyst" or "Manager".
-- DO generate highly specific titles like "Senior Spatial Data Analyst", "Urban Planning Data Scientist", "Geospatial Analyst", etc.
-- The titles MUST be real, actively used titles on job boards in their target location.
+const IDEAL_SYSTEM_PROMPT = `You are an elite, highly-paid executive headhunter. Your task is to analyze a candidate's full resume and target role (if provided), and generate exactly 4 highly specific, high-paying, intensely searchable job titles they are OVERWHELMINGLY qualified for right now.
+- CRITICAL: You must adapt the job titles to match the standard market terminology in their TARGET LOCATION.
+- NEVER generate generic titles like "Software Engineer", "Manager", or "Analyst". 
+- Find the HIDDEN, highly-lucrative niches their exact combination of skills qualifies them for (e.g., "Developer Relations Engineer", "Staff Machine Learning Infrastructure Engineer", "Quantitative Research Analyst").
+- Do NOT hallucinate. The titles MUST be actively used by real companies right now. 
 - Output ONLY the array of titles.`;
 
 const IDEAL_SCHEMA = {
@@ -111,7 +111,7 @@ ${profileText.slice(0, 3000)}`;
     return parsed.titles
       .filter((t): t is string => typeof t === "string" && t.trim().length > 0 && t.length < MAX_TITLE_LENGTH)
       .map((t) => t.trim())
-      .slice(0, 3);
+      .slice(0, 4);
   } catch (error) {
     console.warn("[workly:ai] ideal-title suggestion failed:", error);
     return targetRole ? [targetRole] : [];

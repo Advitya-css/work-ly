@@ -332,7 +332,7 @@ export async function runDiscovery(
         // Per-term limit shrinks as more terms fan out, so a 4-title
         // Explore search doesn't pull in 4x as many total candidates as a
         // plain single-term search.
-        const perTermLimit = Math.max(10, Math.floor((options.limitPerSource ?? 50) / searchTerms.length));
+        const perTermLimit = Math.max(20, Math.floor((options.limitPerSource ?? 150) / Math.max(1, searchTerms.length)));
         const rawBatches = await Promise.all(
           searchTerms.map((term) =>
             adapter.ingest({
@@ -355,11 +355,18 @@ export async function runDiscovery(
         sourcesRun++;
 
         const normalized: NormalizedListing[] = [];
+        const THIRTY_DAYS_AGO = new Date();
+        THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
+        
         for (const item of raw) {
           const listing = await normalizeListingAsync(item);
+          
+          // Strict Quality Control: No ghost jobs
+          if (listing.postedAt && listing.postedAt < THIRTY_DAYS_AGO) {
+             continue; // Skip jobs older than 30 days
+          }
+          
           const validation = adapter.validate(listing);
-          // Invalid listings are dropped rather than stored with holes -
-          // showing a titleless entry would be worse than showing nothing.
           if (validation.ok) normalized.push(listing);
         }
 
