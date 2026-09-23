@@ -63,7 +63,7 @@ export async function GET(req: Request) {
         const text = profileSearchText(profile);
         
         const idealTitles = await suggestIdealJobSearches(text, targetRole, profile.profile?.location ?? null);
-        const queries = idealTitles.length > 0 ? idealTitles : [targetRole];
+        const queries = idealTitles.length > 0 ? Array.from(new Set([targetRole, ...idealTitles].filter((t): t is string => Boolean(t)))) : [targetRole];
         
         // Auto-provision keyless boards if they don't have them
         const { rows: existingSources } = await pool.query(`SELECT "adapterId" FROM job_source_configs WHERE "userId" = $1`, [userId]);

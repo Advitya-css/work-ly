@@ -148,3 +148,23 @@ export async function updateUserPassword(userId: string, passwordHash: string): 
     [userId, passwordHash],
   );
 }
+
+export async function processReferral(newUserId: string, referrerId: string): Promise<void> {
+  await pool.query(
+    `UPDATE users 
+     SET "referredBy" = $2, 
+         "isPro" = true,
+         "proUntil" = COALESCE("proUntil", now()) + interval '30 days',
+         "updatedAt" = now() 
+     WHERE id = $1`,
+    [newUserId, referrerId]
+  );
+  await pool.query(
+    `UPDATE users 
+     SET "isPro" = true,
+         "proUntil" = COALESCE("proUntil", now()) + interval '30 days',
+         "updatedAt" = now() 
+     WHERE id = $1`,
+    [referrerId]
+  );
+}

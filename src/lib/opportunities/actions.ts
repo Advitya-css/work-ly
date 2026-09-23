@@ -51,6 +51,7 @@ import { getJobById } from "@/lib/db/jobs";
 export async function generateTailoredApplicationAction(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
+  if (!user.isPro) return { error: "Pro required to tailor applications." };
 
   if (!(await checkRateLimit(`tailor_app_${user.id}`, 5, 60))) {
     return { error: "Please wait a minute before tailoring another application." };

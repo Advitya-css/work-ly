@@ -33,8 +33,8 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
   };
 
   const handleCopy = () => {
-    if (!data) return;
-    const text = data.questions.map((q, i) => `Q${i + 1}: ${q.question}\nRed Flag: ${q.redFlag}\nGreen Flag: ${q.greenFlag}\n`).join("\n");
+    if (!data?.questions || !Array.isArray(data.questions)) return;
+    const text = data.questions.map((q: any, i: number) => `Q${i + 1}: ${q.question}\nRed Flag: ${q.redFlag}\nGreen Flag: ${q.greenFlag}\n`).join("\n");
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -94,7 +94,7 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
 
             {data && !loading && (
               <div className="flex flex-col gap-6">
-                {data.questions.map((q, i) => (
+                {Array.isArray(data?.questions) ? data.questions.map((q: any, i: number) => (
                   <div key={i} className="flex flex-col gap-3 bg-background border border-border rounded-xl p-5 shadow-sm">
                     <h4 className="font-semibold text-base text-foreground leading-snug">
                       <span className="text-muted-foreground mr-2">{i + 1}.</span>
@@ -123,7 +123,7 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : <p className="text-sm text-muted-foreground text-center py-4">Failed to parse interview questions. Please try again.</p>}
               </div>
             )}
           </div>

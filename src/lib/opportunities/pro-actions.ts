@@ -5,10 +5,16 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { generateTailoredApplication, generateFollowUpEmail } from "@/lib/ai/providers/tailor-ai";
 import { aiProvider } from "@/lib/ai";
+import { checkRateLimit } from "@/lib/rate-limit";
+
 
 export async function generateTailoredResumeAction(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
+  if (!user.isPro) throw new Error("Pro required");
+  if (!(await checkRateLimit(`pro_ai_${user.id}`, 10, 3600))) {
+    throw new Error("Too many requests. Please try again later.");
+  }
 
   const [profile, opp] = await Promise.all([
     getFullCareerProfile(user.id),
@@ -28,6 +34,10 @@ export async function generateTailoredResumeAction(opportunityId: string) {
 export async function generateOutreachEmailAction(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
+  if (!user.isPro) throw new Error("Pro required");
+  if (!(await checkRateLimit(`pro_ai_${user.id}`, 10, 3600))) {
+    throw new Error("Too many requests. Please try again later.");
+  }
 
   const [profile, opp] = await Promise.all([
     getFullCareerProfile(user.id),
@@ -62,6 +72,10 @@ Return ONLY the email text. No markdown fences.`;
 export async function generateInterviewPrepAction(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
+  if (!user.isPro) throw new Error("Pro required");
+  if (!(await checkRateLimit(`pro_ai_${user.id}`, 10, 3600))) {
+    throw new Error("Too many requests. Please try again later.");
+  }
 
   const [profile, opp] = await Promise.all([
     getFullCareerProfile(user.id),
@@ -92,8 +106,32 @@ Return ONLY the JSON. No markdown fences.`;
   const res = await aiProvider.complete({
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
+    responseSchema: {
+      type: "object",
+      properties: {
+        questions: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              question: { type: "string" },
+              redFlag: { type: "string" },
+              greenFlag: { type: "string" }
+            },
+            required: ["question", "redFlag", "greenFlag"],
+            additionalProperties: false
+          }
+        }
+      },
+      required: ["questions"],
+      additionalProperties: false
+    }
   });
 
+  if (res.parsed) {
+    return res.parsed;
+  }
+  
   try {
     const raw = res.content.replace(/^[\s\S]*?\{/, "{").replace(/\s*\}[\s\S]*$/, "}");
     const parsed = JSON.parse(raw) as any;

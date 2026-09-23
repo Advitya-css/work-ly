@@ -162,10 +162,13 @@ export async function deleteCareerGoalAction(id: string): Promise<void> {
   revalidatePath("/dashboard");
 }
 
+import { markUserOnboarded } from "@/lib/db/users";
+
 export async function saveLocationAction(location: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
   await upsertCareerProfile(user.id, { location });
+  await markUserOnboarded(user.id);
   revalidatePath("/career-profile");
   return { success: true };
 }

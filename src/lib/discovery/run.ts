@@ -225,7 +225,7 @@ export async function runDiscovery(
     if (!query || query.trim() === "") {
       const idealTitles = await suggestIdealJobSearches(profileText, careerGoal?.primaryTargetRole ?? null, profile.profile?.location ?? null);
       if (idealTitles.length > 0) {
-        searchTerms = idealTitles;
+        searchTerms = Array.from(new Set([careerGoal?.primaryTargetRole, ...idealTitles].filter((t): t is string => Boolean(t))));
       }
     }
 
@@ -362,8 +362,8 @@ export async function runDiscovery(
           const listing = await normalizeListingAsync(item);
           
           // Strict Quality Control: No ghost jobs
-          if (listing.postedAt && listing.postedAt < THIRTY_DAYS_AGO) {
-             continue; // Skip jobs older than 30 days
+          if (!listing.postedAt || listing.postedAt < THIRTY_DAYS_AGO) {
+             continue; // Skip jobs older than 30 days or missing a date entirely
           }
           
           const validation = adapter.validate(listing);

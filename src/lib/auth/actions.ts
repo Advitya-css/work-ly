@@ -19,7 +19,7 @@ export async function signUpAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_login_${ip}`, 5, 60))) {
+  if (!(await checkRateLimit(`auth_signup_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later.", values: { name: formData.get("name"), email: formData.get("email") } };
   }
   const parsed = signUpSchema.safeParse({
@@ -76,6 +76,16 @@ export async function signUpAction(
     };
   }
 
+  const refCode = formData.get("refCode");
+  if (refCode && typeof refCode === "string" && result.user?.id) {
+    const { processReferral } = await import("@/lib/db/users");
+    try {
+      await processReferral(result.user.id, refCode);
+    } catch (e) {
+      console.error("Failed to process referral code", e);
+    }
+  }
+
   if (result.needsVerification) {
     redirect(`/verify-email?email=${encodeURIComponent(result.verificationEmail ?? parsed.data.email)}`);
   }
@@ -89,7 +99,7 @@ export async function signInAction(
   formData: FormData,
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
-  if (!(await checkRateLimit(`auth_signup_${ip}`, 5, 60))) {
+  if (!(await checkRateLimit(`auth_login_${ip}`, 5, 60))) {
     return { error: "Too many attempts. Please try again later." };
   }
   const parsed = signInSchema.safeParse({

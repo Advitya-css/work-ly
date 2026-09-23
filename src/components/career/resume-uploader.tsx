@@ -57,6 +57,7 @@ function uploadWithProgress(file: File, onProgress: (pct: number) => void): Prom
 
 export function ResumeUploader({
   onComplete,
+  autoOnboardAndRedirect
 }: {
   onComplete?: (result: ParseDocumentResult) => void;
   autoOnboardAndRedirect?: boolean;
@@ -118,7 +119,7 @@ export function ResumeUploader({
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("error");
     }
-  }, [onComplete]);
+  }, [onComplete, autoOnboardAndRedirect]);
 
   function reset() {
     setStatus("idle");
@@ -290,11 +291,16 @@ export function ResumeUploader({
                   .then((result) => {
                     if (result.error) {
                       setDiscoveryPrompt({ kind: "none" });
+                      if (autoOnboardAndRedirect) router.push("/discover");
                       return;
                     }
                     setDiscoveryPrompt({ kind: "found", count: result.found ?? 0 });
+                    if (autoOnboardAndRedirect) router.push("/discover");
                   })
-                  .catch(() => setDiscoveryPrompt({ kind: "none" }));
+                  .catch(() => {
+                    setDiscoveryPrompt({ kind: "none" });
+                    if (autoOnboardAndRedirect) router.push("/discover");
+                  });
                   
               } catch (err) {
                 console.error(err);

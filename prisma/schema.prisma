@@ -39,6 +39,7 @@ model User {
   updatedAt                   DateTime  @updatedAt
 
   isPro           Boolean   @default(false)
+  referredBy      String?
   termsAcceptedAt DateTime?
   termsVersion    String?
   proUntil        DateTime?

@@ -47,6 +47,7 @@ export type CareerProfileMinAggregateOutputType = {
   isFreelanceMode: boolean | null
   availability: string | null
   isPublic: boolean | null
+  isSampleData: boolean | null
   resumeFileName: string | null
   resumeFileUrl: string | null
   resumeUploadedAt: Date | null
@@ -73,6 +74,7 @@ export type CareerProfileMaxAggregateOutputType = {
   isFreelanceMode: boolean | null
   availability: string | null
   isPublic: boolean | null
+  isSampleData: boolean | null
   resumeFileName: string | null
   resumeFileUrl: string | null
   resumeUploadedAt: Date | null
@@ -99,6 +101,7 @@ export type CareerProfileCountAggregateOutputType = {
   isFreelanceMode: number
   availability: number
   isPublic: number
+  isSampleData: number
   skills: number
   resumeFileName: number
   resumeFileUrl: number
@@ -138,6 +141,7 @@ export type CareerProfileMinAggregateInputType = {
   isFreelanceMode?: true
   availability?: true
   isPublic?: true
+  isSampleData?: true
   resumeFileName?: true
   resumeFileUrl?: true
   resumeUploadedAt?: true
@@ -164,6 +168,7 @@ export type CareerProfileMaxAggregateInputType = {
   isFreelanceMode?: true
   availability?: true
   isPublic?: true
+  isSampleData?: true
   resumeFileName?: true
   resumeFileUrl?: true
   resumeUploadedAt?: true
@@ -190,6 +195,7 @@ export type CareerProfileCountAggregateInputType = {
   isFreelanceMode?: true
   availability?: true
   isPublic?: true
+  isSampleData?: true
   skills?: true
   resumeFileName?: true
   resumeFileUrl?: true
@@ -306,6 +312,7 @@ export type CareerProfileGroupByOutputType = {
   isFreelanceMode: boolean
   availability: string | null
   isPublic: boolean
+  isSampleData: boolean
   skills: string[]
   resumeFileName: string | null
   resumeFileUrl: string | null
@@ -358,6 +365,7 @@ export type CareerProfileWhereInput = {
   isFreelanceMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   isPublic?: Prisma.BoolFilter<"CareerProfile"> | boolean
+  isSampleData?: Prisma.BoolFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
@@ -395,6 +403,7 @@ export type CareerProfileOrderByWithRelationInput = {
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublic?: Prisma.SortOrder
+  isSampleData?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -435,6 +444,7 @@ export type CareerProfileWhereUniqueInput = Prisma.AtLeast<{
   isFreelanceMode?: Prisma.BoolFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   isPublic?: Prisma.BoolFilter<"CareerProfile"> | boolean
+  isSampleData?: Prisma.BoolFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableFilter<"CareerProfile"> | string | null
@@ -472,6 +482,7 @@ export type CareerProfileOrderByWithAggregationInput = {
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublic?: Prisma.SortOrder
+  isSampleData?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -509,6 +520,7 @@ export type CareerProfileScalarWhereWithAggregatesInput = {
   isFreelanceMode?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
   availability?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
   isPublic?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
+  isSampleData?: Prisma.BoolWithAggregatesFilter<"CareerProfile"> | boolean
   skills?: Prisma.StringNullableListFilter<"CareerProfile">
   resumeFileName?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
   resumeFileUrl?: Prisma.StringNullableWithAggregatesFilter<"CareerProfile"> | string | null
@@ -537,6 +549,7 @@ export type CareerProfileCreateInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -574,6 +587,7 @@ export type CareerProfileUncheckedCreateInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -609,6 +623,7 @@ export type CareerProfileUpdateInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -646,6 +661,7 @@ export type CareerProfileUncheckedUpdateInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -682,6 +698,7 @@ export type CareerProfileCreateManyInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -710,6 +727,7 @@ export type CareerProfileUpdateManyMutationInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -739,6 +757,7 @@ export type CareerProfileUncheckedUpdateManyInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -781,6 +800,7 @@ export type CareerProfileCountOrderByAggregateInput = {
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
+  isSampleData?: Prisma.SortOrder
   skills?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
@@ -814,6 +834,7 @@ export type CareerProfileMaxOrderByAggregateInput = {
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
+  isSampleData?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
   resumeUploadedAt?: Prisma.SortOrder
@@ -840,6 +861,7 @@ export type CareerProfileMinOrderByAggregateInput = {
   isFreelanceMode?: Prisma.SortOrder
   availability?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
+  isSampleData?: Prisma.SortOrder
   resumeFileName?: Prisma.SortOrder
   resumeFileUrl?: Prisma.SortOrder
   resumeUploadedAt?: Prisma.SortOrder
@@ -1030,6 +1052,7 @@ export type CareerProfileCreateWithoutUserInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1065,6 +1088,7 @@ export type CareerProfileUncheckedCreateWithoutUserInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1116,6 +1140,7 @@ export type CareerProfileUpdateWithoutUserInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1151,6 +1176,7 @@ export type CareerProfileUncheckedUpdateWithoutUserInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1186,6 +1212,7 @@ export type CareerProfileCreateWithoutEducationsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1222,6 +1249,7 @@ export type CareerProfileUncheckedCreateWithoutEducationsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1272,6 +1300,7 @@ export type CareerProfileUpdateWithoutEducationsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1308,6 +1337,7 @@ export type CareerProfileUncheckedUpdateWithoutEducationsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1342,6 +1372,7 @@ export type CareerProfileCreateWithoutExperiencesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1378,6 +1409,7 @@ export type CareerProfileUncheckedCreateWithoutExperiencesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1428,6 +1460,7 @@ export type CareerProfileUpdateWithoutExperiencesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1464,6 +1497,7 @@ export type CareerProfileUncheckedUpdateWithoutExperiencesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1498,6 +1532,7 @@ export type CareerProfileCreateWithoutProjectsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1534,6 +1569,7 @@ export type CareerProfileUncheckedCreateWithoutProjectsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1584,6 +1620,7 @@ export type CareerProfileUpdateWithoutProjectsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1620,6 +1657,7 @@ export type CareerProfileUncheckedUpdateWithoutProjectsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1654,6 +1692,7 @@ export type CareerProfileCreateWithoutSkillEntriesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1690,6 +1729,7 @@ export type CareerProfileUncheckedCreateWithoutSkillEntriesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1740,6 +1780,7 @@ export type CareerProfileUpdateWithoutSkillEntriesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1776,6 +1817,7 @@ export type CareerProfileUncheckedUpdateWithoutSkillEntriesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1810,6 +1852,7 @@ export type CareerProfileCreateWithoutCandidateValuesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1846,6 +1889,7 @@ export type CareerProfileUncheckedCreateWithoutCandidateValuesInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -1896,6 +1940,7 @@ export type CareerProfileUpdateWithoutCandidateValuesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1932,6 +1977,7 @@ export type CareerProfileUncheckedUpdateWithoutCandidateValuesInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1966,6 +2012,7 @@ export type CareerProfileCreateWithoutAchievementsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -2002,6 +2049,7 @@ export type CareerProfileUncheckedCreateWithoutAchievementsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -2052,6 +2100,7 @@ export type CareerProfileUpdateWithoutAchievementsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2088,6 +2137,7 @@ export type CareerProfileUncheckedUpdateWithoutAchievementsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2122,6 +2172,7 @@ export type CareerProfileCreateWithoutCertificationsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -2158,6 +2209,7 @@ export type CareerProfileUncheckedCreateWithoutCertificationsInput = {
   isFreelanceMode?: boolean
   availability?: string | null
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: Prisma.CareerProfileCreateskillsInput | string[]
   resumeFileName?: string | null
   resumeFileUrl?: string | null
@@ -2208,6 +2260,7 @@ export type CareerProfileUpdateWithoutCertificationsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2244,6 +2297,7 @@ export type CareerProfileUncheckedUpdateWithoutCertificationsInput = {
   isFreelanceMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   availability?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isSampleData?: Prisma.BoolFieldUpdateOperationsInput | boolean
   skills?: Prisma.CareerProfileUpdateskillsInput | string[]
   resumeFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resumeFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2364,6 +2418,7 @@ export type CareerProfileSelect<ExtArgs extends runtime.Types.Extensions.Interna
   isFreelanceMode?: boolean
   availability?: boolean
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2402,6 +2457,7 @@ export type CareerProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   isFreelanceMode?: boolean
   availability?: boolean
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2432,6 +2488,7 @@ export type CareerProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   isFreelanceMode?: boolean
   availability?: boolean
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2462,6 +2519,7 @@ export type CareerProfileSelectScalar = {
   isFreelanceMode?: boolean
   availability?: boolean
   isPublic?: boolean
+  isSampleData?: boolean
   skills?: boolean
   resumeFileName?: boolean
   resumeFileUrl?: boolean
@@ -2478,7 +2536,7 @@ export type CareerProfileSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CareerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "headline" | "summary" | "location" | "currentRole" | "currentCompany" | "yearsExperience" | "isPartTimeMode" | "isFreelanceMode" | "availability" | "isPublic" | "skills" | "resumeFileName" | "resumeFileUrl" | "resumeUploadedAt" | "parsedData" | "isStudent" | "university" | "major" | "expectedGraduation" | "studentCountry" | "preferredLocations" | "openToRemote" | "createdAt" | "updatedAt", ExtArgs["result"]["careerProfile"]>
+export type CareerProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "headline" | "summary" | "location" | "currentRole" | "currentCompany" | "yearsExperience" | "isPartTimeMode" | "isFreelanceMode" | "availability" | "isPublic" | "isSampleData" | "skills" | "resumeFileName" | "resumeFileUrl" | "resumeUploadedAt" | "parsedData" | "isStudent" | "university" | "major" | "expectedGraduation" | "studentCountry" | "preferredLocations" | "openToRemote" | "createdAt" | "updatedAt", ExtArgs["result"]["careerProfile"]>
 export type CareerProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   educations?: boolean | Prisma.CareerProfile$educationsArgs<ExtArgs>
@@ -2522,6 +2580,7 @@ export type $CareerProfilePayload<ExtArgs extends runtime.Types.Extensions.Inter
     isFreelanceMode: boolean
     availability: string | null
     isPublic: boolean
+    isSampleData: boolean
     skills: string[]
     resumeFileName: string | null
     resumeFileUrl: string | null
@@ -2979,6 +3038,7 @@ export interface CareerProfileFieldRefs {
   readonly isFreelanceMode: Prisma.FieldRef<"CareerProfile", 'Boolean'>
   readonly availability: Prisma.FieldRef<"CareerProfile", 'String'>
   readonly isPublic: Prisma.FieldRef<"CareerProfile", 'Boolean'>
+  readonly isSampleData: Prisma.FieldRef<"CareerProfile", 'Boolean'>
   readonly skills: Prisma.FieldRef<"CareerProfile", 'String[]'>
   readonly resumeFileName: Prisma.FieldRef<"CareerProfile", 'String'>
   readonly resumeFileUrl: Prisma.FieldRef<"CareerProfile", 'String'>
