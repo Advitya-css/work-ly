@@ -7,7 +7,7 @@ import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getDreamJobAnalysisByDreamJobId } from "@/lib/db/dream-job-analyses";
 import { replaceActivePathway } from "@/lib/db/career-pathways";
 import { buildPathway } from "@/lib/pathway/build-pathway";
-import { enhancePathwayWithActionablePlans } from "@/lib/ai/pathway-planner";
+import { blocksToActions } from "@/lib/pathway/plan-from-blocks";
 import type { CareerPathway } from "@/lib/db/types";
 
 /**
@@ -72,7 +72,15 @@ export async function generatePathway(
     careerGoal?.primaryTargetRole?.trim() ||
     "Your target role";
 
-  input = await enhancePathwayWithActionablePlans(input, profile, target);
+  // The 30/60/90 actions come from the dream job's week-by-week plan when
+  // there is one (same blocks, same readiness trajectory the dream job page
+  // shows - one plan, not two that disagree). The old path rewrote every
+  // action with a separate model call asking it to sound "premium"; that
+  // was N calls of tone, not substance.
+  const blocks = (analysis?.improvementPlan ?? []).map((item) => item.block).filter((b): b is NonNullable<typeof b> => Boolean(b));
+  if (blocks.length > 0) {
+    input = { ...input, actions: blocksToActions(blocks, input.steps, opportunities) };
+  }
 
   const pathway = await replaceActivePathway(userId, input);
   return { pathway };

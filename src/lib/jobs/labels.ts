@@ -58,10 +58,10 @@ export const SCORE_COMPONENT_ORDER = [
 ] as const;
 
 export const SCORE_COMPONENT_LABEL: Record<string, string> = {
-  skills: "Skills",
+  skills: "Key requirements",
   experience: "Experience",
-  education: "Education",
-  industryRelevance: "Industry relevance",
+  education: "Education & credentials",
+  industryRelevance: "Role relevance",
   seniority: "Seniority",
   location: "Location & eligibility",
   evidence: "Evidence strength",

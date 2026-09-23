@@ -21,6 +21,8 @@ import { extractTargetCompany } from "@/lib/ai/providers/extract-company";
 import { greenhouseSource, leverSource } from "@/lib/discovery/sources/company-career";
 import { UNIVERSITY_ALIASES, UNIVERSITY_LOCATIONS } from "@/lib/student/legal-limits";
 import { coverageOf } from "@/lib/scoring/coverage";
+import { aiScreeningAvailable, evaluateFitBatch, profileFingerprint } from "@/lib/scoring/ai-evaluator";
+import type { JobFitAnalysis } from "@/lib/scoring/types";
 import type {
   CareerGoal,
   DiscoveredJob,
@@ -75,9 +77,9 @@ function toJobLike(listing: NormalizedListing, userId: string): Job {
     workMode: listing.workMode,
     seniority: listing.seniority,
     description: listing.description,
-    requiredExperienceYears: null,
-    preferredExperienceYears: null,
-    education: null,
+    requiredExperienceYears: listing.requiredExperienceYears ?? null,
+    preferredExperienceYears: listing.preferredExperienceYears ?? null,
+    education: listing.education ?? null,
     industry: listing.industry,
     deadline: null,
     datePosted: listing.postedAt,
@@ -92,12 +94,35 @@ function toJobLike(listing: NormalizedListing, userId: string): Job {
 
 function buildMatchReasons(
   listing: NormalizedListing,
-  fitStrengths: string[],
+  fit: JobFitAnalysis,
   expansionRole: string | null,
   sourceName: string,
   openToRemote: boolean = true,
+  fingerprint: string | null = null,
 ): MatchReason[] {
   const reasons: MatchReason[] = [];
+
+  // A grounded screen leads: its one-line verdict, then the evidence that
+  // carries the match, then the single most important thing still missing.
+  if (fit.method === "ai-screen" && fit.screen) {
+    reasons.push({
+      kind: "screen",
+      text: fit.screen.summary || fit.recommendationReasoning,
+      meta: fingerprint ?? undefined,
+    });
+    for (const strength of fit.strengths.slice(0, 2)) reasons.push({ kind: "skill", text: strength });
+    const topGap = fit.screen.requirements.find(
+      (r) => (r.verdict === "missing" || r.verdict === "partial") && r.importance !== "nice",
+    );
+    if (topGap) {
+      reasons.push({
+        kind: "gap",
+        text: `${topGap.verdict === "partial" ? "Only partly shown" : "Not yet shown"}: ${topGap.requirement}`,
+      });
+    }
+  } else {
+    for (const strength of fit.strengths.slice(0, 2)) reasons.push({ kind: "skill", text: strength });
+  }
 
   if (expansionRole) {
     reasons.push({
@@ -105,15 +130,11 @@ function buildMatchReasons(
       text: `Surfaced as a related role (${expansionRole}) rather than a literal keyword match.`,
     });
   }
-  for (const strength of fitStrengths.slice(0, 2)) {
-    reasons.push({ kind: "skill", text: strength });
-  }
   if (listing.workMode === "REMOTE") {
-    if (openToRemote) {
-      reasons.push({ kind: "location", text: "Remote, so location isn't a constraint." });
-    } else {
-      reasons.push({ kind: "location", text: "Remote job (Note: you are not currently open to remote)." });
-    }
+    reasons.push({
+      kind: "location",
+      text: openToRemote ? "Remote, so location isn't a constraint." : "Remote job (Note: you are not currently open to remote).",
+    });
   }
   reasons.push({ kind: "source", text: `Found via ${sourceName}.` });
 
@@ -161,6 +182,15 @@ export interface RunDiscoveryOptions {
   /** Cap per source, so one prolific feed can't crowd out the rest. */
   limitPerSource?: number;
   /**
+   * How many listings from this run get the grounded AI screen (see
+   * lib/scoring/ai-evaluator.ts). The rest keep the rules-engine score.
+   * The best candidates by rules score are screened first, so the budget
+   * goes where it changes what the user actually reads.
+   */
+  aiScreenLimit?: number;
+  /** Wall-clock budget for the whole run, used to size the screening phase. */
+  timeBudgetMs?: number;
+  /**
    * Interest-Based Explore mode: when true and `query` is set, the query
    * is expanded into real job titles (role-graph.ts's curated clusters,
    * plus an AI-suggested title translation when a real provider is
@@ -184,6 +214,7 @@ export async function runDiscovery(
   userId: string,
   options: RunDiscoveryOptions = {},
 ): Promise<DiscoveryRunResult> {
+  const startedAt = Date.now();
   const query = options.query?.trim() || undefined;
   const run = await createRun(userId, query ?? null);
 
@@ -217,39 +248,46 @@ export async function runDiscovery(
     const roleGraphTitles = options.expandSearch ? expansion.expandedRoles.map((r) => r.role) : [];
     const aiTitles = options.expandSearch && query ? await suggestTitlesForInterest(query) : [];
     
-    let searchTerms = buildSearchTerms(query, roleGraphTitles, aiTitles);
-    
-    // SMART DEFAULT: If the user hit Discover without typing a query, don't just ask the job
-    // board for "any job in this city" (which returns physicians and truck drivers). 
-    // Proactively read their profile and search for highly targeted jobs.
-    if (!query || query.trim() === "") {
-      const idealTitles = await suggestIdealJobSearches(profileText, careerGoal?.primaryTargetRole ?? null, profile.profile?.location ?? null);
-      if (idealTitles.length > 0) {
-        searchTerms = Array.from(new Set([careerGoal?.primaryTargetRole, ...idealTitles].filter((t): t is string => Boolean(t))));
-      }
+    let searchTerms: string[] = buildSearchTerms(query, roleGraphTitles, aiTitles).filter(
+      (t): t is string => Boolean(t),
+    );
+
+    // SMART DEFAULT: no query typed. Search for what this person is actually
+    // after - their stated target role FIRST, always, then AI-suggested
+    // adjacent titles for reach. The AI titles used to replace the target
+    // role outright, so someone targeting "Software Engineer" could get a
+    // default feed that never searched "Software Engineer" at all.
+    if (!query) {
+      const targetRole = careerGoal?.primaryTargetRole?.trim() || careerGoal?.targetRole?.trim() || null;
+      const currentRole =
+        profile.profile?.currentRole?.trim() || profile.experiences.find((e) => e.isCurrent)?.title?.trim() || null;
+      const idealTitles = await suggestIdealJobSearches(profileText, targetRole, profile.profile?.location ?? null);
+      const seen = new Set<string>();
+      searchTerms = [targetRole, ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 1), ...idealTitles, currentRole]
+        .filter((t): t is string => Boolean(t && t.trim()))
+        .filter((t) => {
+          const key = t.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .slice(0, MAX_SEARCH_TERMS);
     }
 
-    const isJunior = profile.profile?.isStudent || (profile.profile?.yearsExperience != null && profile.profile.yearsExperience < 3);
-    let finalTerms = searchTerms.filter((t): t is string => Boolean(t));
-    
-    if (isJunior) {
-      const biased = new Set<string>();
-      for (const term of finalTerms) {
-        if (!term) continue;
-        const lower = term.toLowerCase();
-        // If it already contains junior or entry, keep as is
-        if (lower.includes("junior") || lower.includes("entry") || lower.includes("intern")) {
-          biased.add(term);
-        } else {
-          biased.add(`Junior ${term}`);
-          biased.add(`Entry Level ${term}`);
-          biased.add(term); // keep original as fallback
-        }
-      }
-      finalTerms = Array.from(biased);
+    // Early-career bias. This used to build a list of "Junior X" / "Entry
+    // Level X" variants and then never search them - the ingest loop read
+    // the unbiased list. Now one entry-level variant of the primary term is
+    // actually searched, when there is room under the cap.
+    const isJunior =
+      profile.profile?.isStudent || (profile.profile?.yearsExperience != null && profile.profile.yearsExperience < 3);
+    if (isJunior && searchTerms.length > 0 && searchTerms.length < MAX_SEARCH_TERMS + 1) {
+      const base = searchTerms[0];
+      if (!/junior|entry|intern|graduate|trainee/i.test(base)) searchTerms.push(`Entry Level ${base}`);
     }
-    
-    searchTermsUsed = finalTerms.slice(0, 4); // Limit to avoid hitting rate limits on job boards
+
+    // No term at all means "browse" for adapters that support it.
+    const ingestTerms: (string | undefined)[] = searchTerms.length > 0 ? searchTerms : [undefined];
+    searchTermsUsed = searchTerms;
 
     // Computed once - doesn't vary per source or per search term.
     const homeLocation = (() => {
@@ -332,9 +370,9 @@ export async function runDiscovery(
         // Per-term limit shrinks as more terms fan out, so a 4-title
         // Explore search doesn't pull in 4x as many total candidates as a
         // plain single-term search.
-        const perTermLimit = Math.max(20, Math.floor((options.limitPerSource ?? 150) / Math.max(1, searchTerms.length)));
+        const perTermLimit = Math.max(20, Math.floor((options.limitPerSource ?? 150) / Math.max(1, ingestTerms.length)));
         const rawBatches = await Promise.all(
-          searchTerms.map((term) =>
+          ingestTerms.map((term) =>
             adapter.ingest({
               query: term,
               config: source.config,
@@ -414,23 +452,62 @@ export async function runDiscovery(
       accepted.push(candidate);
     }
 
-    for (const { listing, sourceConfigId, sourceName, sourceKind } of accepted) {
-      const storedDuplicate = existingJobs.find(
-        (stored) =>
-          !stored.duplicateOfId &&
-          stored.externalId !== listing.externalId &&
-          isDuplicate(listing, {
-            id: stored.id,
-            dedupeKey: stored.dedupeKey,
-            sourceUrl: stored.sourceUrl,
-            company: stored.company,
-            title: stored.title,
-            location: stored.location,
-            description: stored.description,
-          }).duplicate,
+    // --- Score -------------------------------------------------------------
+    // Rules engine for every listing (instant, free). Then the grounded AI
+    // screen for the most promising ones, within a call and time budget.
+    // A listing screened on a previous run against the SAME profile keeps
+    // that screen instead of being silently downgraded back to rules.
+    const fingerprint = profileFingerprint(profile, careerGoal);
+    const prepared = accepted.map((candidate) => {
+      const storedDuplicate =
+        existingJobs.find(
+          (stored) =>
+            !stored.duplicateOfId &&
+            stored.externalId !== candidate.listing.externalId &&
+            isDuplicate(candidate.listing, {
+              id: stored.id,
+              dedupeKey: stored.dedupeKey,
+              sourceUrl: stored.sourceUrl,
+              company: stored.company,
+              title: stored.title,
+              location: stored.location,
+              description: stored.description,
+            }).duplicate,
+        ) ?? null;
+      const jobLike = toJobLike(candidate.listing, userId);
+      const rulesFit = scoringProvider.analyzeFit({ profile, careerGoal, job: jobLike });
+      const existing = existingJobs.find(
+        (j) => j.externalId === candidate.listing.externalId && j.sourceName === candidate.sourceName,
       );
+      const reusable =
+        existing && existing.matchReasons.some((r) => r.kind === "screen" && r.meta === fingerprint) ? existing : null;
+      return { ...candidate, storedDuplicate, jobLike, rulesFit, reusable };
+    });
 
-      let fit = null;
+    const screenLimit = options.aiScreenLimit ?? 12;
+    const tierRank: Record<string, number> = { APPLY_NOW: 4, APPLY: 3, STRETCH: 2, LOW_PRIORITY: 1, SKIP: 0 };
+    const toScreen =
+      aiScreeningAvailable() && screenLimit > 0
+        ? prepared
+            .filter((p) => !p.storedDuplicate && !p.reusable && p.rulesFit.recommendation !== "SKIP")
+            .sort(
+              (a, b) =>
+                tierRank[b.rulesFit.recommendation] * 25 + b.rulesFit.fitScore -
+                (tierRank[a.rulesFit.recommendation] * 25 + a.rulesFit.fitScore),
+            )
+            .slice(0, screenLimit)
+        : [];
+    const screenBudget = Math.max(8_000, (options.timeBudgetMs ?? 50_000) - (Date.now() - startedAt));
+    const screened = await evaluateFitBatch(toScreen, (p) => ({ profile, careerGoal, job: p.jobLike }), {
+      concurrency: 4,
+      budgetMs: screenBudget,
+    });
+
+    for (const item of prepared) {
+      const { listing, sourceConfigId, sourceName, sourceKind, storedDuplicate, reusable } = item;
+      const fit: JobFitAnalysis = screened.get(item)?.analysis ?? item.rulesFit;
+      const keepStoredScreen = reusable && fit.method !== "ai-screen";
+
       let embedding = null;
       let matchedExpansion = null;
       const literalMatch = query != null && listingMatchesQueryLiterally(listing, query);
@@ -438,15 +515,13 @@ export async function runDiscovery(
         ? `Matched your search for "${query}".`
         : query
           ? `Found via ${sourceName} while you searched "${query}".`
-          : `Found by watching ${sourceName}.`;
+          : searchTermsUsed.length > 0
+            ? `Found while searching ${sourceName} for roles like "${searchTermsUsed[0]}".`
+            : `Found by watching ${sourceName}.`;
 
-      // Always re-score so any profile updates or algorithm updates reflect on existing jobs
-      const jobLike = toJobLike(listing, userId);
-      fit = scoringProvider.analyzeFit({ profile, careerGoal, job: jobLike });
-      
       if (!storedDuplicate) {
         embedding = await embeddingProvider.embed(jobEmbeddingText(listing));
-        
+
         matchedExpansion = expansion.expandedRoles.find((role) =>
           listing.title.toLowerCase().includes(role.role.toLowerCase()),
         ) ?? null;
@@ -456,6 +531,7 @@ export async function runDiscovery(
           : discoveryReason;
       }
 
+      const recommendation = keepStoredScreen ? reusable!.recommendation : fit.recommendation;
       const { isNew } = await upsertDiscoveredJob(userId, {
         sourceConfigId,
         sourceKind,
@@ -482,26 +558,27 @@ export async function runDiscovery(
         duplicateOfId: storedDuplicate?.id ?? null,
         embedding,
         embeddingModel: embeddingProvider.name,
-        fitScore: fit?.fitScore ?? null,
+        fitScore: keepStoredScreen ? reusable!.fitScore : fit.fitScore,
         // Lets the discovery feed withhold the fit badge for a listing
-        // Work-ly couldn't actually assess, instead of showing the fitScore
-        // the engine collapses to when coverage is insufficient (which
-        // otherwise reads as a genuine, if low, score).
-        fitCoverage: fit ? coverageOf(fit.scoreBreakdown) : null,
-        recommendation: fit?.recommendation ?? null,
-        matchReasons: buildMatchReasons(
-          listing,
-          fit?.strengths ?? [],
-          matchedExpansion?.role ?? null,
-          sourceName,
-          profile.profile?.openToRemote ?? true,
-        ),
+        // Work-ly couldn't actually assess.
+        fitCoverage: keepStoredScreen ? reusable!.fitCoverage : coverageOf(fit.scoreBreakdown),
+        recommendation,
+        matchReasons: keepStoredScreen
+          ? reusable!.matchReasons
+          : buildMatchReasons(
+              listing,
+              fit,
+              matchedExpansion?.role ?? null,
+              sourceName,
+              profile.profile?.openToRemote ?? true,
+              fit.method === "ai-screen" ? fingerprint : null,
+            ),
         discoveryReason,
       });
 
       if (isNew && !storedDuplicate) {
         newJobs++;
-        if (fit?.recommendation === "APPLY_NOW" || fit?.recommendation === "APPLY") newHighPriority++;
+        if (recommendation === "APPLY_NOW" || recommendation === "APPLY") newHighPriority++;
       }
       if (storedDuplicate) duplicatesFolded++;
     }

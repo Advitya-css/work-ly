@@ -147,3 +147,75 @@ export function skillsMatch(candidateSkill: string, requirementSkill: string): b
   return false;
 }
 
+
+/**
+ * Filler that wraps a skill name inside a requirement bullet without
+ * changing what is being asked for: "Expert SQL", "Experience with dbt",
+ * "Strong proficiency in Python for data transformation".
+ */
+const REQUIREMENT_FILLER = new Set([
+  "a", "an", "the", "and", "of", "in", "on", "with", "using", "for", "to", "at", "is", "are", "be",
+  "experience", "experienced", "expert", "expertise", "strong", "solid", "proven", "demonstrated", "deep",
+  "advanced", "good", "excellent", "working", "hands", "on", "handson", "practical", "professional",
+  "proficiency", "proficient", "knowledge", "understanding", "familiarity", "familiar", "skills", "skill",
+  "ability", "able", "background", "years", "year", "plus", "must", "have", "required", "preferred",
+  "including", "such", "as", "etc", "level", "fluent", "fluency", "comfortable", "track", "record",
+]);
+
+/**
+ * Two-word compounds where the first word alone is a DIFFERENT skill. A
+ * candidate with "React" does not satisfy "React Native experience".
+ */
+const COMPOUND_SECOND_WORDS: Record<string, string[]> = {
+  react: ["native"],
+  java: ["script"],
+  power: ["bi", "apps", "automate"],
+  google: ["analytics", "ads", "cloud"],
+  adobe: ["xd", "illustrator", "photoshop", "premiere"],
+  microsoft: ["excel", "word", "powerpoint", "azure", "dynamics"],
+  sql: ["server"],
+};
+
+/**
+ * Does a candidate's skill satisfy a requirement phrase?
+ *
+ * `skillsMatch` is deliberately one-directional (the requirement must sit
+ * inside the candidate's skill name), which is right for comparing two skill
+ * NAMES but wrong for requirement BULLETS: "Expert SQL" never appears inside
+ * "SQL", so a candidate with demonstrated SQL scored 0 of 4 on a posting
+ * whose bullets were "Expert SQL", "Experience with dbt", ... This strips the
+ * filler around the skill first, then accepts the candidate's skill when it
+ * is what the bullet is actually about - as the whole remaining phrase, or
+ * as a leading/trailing whole word of a short one ("Python for data
+ * transformation") - but never as the first half of a known compound
+ * ("React" vs "React Native").
+ */
+export function requirementSatisfiedBy(candidateSkill: string, requirement: string): boolean {
+  if (skillsMatch(candidateSkill, requirement)) return true;
+  const cand = getCanonicalSkill(candidateSkill);
+  if (!cand || cand.length < 2) return false;
+
+  const coreTokens = normalizeToken(requirement)
+    .split(" ")
+    .filter((t) => t && !REQUIREMENT_FILLER.has(t) && !/^\d+\+?$/.test(t));
+  if (coreTokens.length === 0) return false;
+  const core = coreTokens.join(" ");
+  if (getCanonicalSkill(core) === cand || core === cand) return true;
+
+  const candTokens = cand.split(" ");
+  if (coreTokens.length > candTokens.length + 3) return false;
+  // Single-letter languages ("C", "R") only ever match exactly.
+  if (EXACT_MATCH_ONLY.has(cand)) return false;
+
+  const at = (i: number) => coreTokens.slice(i, i + candTokens.length).join(" ") === cand;
+  const leading = at(0);
+  const trailing = at(coreTokens.length - candTokens.length);
+  if (!leading && !trailing) return false;
+
+  if (leading) {
+    const next = coreTokens[candTokens.length];
+    const blocked = COMPOUND_SECOND_WORDS[candTokens[candTokens.length - 1]];
+    if (next && blocked?.includes(next)) return false;
+  }
+  return true;
+}

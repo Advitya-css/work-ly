@@ -19,7 +19,8 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { getDreamJobById } from "@/lib/db/dream-jobs";
 import { createSkill } from "@/lib/db/skills";
-import { scoringProvider } from "@/lib/scoring";
+import { evaluateFit } from "@/lib/scoring/ai-evaluator";
+import { dreamJobToJobLike } from "@/lib/dream-job/to-job-like";
 import { pool } from "@/lib/db/pool";
 import { simulate } from "@/lib/pathway/what-if";
 import type { Scenario, SimulationResult } from "@/lib/pathway/what-if-types";
@@ -117,7 +118,10 @@ export async function setStepStatusAction(stepId: string, status: PathwayItemSta
       const careerGoal = await getPrimaryCareerGoal(pathway.userId);
       const dreamJob = pathway.dreamJobId ? await getDreamJobById(pathway.dreamJobId) : null;
       if (dreamJob && dreamJob.status === "PARSED") {
-        const fit = scoringProvider.analyzeFit({ profile, careerGoal, job: dreamJob as any });
+        // Same scoring path the dream job analysis used (grounded screen when
+        // a model is configured), so the number can't jump just because a
+        // different engine computed it.
+        const { analysis: fit } = await evaluateFit({ profile, careerGoal, job: dreamJobToJobLike(dreamJob) });
         await pool.query('UPDATE career_pathways SET "startingReadiness" = $1 WHERE id = $2', [fit.fitScore, pathway.id]);
       }
     }

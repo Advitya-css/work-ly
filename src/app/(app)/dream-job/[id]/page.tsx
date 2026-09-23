@@ -46,6 +46,8 @@ import {
 } from "@/lib/dream-job/labels";
 
 export const metadata: Metadata = { title: "Dream Job Analysis" };
+// Re-analysis and "Build my pathway" run the grounded screen and the plan model.
+export const maxDuration = 60;
 
 function readinessCopy(score: number): string {
   if (score >= 75) return "You're closer than you think. This is within reach with a few targeted moves.";
@@ -139,6 +141,11 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
   // gaps list here means "nothing to go on," not "you're a perfect match,"
   // and the copy below must say so rather than implying the latter.
   const lowCoverage = coverageOf(analysis.scoreBreakdown) < MIN_COVERAGE_FOR_SCORE;
+  // Week-by-week plan blocks (newer analyses); older analyses have none and
+  // fall back to the plain improvement list below.
+  const planBlocks = analysis.improvementPlan.filter((item) => item.block);
+  const otherPlanItems = analysis.improvementPlan.filter((item) => !item.block);
+  const projectedReadiness = planBlocks.length > 0 ? planBlocks[planBlocks.length - 1].block!.readinessAfter : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -164,6 +171,11 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             unassessed={unassessedIn(analysis.scoreBreakdown)}
             caption={readinessCopy(analysis.readinessScore)}
           />
+          {projectedReadiness != null && projectedReadiness > analysis.readinessScore && !lowCoverage && (
+            <p className="text-sm font-medium text-foreground">
+              After your plan: about {projectedReadiness}/100
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             This is your Candidate Fit for this role. Not a hiring probability. Work-ly never estimates your odds of
             being hired.
@@ -252,6 +264,68 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
           <BuildPathwayFromDreamJobButton dreamJobId={id} isPro={user.isPro} />
         </CardContent>
       </Card>
+
+      {/* Week-by-week plan */}
+      {planBlocks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your week-by-week plan</CardTitle>
+            <CardDescription>
+              Built from the exact gaps above, in the order that gets you provable fastest. Readiness figures are the
+              same calculation as your current score, re-run with each block&apos;s gaps closed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="flex flex-col gap-4">
+              {planBlocks.map((item, i) => {
+                const block = item.block!;
+                const weeks =
+                  block.startWeek === block.endWeek ? `Week ${block.startWeek}` : `Weeks ${block.startWeek}–${block.endWeek}`;
+                return (
+                  <li key={i} className="flex flex-col gap-2 rounded-lg border border-border px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className="tabular-nums">{weeks}</Badge>
+                      <span className="text-sm font-semibold text-foreground">{block.focus}</span>
+                      {block.readinessAfter != null && (
+                        <span className="ml-auto text-xs tabular-nums text-muted-foreground">
+                          Readiness after: <span className="font-medium text-foreground">{block.readinessAfter}</span>
+                        </span>
+                      )}
+                    </div>
+                    <ul className="flex flex-col gap-1">
+                      {block.actions.map((action, ai) => (
+                        <li key={ai} className="flex items-start gap-2 text-sm text-foreground">
+                          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Deliverable:</span> {block.deliverable}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Done when:</span> {block.doneWhen}
+                    </p>
+                    {block.closes.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">Closes:</span> {block.closes.join("; ")}
+                      </p>
+                    )}
+                    {block.resource && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">Suggested resource:</span> {block.resource}
+                      </p>
+                    )}
+                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="size-3" /> About {block.hoursPerWeek} hours a week
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
@@ -385,16 +459,22 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
           <Card id="improvement-plan">
             <CardHeader>
               <CardTitle>
-                Improvement plan
+                {planBlocks.length > 0 ? "Profile edits" : "Improvement plan"}
               </CardTitle>
-              <CardDescription>Highest-impact changes first: why, impact, effort, and which jobs it helps.</CardDescription>
+              <CardDescription>
+                {planBlocks.length > 0
+                  ? "Quick edits to how your profile reads. Do these alongside the plan above."
+                  : "Highest-impact changes first: why, impact, effort, and which jobs it helps."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {analysis.improvementPlan.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nothing specific to plan for yet.</p>
+              {otherPlanItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {planBlocks.length > 0 ? "No separate profile edits needed." : "Nothing specific to plan for yet."}
+                </p>
               ) : (
                 <ul className="flex flex-col gap-3">
-                  {analysis.improvementPlan.map((item, i) => (
+                  {otherPlanItems.map((item, i) => (
                     <li key={i} className="flex flex-col gap-1 rounded-lg border border-border px-3 py-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant={IMPROVEMENT_TIER_VARIANT[item.tier]}>{IMPROVEMENT_TIER_LABEL[item.tier]}</Badge>

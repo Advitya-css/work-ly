@@ -33,6 +33,8 @@ import { exploreCareers } from "@/lib/pathway/explore-careers";
 import { ACTION_WINDOW_ORDER, ACTION_WINDOW_LABEL, ACTION_WINDOW_CAPTION } from "@/lib/pathway/labels";
 
 export const metadata: Metadata = { title: "Action Plan" };
+// Pathway generation and step completion re-run the screen.
+export const maxDuration = 60;
 
 export default async function CareerPathPage() {
   const user = await getCurrentUser();

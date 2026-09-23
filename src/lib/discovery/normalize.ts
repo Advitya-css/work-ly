@@ -186,6 +186,9 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
   let requiredSkills: string[] = [];
   let preferredSkills: string[] = [];
   let requirements: NormalizedListing["requirements"] = [];
+  let requiredExperienceYears: number | null = null;
+  let preferredExperienceYears: number | null = null;
+  let education: string | null = null;
   if (description && description.length > 40) {
     try {
       // Synchronous in practice - the heuristic provider does no I/O - but
@@ -196,6 +199,9 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
       requiredSkills = parsed.requiredSkills ?? [];
       preferredSkills = parsed.preferredSkills ?? [];
       requirements = parsed.requirements ?? [];
+      requiredExperienceYears = parsed.requiredExperienceYears ?? null;
+      preferredExperienceYears = parsed.preferredExperienceYears ?? null;
+      education = parsed.education ?? null;
     } catch {
       // Extraction is a bonus, never a reason to drop a real listing.
     }
@@ -221,6 +227,9 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
     sourceUrl: raw.url?.trim() || null,
     postedAt: raw.postedAt ?? null,
     dedupeKey: buildDedupeKey(raw.company ?? null, raw.title, raw.location ?? null),
+    requiredExperienceYears,
+    preferredExperienceYears,
+    education,
   };
 }
 
@@ -237,6 +246,9 @@ export async function normalizeListingAsync(raw: RawListing): Promise<Normalized
       requiredSkills: parsed.requiredSkills ?? [],
       preferredSkills: parsed.preferredSkills ?? [],
       requirements: parsed.requirements ?? [],
+      requiredExperienceYears: parsed.requiredExperienceYears ?? null,
+      preferredExperienceYears: parsed.preferredExperienceYears ?? null,
+      education: parsed.education ?? null,
     };
   } catch {
     return base;

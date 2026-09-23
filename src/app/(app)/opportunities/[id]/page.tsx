@@ -51,6 +51,8 @@ import {
 import type { ScoreBreakdown } from "@/lib/db/types";
 
 export const metadata: Metadata = { title: "Opportunity" };
+// Re-analysis and the AI tools on this page call the model.
+export const maxDuration = 60;
 
 function scoreColor(score: number): string {
   if (score >= 75) return "text-success";

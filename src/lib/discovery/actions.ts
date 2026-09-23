@@ -107,7 +107,7 @@ export async function runDiscoveryAction(
   const dailyRuns = parseInt(rows[0].count, 10);
   if (!user.isPro && dailyRuns >= 5) { return { error: "You have reached your free daily limit of 5 AI discoveries.", upgradeRequired: true }; }
   if (user.isPro && dailyRuns >= 30) {
-    return { error: "You have reached your daily limit of 3 AI discoveries.", upgradeRequired: true };
+    return { error: "You have reached your daily limit of 30 AI discoveries. It resets over the next 24 hours." };
   }
 
   // Block discovery on empty profiles to prevent AI hallucination
@@ -124,7 +124,14 @@ export async function runDiscoveryAction(
   // setup required.
   await ensureDefaultSourcesAction();
 
-  const run = await runDiscovery(user.id, { query, expandSearch: options.expandSearch });
+  // Pro runs get a deeper grounded AI screen (more listings read against the
+  // profile requirement by requirement); free runs still get the best few.
+  const run = await runDiscovery(user.id, {
+    query,
+    expandSearch: options.expandSearch,
+    aiScreenLimit: user.isPro ? 15 : 8,
+    timeBudgetMs: 50_000,
+  });
   revalidateDiscoveryViews();
 
   if (run.status === "FAILED") {

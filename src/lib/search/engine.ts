@@ -1,7 +1,7 @@
 // Imported from text-utils rather than discovery/normalize or
 // scoring/shared: both of those are server-only, and this engine runs in
 // the browser on every keystroke. Same implementations, no server bundle.
-import { canonical, skillsMatch } from "@/lib/text-utils";
+import { canonical, requirementSatisfiedBy } from "@/lib/text-utils";
 import { cosineSimilarity, localEmbed } from "@/lib/search/embeddings";
 import { expandQuery, type QueryExpansion } from "@/lib/search/role-graph";
 import { detectValues, workValueByKey } from "@/lib/values/value-graph";
@@ -228,7 +228,7 @@ function structuredScore(job: DiscoveredJob, context: SearchContext): { score: n
   const jobSkills = [...job.requiredSkills, ...job.preferredSkills];
   if (jobSkills.length > 0 && context.profileSkills.length > 0) {
     const matched = jobSkills.filter((skill) =>
-      context.profileSkills.some((own) => skillsMatch(own, skill)),
+      context.profileSkills.some((own) => requirementSatisfiedBy(own, skill)),
     );
     const ratio = matched.length / jobSkills.length;
     parts.push(ratio);
@@ -387,6 +387,15 @@ export function semanticSearch(
     .slice(0, limit);
 }
 
+function screenReasons(job: DiscoveredJob): string[] {
+  const reasons = Array.isArray(job.matchReasons) ? job.matchReasons : [];
+  if (!reasons.some((r) => r.kind === "screen")) return [];
+  const screen = reasons.find((r) => r.kind === "screen");
+  const strength = reasons.find((r) => r.kind === "skill");
+  const gap = reasons.find((r) => r.kind === "gap");
+  return [screen?.text, strength?.text, gap?.text].filter((t): t is string => Boolean(t));
+}
+
 export function rankJobs(
   jobs: DiscoveredJob[],
   context: SearchContext,
@@ -448,6 +457,11 @@ export function rankJobs(
           values: Math.round(values.score * 100) / 100,
         },
         reasons: [
+          // A grounded AI screen, when this listing has one, leads: its
+          // verdict, the strongest evidence, and the top unmet requirement
+          // (all stored on the row during the discovery run - nothing is
+          // computed here).
+          ...screenReasons(job),
           // Values leads when present - it's the most specific "why", and
           // the one users explicitly asked to see spelled out rather than
           // buried behind a generic score.

@@ -15,6 +15,8 @@ import { getDreamJobAnalysisByDreamJobId } from "@/lib/db/dream-job-analyses";
 import { coverageOf, MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 
 export const metadata: Metadata = { title: "Dream Job" };
+// Dream job analysis runs the grounded screen and builds the plan.
+export const maxDuration = 60;
 
 function readinessColor(score: number): string {
   if (score >= 75) return "text-success";

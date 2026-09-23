@@ -499,6 +499,35 @@ export interface ImprovementPlanItem {
   impact: string;
   effort: string;
   relevantJobs: string[];
+  /**
+   * Present on items that are a block of the week-by-week plan (see
+   * lib/dream-job/sprint-plan.ts). Stored inside the existing JSON column,
+   * so no migration; older analyses simply don't have it.
+   */
+  block?: SprintBlock;
+}
+
+/** One block of the week-by-week plan toward a dream role. */
+export interface SprintBlock {
+  startWeek: number;
+  endWeek: number;
+  focus: string;
+  /** Requirement names from the dream job this block makes provable. */
+  closes: string[];
+  /** 2-4 concrete, imperative actions. */
+  actions: string[];
+  /** The artifact that exists at the end of the block. */
+  deliverable: string;
+  /** A checkable finish line. */
+  doneWhen: string;
+  resource: string | null;
+  hoursPerWeek: number;
+  /**
+   * Readiness after this block, computed by re-running the same screen with
+   * everything closed so far marked met. Null when no grounded screen was
+   * available to project from - never estimated.
+   */
+  readinessAfter: number | null;
 }
 
 export interface ProjectRecommendation {
@@ -767,7 +796,13 @@ export interface JobSourceConfig {
 /// Why a job surfaced, shown to the user verbatim.
 export interface MatchReason {
   text: string;
-  kind: "skill" | "seniority" | "location" | "preference" | "expansion" | "source";
+  /**
+   * "screen" is the grounded AI screen's one-line verdict and "gap" its most
+   * important unmet requirement - see lib/scoring/ai-evaluator.ts.
+   */
+  kind: "skill" | "seniority" | "location" | "preference" | "expansion" | "source" | "screen" | "gap";
+  /** Internal bookkeeping (e.g. the profile fingerprint a screen was computed against). Never displayed. */
+  meta?: string;
 }
 
 export interface DiscoveredJob {

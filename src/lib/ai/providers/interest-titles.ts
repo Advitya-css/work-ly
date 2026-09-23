@@ -71,11 +71,11 @@ export async function suggestTitlesForInterest(interestText: string): Promise<st
   }
 }
 
-const IDEAL_SYSTEM_PROMPT = `You are an elite, highly-paid executive headhunter. Your task is to analyze a candidate's full resume and target role (if provided), and generate exactly 4 highly specific, high-paying, intensely searchable job titles they are OVERWHELMINGLY qualified for right now.
-- CRITICAL: You must adapt the job titles to match the standard market terminology in their TARGET LOCATION.
-- NEVER generate generic titles like "Software Engineer", "Manager", or "Analyst". 
-- Find the HIDDEN, highly-lucrative niches their exact combination of skills qualifies them for (e.g., "Developer Relations Engineer", "Staff Machine Learning Infrastructure Engineer", "Quantitative Research Analyst").
-- Do NOT hallucinate. The titles MUST be actively used by real companies right now. 
+const IDEAL_SYSTEM_PROMPT = `You are an experienced technical recruiter. From a candidate's profile (and target role, if given), output 3 job titles to search job boards with, so that the results are roles this person is a STRONG, REALISTIC candidate for at their CURRENT level.
+- Titles must be exactly how real postings are titled in the target location's market (e.g. "Business Analyst" vs "Business Systems Analyst"; "Chartered Accountant" in India). No invented or inflated titles.
+- Do NOT repeat the target role itself - it is searched separately. Instead give close variants and adjacent titles that hiring managers use for the same work, including at least one they may not have thought of (a sibling or niche title where their specific skill combination is valued).
+- Match their level: do not add "Senior", "Lead", "Head of" or "Director" unless the profile clearly shows that level; add "Junior"/"Graduate" only for early-career profiles.
+- Keep each title short (2-5 words), without company names, locations or seniority ranges.
 - Output ONLY the array of titles.`;
 
 const IDEAL_SCHEMA = {
@@ -102,16 +102,18 @@ ${profileText.slice(0, 3000)}`;
         { role: "user", content: stripPromptInjectionMarkers(prompt) },
       ],
       responseSchema: IDEAL_SCHEMA,
-      temperature: 0.2,
+      temperature: 0,
     });
 
     const parsed = (result.parsed ?? {}) as { titles?: unknown };
     if (!Array.isArray(parsed.titles)) return [];
 
+    const target = targetRole?.trim().toLowerCase();
     return parsed.titles
       .filter((t): t is string => typeof t === "string" && t.trim().length > 0 && t.length < MAX_TITLE_LENGTH)
       .map((t) => t.trim())
-      .slice(0, 4);
+      .filter((t) => t.toLowerCase() !== target)
+      .slice(0, 3);
   } catch (error) {
     console.warn("[workly:ai] ideal-title suggestion failed:", error);
     return targetRole ? [targetRole] : [];

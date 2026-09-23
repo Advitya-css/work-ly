@@ -40,13 +40,18 @@ export const SENIORITY_ORDER = ["ENTRY", "JUNIOR", "MID", "SENIOR", "LEAD", "PRI
 // normalize/skillsMatch live in lib/text-utils.ts (no "server-only") so the
 // browser-side search engine can use the same implementation. Imported for
 // local use and re-exported so existing server-side call sites are unchanged.
-import { normalizeToken, skillsMatch } from "@/lib/text-utils";
+import { normalizeToken, skillsMatch, requirementSatisfiedBy } from "@/lib/text-utils";
 
-export { normalizeToken as normalize, skillsMatch };
+export { normalizeToken as normalize, skillsMatch, requirementSatisfiedBy };
 export { normalizeToken };
 
 export function findMatchingSkill(requirementName: string, profileSkills: Skill[]): Skill | undefined {
-  return profileSkills.find((s) => skillsMatch(s.name, requirementName));
+  // Exact/alias name matches first, then a skill the requirement bullet is
+  // clearly about ("Expert SQL" -> SQL). See requirementSatisfiedBy.
+  return (
+    profileSkills.find((s) => skillsMatch(s.name, requirementName)) ??
+    profileSkills.find((s) => requirementSatisfiedBy(s.name, requirementName))
+  );
 }
 
 /**
@@ -193,6 +198,14 @@ export interface ScoreTotal {
   coverage: number;
   /** Names of the components that could not be assessed. */
   missing: string[];
+  /**
+   * The same earned/possible ratio as `score`, but computed even when
+   * coverage is below the reliability threshold. Never shown as a headline
+   * number (the UI withholds it below MIN_COVERAGE_FOR_SCORE) - it exists so
+   * ranking has a real, measured signal to sort on instead of the invented
+   * constant the engine used to fall back to.
+   */
+  raw: number | null;
 }
 
 // The threshold lives in lib/scoring/coverage.ts, which has no
@@ -243,5 +256,6 @@ export function totalFrom(breakdown: Record<string, ScoreComponent>): ScoreTotal
     }
   }
 
-  return { score, coverage, missing };
+  const raw = possible > 0 ? Math.round((earned / possible) * 100) : null;
+  return { score, coverage, missing, raw };
 }

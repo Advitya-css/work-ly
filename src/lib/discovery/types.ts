@@ -76,6 +76,17 @@ export interface NormalizedListing {
   sourceUrl: string | null;
   postedAt: Date | null;
   dedupeKey: string;
+  /**
+   * Parsed from the description by the same heuristic extractor as the
+   * skills above. Used for scoring during the run only (not persisted on
+   * discovered_jobs) - without them every discovered job's experience and
+   * education components were "unavailable", which dragged coverage down
+   * and made discovered-job scores systematically less informed than the
+   * same job pasted in by hand.
+   */
+  requiredExperienceYears?: number | null;
+  preferredExperienceYears?: number | null;
+  education?: string | null;
 }
 
 export interface ValidationResult {

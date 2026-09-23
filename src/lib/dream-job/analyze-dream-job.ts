@@ -3,7 +3,7 @@ import "server-only";
 import { safeMessage } from "@/lib/errors";
 
 import { jobParsingProvider } from "@/lib/ai/job-parser";
-import { scoringProvider } from "@/lib/scoring";
+import { evaluateFit } from "@/lib/scoring/ai-evaluator";
 import {
   createDreamJob,
   getDreamJobById,
@@ -16,6 +16,8 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
 import { dreamJobToJobLike } from "@/lib/dream-job/to-job-like";
 import { buildGapAnalysis } from "@/lib/dream-job/gap-engine";
+import { blocksToPlanItems } from "@/lib/dream-job/sprint-plan-core";
+import { buildSprintPlan, planHeadline } from "@/lib/dream-job/sprint-plan";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { DreamJob, DreamJobAnalysis } from "@/lib/db/types";
 
@@ -114,8 +116,34 @@ export async function analyzeDreamJob(dreamJobId: string, userId: string): Promi
   ]);
 
   const dreamJobLike = dreamJobToJobLike(dreamJob);
-  const fit = scoringProvider.analyzeFit({ profile, careerGoal, job: dreamJobLike });
+  // Grounded screen (requirement-by-requirement, evidence-quoted) when a
+  // model is configured; rules engine otherwise.
+  const { analysis: fit, internals } = await evaluateFit({ profile, careerGoal, job: dreamJobLike });
   const gapAnalysis = buildGapAnalysis({ dreamJobLike, fit, profile, opportunities });
+
+  // The week-by-week plan, with a readiness trajectory computed by
+  // re-scoring the same screen as each block's gaps close.
+  const targetRole = dreamJob.title ?? dreamJob.dreamRole;
+  const plan = await buildSprintPlan({
+    profile,
+    careerGoal,
+    targetRole,
+    gaps: gapAnalysis.gapPriorities,
+    fit,
+    internals,
+    job: dreamJobLike,
+  });
+  const jobTitleFor = (opportunityId: string) => {
+    const o = opportunities.find((op) => op.id === opportunityId);
+    return o ? `${o.job.title ?? "Untitled role"}${o.job.company ? ` at ${o.job.company}` : ""}` : null;
+  };
+  const planItems = blocksToPlanItems(plan.blocks, gapAnalysis.gapPriorities, jobTitleFor);
+  // CV edits stay as separate, non-week items after the plan.
+  const cvItems = gapAnalysis.improvementPlan.filter((item) => item.effort.startsWith("Low effort: this is editing"));
+  if (gapAnalysis.gapPriorities.length > 0) {
+    gapAnalysis.improvementPlan = [...planItems, ...cvItems];
+    gapAnalysis.highestImpactNextStep = planHeadline(plan, targetRole);
+  }
 
   return saveDreamJobAnalysis(userId, dreamJobId, {
     readinessScore: fit.fitScore,

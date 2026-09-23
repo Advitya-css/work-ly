@@ -16,6 +16,8 @@ import { RECOMMENDATION_LABEL, RECOMMENDATION_VARIANT } from "@/lib/jobs/labels"
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Analyze a Job" };
+// Analysis runs the grounded AI screen.
+export const maxDuration = 60;
 
 export default async function AnalyzeJobPage() {
   const user = await getCurrentUser();

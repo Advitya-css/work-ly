@@ -5,7 +5,7 @@ import { safeMessage } from "@/lib/errors";
 import { jobParsingProvider } from "@/lib/ai/job-parser";
 import { checkAuthenticity } from "@/lib/validation/document-authenticity";
 import { groundJobExtraction } from "@/lib/ai/grounding";
-import { scoringProvider } from "@/lib/scoring";
+import { evaluateFit } from "@/lib/scoring/ai-evaluator";
 import { priorityProvider } from "@/lib/priority";
 import {
   createJob,
@@ -159,9 +159,12 @@ export async function analyzeJob(jobId: string, userId: string): Promise<JobAnal
     getPrimaryCareerGoal(userId),
   ]);
 
-  const result = scoringProvider.analyzeFit({ profile, careerGoal, job });
+  // Grounded AI screen when a model is configured (requirement-by-requirement
+  // verdicts with quoted evidence, scored deterministically), rules engine
+  // otherwise - see lib/scoring/ai-evaluator.ts.
+  const { analysis } = await evaluateFit({ profile, careerGoal, job });
 
-  return saveJobAnalysis(userId, jobId, result);
+  return saveJobAnalysis(userId, jobId, analysis);
 }
 
 /**

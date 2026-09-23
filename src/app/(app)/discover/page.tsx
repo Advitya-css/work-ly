@@ -14,12 +14,16 @@ import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, listSourcesByUserId, getLatestRun } from "@/lib/db/discovery";
 import { profileSearchText } from "@/lib/discovery/profile-text";
 import { buildAlert } from "@/lib/discovery/alerts";
+import { isStale } from "@/lib/discovery/sort";
 import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL } from "@/lib/discovery/labels";
 import { embeddingProvider, profileEmbeddingText } from "@/lib/search/embeddings";
 import { deriveCandidateSeniority, estimateYearsExperience } from "@/lib/scoring/shared";
 import type { SearchContext } from "@/lib/search/engine";
 
 export const metadata: Metadata = { title: "Discover" };
+// Discovery runs (a server action on this page) fetch every source and then
+// run the grounded AI screen on the best candidates - give them room.
+export const maxDuration = 60;
 
 export default async function DiscoverPage() {
   const user = await getCurrentUser();
@@ -34,6 +38,10 @@ export default async function DiscoverPage() {
   ]);
 
   const jobs = rawJobs.filter(job => {
+    // Old listings are almost always filled or zombie reposts. They stay in
+    // the database (and come back if a source re-lists them with a fresh
+    // date) but are not shown as opportunities.
+    if (isStale(job)) return false;
     // Strict part-time filtering
     if (profile.profile?.isPartTimeMode && job.employmentType === "FULL_TIME") {
       return false;

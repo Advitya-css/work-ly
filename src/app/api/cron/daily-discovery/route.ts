@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db/pool";
 import { runDiscovery } from "@/lib/discovery/run";
-import { suggestIdealJobSearches } from "@/lib/ai/providers/interest-titles";
-import { getFullCareerProfile } from "@/lib/career/get-full-profile";
-import { profileSearchText } from "@/lib/discovery/profile-text";
+import { getAdapter } from "@/lib/discovery/registry";
 import { sendJobAlertEmail } from "@/lib/email";
 
 export const maxDuration = 300; 
@@ -56,40 +54,42 @@ export async function GET(req: Request) {
       try {
         let userNewJobs = 0;
         let userHighPriority = 0;
-        // AI Proactive Scraping: instead of just searching for the generic targetRole,
-        // we feed the user's entire profile to the AI and have it generate 3 highly
-        // specific titles. This turns discovery into a proactive, intelligent agent.
-        const profile = await getFullCareerProfile(userId);
-        const text = profileSearchText(profile);
-        
-        const idealTitles = await suggestIdealJobSearches(text, targetRole, profile.profile?.location ?? null);
-        const queries = idealTitles.length > 0 ? Array.from(new Set([targetRole, ...idealTitles].filter((t): t is string => Boolean(t)))) : [targetRole];
-        
-        // Auto-provision keyless boards if they don't have them
-        const { rows: existingSources } = await pool.query(`SELECT "adapterId" FROM job_source_configs WHERE "userId" = $1`, [userId]);
-        const existingAdapterIds = new Set(existingSources.map(r => r.adapterId));
-        
+        // Auto-provision keyless boards if they don't have them.
+        //
+        // This used to read and write a "adapterId" COLUMN, which
+        // job_source_configs does not have - the adapter id lives inside the
+        // `config` JSON (see ensureDefaultSourcesAction). The query threw for
+        // every user, the per-user catch swallowed it, and this cron silently
+        // processed nobody.
+        const { rows: existingSources } = await pool.query(
+          `SELECT config->>'adapterId' AS "adapterId" FROM job_source_configs WHERE "userId" = $1`,
+          [userId],
+        );
+        const existingAdapterIds = new Set(existingSources.map((r) => r.adapterId as string | null));
+
         for (const adapterId of ["arbeitnow", "remotive", "jobicy"]) {
-          if (!existingAdapterIds.has(adapterId)) {
+          const adapter = getAdapter(adapterId);
+          if (adapter && !existingAdapterIds.has(adapterId)) {
             await pool.query(
-              `INSERT INTO job_source_configs (id, "userId", "adapterId", name, kind, config, status, "legalBasis", "createdAt", "updatedAt")
-               VALUES (gen_random_uuid(), $1, $2, $3, 'PUBLIC_JOB_BOARD', '{}', 'ACTIVE', 'Open API', NOW(), NOW())`,
-              [userId, adapterId, adapterId.charAt(0).toUpperCase() + adapterId.slice(1)]
+              `INSERT INTO job_source_configs (id, "userId", name, kind, config, status, "legalBasis", "createdAt", "updatedAt")
+               VALUES (gen_random_uuid(), $1, $2, $3::"JobSourceKind", $4::jsonb, 'ACTIVE', $5, NOW(), NOW())`,
+              [userId, adapter.name, adapter.kind, JSON.stringify({ adapterId }), adapter.legalBasis],
             );
           }
         }
 
-        // Run discovery on all smart queries!
-        for (const q of queries) {
-          const result = await runDiscovery(userId, { query: q, limitPerSource: 10 });
-          totalNewJobs += result.newJobs;
-          userNewJobs += result.newJobs;
-          // Assuming result doesn't return high priority count easily here, we'll just use newJobs
-          // or we can just pass 0 for highPriorityCount for now
-        }
-        
+        // One smart run per user. With no query, runDiscovery searches the
+        // user's own target role first plus AI-suggested adjacent titles
+        // (see the SMART DEFAULT block in lib/discovery/run.ts) - it used to
+        // be called once per suggested title here, which multiplied source
+        // calls and, now that runs include an AI screen, AI cost by 4x.
+        const result = await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: 6, timeBudgetMs: 40_000 });
+        totalNewJobs += result.newJobs;
+        userNewJobs += result.newJobs;
+        userHighPriority += result.newHighPriority;
+
         if (userNewJobs > 0 && email) {
-          await sendJobAlertEmail(email, targetRole, userNewJobs, 0);
+          await sendJobAlertEmail(email, targetRole, userNewJobs, userHighPriority);
           // Same column job-alerts uses, so whichever cron reaches this user
           // first starts both crons' cooldowns - see the comment above.
           await pool.query(`UPDATE users SET "lastAlertSentAt" = NOW() WHERE id = $1`, [userId]);

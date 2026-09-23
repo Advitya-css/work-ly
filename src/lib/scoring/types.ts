@@ -46,6 +46,44 @@ export interface JobFitAnalysis {
   preferredRequirements: RequirementCheck[];
   risks: string[];
   improvements: string[];
+  /**
+   * How this analysis was produced. "ai-screen" means a model read the
+   * posting against the profile requirement by requirement, every claimed
+   * match was checked against the candidate's own text, and the number was
+   * then computed deterministically from those verdicts. "rules" is the
+   * deterministic engine alone. Optional so older rows still type-check.
+   */
+  method?: "ai-screen" | "rules";
+  /** Present only when method is "ai-screen". */
+  screen?: ScreenResult;
+}
+
+export type RequirementImportance = "critical" | "important" | "nice";
+export type RequirementVerdict = "met" | "partial" | "missing" | "unclear";
+export type RoleRelevance = "same_role" | "adjacent" | "transferable" | "unrelated";
+
+export interface ScreenedRequirement {
+  requirement: string;
+  importance: RequirementImportance;
+  category: "skill" | "experience" | "education" | "credential" | "other";
+  verdict: RequirementVerdict;
+  /** Exact text from the candidate's own profile, verified to exist there. Null when none. */
+  evidenceQuote: string | null;
+  /** Where the evidence came from, in plain words ("Data Analyst at Acme"). */
+  evidenceWhere: string | null;
+  /** For partial/missing: the most direct way to close it. */
+  gapToClose: string | null;
+}
+
+export interface ScreenResult {
+  summary: string;
+  roleRelevance: RoleRelevance;
+  relevanceRationale: string;
+  requirements: ScreenedRequirement[];
+  /** Critical requirements the candidate clearly does not meet. */
+  dealbreakers: string[];
+  /** Number of AI verdicts downgraded because their quoted evidence was not found on the profile. */
+  ungroundedDropped: number;
 }
 
 export interface ScoringProvider {

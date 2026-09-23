@@ -15,7 +15,7 @@ import type {
 } from "@/lib/db/types";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 import type { JobFitAnalysis } from "@/lib/scoring/types";
-import { normalize, skillsMatch } from "@/lib/scoring/shared";
+import { normalize, skillsMatch, requirementSatisfiedBy } from "@/lib/scoring/shared";
 
 // ---------------------------------------------------------------------------
 // Difficulty / time estimation - deterministic keyword classification, never
@@ -108,7 +108,7 @@ function buildSkillGapPriorities(
   for (const skillName of dreamJobLike.requiredSkills) {
     if (seenSkills.has(normalize(skillName))) continue;
     seenSkills.add(normalize(skillName));
-    if (confirmed.some((s) => skillsMatch(s.name, skillName))) continue;
+    if (confirmed.some((s) => requirementSatisfiedBy(s.name, skillName))) continue;
     const affected = opportunities.filter((o) => skillAppearsIn(skillName, o.job));
     const { difficulty, estimatedTime } = estimateSkillDifficulty(skillName);
     priorities.push({
@@ -126,7 +126,7 @@ function buildSkillGapPriorities(
   for (const skillName of dreamJobLike.preferredSkills) {
     if (seenSkills.has(normalize(skillName))) continue;
     seenSkills.add(normalize(skillName));
-    if (confirmed.some((s) => skillsMatch(s.name, skillName))) continue;
+    if (confirmed.some((s) => requirementSatisfiedBy(s.name, skillName))) continue;
     // Don't need the previous dreamJobLike.requiredSkills.some(...) check because of seenSkills!
     const affected = opportunities.filter((o) => skillAppearsIn(skillName, o.job));
     const { difficulty, estimatedTime } = estimateSkillDifficulty(skillName);
@@ -143,6 +143,64 @@ function buildSkillGapPriorities(
   }
 
   return priorities;
+}
+
+const IMPORTANCE_LABEL: Record<string, string> = {
+  critical: "Must-have for this role",
+  important: "Expected for this role",
+  nice: "Nice to have",
+};
+
+function opportunityWants(requirement: string, job: Job): boolean {
+  if ([...job.requiredSkills, ...job.preferredSkills].some((s) => skillsMatch(s, requirement) || skillsMatch(requirement, s))) {
+    return true;
+  }
+  const words = normalize(requirement).split(" ").filter((w) => w.length > 3);
+  if (words.length === 0) return false;
+  return job.requirements.some((r) => {
+    const text = normalize(r.text);
+    const hit = words.filter((w) => text.includes(w)).length;
+    return hit >= Math.min(2, words.length) && hit / words.length >= 0.6;
+  });
+}
+
+/**
+ * Gap priorities from the grounded screen, when there is one. These are the
+ * requirements a hiring manager would actually screen on, each already
+ * judged against the profile with evidence - much sharper than every
+ * unmatched phrase the heuristic parser pulled out of the posting.
+ */
+function buildScreenGapPriorities(fit: JobFitAnalysis, opportunities: OpportunityWithJob[]): GapPriority[] {
+  const open = (fit.screen?.requirements ?? []).filter((r) => r.verdict === "missing" || r.verdict === "partial");
+  return open.map((r) => {
+    const affected = opportunities.filter((o) => opportunityWants(r.requirement, o.job));
+    const gapType: GapType =
+      r.category === "experience" ? "EXPERIENCE_GAP" : r.category === "education" || r.category === "credential" ? "CREDENTIAL_GAP" : "SKILL_GAP";
+    const estimate =
+      gapType === "SKILL_GAP" ? estimateSkillDifficulty(r.requirement) : NON_SKILL_GAP_ESTIMATES[gapType];
+    const impact: GapImpact =
+      r.importance === "critical" || (r.importance === "important" && affected.length >= 2)
+        ? "HIGH"
+        : r.importance === "important"
+          ? "MEDIUM"
+          : "LOW";
+    const state =
+      r.verdict === "partial"
+        ? `Partly shown (${r.evidenceWhere}), not yet strong enough.`
+        : "Not shown anywhere on your profile yet.";
+    return {
+      gapType,
+      title: r.requirement,
+      description: `${IMPORTANCE_LABEL[r.importance]}. ${state}${r.gapToClose ? ` Fastest way to close it: ${r.gapToClose}` : ""}${
+        affected.length > 0 ? ` Also asked for in ${affected.length} of your tracked opportunities.` : ""
+      }`,
+      impact,
+      difficulty: estimate.difficulty,
+      estimatedTime: estimate.estimatedTime,
+      affectedOpportunityCount: affected.length,
+      affectedOpportunityIds: affected.map((o) => o.id),
+    } satisfies GapPriority;
+  });
 }
 
 function buildNonSkillGapPriorities(
@@ -211,7 +269,7 @@ function buildCvImprovements(dreamJobLike: Job, profile: FullCareerProfile, fit:
 
   const confirmed = profile.skills.filter((s) => !s.isTransferable);
   const weaklyEvidenced = [...dreamJobLike.requiredSkills, ...dreamJobLike.preferredSkills]
-    .map((name) => confirmed.find((s) => skillsMatch(s.name, name)))
+    .map((name) => confirmed.find((s) => requirementSatisfiedBy(s.name, name)))
     .filter((s): s is Skill => s != null && (s.evidenceLevel === "STATED" || s.evidenceLevel === "INFERRED"));
   const uniqueWeak = Array.from(new Map(weaklyEvidenced.map((s) => [s.id, s])).values());
   if (uniqueWeak.length > 0) {
@@ -365,7 +423,7 @@ function buildKeepAsIs(dreamJobLike: Job, profile: FullCareerProfile, fit: JobFi
 
   const confirmed = profile.skills.filter((s) => !s.isTransferable);
   const strongMatches = [...dreamJobLike.requiredSkills, ...dreamJobLike.preferredSkills]
-    .map((name) => confirmed.find((s) => skillsMatch(s.name, name)))
+    .map((name) => confirmed.find((s) => requirementSatisfiedBy(s.name, name)))
     .filter((s): s is Skill => s != null && (s.evidenceLevel === "DEMONSTRATED" || s.evidenceLevel === "CERTIFIED"));
   const uniqueStrong = Array.from(new Map(strongMatches.map((s) => [s.id, s])).values());
   if (uniqueStrong.length > 0) {
@@ -565,8 +623,14 @@ export function buildGapAnalysis(params: {
 }): GapAnalysisResult {
   const { dreamJobLike, fit, profile, opportunities } = params;
 
-  const skillGaps = buildSkillGapPriorities(dreamJobLike, profile, opportunities);
-  const nonSkillGaps = buildNonSkillGapPriorities(fit, opportunities);
+  const skillGaps = fit.screen
+    ? buildScreenGapPriorities(fit, opportunities)
+    : buildSkillGapPriorities(dreamJobLike, profile, opportunities);
+  // With a screen, experience and credential gaps are already itemised
+  // requirement by requirement above; the rolled-up versions would repeat them.
+  const nonSkillGaps = buildNonSkillGapPriorities(fit, opportunities).filter(
+    (g) => !fit.screen || (g.gapType !== "EXPERIENCE_GAP" && g.gapType !== "CREDENTIAL_GAP"),
+  );
   const gapPriorities = rankGapPriorities([...skillGaps, ...nonSkillGaps]);
 
   const cvImprovements = buildCvImprovements(dreamJobLike, profile, fit);
@@ -575,7 +639,9 @@ export function buildGapAnalysis(params: {
   const projectRecommendations = buildProjectRecommendations(gapPriorities, opportunities, dreamJobLike);
 
   const biggestObstacles =
-    gapPriorities.length > 0
+    fit.screen && fit.screen.dealbreakers.length > 0
+      ? fit.screen.dealbreakers.slice(0, 3).map((d) => `Must-have not yet shown: ${d}`)
+      : gapPriorities.length > 0
       ? gapPriorities.slice(0, 3).map((g) => (g.gapType === "SKILL_GAP" ? `Missing: ${g.title}` : g.title))
       : dreamJobLike.requiredSkills.length === 0 && fit.mandatoryRequirements.length === 0
         ? ["Work-ly could not identify any specific requirements or skills in the pasted job description."]

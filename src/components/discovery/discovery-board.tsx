@@ -29,7 +29,7 @@ import { BUCKETS, SOURCE_KIND_LABEL } from "@/lib/discovery/labels";
 import { searchJobs, type SearchContext } from "@/lib/search/engine";
 import { formatSalaryRange } from "@/lib/format";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
-import { comparePriority } from "@/lib/discovery/sort";
+import { comparePriority, isAiScreened, isNewListing, listingAgeDays } from "@/lib/discovery/sort";
 import type { DiscoveredJob } from "@/lib/db/types";
 
 /**
@@ -84,7 +84,10 @@ export function DiscoveryBoard({
   const topPicks = useMemo(() => {
     if (query.trim() !== "") return [];
     // baseline is already sorted by the highly-tuned blended relevance score (b.score)
-    const baseline = searchJobs({ jobs, query: "", context, limit: 10, mode: "BALANCED", matchValues });
+    // Every listing is a candidate. This used to take only the top 10 by
+    // lexical relevance and pick from those, so a Fit-90 match with plain
+    // wording could never be a Top Pick.
+    const baseline = searchJobs({ jobs, query: "", context, limit: 1000, mode: "BALANCED", matchValues });
     return baseline.results
       .filter(
         (r) =>
@@ -100,7 +103,7 @@ export function DiscoveryBoard({
           // which is why Top Picks could come up empty even with plenty of
           // good matches sitting right there.
           (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
-          r.score >= 0.58 && // Solid relevance floor
+          (r.score >= 0.5 || isAiScreened(r.job)) &&
           // A job Work-ly itself has bucketed Low Priority or Skip has no
           // business calling itself a "Top Pick" even if its blended
           // relevance score alone happens to clear the floor above - that
@@ -567,6 +570,12 @@ function DiscoveryCard({
                 (job.fitCoverage == null || job.fitCoverage >= MIN_COVERAGE_FOR_SCORE) && (
                   <Badge variant="outline">Fit {job.fitScore}/100</Badge>
                 )}
+              {isAiScreened(job) && (
+                <Badge variant="secondary" title="Read against your profile requirement by requirement, with every match checked against your own text.">
+                  Screened
+                </Badge>
+              )}
+              {isNewListing(job) && <Badge variant="success">New</Badge>}
             </div>
             <p className="text-xs text-muted-foreground truncate">
               {[job.company, job.location, job.country].filter(Boolean).join(" · ") || "-"}
@@ -615,7 +624,15 @@ function DiscoveryCard({
             <Calendar className="size-3" />
             Discovered {new Date(job.discoveredAt).toLocaleDateString()}
           </span>
-          {job.postedAt && <span>Posted {new Date(job.postedAt).toLocaleDateString()}</span>}
+          {job.postedAt && (
+            <span>
+              Posted {new Date(job.postedAt).toLocaleDateString()}
+              {(() => {
+                const days = Math.floor(listingAgeDays(job));
+                return days <= 0 ? " (today)" : ` (${days}d ago)`;
+              })()}
+            </span>
+          )}
           {job.sourceUrl && (
             <a
               href={job.sourceUrl}

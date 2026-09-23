@@ -65,7 +65,7 @@ import { classifyStudentJob } from "@/lib/student/legal-limits";
 // Weights. Sum to 100, though the effective denominator is now only the
 // weight of the components we could actually measure.
 // ---------------------------------------------------------------------------
-const WEIGHTS = {
+export const WEIGHTS = {
   skills: 30,
   experience: 25,
   education: 10,
@@ -226,7 +226,7 @@ const DEGREE_LEVELS: { level: number; patterns: RegExp }[] = [
   { level: 1, patterns: /\b(associate(?:'?s)?|diploma|foundation|hnd|certificate)\b/i },
 ];
 
-function degreeLevel(text: string | null | undefined): number | null {
+export function degreeLevel(text: string | null | undefined): number | null {
   if (!text) return null;
   for (const { level, patterns } of DEGREE_LEVELS) {
     if (patterns.test(text)) return level;
@@ -716,29 +716,35 @@ function classifyGaps(params: {
  * squarely in the STRETCH band and silently gated the advice the user acts
  * on behind a number nobody measured.
  */
-function buildRecommendation(
+export function buildRecommendation(
   fitScore: number,
   coverage: number,
   mandatoryMetRatio: number | null,
   checkedCount: number,
-  gaps: GapItem[]
+  gaps: GapItem[],
+  failedRelevanceGate = false,
 ): { recommendation: RecommendationType; reasoning: string } {
   // Not enough of the picture to advise on at all.
-  if (coverage < MIN_COVERAGE_FOR_SCORE) {
-    // If we have a decent fitScore (e.g. from a fallback), or if we literally couldn't assess anything,
-    // don't bury it in LOW_PRIORITY where the user never sees it in the Discovery feed.
-    // If fitScore is literally 0, it means it failed the Industry Gate, so keep it LOW_PRIORITY.
-    // Otherwise, surface it as STRETCH so they can at least see it and click 'Analyze'.
-    if (fitScore === 0) {
-      return {
-        recommendation: "LOW_PRIORITY",
-        reasoning: "Failed the industry/domain gate.",
-      };
-    }
+  // The relevance gate is now an explicit flag rather than "fitScore is
+  // exactly 0", which used to double as both "failed the gate" and "we
+  // measured a real zero" - two very different findings.
+  if (failedRelevanceGate) {
     return {
-      recommendation: "STRETCH",
+      recommendation: fitScore >= 25 || coverage < MIN_COVERAGE_FOR_SCORE ? "LOW_PRIORITY" : "SKIP",
+      reasoning: `This role's title and requirements share very little with your background or target roles. Candidate Fit is ${fitScore}/100.`,
+    };
+  }
+  if (coverage < MIN_COVERAGE_FOR_SCORE) {
+    // Too little of the role could be assessed to advise confidently.
+    // Surface it as STRETCH (visible, clearly caveated) rather than burying
+    // it, so the user can open it and run the full analysis.
+    // What little WAS measurable decides: a thin but positive signal stays
+    // visible as a caveated Stretch; nothing measurable (or a poor partial
+    // match) is Low Priority rather than promoted on no evidence.
+    return {
+      recommendation: fitScore >= 50 ? "STRETCH" : "LOW_PRIORITY",
       reasoning:
-        "Work-ly could only assess a small part of this role against your profile. Click 'Analyze Job' to run the deep AI parser.",
+        "Work-ly could only assess a small part of this role against your profile. Click 'Analyze & track' for a full, requirement-by-requirement analysis.",
     };
   }
   
@@ -817,56 +823,49 @@ function analyzeFit({
   job: Job;
 }): JobFitAnalysis {
   const candidateYears = estimateYearsExperience(profile);
-  
-  // Severe Mismatch Penalty: if the job title shares absolutely zero core concepts
-  // with the candidate's career goal, current headline, or top skills, it is likely
-  // an irrelevant garbage pull from an API. We calculate a severe penalty multiplier.
+
+  // --- Title relevance ------------------------------------------------------
+  // Does the posting's title share any core concept with who this person is
+  // or wants to be? Checked against EVERY role they have held and every
+  // role they are targeting, not just the most recent one - a career
+  // changer's target role is often nothing like their current title.
   const titleWords = getCoreWords(job.title);
   const profileWords = new Set([
     ...getCoreWords(careerGoal?.title ?? ""),
+    ...getCoreWords(careerGoal?.primaryTargetRole ?? ""),
+    ...getCoreWords(careerGoal?.targetRole ?? ""),
+    ...(careerGoal?.secondaryTargetRoles ?? []).flatMap((r) => Array.from(getCoreWords(r))),
     ...getCoreWords(profile.profile?.headline ?? ""),
-    ...getCoreWords(profile.experiences[0]?.title ?? ""),
-    ...profile.skills.filter(s => !s.isTransferable).flatMap(s => Array.from(getCoreWords(s.name)))
+    ...getCoreWords(profile.profile?.currentRole ?? ""),
+    ...profile.experiences.flatMap((e) => Array.from(getCoreWords(e.title))),
+    ...profile.skills.filter((s) => !s.isTransferable).flatMap((s) => Array.from(getCoreWords(s.name))),
   ]);
-  
-  let hasIntersection = false;
-  for (const w of titleWords) {
-    // STRICT EXACT MATCH ONLY to prevent semantic smearing (e.g. "car" matching "care" or "plan" matching "plant")
-    if (profileWords.has(w)) {
-      hasIntersection = true;
-      break;
-    }
-  }
-  
-  // Hard Industry Gate: If no core concepts overlap, obliterate the score (0.01 multiplier).
-  // This completely removes completely irrelevant roles (like Nursing for a City Planner) 
-  // from ever passing the discovery thresholds.
-  
-  // Part-Time & Schedule Penalty
-  let schedulePenalty = 1.0;
+  // Exact word match only, to avoid "car" matching "care".
+  const hasIntersection = Array.from(titleWords).some((w) => profileWords.has(w));
+
+  // --- Schedule compatibility (part-time / availability) ------------------
+  // This used to be computed and then never applied to anything. It is now
+  // a real, modest adjustment plus a risk line saying why.
+  let scheduleMultiplier = 1;
+  let scheduleRisk: string | null = null;
   const isPartTime = profile.profile?.isPartTimeMode || false;
   const availability = profile.profile?.availability?.toLowerCase() || "";
   const jobText = ((job.title || "") + " " + (job.description || "")).toLowerCase();
-  
   if (isPartTime || availability) {
-    const isFlexible = jobText.includes("flexible hours") || jobText.includes("asynchronous") || jobText.includes("work when you want") || jobText.includes("choose your own hours");
-    const isRigid = jobText.includes("9 to 5") || jobText.includes("9-5") || jobText.includes("core hours") || jobText.includes("business hours") || jobText.includes("est overlap");
-    
+    const isFlexible = /flexible hours|asynchronous|work when you want|choose your own hours/.test(jobText);
+    const isRigid = /9 to 5|9-5|core hours|business hours|est overlap/.test(jobText);
     if (isRigid && !isFlexible) {
-      schedulePenalty = 0.2; // Massive penalty for rigid 9-5 jobs if they requested part-time/availability
-    } else if (isFlexible) {
-      schedulePenalty = 1.1; // Small boost
+      scheduleMultiplier = 0.75;
+      scheduleRisk = "This posting describes fixed business hours, which may not fit the availability on your profile.";
     }
-    
-    // If they strictly want weekends/evenings and the job says monday-friday
-    if ((availability.includes("weekend") || availability.includes("evening")) && (jobText.includes("monday to friday") || jobText.includes("mon-fri") || jobText.includes("mon - fri"))) {
-      schedulePenalty = 0.1;
+    if (
+      (availability.includes("weekend") || availability.includes("evening")) &&
+      /monday to friday|mon-fri|mon - fri/.test(jobText)
+    ) {
+      scheduleMultiplier = 0.6;
+      scheduleRisk = "This role runs Monday to Friday, but your availability is evenings/weekends.";
     }
   }
-
-  const severeMismatchPenalty = (titleWords.size > 0 && !hasIntersection) ? 0.01 : 1.0;
-
-
 
   const skills = scoreSkills(job, profile.skills);
   const experience = scoreExperience(job, candidateYears);
@@ -901,8 +900,40 @@ function analyzeFit({
   // components is exactly the kind of number that persuades wrongly.
   // If coverage was too low to calculate a total score, but it passed the industry gate,
   // give it a fallback score of 50 so it doesn't get instantly hidden by LOW_PRIORITY.
-  const fallbackScore = hasIntersection ? 50 : 0;
-  const fitScore = total.score != null ? Math.round(total.score * severeMismatchPenalty) : fallbackScore;
+  // Title relevance, graded instead of all-or-nothing. The old rule
+  // multiplied the score by 0.01 whenever the title shared no exact word
+  // with the profile, which wiped out genuinely good matches with a
+  // different name ("Analytics Engineer" for a "Data Analyst" with SQL and
+  // dbt). Now a strong requirement overlap can carry a differently-titled
+  // role, and only a role that matches on neither title NOR requirements is
+  // treated as irrelevant.
+  const matchedSkillCount =
+    skills.requiredMatches.filter((m) => m.match).length + skills.preferredMatches.filter((m) => m.match).length;
+  const skillsRatio =
+    skills.breakdown.confidence === "measured" && skills.breakdown.maxScore > 0
+      ? skills.breakdown.score / skills.breakdown.maxScore
+      : null;
+  let relevanceMultiplier = 1;
+  let failedRelevanceGate = false;
+  // Only a comparison when there IS a profile to compare against - an
+  // empty profile sharing no words with a title is missing data, not a
+  // mismatch.
+  if (titleWords.size > 0 && profileWords.size > 0 && !hasIntersection) {
+    if (skillsRatio != null && skillsRatio >= 0.6 && matchedSkillCount >= 2) {
+      relevanceMultiplier = 0.92;
+    } else if (skillsRatio != null && skillsRatio >= 0.35 && matchedSkillCount >= 2) {
+      relevanceMultiplier = 0.75;
+    } else {
+      relevanceMultiplier = 0.4;
+      failedRelevanceGate = true;
+    }
+  }
+
+  // Below the coverage threshold the headline number is withheld by the UI,
+  // but ranking still needs a real signal - so this is the measured partial
+  // ratio, never the invented constant 50 it used to be.
+  const baseScore = total.score ?? total.raw ?? 0;
+  const fitScore = Math.max(0, Math.min(100, Math.round(baseScore * relevanceMultiplier * scheduleMultiplier)));
   const competitiveness: JobFitAnalysis["competitiveness"] =
     total.score == null ? "Insufficient data" : fitScore >= 75 ? "High" : fitScore >= 50 ? "Moderate" : "Low";
 
@@ -937,7 +968,7 @@ function analyzeFit({
     seniorityRatio,
   });
 
-  const built = buildRecommendation(fitScore, total.coverage, mandatoryMetRatio, checkable.length, gaps);
+  const built = buildRecommendation(fitScore, total.coverage, mandatoryMetRatio, checkable.length, gaps, failedRelevanceGate);
   let recommendation = built.recommendation;
   let recommendationReasoning = built.reasoning;
 
@@ -982,6 +1013,10 @@ function analyzeFit({
   }
   if (job.seniority && seniorityRatio != null && seniorityRatio < 0.5) {
     risks.push("This role is pitched at a different seniority than your profile suggests, which may raise questions.");
+  }
+  if (scheduleRisk) risks.push(scheduleRisk);
+  if (titleWords.size > 0 && profileWords.size > 0 && !hasIntersection && !failedRelevanceGate) {
+    risks.push("The job title differs from your past and target titles. Your requirement overlap carries this match, so make the connection explicit in your application.");
   }
 
   // --- Student work-hour eligibility ---
@@ -1065,6 +1100,7 @@ function analyzeFit({
     preferredRequirements,
     risks,
     improvements,
+    method: "rules",
   };
 }
 
