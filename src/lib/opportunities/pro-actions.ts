@@ -1,4 +1,4 @@
-import "server-only";
+"use server";
 
 import { getCurrentUser } from "@/lib/auth";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
