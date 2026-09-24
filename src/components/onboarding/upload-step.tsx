@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ResumeUploader } from "@/components/career/resume-uploader";
 import { completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 
-export function UploadStep() {
+export function UploadStep({ intent = "hunt" }: { intent?: string }) {
   const router = useRouter();
 
   return (
@@ -16,13 +16,13 @@ export function UploadStep() {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Add your resume</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Drop your resume below. Work-ly will instantly extract your profile and run a personalized AI search to find your top 5 matching jobs in seconds.
+          Drop your resume below. Work-ly reads it, builds your profile, then searches for the jobs that fit you best and scores each one. You&apos;ll see your top matches in about a minute.
         </p>
       </div>
 
       <Card>
         <CardContent>
-          <ResumeUploader autoOnboardAndRedirect={true} />
+          <ResumeUploader autoOnboardAndRedirect redirectTo={`/onboarding?step=matches&intent=${intent}`} />
         </CardContent>
       </Card>
 

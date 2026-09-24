@@ -4,7 +4,9 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { EmptyState } from "@/components/shared/empty-state";
+import { ProPreview } from "@/components/guidance/pro-preview";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { Button } from "@/components/ui/button";
 import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { getCurrentUser } from "@/lib/auth";
@@ -34,15 +36,44 @@ export default async function TailoredResumePage({ params }: { params: Promise<{
   );
 
   if (!user.isPro) {
+    const full = await getFullCareerProfile(user.id);
+    const preview = buildPreviewData({
+      requiredSkills: job.requiredSkills,
+      preferredSkills: job.preferredSkills,
+      strengths: opportunity.analysis?.strengths,
+      gaps: opportunity.analysis?.gaps,
+      weaknesses: opportunity.analysis?.weaknesses,
+      experiences: full.experiences,
+    });
     return (
       <div className="flex flex-col gap-6">
         {back}
-        <EmptyState
-          icon={Lock}
-          title="Tailored resumes are a Pro feature"
-          description="Get an apply-ready resume for this job, rewritten from your real experience, in about a minute."
-          action={{ label: "Upgrade to Pro", href: "/settings" }}
+        <PageHeader
+          title="Resume tailored to this job"
+          description={`For ${job.title ?? "this role"}${job.company ? ` at ${job.company}` : ""}. An apply-ready resume rewritten only from facts on your profile, in about a minute.`}
         />
+        <ProPreview
+          intro={`Work-ly would reorder and rewrite ${
+            preview.roleCount > 0 ? `your ${preview.roleCount} role${preview.roleCount === 1 ? "" : "s"}` : "your experience"
+          }${full.skills.length ? ` and ${full.skills.length} skills` : ""} for this posting, keep every real number, and never add anything you haven't done.`}
+          facts={[
+            { label: "Keywords from this posting (used only where your experience backs them up)", items: preview.keywords },
+            { label: "Where you already fit", items: preview.strengths },
+          ]}
+          outputLabel="Your tailored resume, ready to print or save as PDF"
+          lines={6}
+          className="max-w-3xl"
+        >
+          <UpgradeModal
+            title="Unlock tailored resumes"
+            description="Get an apply-ready resume for this job, rewritten from your real experience, in about a minute."
+          >
+            <Button className="w-full gap-2 sm:w-fit">
+              <Lock className="size-4" />
+              Get my tailored resume (Pro)
+            </Button>
+          </UpgradeModal>
+        </ProPreview>
       </div>
     );
   }

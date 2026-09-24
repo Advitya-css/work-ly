@@ -19,6 +19,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { setApplicationStatusAction } from "@/lib/applications/actions";
+import { announceStageChange } from "@/lib/guidance/stage-events";
 import {
   PIPELINE_COLUMNS,
   getApplicationStatusLabel,
@@ -68,7 +69,20 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
   }, [filtered]);
 
   function move(id: string, status: ApplicationStatus) {
-    startTransition(() => setApplicationStatusAction(id, status));
+    const application = applications.find((a) => a.id === id);
+    startTransition(async () => {
+      await setApplicationStatusAction(id, status);
+      if (application) {
+        announceStageChange({
+          applicationId: id,
+          opportunityId: application.opportunityId,
+          roleTitle: application.roleTitle,
+          company: application.company,
+          from: application.status,
+          to: status,
+        });
+      }
+    });
   }
 
   function setFilter(key: keyof AnalyticsFilters, value: string) {

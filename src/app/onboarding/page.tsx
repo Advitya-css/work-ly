@@ -1,127 +1,135 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, FileText, Compass, Target, TrendingUp, GraduationCap, Briefcase } from "lucide-react";
+import { ArrowRight, Briefcase, Compass, GraduationCap, Laptop } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { StepIndicator } from "@/components/onboarding/step-indicator";
 import { UploadStep } from "@/components/onboarding/upload-step";
 import { ReviewStep } from "@/app/onboarding/review-step";
+import { MatchesStep } from "@/app/onboarding/matches-step";
 import { StudentStep } from "@/components/onboarding/student-step";
-import { completeOnboardingAction } from "@/lib/onboarding/actions";
+import { chooseOnboardingIntentAction, completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
+import { parseOnboardingIntent } from "@/lib/onboarding/intent";
 import { getCurrentUser } from "@/lib/auth";
 import { listSupportedStudentCountries } from "@/lib/student/country-rules-db";
 
 export const metadata: Metadata = { title: "Welcome" };
+// The matches step reads the first discovery run's results.
+export const dynamic = "force-dynamic";
 
-const steps = [
-  {
-    icon: FileText,
-    title: "Build your career profile",
-    description: "Add your experience and preferences so Work-ly understands where you stand.",
-  },
-  {
-    icon: Compass,
-    title: "Discover opportunities",
-    description: "We surface and prioritize roles worth your attention. Not thousands of listings.",
-  },
-  {
-    icon: Target,
-    title: "See your gaps, clearly",
-    description: "Understand exactly what separates you from the roles you actually want.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Close them systematically",
-    description: "Follow a practical pathway that makes you more competitive over time.",
-  },
-];
-
-type OnboardingStep = "welcome" | "upload" | "review" | "student-setup";
+type OnboardingStep = "welcome" | "upload" | "review" | "matches" | "student-setup";
 
 function resolveStep(raw: string | undefined): OnboardingStep {
-  if (raw === "upload" || raw === "review" || raw === "student-setup") return raw;
+  if (raw === "upload" || raw === "review" || raw === "matches" || raw === "student-setup") return raw;
   return "welcome";
 }
+
+const INTENTS = [
+  {
+    intent: "hunt",
+    icon: Briefcase,
+    title: "I'm looking for a job",
+    body: "Find roles that fit, tailor every application, and prepare for interviews.",
+  },
+  {
+    intent: "switch",
+    icon: Compass,
+    title: "I'm planning my next move",
+    body: "See how close you are to the role you want and get a step-by-step plan to close the gap.",
+  },
+  {
+    intent: "freelance",
+    icon: Laptop,
+    title: "I freelance or do contract work",
+    body: "Find contract and freelance gigs instead of full-time roles.",
+  },
+] as const;
 
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; intent?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { step: rawStep } = await searchParams;
+  const { step: rawStep, intent: rawIntent } = await searchParams;
   const step = resolveStep(rawStep);
-  const stepIndex = step === "welcome" ? 0 : step === "upload" ? 1 : 2;
+  const intent = parseOnboardingIntent(rawIntent);
+  const stepIndex = step === "welcome" ? 0 : step === "matches" ? 2 : 1;
 
   return (
     <div className="flex flex-col items-center gap-8 text-center">
-      {(step === "upload" || step === "review") && <StepIndicator current={stepIndex} />}
+      {(step === "upload" || step === "review" || step === "matches") && <StepIndicator current={stepIndex} />}
 
       {step === "welcome" && (
         <>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
               Welcome to Work-ly{user.name ? `, ${user.name.split(" ")[0]}` : ""}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Are you here as a student looking for campus/grad roles, or an established professional?
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">What brings you here? This sets up your first search.</p>
           </div>
 
-          <div className="grid w-full gap-4 sm:grid-cols-2 mt-4">
-            <Link href="/onboarding?step=student-setup" className="group">
-              <Card variant="interactive" className="h-full border-2 border-transparent hover:border-[var(--area-color,var(--primary))]/35">
-                <CardContent className="flex flex-col items-center gap-4 px-6 py-8 text-center">
-                  <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <GraduationCap className="size-7 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">Student Mode</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Track on-campus jobs, strict visa limit enforcement, and new grad roles.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/onboarding?step=upload" className="group">
-              <Card variant="interactive" className="h-full border-2 border-transparent hover:border-[var(--area-color,var(--primary))]/35">
-                <CardContent className="flex flex-col items-center gap-4 px-6 py-8 text-center">
-                  <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <Briefcase className="size-7 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">Professional</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Upload your resume, build a profile, and find your next senior role.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid w-full gap-3 sm:grid-cols-2">
+            {INTENTS.map(({ intent: value, icon: Icon, title, body }) => (
+              <form key={value} action={chooseOnboardingIntentAction} className="flex">
+                <input type="hidden" name="intent" value={value} />
+                <button
+                  type="submit"
+                  className="group flex w-full items-start gap-4 rounded-xl border-2 border-border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="flex flex-col gap-1">
+                    <span className="text-base font-semibold text-foreground">{title}</span>
+                    <span className="text-sm text-muted-foreground">{body}</span>
+                  </span>
+                </button>
+              </form>
+            ))}
+            <Link
+              href="/onboarding?step=student-setup"
+              className="group flex items-start gap-4 rounded-xl border-2 border-border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                <GraduationCap className="size-5" />
+              </span>
+              <span className="flex flex-col gap-1">
+                <span className="text-base font-semibold text-foreground">I&apos;m a student</span>
+                <span className="text-sm text-muted-foreground">
+                  Campus jobs, internships and grad roles, with work-hour limits checked for you.
+                </span>
+              </span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-3">
+            <form action={loadSampleProfileAction}>
+              <Button type="submit" variant="ghost" className="text-muted-foreground">
+                Just looking? Explore with a sample profile
+                <ArrowRight />
+              </Button>
+            </form>
             <form action={completeOnboardingAction}>
-              <Button type="submit" variant="ghost">
+              <Button type="submit" variant="link" className="text-muted-foreground">
                 Skip setup
               </Button>
             </form>
           </div>
         </>
       )}
-      
+
       {step === "student-setup" && <StudentStep countries={await listSupportedStudentCountries()} />}
 
 
-      {step === "upload" && <UploadStep />}
+      {step === "upload" && <UploadStep intent={intent} />}
 
       {step === "review" && <ReviewStep userId={user.id} />}
+
+      {step === "matches" && <MatchesStep userId={user.id} intent={intent} />}
     </div>
   );
 }

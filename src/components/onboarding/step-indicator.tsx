@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Welcome", "Upload CV", "Review"] as const;
+const STEPS = ["Welcome", "Your resume", "Your matches"] as const;
 
 export function StepIndicator({ current }: { current: number }) {
   return (

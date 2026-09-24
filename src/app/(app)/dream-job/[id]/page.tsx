@@ -262,7 +262,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               <p className="text-sm font-medium text-foreground">{analysis.highestImpactNextStep}</p>
             </div>
           </div>
-          <BuildPathwayFromDreamJobButton dreamJobId={id} isPro={user.isPro} />
+          <BuildPathwayFromDreamJobButton dreamJobId={id} isPro={user.isPro} gaps={topGaps.map((g) => g.title)} />
         </CardContent>
       </Card>
 

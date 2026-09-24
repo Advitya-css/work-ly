@@ -30,6 +30,9 @@ import { ResumeTailorCard } from "@/components/applications/resume-tailor-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
 import { FollowUpTemplateCard } from "@/components/applications/follow-up-template-card";
 import { AcceptOfferCard } from "@/components/applications/accept-offer-card";
+import { StageRoadmap } from "@/components/guidance/stage-roadmap";
+import { buildPreviewData } from "@/lib/guidance/preview-data";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { formatSalaryRange } from "@/lib/format";
@@ -75,6 +78,26 @@ export default async function ApplicationDetailPage({
   const detailLine = [application.company, placeLine(application.location, application.country, " · ")]
     .filter(Boolean)
     .join(" · ");
+  // Real inputs for the locked Pro tools' previews - nothing generated.
+  const preview = user.isPro
+    ? undefined
+    : buildPreviewData({
+        requiredSkills: job?.requiredSkills,
+        preferredSkills: job?.preferredSkills,
+        strengths: application.analysis?.strengths,
+        gaps: application.analysis?.gaps,
+        weaknesses: application.analysis?.weaknesses,
+        experiences: (await getFullCareerProfile(user.id)).experiences,
+      });
+
+  // Mirrors FollowUpTemplateCard's own rule, so the roadmap can say whether
+  // the card is on the page yet.
+  const lastMilestone = application.reachedInterviewAt ?? application.reachedAssessmentAt ?? application.dateApplied;
+  const followUpShown =
+    ["APPLIED", "ASSESSMENT", "INTERVIEW", "FINAL_INTERVIEW"].includes(application.status) &&
+    lastMilestone != null &&
+    Date.now() - new Date(lastMilestone).getTime() >= 7 * 24 * 60 * 60 * 1000;
+
   const offeredSalary = formatSalaryRange(
     application.salaryOffered,
     null,
@@ -106,6 +129,8 @@ export default async function ApplicationDetailPage({
         }
       />
 
+      <StageRoadmap application={application} isPro={user.isPro ?? false} followUpShown={followUpShown} />
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card>
@@ -135,31 +160,51 @@ export default async function ApplicationDetailPage({
             </CardContent>
           </Card>
 
-          <ResumeTailorCard applicationId={application.id} isPro={user.isPro} />
-          
-          <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} />
-
-          {["APPLIED", "ASSESSMENT", "INTERVIEW", "FINAL_INTERVIEW"].includes(application.status) && (
-            <FollowUpTemplateCard application={application} />
-          )}
-
           {application.status === "OFFER" && (
             <>
-              <SalaryNegotiatorCard applicationId={application.id} />
-              <AcceptOfferCard
-                applicationId={application.id}
-                roleTitle={application.roleTitle}
-                company={application.company}
-              />
+              <div id="tool-counter-offer" className="scroll-mt-24">
+                <SalaryNegotiatorCard applicationId={application.id} />
+              </div>
+              <div id="tool-accept-offer" className="scroll-mt-24">
+                <AcceptOfferCard
+                  applicationId={application.id}
+                  roleTitle={application.roleTitle}
+                  company={application.company}
+                />
+              </div>
             </>
           )}
 
           {application.reachedInterviewAt && (
-            <div className="flex flex-col gap-4">
-              <InterviewPrepCard applicationId={application.id} isPro={user.isPro} />
-              <TechnicalChallengeCard applicationId={application.id} roleTitle={application.job?.title ?? application.roleTitle} isPro={user.isPro} />
+            <div id="tool-mock-interview" className="scroll-mt-24">
+              <InterviewPrepCard applicationId={application.id} isPro={user.isPro} preview={preview} />
             </div>
           )}
+
+          {(application.reachedAssessmentAt || application.reachedInterviewAt) && (
+            <div id="tool-practice-task" className="scroll-mt-24">
+              <TechnicalChallengeCard
+                applicationId={application.id}
+                roleTitle={application.job?.title ?? application.roleTitle}
+                isPro={user.isPro}
+                preview={preview}
+              />
+            </div>
+          )}
+
+          {followUpShown && (
+            <div id="tool-follow-up" className="scroll-mt-24">
+              <FollowUpTemplateCard application={application} />
+            </div>
+          )}
+
+          <div id="tool-resume-bullets" className="scroll-mt-24">
+            <ResumeTailorCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+          </div>
+
+          <div id="tool-application-strategy" className="scroll-mt-24">
+            <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+          </div>
 
           <Card>
             <CardHeader>

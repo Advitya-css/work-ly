@@ -15,13 +15,12 @@ import {
   ExternalLink,
   Flame,
   HelpCircle,
-  FileText,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { TailorApplicationButton } from "@/components/opportunities/tailor-application-button";
-import { InsiderAccessButton } from "@/components/opportunities/insider-access-button";
-import { InterviewIntelButton } from "@/components/opportunities/interview-intel-button";
+import { OpportunityToolsCard } from "@/components/guidance/opportunity-tools-card";
+import { buildPreviewData } from "@/lib/guidance/preview-data";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 
 import { ScoreReadout } from "@/components/shared/score-readout";
 import { coverageOf, MIN_COVERAGE_FOR_SCORE, roundForDisplay, unassessedIn } from "@/lib/scoring/coverage";
@@ -82,6 +81,18 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   // health," and the copy below must say so rather than implying the latter.
   const lowCoverage = coverageOf(fitBreakdown) < MIN_COVERAGE_FOR_SCORE;
 
+  // Real inputs for the locked Pro tools' previews - nothing generated.
+  const toolPreview = user.isPro
+    ? undefined
+    : buildPreviewData({
+        requiredSkills: job.requiredSkills,
+        preferredSkills: job.preferredSkills,
+        strengths: analysis.strengths,
+        gaps: analysis.gaps,
+        weaknesses: analysis.weaknesses,
+        experiences: (await getFullCareerProfile(user.id)).experiences,
+      });
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -92,16 +103,13 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </Link>
         </Button>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button asChild className="gap-2">
-            <Link href={`/opportunities/${opportunity.id}/resume`}>
-              <FileText className="size-4" />
-              Tailored resume
-            </Link>
-          </Button>
-          <TailorApplicationButton opportunityId={opportunity.id} isPro={user.isPro} />
-          <InsiderAccessButton opportunityId={opportunity.id} isPro={user.isPro} />
-          <InterviewIntelButton opportunityId={opportunity.id} isPro={user.isPro} />
-          <OpportunityStatusControls id={opportunity.id} isSaved={opportunity.isSaved} status={opportunity.status} />
+          <OpportunityStatusControls
+            id={opportunity.id}
+            isSaved={opportunity.isSaved}
+            status={opportunity.status}
+            roleTitle={job.title}
+            company={job.company}
+          />
           <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
         </div>
       </div>
@@ -170,6 +178,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </CardContent>
         </Card>
       </div>
+
+      <OpportunityToolsCard opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">

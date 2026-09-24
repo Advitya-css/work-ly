@@ -46,7 +46,7 @@ export function FollowUpTemplateCard({ application }: { application: Application
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-primary">
           <Mail className="size-5" />
-          Follow-up Required
+          Time to follow up
         </CardTitle>
         <CardDescription>
           It's been over 7 days since your last update for {application.roleTitle}. Send a polite nudge to stay on their radar.
@@ -56,7 +56,7 @@ export function FollowUpTemplateCard({ application }: { application: Application
         {!template && !loading && (
           <Button onClick={handleGenerate} className="w-fit gap-2">
             <Sparkles className="size-4" />
-            Generate Follow-up Email
+            Draft a follow-up email
           </Button>
         )}
         {loading && (

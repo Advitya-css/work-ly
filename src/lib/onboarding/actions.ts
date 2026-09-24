@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { markUserOnboarded } from "@/lib/db/users";
 import { getOrCreateCareerProfile } from "@/lib/db/career-profile";
 import { pool } from "@/lib/db/pool";
+import { parseOnboardingIntent } from "./intent";
 
 export async function completeOnboardingAction(): Promise<void> {
   const user = await getCurrentUser();
@@ -100,4 +101,27 @@ export async function loadSampleProfileAction(): Promise<void> {
 
   await markUserOnboarded(user.id);
   redirect("/discover");
+}
+
+/**
+ * The first question on the welcome screen: what brought you here. It
+ * decides where the first session ends up (a career-switcher is pointed at
+ * the dream-job check once they've seen their matches) and, for freelancers,
+ * switches on freelance mode so the very first search looks for contract
+ * work instead of full-time roles.
+ */
+export async function chooseOnboardingIntentAction(formData: FormData): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const intent = parseOnboardingIntent(formData.get("intent")?.toString());
+  if (intent === "freelance") {
+    await pool.query(
+      `INSERT INTO "career_profiles" ("id", "userId", "isFreelanceMode", "updatedAt")
+       VALUES (gen_random_uuid(), $1, true, now())
+       ON CONFLICT ("userId") DO UPDATE SET "isFreelanceMode" = true, "updatedAt" = now()`,
+      [user.id],
+    );
+  }
+  redirect(`/onboarding?step=upload&intent=${intent}`);
 }

@@ -15,8 +15,23 @@ import {
 
 import type { TailoredApplication } from "@/lib/ai/providers/tailor-ai";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { ProPreview } from "@/components/guidance/pro-preview";
+import type { PreviewData } from "@/lib/guidance/preview-data";
 
-export function TailorApplicationButton({ opportunityId, isPro = false }: { opportunityId: string; isPro?: boolean }) {
+export function TailorApplicationButton({
+  opportunityId,
+  isPro = false,
+  preview,
+  label,
+  lockedLabel,
+}: {
+  opportunityId: string;
+  isPro?: boolean;
+  preview?: PreviewData;
+  /** Button text override, e.g. a shorter label inside a tool tile. */
+  label?: string;
+  lockedLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,22 +65,38 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
   return (
     <>
       {!isPro ? (
-        <UpgradeModal title="Unlock AI Application Tailor" description="Generate a highly optimized, role-specific cover letter and resume bullet points.">
-          <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2">
-            <Lock className="size-4 fill-current" />
-            Tailor Application (Pro)
+        <UpgradeModal
+          title="Unlock cover letters"
+          description="A cover letter draft and resume bullet rewrites for this exact posting, built from your real experience."
+          preview={
+            preview && (
+              <ProPreview
+                facts={[
+                  { label: "It would lead with", items: preview.strengths },
+                  { label: "Keywords it would work in", items: preview.keywords.slice(0, 6) },
+                ]}
+                outputLabel="Your cover letter and bullet rewrites"
+                lines={3}
+              />
+            )
+          }
+        >
+          <Button variant="outline" className="w-full sm:w-auto gap-2">
+            <Lock className="size-4" />
+            {lockedLabel ?? "Write my cover letter (Pro)"}
           </Button>
         </UpgradeModal>
       ) : (
         <Button 
+          variant="outline"
           onClick={() => {
             setOpen(true);
             if (!data && !loading && !error) handleGenerate();
           }}
-          className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2"
+          className="w-full sm:w-auto gap-2"
         >
-          <Sparkles className="size-4 fill-current" />
-          Tailor Resume & Cover Letter
+          <Sparkles className="size-4" />
+          {label ?? "Write my cover letter"}
         </Button>
       )}
 
@@ -74,7 +105,7 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
           <DialogHeader className="px-6 py-4 border-b border-border bg-muted/30">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="size-5 text-primary" />
-              AI Application Tailor
+              Cover letter for this job
             </DialogTitle>
             <DialogDescription>
               Custom-generated cover letter and ATS-optimized resume bullet points for this specific role.

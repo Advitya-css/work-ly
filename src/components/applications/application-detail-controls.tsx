@@ -25,6 +25,7 @@ import {
   updateApplicationAction,
 } from "@/lib/applications/actions";
 import { PIPELINE_COLUMNS, APPLICATION_STATUS_LABEL } from "@/lib/applications/labels";
+import { announceStageChange } from "@/lib/guidance/stage-events";
 import type { Application, ApplicationStatus } from "@/lib/db/types";
 
 function toDateInput(date: Date | null): string {
@@ -41,7 +42,18 @@ export function StatusPicker({ application }: { application: Application }) {
       <Select
         value={application.status}
         onValueChange={(v) =>
-          startTransition(() => setApplicationStatusAction(application.id, v as ApplicationStatus))
+          startTransition(async () => {
+            const to = v as ApplicationStatus;
+            await setApplicationStatusAction(application.id, to);
+            announceStageChange({
+              applicationId: application.id,
+              opportunityId: application.opportunityId,
+              roleTitle: application.roleTitle,
+              company: application.company,
+              from: application.status,
+              to,
+            });
+          })
         }
       >
         <SelectTrigger size="sm" className="w-[170px]" aria-label="Application status">

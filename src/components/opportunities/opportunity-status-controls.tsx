@@ -9,8 +9,21 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toggleOpportunitySavedAction, setOpportunityStatusAction } from "@/lib/opportunities/actions";
 import type { OpportunityStatus } from "@/lib/db/types";
+import { announceStageChange } from "@/lib/guidance/stage-events";
 
-export function OpportunityStatusControls({ id, isSaved, status }: { id: string; isSaved: boolean; status: OpportunityStatus }) {
+export function OpportunityStatusControls({
+  id,
+  isSaved,
+  status,
+  roleTitle,
+  company,
+}: {
+  id: string;
+  isSaved: boolean;
+  status: OpportunityStatus;
+  roleTitle?: string | null;
+  company?: string | null;
+}) {
   const [isPending, startTransition] = useTransition();
   // After "Mark as applied" the page used to change silently. Now it says
   // so and links to the tracker, where outcomes and follow-ups live.
@@ -20,6 +33,16 @@ export function OpportunityStatusControls({ id, isSaved, status }: { id: string;
     startTransition(async () => {
       const result = await setOpportunityStatusAction(id, next);
       setTracked(next === "APPLIED" || next === "PREPARING" ? { status: next, applicationId: result?.applicationId } : null);
+      if ((next === "APPLIED" || next === "PREPARING") && result?.applicationId) {
+        announceStageChange({
+          applicationId: result.applicationId,
+          opportunityId: id,
+          roleTitle: roleTitle ?? "this role",
+          company: company ?? null,
+          from: status === "DISCOVERED" ? null : status,
+          to: next,
+        });
+      }
     });
   }
 

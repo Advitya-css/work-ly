@@ -9,6 +9,7 @@ import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generatePathwayFromDreamJobAction } from "@/lib/pathway/actions";
+import { ProPreview } from "@/components/guidance/pro-preview";
 
 /**
  * Builds a pathway scoped to this specific dream job and lands directly on
@@ -17,7 +18,16 @@ import { generatePathwayFromDreamJobAction } from "@/lib/pathway/actions";
  * for why this needed its own action rather than reusing
  * generatePathwayAction (which intentionally stays on /career-path).
  */
-export function BuildPathwayFromDreamJobButton({ dreamJobId, isPro = false }: { dreamJobId: string; isPro?: boolean }) {
+export function BuildPathwayFromDreamJobButton({
+  dreamJobId,
+  isPro = false,
+  gaps = [],
+}: {
+  dreamJobId: string;
+  isPro?: boolean;
+  /** The analysis's top gaps, shown in the locked preview. */
+  gaps?: string[];
+}) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -35,10 +45,23 @@ export function BuildPathwayFromDreamJobButton({ dreamJobId, isPro = false }: { 
     <div className="flex flex-col items-end gap-2">
       
       {!isPro ? (
-        <UpgradeModal title="Unlock The Dream Pathway" description="Get a personalized 30-day action plan with direct Coursera links and AI coaching.">
-          <Button type="button" variant="default" size="sm" className="shrink-0 bg-primary/90 hover:bg-primary gap-2 ">
+        <UpgradeModal
+          title="Unlock your step-by-step plan"
+          description="Turn the gaps to this role into ordered steps and a 30/60/90-day action plan you can tick off."
+          preview={
+            gaps.length > 0 ? (
+              <ProPreview
+                heading="What your plan would cover"
+                facts={[{ label: "The gaps it would close, in order", items: gaps.slice(0, 5) }]}
+                outputLabel="Your steps and 30/60/90-day actions"
+                lines={3}
+              />
+            ) : undefined
+          }
+        >
+          <Button type="button" variant="default" size="sm" className="shrink-0 gap-2">
             <Lock className="size-4" />
-            Build Pathway (Pro)
+            Build my plan (Pro)
           </Button>
         </UpgradeModal>
       ) : (

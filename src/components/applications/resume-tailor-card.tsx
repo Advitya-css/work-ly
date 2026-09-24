@@ -9,12 +9,18 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { TypewriterMarkdown } from "@/components/shared/typewriter-markdown";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Lock } from "lucide-react";
+import { ProPreview, ToolBrand } from "@/components/guidance/pro-preview";
+import type { PreviewData } from "@/lib/guidance/preview-data";
 
 interface ResumeTailorCardProps {
   applicationId: string;
 }
 
-export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorCardProps & { isPro?: boolean }) {
+export function ResumeTailorCard({
+  applicationId,
+  isPro = false,
+  preview,
+}: ResumeTailorCardProps & { isPro?: boolean; preview?: PreviewData }) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,27 +49,38 @@ export function ResumeTailorCard({ applicationId, isPro = false }: ResumeTailorC
   return (
     <Card className="border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <FileText className="size-5 text-primary" />
-          AI Resume Tailor
+          Resume bullets for this job
+          <ToolBrand>AI Resume Tailor</ToolBrand>
         </CardTitle>
         <CardDescription>
-          Before you apply, let the AI compare your base profile against this specific job description to generate optimized bullet points and ATS keywords.
+          Rewrites your experience bullets and keywords against this job description, using only what your experience actually shows.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {!content ? (
           !isPro ? (
-            <UpgradeModal title="Unlock AI Resume Tailoring" description="Instantly rewrite your resume to beat the ATS filters for this exact job.">
-              <Button className="w-full gap-2 bg-primary/90 hover:bg-primary sm:w-auto">
-                <Lock className="size-4" />
-                Tailor Resume (Pro)
-              </Button>
-            </UpgradeModal>
+            <ProPreview
+              intro={
+                preview?.latestRole
+                  ? `Work-ly would rewrite ${preview.latestRoleLines > 0 ? `the ${preview.latestRoleLines} bullets` : "the bullets"} from your role as ${preview.latestRole}${preview.roleCount > 1 ? ` and your ${preview.roleCount - 1} other role${preview.roleCount > 2 ? "s" : ""}` : ""} against this posting.`
+                  : "Work-ly would rewrite your experience bullets against this posting."
+              }
+              facts={[{ label: "Keywords from this posting (used only where your experience backs them up)", items: preview?.keywords ?? [] }]}
+              outputLabel="Your rewritten bullets and keyword check"
+            >
+              <UpgradeModal title="Unlock resume bullets for this job" description="Rewrite your resume for this exact job, from your real experience, so it gets past the screeners.">
+                <Button className="w-full gap-2 sm:w-auto">
+                  <Lock className="size-4" />
+                  Tailor my bullets (Pro)
+                </Button>
+              </UpgradeModal>
+            </ProPreview>
           ) : (
             <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto gap-2">
               {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {loading ? "Analyzing Job & Profile..." : "Tailor Resume for this Job"}
+              {loading ? "Reading the job and your profile..." : "Tailor my bullets for this job"}
             </Button>
           )
         ) : (

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { getCurrentUser } from "@/lib/auth";
 import { submitAndAnalyzeDreamJob } from "@/lib/dream-job/analyze-dream-job";
-import { deleteDreamJob, getDreamJobById } from "@/lib/db/dream-jobs";
+import { deleteDreamJob, getDreamJobById, listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { dreamJobInputSchema } from "@/lib/validations/dream-job";
 
 export interface DreamJobActionState {
@@ -35,6 +35,13 @@ export async function analyzeDreamJobAction(
   });
   if (!parsed.success) {
     return { fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+  }
+
+  // The first dream-job analysis is free; after that it's a Pro tool. The
+  // form already enforces this - checked here too so the rule doesn't live
+  // only in the browser.
+  if (!user.isPro && (await listDreamJobsByUserId(user.id)).some((dj) => dj.status === "PARSED")) {
+    return { error: "Your free dream-job analysis has been used. Upgrade to Pro to analyze more." };
   }
 
   const result = await submitAndAnalyzeDreamJob(user.id, parsed.data);

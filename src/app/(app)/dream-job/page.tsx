@@ -52,7 +52,8 @@ export default async function DreamJobPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DreamJobForm isPro={user.isPro} />
+          {/* The first analysis is free, so a free user can see what it does before paying. */}
+          <DreamJobForm isPro={Boolean(user.isPro) || !dreamJobs.some((dj) => dj.status === "PARSED")} />
         </CardContent>
       </Card>
 

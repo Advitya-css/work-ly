@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { TourProvider } from "@/components/tour/tour-provider";
+import { StageMomentHost } from "@/components/guidance/stage-moment-host";
 import { FeedbackButton } from "@/components/shared/feedback-button";
 import { SampleDataBanner } from "@/components/shared/sample-data-banner";
 import { Mail } from "lucide-react";
@@ -48,6 +49,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </div>
         )}
       </AppShell>
+      <StageMomentHost isPro={user.isPro ?? false} />
     </TourProvider>
   );
 }

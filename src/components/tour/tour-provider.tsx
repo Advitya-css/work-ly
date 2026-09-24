@@ -51,7 +51,7 @@ const steps: Step[] = [
     target: ".tour-dashboard",
     placement: "right",
     content:
-      "Home is your dashboard: today's top-priority jobs, your profile completeness, and how your pathway is progressing.",
+      "Home is your dashboard. The card at the top always shows your next move - the one thing worth doing right now - so you never have to work out where to start.",
   },
   {
     target: ".tour-career-profile",
@@ -74,7 +74,7 @@ const steps: Step[] = [
   {
     target: ".tour-guide",
     placement: "right",
-    content: "Guide has a full walkthrough of every screen and every button, whenever you want the details.",
+    content: "Guide is organised by situation - just starting, got an interview, got an offer - and takes you straight to the right tool.",
   },
   {
     target: "body",

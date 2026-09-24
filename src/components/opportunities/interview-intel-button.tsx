@@ -12,8 +12,23 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { ProPreview } from "@/components/guidance/pro-preview";
+import type { PreviewData } from "@/lib/guidance/preview-data";
 
-export function InterviewIntelButton({ opportunityId, isPro = false }: { opportunityId: string; isPro?: boolean }) {
+export function InterviewIntelButton({
+  opportunityId,
+  isPro = false,
+  preview,
+  label,
+  lockedLabel,
+}: {
+  opportunityId: string;
+  isPro?: boolean;
+  preview?: PreviewData;
+  /** Button text override, e.g. a shorter label inside a tool tile. */
+  label?: string;
+  lockedLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +59,25 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
   return (
     <>
       {!isPro ? (
-        <UpgradeModal title="Unlock Interview Intel" description="Generate company-specific, highly technical interview questions designed to test your exact skill gaps.">
+        <UpgradeModal
+          title="Unlock likely interview questions"
+          description="The questions this company is likely to ask you, aimed at your weak spots, with what strong and weak answers sound like."
+          preview={
+            preview && (
+              <ProPreview
+                facts={[
+                  { label: "Questions would probe", items: preview.gaps },
+                  { label: "Skills they're likely to test", items: preview.keywords.slice(0, 6) },
+                ]}
+                outputLabel="Questions with strong and weak answers"
+                lines={3}
+              />
+            )
+          }
+        >
           <Button variant="outline" className="w-full sm:w-auto gap-2">
             <Lock className="size-4" />
-            Interview Intel (Pro)
+            {lockedLabel ?? "Likely interview questions (Pro)"}
           </Button>
         </UpgradeModal>
       ) : (
@@ -60,7 +90,7 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
           className="w-full sm:w-auto gap-2"
         >
           <BrainCircuit className="size-4" />
-          Interview Intel
+          {label ?? "Likely interview questions"}
         </Button>
       )}
 
@@ -69,7 +99,7 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
           <DialogHeader className="px-6 py-4 border-b border-border bg-muted/30">
             <DialogTitle className="flex items-center gap-2">
               <BrainCircuit className="size-5 text-primary" />
-              Interview Intel & Prep
+              Likely interview questions
             </DialogTitle>
             <DialogDescription>
               5 high-pressure interview questions the hiring manager is likely to ask, based on your exact profile and this job description.

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ToolBrand } from "@/components/guidance/pro-preview";
 
 interface SalaryNegotiatorCardProps {
   applicationId: string;
@@ -50,12 +51,13 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
   return (
     <Card className="border-green-500/20 bg-green-500/5">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-500">
+        <CardTitle className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-green-700 dark:text-green-500">
           <Handshake className="size-5" />
-          Salary Negotiator
+          Counter-offer email
+          <ToolBrand>Salary Negotiator</ToolBrand>
         </CardTitle>
         <CardDescription>
-          Generate the perfect professional counter-offer email based on your leverage.
+          Enter the offer and the number you want. Work-ly drafts a professional counter-offer email built on your real leverage.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

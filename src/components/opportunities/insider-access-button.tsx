@@ -12,8 +12,23 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { ProPreview } from "@/components/guidance/pro-preview";
+import type { PreviewData } from "@/lib/guidance/preview-data";
 
-export function InsiderAccessButton({ opportunityId, isPro = false }: { opportunityId: string; isPro?: boolean }) {
+export function InsiderAccessButton({
+  opportunityId,
+  isPro = false,
+  preview,
+  label,
+  lockedLabel,
+}: {
+  opportunityId: string;
+  isPro?: boolean;
+  preview?: PreviewData;
+  /** Button text override, e.g. a shorter label inside a tool tile. */
+  label?: string;
+  lockedLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +58,22 @@ export function InsiderAccessButton({ opportunityId, isPro = false }: { opportun
   return (
     <>
       {!isPro ? (
-        <UpgradeModal title="Unlock Hiring Manager Bypass" description="Generate a highly strategic cold email to bypass the resume pile and reach the hiring manager directly.">
+        <UpgradeModal
+          title="Unlock hiring manager messages"
+          description="A short, specific note to the person who'll actually decide, so you're not just one more resume in the pile."
+          preview={
+            preview && (
+              <ProPreview
+                facts={[{ label: "It would open with what you bring", items: preview.strengths }]}
+                outputLabel="Your message, ready to send on email or LinkedIn"
+                lines={3}
+              />
+            )
+          }
+        >
           <Button variant="outline" className="w-full sm:w-auto gap-2">
             <Lock className="size-4" />
-            Bypass ATS (Pro)
+            {lockedLabel ?? "Message the hiring manager (Pro)"}
           </Button>
         </UpgradeModal>
       ) : (
@@ -59,7 +86,7 @@ export function InsiderAccessButton({ opportunityId, isPro = false }: { opportun
           className="w-full sm:w-auto gap-2"
         >
           <UserPlus className="size-4" />
-          Hiring Manager Bypass
+          {label ?? "Message the hiring manager"}
         </Button>
       )}
 
@@ -68,7 +95,7 @@ export function InsiderAccessButton({ opportunityId, isPro = false }: { opportun
           <DialogHeader className="px-6 py-4 border-b border-border bg-muted/30">
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="size-5 text-primary" />
-              Hiring Manager Outreach
+              Message the hiring manager
             </DialogTitle>
             <DialogDescription>
               A strategic cold email designed to bypass the ATS and secure an introductory chat.

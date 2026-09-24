@@ -5,6 +5,8 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { useState } from "react";
 import { PenTool, Loader2, AlertCircle, Lock } from "lucide-react";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { ProPreview, ToolBrand } from "@/components/guidance/pro-preview";
+import type { PreviewData } from "@/lib/guidance/preview-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -12,9 +14,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 interface ApplicationStrategyCardProps {
   applicationId: string;
   isPro?: boolean;
+  preview?: PreviewData;
 }
 
-export function ApplicationStrategyCard({ applicationId, isPro = false }: ApplicationStrategyCardProps) {
+export function ApplicationStrategyCard({ applicationId, isPro = false, preview }: ApplicationStrategyCardProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,9 +45,10 @@ export function ApplicationStrategyCard({ applicationId, isPro = false }: Applic
   return (
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <PenTool className="size-5 text-primary" />
-          Auto-Tailor (Cover Letter & Resume)
+          Your angle + cover letter
+          <ToolBrand>Auto-Tailor</ToolBrand>
         </CardTitle>
         <CardDescription>
           Your strongest honest angle for this role, resume edits based on your real experience, what a screener may flag, and a cover letter draft.
@@ -52,20 +56,28 @@ export function ApplicationStrategyCard({ applicationId, isPro = false }: Applic
       </CardHeader>
       <CardContent>
         {!content && !loading && !isPro && (
-          <UpgradeModal
-            title="Unlock Application Strategy"
-            description="Your strongest honest angle for this job, resume edits based on your real experience, what a screener may flag, and a cover letter draft."
+          <ProPreview
+            facts={[
+              { label: "Where you already fit (from your fit analysis)", items: preview?.strengths ?? [] },
+              { label: "What a screener may flag", items: preview?.gaps ?? [] },
+            ]}
+            outputLabel="Your pitch, resume edits and a cover letter draft"
           >
-            <Button variant="outline" className="gap-2">
-              <Lock className="size-4" />
-              Generate Strategy (Pro)
-            </Button>
-          </UpgradeModal>
+            <UpgradeModal
+              title="Unlock your angle + cover letter"
+              description="Your strongest honest angle for this job, resume edits based on your real experience, what a screener may flag, and a cover letter draft."
+            >
+              <Button variant="outline" className="w-full gap-2 sm:w-auto">
+                <Lock className="size-4" />
+                Build my angle (Pro)
+              </Button>
+            </UpgradeModal>
+          </ProPreview>
         )}
         {!content && !loading && isPro && (
           <Button onClick={handleGenerate} className="gap-2">
             <PenTool className="size-4" />
-            Generate Strategy
+            Build my angle + cover letter
           </Button>
         )}
         
@@ -90,7 +102,7 @@ export function ApplicationStrategyCard({ applicationId, isPro = false }: Applic
             <div className="mt-6 flex justify-end">
               <Button variant="outline" size="sm" onClick={handleGenerate} className="gap-2">
                 <PenTool className="size-4" />
-                Regenerate Strategy
+                Regenerate
               </Button>
             </div>
           </div>

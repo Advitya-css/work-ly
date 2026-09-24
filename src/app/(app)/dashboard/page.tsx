@@ -34,6 +34,12 @@ import { listDiscoveredJobsByUserId, getLatestRun } from "@/lib/db/discovery";
 import { bucketJobs } from "@/lib/discovery/run";
 import { buildAlert } from "@/lib/discovery/alerts";
 import { BUCKETS } from "@/lib/discovery/labels";
+import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
+import { getJobById } from "@/lib/db/jobs";
+import { nextUpFor } from "@/lib/pathway/get-full-pathway";
+import { pickNextMove } from "@/lib/guidance/next-move";
+import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
+import { NextMoveCard } from "@/components/guidance/next-move-card";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -96,6 +102,37 @@ export default async function DashboardPage() {
   const applyNow = notApplied.filter((o) => o.recommendation === "APPLY_NOW" || o.recommendation === "APPLY");
   const topPriority = [...notApplied].sort((a, b) => b.priorityScore - a.priorityScore)[0] ?? null;
 
+  const [dreamJobs, topPriorityJob] = user
+    ? await Promise.all([
+        listDreamJobsByUserId(user.id),
+        topPriority ? getJobById(user.id, topPriority.jobId) : null,
+      ])
+    : [[], null];
+  const bestDiscovered = discoveryBuckets.applyNow[0] ?? discoveryBuckets.strong[0] ?? null;
+  const nextMove = pickNextMove({
+    hasProfile,
+    discoveredCount: discoveryBuckets.total,
+    topDiscovered: bestDiscovered
+      ? {
+          title: bestDiscovered.title,
+          company: bestDiscovered.company,
+          // Same rule as Discover: too little to go on means no number shown.
+          fitScore:
+            bestDiscovered.fitCoverage != null && bestDiscovered.fitCoverage < MIN_COVERAGE_FOR_SCORE
+              ? null
+              : bestDiscovered.fitScore,
+        }
+      : null,
+    topOpportunity: topPriority
+      ? { id: topPriority.id, title: topPriorityJob?.title ?? null, company: topPriorityJob?.company ?? null, status: topPriority.status }
+      : null,
+    trackedCount: opportunities.length,
+    applications,
+    hasDreamJob: dreamJobs.length > 0,
+    hasPathway: pathway != null,
+    pathwayNext: pathway ? nextUpFor(pathway)?.label ?? null : null,
+  });
+
   return (
     <div className="flex flex-col gap-10">
       <PageHeader
@@ -104,7 +141,8 @@ export default async function DashboardPage() {
         action={<EnterStudentModeButton />}
       />
 
-      
+      <NextMoveCard move={nextMove} isPro={user?.isPro ?? false} />
+
 
       {/* New opportunities for you. Spec requirement #10 */}
       <Card>

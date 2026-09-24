@@ -13,12 +13,15 @@ export function UpgradeModal({
   children,
   title = "Unlock Work-ly Pro",
   description = "Get the ultimate unfair advantage in your job hunt.",
-  defaultPlan
+  defaultPlan,
+  preview,
 }: { 
   children: React.ReactNode,
   title?: string,
   description?: string;
-  defaultPlan?: "monthly" | "quarterly" | "yearly"
+  defaultPlan?: "monthly" | "quarterly" | "yearly";
+  /** What this tool would produce for the user, shown above the plans. */
+  preview?: React.ReactNode;
 }) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -79,6 +82,7 @@ export function UpgradeModal({
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-4 relative z-10">
+          {preview}
           <ul className="space-y-3 text-sm font-medium pb-2">
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Unlimited AI job analyses</span></li>
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>AI resume tailoring</span></li>

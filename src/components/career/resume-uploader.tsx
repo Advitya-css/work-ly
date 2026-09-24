@@ -57,10 +57,13 @@ function uploadWithProgress(file: File, onProgress: (pct: number) => void): Prom
 
 export function ResumeUploader({
   onComplete,
-  autoOnboardAndRedirect
+  autoOnboardAndRedirect,
+  redirectTo = "/discover",
 }: {
   onComplete?: (result: ParseDocumentResult) => void;
   autoOnboardAndRedirect?: boolean;
+  /** Where the onboarding flow goes once the first search has run. */
+  redirectTo?: string;
 }) {
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState(0);
@@ -291,15 +294,15 @@ export function ResumeUploader({
                   .then((result) => {
                     if (result.error) {
                       setDiscoveryPrompt({ kind: "none" });
-                      if (autoOnboardAndRedirect) router.push("/discover");
+                      if (autoOnboardAndRedirect) router.push(redirectTo);
                       return;
                     }
                     setDiscoveryPrompt({ kind: "found", count: result.found ?? 0 });
-                    if (autoOnboardAndRedirect) router.push("/discover");
+                    if (autoOnboardAndRedirect) router.push(redirectTo);
                   })
                   .catch(() => {
                     setDiscoveryPrompt({ kind: "none" });
-                    if (autoOnboardAndRedirect) router.push("/discover");
+                    if (autoOnboardAndRedirect) router.push(redirectTo);
                   });
                   
               } catch (err) {
