@@ -38,11 +38,25 @@ export async function redeemBetaCodeAction(code: string) {
       return { success: true };
     }
     
+
+    // Limited EARLYBIRD code (10 redemptions via underlying DB codes)
+    let searchCode = cleanCode;
+    if (cleanCode === "EARLYBIRD") {
+      const { rows: availableRows } = await pool.query(
+        `SELECT code FROM beta_codes WHERE code LIKE 'EARLYBIRD-%' AND "isUsed" = false ORDER BY code LIMIT 1`
+      );
+      if (availableRows.length === 0) {
+        return { error: "This beta code has reached its 10 person limit. Sorry!" };
+      }
+      searchCode = availableRows[0].code;
+    }
+
     // Fallback to single-use database codes
     const { rows } = await pool.query(
       `SELECT * FROM beta_codes WHERE code = $1 AND "isUsed" = false`,
-      [cleanCode]
+      [searchCode]
     );
+
 
     if (rows.length === 0) {
       return { error: "Invalid or already used beta code." };
