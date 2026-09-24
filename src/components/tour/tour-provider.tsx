@@ -7,12 +7,14 @@ interface TourContextType {
   startTour: () => void;
 }
 
-const TourContext = createContext<TourContextType | undefined>(undefined);
+// A no-op default rather than undefined: the provider used to render only
+// after mount, so on the server (and the first client render) any
+// useTour() caller - the Guide's "Replay the tour" button - threw and took
+// the whole Guide page down with a 500.
+const TourContext = createContext<TourContextType>({ startTour: () => {} });
 
 export function useTour() {
-  const context = useContext(TourContext);
-  if (!context) throw new Error("useTour must be used within TourProvider");
-  return context;
+  return useContext(TourContext);
 }
 
 const TOUR_STORAGE_KEY = "workly_has_seen_tour";
@@ -125,10 +127,12 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setRun(true);
   };
 
-  if (!isMounted) return <>{children}</>;
-
+  // Always render the provider, and only mount Joyride once in the browser.
+  // Swapping a bare fragment for the provider after mount also changed the
+  // root element type, which remounted every signed-in page once per load.
   return (
     <TourContext.Provider value={{ startTour }}>
+      {isMounted && (
       <Joyride
         steps={steps}
         run={run}
@@ -174,6 +178,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
           },
         }}
       />
+      )}
       {children}
     </TourContext.Provider>
   );
