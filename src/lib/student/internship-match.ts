@@ -1,3 +1,4 @@
+import { skillsMatch, requirementSatisfiedBy } from "@/lib/text-utils";
 import { canonical } from "@/lib/text-utils";
 import type { OpportunityWithJob, Skill } from "@/lib/db/types";
 
@@ -45,11 +46,15 @@ function normalizeSet(values: string[]): Map<string, string> {
   return out;
 }
 
-/** Loose containment, so "React" matches "React.js" without matching everything. */
+/**
+ * Same skill matching as the fit engine (aliases, word boundaries, no
+ * "Java" inside "JavaScript"). The loose substring check this replaces
+ * made a student with Java look like they already had JavaScript.
+ */
 function has(haystack: Map<string, string>, needle: string): boolean {
   if (haystack.has(needle)) return true;
   for (const key of haystack.keys()) {
-    if (key.length >= 3 && (key.includes(needle) || needle.includes(key))) return true;
+    if (skillsMatch(key, needle) || requirementSatisfiedBy(key, needle)) return true;
   }
   return false;
 }
@@ -63,7 +68,8 @@ export function matchInternships(params: {
 }): InternshipMatch[] {
   const { internships, dreamSkills, studentSkills, major } = params;
 
-  const held = normalizeSet(studentSkills.map((s) => s.name));
+  // AI-suggested transferable skills are suggestions, not skills held.
+  const held = normalizeSet(studentSkills.filter((s) => !s.isTransferable).map((s) => s.name));
   const dream = normalizeSet(dreamSkills);
 
   // The gap list: what the dream role wants that the student cannot yet
@@ -162,7 +168,8 @@ function buildReasoning(params: {
 
 /** The gap list on its own, for showing the student what they are working toward. */
 export function dreamGaps(dreamSkills: string[], studentSkills: Skill[]): string[] {
-  const held = normalizeSet(studentSkills.map((s) => s.name));
+  // AI-suggested transferable skills are suggestions, not skills held.
+  const held = normalizeSet(studentSkills.filter((s) => !s.isTransferable).map((s) => s.name));
   const out: string[] = [];
   for (const [key, label] of normalizeSet(dreamSkills)) {
     if (!has(held, key)) out.push(label);

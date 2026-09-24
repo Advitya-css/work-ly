@@ -2,7 +2,8 @@ import "server-only";
 
 import type { CareerGoal, OpportunityWithJob, Skill } from "@/lib/db/types";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
-import { normalize, skillsMatch } from "@/lib/scoring/shared";
+import { normalize, requirementSatisfiedBy } from "@/lib/scoring/shared";
+import { MIN_COVERAGE_FOR_SCORE, coverageOf } from "@/lib/scoring/coverage";
 
 /**
  * Career Explorer - adjacent roles worth considering.
@@ -97,7 +98,7 @@ const ADJACENCY_TABLE: AdjacencyEntry[] = [
   },
   {
     role: "Engineering Manager",
-    from: ["senior engineer", "lead", "staff", "engineer", "tech lead"],
+    from: ["senior engineer", "staff engineer", "tech lead", "lead engineer", "engineering lead", "principal engineer", "senior developer", "lead developer"],
     coreSkills: ["Mentoring", "People management", "Project delivery", "Hiring"],
     entryRoute: "Almost always an internal promotion. Start by formally mentoring, then leading a project, then a team.",
   },
@@ -122,7 +123,7 @@ function profileRoleKeywords(profile: FullCareerProfile, careerGoal: CareerGoal 
 }
 
 function matchSkills(coreSkills: string[], confirmed: Skill[]): string[] {
-  return coreSkills.filter((core) => confirmed.some((s) => skillsMatch(s.name, core)));
+  return coreSkills.filter((core) => confirmed.some((s) => requirementSatisfiedBy(s.name, core)));
 }
 
 export function exploreCareers(params: {
@@ -150,7 +151,10 @@ export function exploreCareers(params: {
   }
 
   for (const [key, group] of byTitle) {
-    const best = group.reduce((a, b) => (b.fitScore > a.fitScore ? b : a));
+    // Only analyses reliable enough to show a score count as "measured".
+    const reliable = group.filter((o) => !o.analysis || coverageOf(o.analysis.scoreBreakdown) >= MIN_COVERAGE_FOR_SCORE);
+    if (reliable.length === 0) continue;
+    const best = reliable.reduce((a, b) => (b.fitScore > a.fitScore ? b : a));
     // Only surface roles they're plausibly close to - a 20/100 fit isn't an
     // "adjacent career", it's a different career.
     if (best.fitScore < 45) continue;
@@ -162,7 +166,7 @@ export function exploreCareers(params: {
       currentFit: best.fitScore,
       isMeasured: true,
       requiredSkills,
-      matchedSkills: requiredSkills.filter((r) => confirmed.some((s) => skillsMatch(s.name, r))),
+      matchedSkills: requiredSkills.filter((r) => confirmed.some((s) => requirementSatisfiedBy(s.name, r))),
       typicalEntryRoute: "You already have real postings for this role in Work-ly. Open them to see exactly which requirements you meet.",
       relevantJobCount: group.length,
       relevantJobTitles: group
@@ -178,7 +182,12 @@ export function exploreCareers(params: {
     if (seen.has(key)) continue;
     if (currentTarget && key === normalize(currentTarget)) continue;
 
-    const isAdjacent = entry.from.some((from) => keywords.some((k) => k.includes(from)));
+    // Whole words: "lead" must not match "team lead" in a sales role as if
+    // it meant "tech lead", and "engineer" alone is too broad on its own
+    // for the people-management adjacency.
+    const isAdjacent = entry.from.some((from) =>
+      keywords.some((k) => new RegExp(`(^| )${from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}( |$)`).test(k)),
+    );
     if (!isAdjacent) continue;
 
     const matched = matchSkills(entry.coreSkills, confirmed);
@@ -187,7 +196,7 @@ export function exploreCareers(params: {
     // measured fit - see isMeasured.
     const indicativeFit = Math.round((matched.length / entry.coreSkills.length) * 100);
 
-    const relevant = opportunities.filter((o) => o.job.title && normalize(o.job.title).includes(key));
+    const relevant = opportunities.filter((o) => o.job.title && ` ${normalize(o.job.title)} `.includes(` ${key} `));
 
     results.push({
       role: entry.role,

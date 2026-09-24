@@ -1,4 +1,5 @@
 import "server-only";
+import { creditReferralOnActivation } from "@/lib/db/users";
 import { UserFacingError } from "@/lib/errors";
 
 import { extractDocumentText } from "@/lib/ai/document-text";
@@ -38,6 +39,42 @@ export interface ParseDocumentResult {
     transferableSkills: number;
     workValues: number;
   };
+}
+
+/**
+ * A skill's evidence level, decided from the resume itself rather than
+ * taken on the model's word. The model used to label skills DEMONSTRATED
+ * or CERTIFIED freely, and those labels decide how much a match counts in
+ * scoring. Now: CERTIFIED only when a certification on the resume names
+ * it, DEMONSTRATED only when a role, project or achievement description
+ * uses it, otherwise STATED.
+ */
+function evidenceFromText(
+  skillName: string,
+  extraction: {
+    certifications: { name: string; issuer?: string | null }[];
+    experience: { title: string; description?: string | null }[];
+    projects: { name: string; description?: string | null }[];
+    achievements: { title: string; description?: string | null }[];
+  },
+): "STATED" | "DEMONSTRATED" | "CERTIFIED" {
+  const pattern = skillPattern(skillName);
+  if (!pattern) return "STATED";
+  if (extraction.certifications.some((c) => pattern.test(`${c.name} ${c.issuer ?? ""}`))) return "CERTIFIED";
+  const used = [
+    ...extraction.experience.map((e) => `${e.title} ${e.description ?? ""}`),
+    ...extraction.projects.map((p) => `${p.name} ${p.description ?? ""}`),
+    ...extraction.achievements.map((a) => `${a.title} ${a.description ?? ""}`),
+  ];
+  return used.some((t) => pattern.test(t)) ? "DEMONSTRATED" : "STATED";
+}
+
+function skillPattern(name: string): RegExp | null {
+  const trimmed = name.trim();
+  if (trimmed.length < 1) return null;
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Symbols like C++ / C# / .NET break \b, so use explicit non-word guards.
+  return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}($|[^\\p{L}\\p{N}])`, "iu");
 }
 
 /**
@@ -215,7 +252,7 @@ export async function parseDocumentAndBuildProfile(
         createSkill(profile.id, {
           name: s.name,
           category: s.category,
-          evidenceLevel: s.evidenceLevel,
+          evidenceLevel: evidenceFromText(s.name, extraction),
           source: "CV",
           recency: "UNKNOWN",
         }),
@@ -268,6 +305,14 @@ export async function parseDocumentAndBuildProfile(
     );
 
     await updateDocumentStatus(documentId, "PARSED");
+
+    // Activation: a referred user's first real resume unlocks both
+    // referral rewards (once). Never allowed to fail the parse.
+    try {
+      await creditReferralOnActivation(userId);
+    } catch (error) {
+      console.warn("[workly:referral] credit failed:", error instanceof Error ? error.message : error);
+    }
 
     return {
       extraction,

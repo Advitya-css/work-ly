@@ -78,7 +78,7 @@ export function DiscoveryBoard({
 
   const searchResult = useMemo(
     () => searchJobs({ jobs, query, context, limit: 200, mode, matchValues }),
-    [jobs, query, context, mode],
+    [jobs, query, context, mode, matchValues],
   );
 
   const topPicks = useMemo(() => {
@@ -116,7 +116,7 @@ export function DiscoveryBoard({
       )
       .sort(comparePriority)
       .slice(0, 3);
-  }, [jobs, query, context]);
+  }, [jobs, query, context, matchValues]);
 
   const seniorityFilteredResults = useMemo(() => {
     if (seniorityFilter === "ALL") return searchResult.results;

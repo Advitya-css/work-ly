@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db/pool";
 import { runDiscovery } from "@/lib/discovery/run";
 import { getAdapter } from "@/lib/discovery/registry";
+import { newStrongMatches } from "@/lib/discovery/digest";
 import { sendJobAlertEmail } from "@/lib/email";
 
 export const maxDuration = 300; 
@@ -89,7 +90,8 @@ export async function GET(req: Request) {
         userHighPriority += result.newHighPriority;
 
         if (userNewJobs > 0 && email) {
-          await sendJobAlertEmail(email, targetRole, userNewJobs, userHighPriority);
+          const matches = await newStrongMatches(userId, result.startedAt).catch(() => []);
+          await sendJobAlertEmail(email, targetRole, userNewJobs, userHighPriority, matches);
           // Same column job-alerts uses, so whichever cron reaches this user
           // first starts both crons' cooldowns - see the comment above.
           await pool.query(`UPDATE users SET "lastAlertSentAt" = NOW() WHERE id = $1`, [userId]);

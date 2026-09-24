@@ -190,7 +190,10 @@ export const ROLE_CLUSTERS: RoleCluster[] = [
 export function affinityScore(cluster: RoleCluster, profileText: string): number {
   const haystack = canonical(profileText);
   if (!haystack) return 0;
-  const hits = cluster.affinitySignals.filter((signal) => haystack.includes(canonical(signal)));
+  // Whole words only: "sing" (a music signal) used to match inside
+  // "processing", pulling session-musician roles into an accountant's search.
+  const padded = ` ${haystack} `;
+  const hits = cluster.affinitySignals.filter((signal) => padded.includes(` ${canonical(signal)} `));
   // Scaled against a realistic ceiling rather than the full signal list -
   // nobody's profile mentions all fourteen documentary keywords, and
   // requiring that would make the gate impossible to pass.

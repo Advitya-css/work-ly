@@ -78,9 +78,11 @@ export async function signUpAction(
 
   const refCode = formData.get("refCode");
   if (refCode && typeof refCode === "string" && result.user?.id) {
-    const { processReferral } = await import("@/lib/db/users");
+    // Recorded only - rewards are granted when this account activates
+    // (first parsed resume). See recordReferral for why.
+    const { recordReferral } = await import("@/lib/db/users");
     try {
-      await processReferral(result.user.id, refCode);
+      await recordReferral(result.user.id, refCode);
     } catch (e) {
       console.error("Failed to process referral code", e);
     }

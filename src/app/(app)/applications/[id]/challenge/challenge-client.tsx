@@ -14,20 +14,30 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
   
   const [evaluating, setEvaluating] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function readError(res: Response, fallback: string): Promise<string> {
+    const data = await res.json().catch(() => ({}));
+    return (data && typeof data.error === "string" && data.error) || fallback;
+  }
 
   const generateChallenge = async () => {
     setLoading(true);
     setChallenge(null);
     setFeedback(null);
     setCode(isTechnical ? "// Write your solution here...\n" : "Type your response here...\n");
+    setError(null);
     try {
       const res = await fetch(`/api/applications/${applicationId}/challenge-generate`, { method: "POST" });
-      const data = await res.json();
-      if (data.title) {
-        setChallenge(data);
+      if (!res.ok) {
+        setError(await readError(res, "Couldn't create a challenge. Please try again."));
+      } else {
+        const data = await res.json();
+        if (typeof data.title === "string" && typeof data.description === "string") setChallenge(data);
+        else setError("Couldn't create a challenge. Please try again.");
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setError("Network problem. Check your connection and try again.");
     }
     setLoading(false);
   };
@@ -35,16 +45,22 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
   const submitCode = async () => {
     if (!code.trim() || !challenge) return;
     setEvaluating(true);
+    setError(null);
     try {
       const res = await fetch(`/api/applications/${applicationId}/challenge-evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: challenge.title, description: challenge.description, code }),
       });
-      const data = await res.json();
-      setFeedback(data.text);
-    } catch (e) {
-      console.error(e);
+      if (!res.ok) {
+        setError(await readError(res, "Couldn't grade this. Please try again."));
+      } else {
+        const data = await res.json();
+        if (typeof data.text === "string") setFeedback(data.text);
+        else setError("Couldn't grade this. Please try again.");
+      }
+    } catch {
+      setError("Network problem. Check your connection and try again.");
     }
     setEvaluating(false);
   };
@@ -68,6 +84,7 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
             {isTechnical ? <Code2 className="size-4" /> : <BriefcaseBusiness className="size-4" />}
             {isTechnical ? "Generate Code Challenge" : "Generate Scenario"}
           </Button>
+          {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
         </CardContent>
       </Card>
     );
@@ -103,6 +120,7 @@ export function ChallengeClient({ applicationId, isTechnical }: { applicationId:
 
       {/* Right side: Editor & Feedback */}
       <div className="flex flex-col gap-4">
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-col border rounded-lg overflow-hidden shadow-sm h-[500px]">
           <div className="bg-muted/50 px-4 py-2 border-b flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">

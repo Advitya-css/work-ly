@@ -1,7 +1,7 @@
 // Imported from text-utils rather than discovery/normalize or
 // scoring/shared: both of those are server-only, and this engine runs in
 // the browser on every keystroke. Same implementations, no server bundle.
-import { canonical, requirementSatisfiedBy } from "@/lib/text-utils";
+import { canonical, countryMatches, requirementSatisfiedBy } from "@/lib/text-utils";
 import { cosineSimilarity, localEmbed } from "@/lib/search/embeddings";
 import { expandQuery, type QueryExpansion } from "@/lib/search/role-graph";
 import { detectValues, workValueByKey } from "@/lib/values/value-graph";
@@ -260,7 +260,7 @@ function structuredScore(job: DiscoveredJob, context: SearchContext): { score: n
     // been fixed yet.
     const candidateCountries = context.careerGoal?.countries ?? [];
 
-    if (job.country && candidateCountries.length > 0 && !candidateCountries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
+    if (job.country && candidateCountries.length > 0 && !candidateCountries.some((c) => countryMatches(c, job.country))) {
       parts.push(0.3);
       reasons.push(`Remote, but restricted to ${job.country}.`);
     } else {
@@ -301,9 +301,7 @@ function preferenceScore(job: DiscoveredJob, goal: CareerGoal | null): { score: 
     parts.push(goal.workModes.includes(job.workMode) ? 1 : 0.3);
   }
   if (goal.countries.length > 0 && job.country) {
-    const match = goal.countries.some((country) =>
-      canonical(job.country!).includes(canonical(country)),
-    );
+    const match = goal.countries.some((country) => countryMatches(country, job.country));
     parts.push(match ? 1 : 0.3);
     if (match) reasons.push(`In ${job.country}, where you want to work.`);
   }
@@ -319,7 +317,7 @@ function preferenceScore(job: DiscoveredJob, goal: CareerGoal | null): { score: 
   
   let finalScore = parts.reduce((a, b) => a + b, 0) / parts.length;
   // If we know candidate countries, and this job is explicitly in a different country, tank the score.
-  if (job.country && goal.countries.length > 0 && !goal.countries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
+  if (job.country && goal.countries.length > 0 && !goal.countries.some((c) => countryMatches(c, job.country))) {
      finalScore *= 0.5;
   }
   return { score: finalScore, reasons };
@@ -425,17 +423,21 @@ export function rankJobs(
         ? cosineSimilarity(context.profileEmbedding, job.embedding)
         : 0;
 
-      const values = matchValues ? valuesScore(job, context.profileValues) : { score: 0, reasons: [] };
+      // Always computed (neutral 0.5 when either side has no signal) so the
+      // weights sum to 1 as designed. Leaving it out capped every score at
+      // 0.88, which pushed strong matches under the relevance floors.
+      const values = valuesScore(job, context.profileValues);
 
-      let baseScore = 
+      let baseScore =
         keyword * WEIGHTS[mode].keyword +
         structured.score * WEIGHTS[mode].structured +
         semantic * WEIGHTS[mode].semantic +
-        preferences.score * WEIGHTS[mode].preferences;
-      
-      // Values Boost: If matchValues is on and there is alignment, explicitly add up to 15% bonus.
+        preferences.score * WEIGHTS[mode].preferences +
+        values.score * WEIGHTS[mode].values;
+
+      // "Match my values" on: a real alignment gets an extra lift.
       if (matchValues && values.score > 0.5) {
-        baseScore += 0.15;
+        baseScore += 0.1;
       }
       
       const score = baseScore;
@@ -506,7 +508,7 @@ export interface SearchJobsResult {
 export function searchJobs(input: SearchJobsInput): SearchJobsResult {
   const filtered = filterJobs(input.jobs, input.filters ?? {});
   const expansion = expandQuery(input.query, input.context.profileText);
-  const ranked = rankJobs(filtered, input.context, expansion, input.mode ?? "BALANCED");
+  const ranked = rankJobs(filtered, input.context, expansion, input.mode ?? "BALANCED", input.matchValues ?? false);
 
   // A literal query should never return things that match nothing at all;
   // without this, an empty search term and a nonsense one look identical.

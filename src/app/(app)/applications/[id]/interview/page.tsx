@@ -11,6 +11,8 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
   const resolved = await params;
   const application = await getApplicationWithJobById(user.id, resolved.id);
   if (!application) redirect("/applications");
+  // Pro feature: the API also refuses free accounts, this just avoids a dead page.
+  if (!user.isPro) redirect(`/applications/${application.id}`);
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full pb-12">

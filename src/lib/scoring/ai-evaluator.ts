@@ -14,9 +14,11 @@ import {
   dossierIsUsable,
   groundScreen,
   renderDossier,
+  type DossierEntry,
   type GroundedScreen,
   type RawScreen,
 } from "@/lib/scoring/screen-core";
+import { parseJobSync } from "@/lib/ai/providers/job-heuristic";
 
 /**
  * THE SCREEN - the model half.
@@ -154,6 +156,64 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null
 }
 
 /**
+ * One screening call + grounding. Returns null on timeout, failure or
+ * ungroundable output - callers decide what to fall back to.
+ */
+async function runScreen(params: {
+  dossier: DossierEntry[];
+  posting: string;
+  profile: FullCareerProfile;
+  extra?: string;
+  timeoutMs?: number;
+}): Promise<GroundedScreen | null> {
+  try {
+    const result = await withTimeout(
+      aiProvider.complete({
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: stripPromptInjectionMarkers(
+              `POSTING\n=======\n${params.posting}\n\nDOSSIER\n=======\n${renderDossier(params.dossier)}${params.extra ?? ""}`,
+            ),
+          },
+        ],
+        responseSchema: RESPONSE_SCHEMA,
+        // Zero: the same job and profile should screen the same way every
+        // time. A score that drifts on re-analysis is not a measurement.
+        temperature: 0,
+      }),
+      params.timeoutMs ?? 25_000,
+    );
+    if (!result) {
+      console.warn("[workly:screen] timed out");
+      return null;
+    }
+    let raw: RawScreen | null = (result.parsed as RawScreen) ?? null;
+    if (!raw) {
+      try {
+        raw = JSON.parse(result.content.replace(/^\s*```(?:json)?/i, "").replace(/```\s*$/, "")) as RawScreen;
+      } catch {
+        raw = null;
+      }
+    }
+    if (!raw) return null;
+    const screen = groundScreen(raw, params.dossier, params.posting, params.profile);
+    if (!screen) {
+      console.warn("[workly:screen] nothing usable survived grounding");
+      return null;
+    }
+    if (screen.ungroundedDropped > 0) {
+      console.info(`[workly:screen] downgraded ${screen.ungroundedDropped} verdict(s) whose evidence was not on the profile`);
+    }
+    return screen;
+  } catch (error) {
+    console.warn(`[workly:screen] failed: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+/**
  * The main entry point: rules analysis always, upgraded to a grounded
  * screen when a model is configured and answers usefully in time.
  */
@@ -168,59 +228,74 @@ export async function evaluateFit(
   const posting = postingText(input.job);
   if (posting.length < 120) return { analysis: rules, internals: null };
 
-  const goalLine = input.careerGoal?.primaryTargetRole
+  const extra = input.careerGoal?.primaryTargetRole
     ? `\nCANDIDATE'S STATED TARGET ROLE: ${input.careerGoal.primaryTargetRole}`
     : "";
+  const screen = await runScreen({ dossier, posting, profile: input.profile, extra, timeoutMs: options.timeoutMs });
+  if (!screen) return { analysis: rules, internals: null };
+  const analysis = combineScreen({ screen, rules, job: input.job, profile: input.profile });
+  return { analysis, internals: { screen, rules } };
+}
 
-  try {
-    const result = await withTimeout(
-      aiProvider.complete({
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: stripPromptInjectionMarkers(
-              `POSTING\n=======\n${posting}\n\nDOSSIER\n=======\n${renderDossier(dossier)}${goalLine}`,
-            ),
-          },
-        ],
-        responseSchema: RESPONSE_SCHEMA,
-        // Zero: the same job and profile should screen the same way every
-        // time. A score that drifts on re-analysis is not a measurement.
-        temperature: 0,
-      }),
-      options.timeoutMs ?? 25_000,
-    );
-    if (!result) {
-      console.warn("[workly:screen] timed out; using rules analysis");
-      return { analysis: rules, internals: null };
-    }
+const EMPTY_PROFILE: FullCareerProfile = {
+  profile: null,
+  educations: [],
+  experiences: [],
+  projects: [],
+  skills: [],
+  achievements: [],
+  certifications: [],
+  documents: [],
+  workValues: [],
+};
 
-    let raw: RawScreen | null = (result.parsed as RawScreen) ?? null;
-    if (!raw) {
-      try {
-        raw = JSON.parse(result.content) as RawScreen;
-      } catch {
-        raw = null;
-      }
-    }
-    if (!raw) return { analysis: rules, internals: null };
-
-    const screen = groundScreen(raw, dossier, posting, input.profile);
-    if (!screen) {
-      console.warn("[workly:screen] nothing usable survived grounding; using rules analysis");
-      return { analysis: rules, internals: null };
-    }
-    if (screen.ungroundedDropped > 0) {
-      console.info(`[workly:screen] downgraded ${screen.ungroundedDropped} verdict(s) whose evidence was not on the profile`);
-    }
-
-    const analysis = combineScreen({ screen, rules, job: input.job, profile: input.profile });
-    return { analysis, internals: { screen, rules } };
-  } catch (error) {
-    console.warn(`[workly:screen] failed, using rules analysis: ${error instanceof Error ? error.message : String(error)}`);
-    return { analysis: rules, internals: null };
-  }
+/**
+ * The same screen for two blocks of pasted text (the public free grader):
+ * no account, no parsed profile - the resume text itself is the evidence
+ * every verdict must quote. Returns null when no model is configured or
+ * the screen fails, so the caller can say so instead of making a number up.
+ */
+export async function screenPastedResume(resumeText: string, jobText: string): Promise<JobFitAnalysis | null> {
+  if (!aiScreeningAvailable()) return null;
+  const parsed = parseJobSync(jobText);
+  const now = new Date();
+  const job: Job = {
+    id: "pasted",
+    userId: "anonymous",
+    inputMethod: "PASTED_TEXT",
+    url: null,
+    rawInput: jobText,
+    status: "PARSED",
+    errorMessage: null,
+    title: parsed.title,
+    company: parsed.company,
+    location: parsed.location,
+    country: parsed.country,
+    salaryMin: parsed.salaryMin,
+    salaryMax: parsed.salaryMax,
+    salaryCurrency: parsed.salaryCurrency,
+    employmentType: parsed.employmentType,
+    workMode: parsed.workMode,
+    seniority: parsed.seniority,
+    description: parsed.description,
+    requiredExperienceYears: parsed.requiredExperienceYears,
+    preferredExperienceYears: parsed.preferredExperienceYears,
+    education: parsed.education,
+    industry: parsed.industry,
+    deadline: null,
+    datePosted: null,
+    source: "Pasted",
+    requiredSkills: parsed.requiredSkills,
+    preferredSkills: parsed.preferredSkills,
+    requirements: parsed.requirements,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const dossier: DossierEntry[] = [{ label: "CV", where: "your resume", kind: "experience", text: resumeText }];
+  const screen = await runScreen({ dossier, posting: postingText(job), profile: EMPTY_PROFILE });
+  if (!screen) return null;
+  const rules = scoringProvider.analyzeFit({ profile: EMPTY_PROFILE, careerGoal: null, job });
+  return combineScreen({ screen, rules, job, profile: EMPTY_PROFILE });
 }
 
 /**

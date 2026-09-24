@@ -34,11 +34,14 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ baseOffer, targetSalary, leverage }),
       });
-      if (!res.ok) throw new Error("Failed to generate script.");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Couldn't draft the email. Please try again.");
+      }
       const data = await res.json();
       setScript(data.text);
     } catch (err) {
-      setError("Something went wrong generating the script.");
+      setError(err instanceof Error ? err.message : "Something went wrong generating the script.");
     } finally {
       setLoading(false);
     }

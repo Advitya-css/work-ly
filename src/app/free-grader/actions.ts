@@ -2,7 +2,8 @@
 
 import { cookies, headers } from "next/headers";
 
-import { aiProvider } from "@/lib/ai";
+import { screenPastedResume } from "@/lib/scoring/ai-evaluator";
+import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -33,46 +34,39 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
   // cookies cleared) by scripting this from one network. Generous on
   // purpose - the cookie above is the real "once per device" gate, this
   // only exists to stop a single source from running up the AI bill.
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  // x-real-ip is set by the platform; the first x-forwarded-for entry is
+  // whatever the client claimed and can be rotated to dodge the limit.
+  const headerList = await headers();
+  const ip =
+    headerList.get("x-real-ip")?.trim() ||
+    headerList.get("x-forwarded-for")?.split(",").pop()?.trim() ||
+    "unknown";
   const withinRateLimit = await checkRateLimit(`free-grader:${ip}`, 5, 60 * 60);
   if (!withinRateLimit) {
     return { error: "Too many free scans from this network recently. Please try again later." };
   }
 
-  // To prevent abuse, enforce some limits (8000 chars roughly)
   const safeResume = stripPromptInjectionMarkers(resumeText.slice(0, 8000));
   const safeJob = stripPromptInjectionMarkers(jobDescriptionText.slice(0, 8000));
-
-  const schema = {
-    type: "object",
-    properties: {
-      score: { type: "number", description: "Fit score out of 100" },
-      strengths: { type: "array", items: { type: "string" }, description: "3 reasons why the candidate is a good fit" },
-      gaps: { type: "array", items: { type: "string" }, description: "3 missing keywords or skills (very specific)" },
-    },
-    required: ["score", "strengths", "gaps"],
-  };
+  if (safeResume.trim().length < 200 || safeJob.trim().length < 200) {
+    return { error: "Paste the full resume and the full job description (at least a few paragraphs each)." };
+  }
 
   try {
-    const result = await aiProvider.complete({
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert ATS (Applicant Tracking System) parser and recruiter. Your job is to aggressively score a candidate's resume against a job description. Return a score out of 100, exactly 3 strengths, and exactly 3 brutal gaps (missing skills).",
-        },
-        {
-          role: "user",
-          content: `Job Description:\n${safeJob}\n\nResume:\n${safeResume}`,
-        },
-      ],
-      responseSchema: schema,
-      temperature: 0.1,
-    });
-
-    if (!result.parsed) {
-      throw new Error("Failed to parse AI response.");
+    // The same grounded screen signed-in users get: every "you have this"
+    // must quote the resume, and the score is computed from the verdicts.
+    // It used to be a free-form model guess labelled an "ATS score", with
+    // exactly three gaps forced even for a perfect match.
+    const analysis = await screenPastedResume(safeResume, safeJob);
+    if (!analysis || !analysis.screen) {
+      return { error: "The scanner is busy right now. Please try again in a minute." };
     }
+
+    const open = analysis.screen.requirements
+      .filter((r) => r.verdict === "missing" || r.verdict === "partial")
+      .sort((a, b) => ({ critical: 0, important: 1, nice: 2 })[a.importance] - ({ critical: 0, important: 1, nice: 2 })[b.importance]);
+    const met = analysis.screen.requirements.filter((r) => r.verdict === "met");
+    const reliable = analysis.coverage >= MIN_COVERAGE_FOR_SCORE;
 
     // Only spend the visitor's one free scan on a request that actually
     // succeeded - a failed AI call shouldn't burn their only try.
@@ -84,7 +78,19 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
       maxAge: FREE_GRADER_COOKIE_MAX_AGE,
     });
 
-    return { data: result.parsed as { score: number; strengths: string[]; gaps: string[] } };
+    return {
+      data: {
+        score: reliable ? analysis.fitScore : null,
+        summary: analysis.screen.summary,
+        strengths: met.slice(0, 4).map((r) => ({ requirement: r.requirement, evidence: r.evidenceQuote ?? "" })),
+        gaps: open.slice(0, 5).map((r) => ({
+          requirement: r.requirement,
+          mustHave: r.importance === "critical",
+          partly: r.verdict === "partial",
+          fix: r.gapToClose ?? "",
+        })),
+      },
+    };
   } catch (error) {
     console.error("Free grader error:", error);
     return { error: "Failed to score resume. Please try again." };

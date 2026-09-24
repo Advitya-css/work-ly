@@ -26,6 +26,7 @@ import {
   MIN_COVERAGE_FOR_SCORE,
 } from "@/lib/scoring/shared";
 import { classifyStudentJob } from "@/lib/student/legal-limits";
+import { countryMatches } from "@/lib/text-utils";
 
 /**
  * THE FIT ENGINE.
@@ -391,13 +392,11 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   // A remote job is not automatically global. If the job specifies a country that is clearly not the user's country, it's a mismatch.
   const isRemote = job.workMode === "REMOTE";
   if (isRemote) {
-    const candidateCountries = [...countries];
-    if (home && !candidateCountries.some(c => home.includes(c))) {
-      candidateCountries.push(home);
+    if (job.country && countries.length > 0 && !countries.some((c) => countryMatches(c, job.country))) {
+      return component(0, WEIGHTS.location, `Remote, but restricted to ${job.country}, which isn't one of your target countries.`);
     }
-    
-    if (job.country && candidateCountries.length > 0 && !candidateCountries.some(c => job.country!.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(job.country!.toLowerCase()))) {
-      return component(WEIGHTS.location, 0, `Remote, but restricted to ${job.country} which does not match your target countries.`);
+    if (workModes.length > 0 && !workModes.includes("REMOTE")) {
+      return component(0.4 * WEIGHTS.location, WEIGHTS.location, "This role is remote, but you said you want on-site or hybrid work.");
     }
     return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, making it broadly location-compatible.");
   }
@@ -424,8 +423,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
     checks.push(candidates.some((c) => loc.includes(c.toLowerCase()) || c.toLowerCase().includes(loc)));
   }
   if (job.country && countries.length > 0) {
-    const c = job.country.toLowerCase();
-    checks.push(countries.some((x) => c.includes(x.toLowerCase()) || x.toLowerCase().includes(c)));
+    checks.push(countries.some((x) => countryMatches(x, job.country)));
   }
 
   if (checks.length === 0) {

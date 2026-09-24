@@ -18,7 +18,12 @@ export default function FreeGraderPage() {
   const [resumeText, setResumeText] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ score: number; strengths: string[]; gaps: string[] } | null>(null);
+  const [result, setResult] = useState<{
+    score: number | null;
+    summary: string;
+    strengths: { requirement: string; evidence: string }[];
+    gaps: { requirement: string; mustHave: boolean; partly: boolean; fix: string }[];
+  } | null>(null);
 
   function handleScore() {
     setError(null);
@@ -29,9 +34,9 @@ export default function FreeGraderPage() {
     
     startTransition(async () => {
       const res = await scoreResumeAction(resumeText, jobText);
-      if (res.error) {
+      if ("error" in res && res.error) {
         setError(res.error);
-      } else if (res.data) {
+      } else if ("data" in res && res.data) {
         setResult(res.data);
       }
     });
@@ -42,7 +47,7 @@ export default function FreeGraderPage() {
       {/* Navbar Minimal */}
       <header className="sticky top-0 z-50 flex h-14 w-full items-center border-b border-border/40 bg-background/95 px-6 backdrop-blur">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-foreground">
-          Work-ly <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] uppercase text-primary">ATS Scanner</span>
+          Work-ly <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] uppercase text-primary">Fit Check</span>
         </Link>
         <div className="ml-auto">
           <Button asChild variant="ghost" size="sm">
@@ -69,7 +74,7 @@ export default function FreeGraderPage() {
                 <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
               </div>
             </div>
-            <h3 className="text-xl font-bold animate-pulse text-primary">Simulating ATS filters...</h3>
+            <h3 className="text-xl font-bold animate-pulse text-primary">Reading the job against your resume...</h3>
             <p className="text-sm text-muted-foreground">This takes about 5 seconds.</p>
           </div>
         </div>
@@ -80,10 +85,10 @@ export default function FreeGraderPage() {
             <Image src="/workly-bot.png" alt="Work-ly Bot" fill className="object-contain" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
-            Will your resume survive the ATS?
+            Would a recruiter shortlist you for this job?
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Paste a job description and your resume below. Our AI will brutally score your fit and tell you exactly why a recruiter might reject you.
+            Paste a job description and your resume. Work-ly checks every key requirement against your resume, quotes the evidence it finds, and tells you what would get you screened out.
           </p>
         </div>
 
@@ -139,12 +144,17 @@ export default function FreeGraderPage() {
           <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Card className="border-2 border-primary/20 bg-primary/5">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="text-sm font-semibold tracking-wide uppercase text-muted-foreground mb-4">ATS Match Score</div>
-                <div className="text-7xl font-bold tracking-tighter mb-4 text-foreground">
-                  {result.score}<span className="text-3xl text-muted-foreground">/100</span>
-                </div>
-                <p className="text-muted-foreground max-w-md">
-                  {result.score >= 80 ? "Strong fit! But you still have some gaps to close before you apply." : result.score >= 50 ? "Moderate fit. The ATS might flag you unless you fix the missing keywords." : "Low fit. You will likely be auto-rejected unless you significantly tailor your resume."}
+                <div className="text-sm font-semibold tracking-wide uppercase text-muted-foreground mb-4">Candidate Fit</div>
+                {result.score != null ? (
+                  <div className="text-7xl font-bold tracking-tighter mb-4 text-foreground tabular-nums">
+                    {result.score}<span className="text-3xl text-muted-foreground">/100</span>
+                  </div>
+                ) : (
+                  <div className="text-2xl font-semibold mb-4 text-foreground">Not enough to score</div>
+                )}
+                <p className="text-muted-foreground max-w-md">{result.summary}</p>
+                <p className="mt-3 text-xs text-muted-foreground max-w-md">
+                  How well your resume shows this job&apos;s requirements. Not a hiring probability.
                 </p>
               </CardContent>
             </Card>
@@ -152,40 +162,63 @@ export default function FreeGraderPage() {
             <div className="grid gap-6 sm:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-green-600 dark:text-green-400">Why you match</CardTitle>
+                  <CardTitle className="text-success">What your resume already proves</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3">
-                    {result.strengths.map((str, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>{str}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {result.strengths.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nothing in the resume clearly shows this job&apos;s key requirements yet.</p>
+                  ) : (
+                    <ul className="space-y-4">
+                      {result.strengths.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="size-4 text-success mt-0.5 shrink-0" />
+                          <span>
+                            <span className="font-medium text-foreground">{s.requirement}</span>
+                            {s.evidence && <span className="block text-xs text-muted-foreground mt-0.5">&ldquo;{s.evidence}&rdquo;</span>}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </CardContent>
               </Card>
 
               <Card className="relative overflow-hidden border-destructive/20 bg-destructive/5">
                 <CardHeader>
-                  <CardTitle className="text-destructive">Missing Keywords (Gaps)</CardTitle>
+                  <CardTitle className="text-destructive">What could get you screened out</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3 blur-[6px] select-none opacity-50">
-                    {result.gaps.map((gap, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm"><Lock className="size-4 mt-0.5 shrink-0" /><span>{gap}</span></li>
-                    ))}
-                  </ul>
-
-                  {/* Paywall Overlay */}
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-[2px] p-6 text-center">
-                    <Lock className="size-8 text-muted-foreground mb-3" />
-                    <h3 className="font-semibold mb-2">Analysis Locked</h3>
-                    <p className="text-xs text-muted-foreground mb-4">Create a free account to see exactly what you are missing and let our AI auto-tailor your resume.</p>
-                    <Button asChild size="sm" className="w-full font-bold">
-                      <Link href="/signup">Unlock Full Analysis <ArrowRight className="size-4 ml-1" /></Link>
-                    </Button>
-                  </div>
+                  {result.gaps.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No key requirement is clearly missing. Tailor and apply.</p>
+                  ) : (
+                    <>
+                      <ul className="space-y-3">
+                        {result.gaps.map((gap, i) => (
+                          <li key={i} className="flex flex-col gap-1 text-sm">
+                            <span className="font-medium text-foreground">
+                              {gap.requirement}
+                              {gap.mustHave && <span className="ml-2 text-xs font-semibold uppercase text-destructive">Must-have</span>}
+                              {gap.partly && <span className="ml-2 text-xs text-muted-foreground">(partly shown)</span>}
+                            </span>
+                            {gap.fix && (
+                              <span className="blur-[5px] select-none text-xs text-muted-foreground" aria-hidden="true">
+                                {gap.fix}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-5 flex flex-col items-center gap-2 rounded-lg border border-border bg-background/80 p-4 text-center">
+                        <Lock className="size-5 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          Create a free account to see how to close each gap, get a week-by-week plan, and find jobs you already fit.
+                        </p>
+                        <Button asChild size="sm" className="w-full font-bold">
+                          <Link href="/signup">See how to close these <ArrowRight className="size-4 ml-1" /></Link>
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -212,7 +245,7 @@ export default function FreeGraderPage() {
             )}
             <Button size="lg" className="w-full max-w-sm font-semibold text-base" onClick={handleScore} disabled={pending}>
               {pending ? <WorklyLoader className="animate-spin mr-2" /> : null}
-              {pending ? "Analyzing ATS Match..." : "Score My Resume"}
+              {pending ? "Checking every requirement..." : "Check My Fit"}
             </Button>
           </div>
         )}

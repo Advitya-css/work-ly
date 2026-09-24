@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
 import { generatePathway } from "@/lib/pathway/generate";
 import {
@@ -23,6 +22,8 @@ import { evaluateFit } from "@/lib/scoring/ai-evaluator";
 import { dreamJobToJobLike } from "@/lib/dream-job/to-job-like";
 import { pool } from "@/lib/db/pool";
 import { simulate } from "@/lib/pathway/what-if";
+import { withinProAiBudget } from "@/lib/ai/career-context";
+import { getDreamJobAnalysisByDreamJobId } from "@/lib/db/dream-job-analyses";
 import type { Scenario, SimulationResult } from "@/lib/pathway/what-if-types";
 import type { PathwayItemStatus } from "@/lib/db/types";
 
@@ -35,9 +36,6 @@ async function requireOwnedStep(stepId: string) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  if (!(await checkRateLimit(`generate_pathway_${user.id}`, 3, 60))) {
-    return { error: "Please wait a minute before generating another pathway." };
-  }
   const step = await getStepById(stepId);
   if (!step) return null;
   const pathway = await getPathwayById(step.pathwayId);
@@ -101,27 +99,31 @@ export async function generatePathwayFromDreamJobAction(dreamJobId: string): Pro
 }
 
 export async function setStepStatusAction(stepId: string, status: PathwayItemStatus): Promise<void> {
-  const stepRes = await requireOwnedStep(stepId);
-  if (!stepRes || "error" in stepRes) return;
-  const step = stepRes as import("@/lib/db/types").PathwayStep;
-  
+  const step = await requireOwnedStep(stepId);
+  if (!step) return;
+
   await setStepStatus(stepId, status);
-  
+
   if (status === "COMPLETED" && step.relatedSkill) {
     const pathway = await getPathwayById(step.pathwayId);
     if (pathway) {
-      // Silently auto-add the acquired skill to the user's profile
-      await createSkill(pathway.userId, { name: step.relatedSkill, proficiency: "BEGINNER" });
-      
-      // We don't overwrite the entire pathway, but we recalculate startingReadiness to reflect the jump!
       const profile = await getFullCareerProfile(pathway.userId);
-      const careerGoal = await getPrimaryCareerGoal(pathway.userId);
+      // Record the skill on the profile (as a self-stated skill - the user
+      // ticked a box, they didn't upload proof), keyed by the PROFILE id.
+      // This used to pass the user id, which isn't a career profile id.
+      if (profile.profile && !profile.skills.some((s) => s.name.toLowerCase() === step.relatedSkill!.toLowerCase())) {
+        await createSkill(profile.profile.id, { name: step.relatedSkill, proficiency: "BEGINNER" });
+      }
+
+      // Re-score readiness with the same engine the analysis used. This is
+      // the one step action that calls the model, so it alone is budgeted.
       const dreamJob = pathway.dreamJobId ? await getDreamJobById(pathway.dreamJobId) : null;
-      if (dreamJob && dreamJob.status === "PARSED") {
-        // Same scoring path the dream job analysis used (grounded screen when
-        // a model is configured), so the number can't jump just because a
-        // different engine computed it.
-        const { analysis: fit } = await evaluateFit({ profile, careerGoal, job: dreamJobToJobLike(dreamJob) });
+      if (dreamJob && dreamJob.status === "PARSED" && (await withinProAiBudget(pathway.userId))) {
+        const [fresh, careerGoal] = await Promise.all([
+          getFullCareerProfile(pathway.userId),
+          getPrimaryCareerGoal(pathway.userId),
+        ]);
+        const { analysis: fit } = await evaluateFit({ profile: fresh, careerGoal, job: dreamJobToJobLike(dreamJob) });
         await pool.query('UPDATE career_pathways SET "startingReadiness" = $1 WHERE id = $2', [fit.fitScore, pathway.id]);
       }
     }
@@ -181,5 +183,12 @@ export async function simulateScenarioAction(
     getPrimaryCareerGoal(user.id),
   ]);
 
-  return { result: simulate({ profile, careerGoal, dreamJob, scenario }) };
+  if (!(await withinProAiBudget(user.id))) {
+    return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
+  }
+  const analysis = await getDreamJobAnalysisByDreamJobId(dreamJobId);
+  const value = scenario.value.trim().slice(0, 80);
+  return {
+    result: await simulate({ profile, careerGoal, dreamJob, scenario: { ...scenario, value }, currentReadiness: analysis?.readinessScore ?? null }),
+  };
 }

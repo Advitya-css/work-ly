@@ -3,16 +3,18 @@ import { WorklyLoader } from "@/components/shared/workly-loader";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useState } from "react";
-import { PenTool, Loader2, AlertCircle } from "lucide-react";
+import { PenTool, Loader2, AlertCircle, Lock } from "lucide-react";
+import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ApplicationStrategyCardProps {
   applicationId: string;
+  isPro?: boolean;
 }
 
-export function ApplicationStrategyCard({ applicationId }: ApplicationStrategyCardProps) {
+export function ApplicationStrategyCard({ applicationId, isPro = false }: ApplicationStrategyCardProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,11 +47,22 @@ export function ApplicationStrategyCard({ applicationId }: ApplicationStrategyCa
           Auto-Tailor (Cover Letter & Resume)
         </CardTitle>
         <CardDescription>
-          Generate a custom cover letter and specific resume bullet point rewrites tailored precisely to this role.
+          Your strongest honest angle for this role, resume edits based on your real experience, what a screener may flag, and a cover letter draft.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {!content && !loading && (
+        {!content && !loading && !isPro && (
+          <UpgradeModal
+            title="Unlock Application Strategy"
+            description="Your strongest honest angle for this job, resume edits based on your real experience, what a screener may flag, and a cover letter draft."
+          >
+            <Button variant="outline" className="gap-2">
+              <Lock className="size-4" />
+              Generate Strategy (Pro)
+            </Button>
+          </UpgradeModal>
+        )}
+        {!content && !loading && isPro && (
           <Button onClick={handleGenerate} className="gap-2">
             <PenTool className="size-4" />
             Generate Strategy
@@ -59,7 +72,7 @@ export function ApplicationStrategyCard({ applicationId }: ApplicationStrategyCa
         {loading && (
           <div className="flex items-center justify-center py-8 text-muted-foreground">
             <WorklyLoader className="size-6 animate-spin" />
-            <span className="ml-3">Work-ly AI is writing your cover letter and optimizing your resume...</span>
+            <span className="ml-3">Reading the job against your profile and drafting your strategy...</span>
           </div>
         )}
 

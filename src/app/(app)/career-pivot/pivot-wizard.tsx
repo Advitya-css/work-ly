@@ -136,7 +136,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">ATS Match Score</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">How a recruiter would read your resume (AI estimate)</h3>
             <div className="text-7xl font-bold tabular-nums text-foreground mb-4">
               {displayScore}<span className="text-3xl text-muted-foreground">/100</span>
             </div>

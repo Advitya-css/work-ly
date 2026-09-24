@@ -43,8 +43,8 @@ export async function setOpportunityStatusAction(id: string, status: Opportunity
   revalidatePath("/dashboard");
 }
 
-import { checkRateLimit } from "@/lib/rate-limit";
 import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
+import { withinProAiBudget } from "@/lib/ai/career-context";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
 
@@ -53,8 +53,8 @@ export async function generateTailoredApplicationAction(opportunityId: string) {
   if (!user) return { error: "Unauthorized" };
   if (!user.isPro) return { error: "Pro required to tailor applications." };
 
-  if (!(await checkRateLimit(`tailor_app_${user.id}`, 5, 60))) {
-    return { error: "Please wait a minute before tailoring another application." };
+  if (!(await withinProAiBudget(user.id))) {
+    return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
   }
 
   try {

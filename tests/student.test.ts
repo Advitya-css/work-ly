@@ -271,3 +271,14 @@ describe("matchInternships", () => {
     expect(Number.isFinite(matches[0].relevanceScore)).toBe(true);
   });
 });
+
+describe("on-campus classification only applies to the student's own school", () => {
+  const base = { employmentType: null, description: null, location: null, university: null } as const;
+  it("treats another university as off-campus", () => {
+    expect(classifyStudentJob({ ...base, title: "Library Assistant", company: "Columbia University" })).toBe("off-campus");
+  });
+  it("does not treat a publisher or a software company as a campus", () => {
+    expect(classifyStudentJob({ ...base, title: "Editorial Assistant", company: "Oxford University Press" })).toBe("off-campus");
+    expect(classifyStudentJob({ ...base, title: "Support Analyst", company: "Library Systems Inc" })).toBe("off-campus");
+  });
+});

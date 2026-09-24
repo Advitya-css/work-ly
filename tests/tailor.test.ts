@@ -88,7 +88,7 @@ describe("AI Tailoring & Reminders", () => {
 
     // The prompt actually sent to the AI must contain the candidate's real
     // data, not the literal, unrendered "${...}" template text.
-    const prompt = vi.mocked(aiProvider.complete).mock.calls[0][0].messages[0].content;
+    const prompt = vi.mocked(aiProvider.complete).mock.calls[0][0].messages.map((m) => m.content).join("\n");
     expect(prompt).toContain("Frontend Engineer");
     expect(prompt).toContain("State University");
     expect(prompt).not.toContain("${");

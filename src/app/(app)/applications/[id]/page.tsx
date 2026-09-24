@@ -135,7 +135,11 @@ export default async function ApplicationDetailPage({
 
           <ResumeTailorCard applicationId={application.id} isPro={user.isPro} />
           
-          <ApplicationStrategyCard applicationId={application.id} />
+          <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} />
+
+          {["APPLIED", "ASSESSMENT", "INTERVIEW", "FINAL_INTERVIEW"].includes(application.status) && (
+            <FollowUpTemplateCard application={application} />
+          )}
 
           {application.status === "OFFER" && (
             <SalaryNegotiatorCard applicationId={application.id} />

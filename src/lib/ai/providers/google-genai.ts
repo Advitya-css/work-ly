@@ -2,8 +2,9 @@ import "server-only";
 import type { AICompletionRequest, AICompletionResult, AIProvider } from "@/lib/ai/types";
 
 let loggedConfig = false;
-const REQUEST_TIMEOUT_MS = 20_000;
-const MAX_ATTEMPTS = 3;
+// Two attempts at 22s keeps the worst case (~45s) inside the 60s function limit.
+const REQUEST_TIMEOUT_MS = 22_000;
+const MAX_ATTEMPTS = 2;
 const RETRY_BASE_DELAY_MS = 500;
 
 function isRetryableStatus(status: number): boolean {

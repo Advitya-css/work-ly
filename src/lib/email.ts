@@ -110,12 +110,31 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
   }
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+export interface AlertMatch {
+  title: string;
+  company: string | null;
+  fitScore: number | null;
+  reason: string | null;
+}
+
 /**
- * Sends a job alert email when new jobs are discovered.
+ * Sends a job alert email when new jobs are discovered. When strong matches
+ * are passed, the email names them (title, company, fit, the one-line
+ * reason) so it's worth opening - a bare "N new jobs" count isn't.
  */
-export async function sendJobAlertEmail(to: string, targetRole: string, newJobsCount: number, highPriorityCount: number): Promise<void> {
+export async function sendJobAlertEmail(
+  to: string,
+  targetRole: string,
+  newJobsCount: number,
+  highPriorityCount: number,
+  matches: AlertMatch[] = [],
+): Promise<void> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const dashboardUrl = `${appUrl}/dashboard`;
+  const discoverUrl = `${appUrl}/discover`;
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -124,11 +143,24 @@ export async function sendJobAlertEmail(to: string, targetRole: string, newJobsC
   }
 
   const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const role = escapeHtml(targetRole);
 
-  let highlight = "";
-  if (highPriorityCount > 0) {
-    highlight = `<p style="font-size: 16px; color: #7a2e55; font-weight: bold; margin-bottom: 24px;">🔥 ${highPriorityCount} of these are a Strong Match based on your profile!</p>`;
-  }
+  const matchRows = matches
+    .slice(0, 3)
+    .map(
+      (m) => `
+        <tr><td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
+          ${m.fitScore != null ? `<div style="font-size: 13px; color: #7a2e55; margin-top: 2px;">Candidate Fit ${m.fitScore}/100</div>` : ""}
+          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(m.reason.slice(0, 180))}</div>` : ""}
+        </td></tr>`,
+    )
+    .join("");
+
+  const subject =
+    highPriorityCount > 0
+      ? `${highPriorityCount} strong ${targetRole} match${highPriorityCount === 1 ? "" : "es"} posted recently`
+      : `${newJobsCount} new ${targetRole} job${newJobsCount === 1 ? "" : "s"} found`;
 
   const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
@@ -139,19 +171,21 @@ export async function sendJobAlertEmail(to: string, targetRole: string, newJobsC
     body: JSON.stringify({
       from: `Work-ly <noreply@${fromDomain}>`,
       to,
-      subject: `${newJobsCount} New Jobs Found for ${targetRole}`,
+      subject,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-          <h1 style="font-size: 24px; color: #1c1a19; margin-bottom: 16px;">New Job Matches Found!</h1>
-          <p style="font-size: 16px; color: #6b6560; line-height: 1.5; margin-bottom: 16px;">
-            Work-ly's discovery engine just found <strong>${newJobsCount} new jobs</strong> matching your target role of <em>${targetRole}</em>.
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="font-size: 22px; color: #1c1a19; margin-bottom: 12px;">${highPriorityCount > 0 ? "New roles worth applying to" : "New roles found for you"}</h1>
+          <p style="font-size: 15px; color: #6b6560; line-height: 1.5; margin-bottom: 8px;">
+            Work-ly found <strong>${newJobsCount} new ${newJobsCount === 1 ? "job" : "jobs"}</strong> for <em>${role}</em>${
+              highPriorityCount > 0 ? `, and <strong>${highPriorityCount}</strong> ${highPriorityCount === 1 ? "is a strong match" : "are strong matches"} for your profile` : ""
+            }.
           </p>
-          ${highlight}
-          <a href="${dashboardUrl}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
-            View Your Jobs
+          ${matchRows ? `<table style="width: 100%; border-collapse: collapse; margin: 8px 0 24px;">${matchRows}</table>` : ""}
+          <a href="${discoverUrl}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
+            See your matches
           </a>
-          <p style="font-size: 13px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
-            You are receiving this because you set a Career Goal on Work-ly.
+          <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
+            Early applicants get read first. You're receiving this because you set a career goal on Work-ly.
           </p>
         </div>
       `,

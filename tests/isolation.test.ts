@@ -194,6 +194,10 @@ const PUBLIC_ACTIONS = new Set([
   // logged-in session) - guarded instead by the code hash + expiry +
   // attempt cap check inside it.
   "verifyEmailCodeAction",
+  // The public free resume check on /free-grader - the whole point is that
+  // it works before signup. Guarded instead by a one-per-device cookie, a
+  // per-IP rate limit, input length caps, and it never touches user data.
+  "scoreResumeAction",
 ]);
 const GUARD = /getCurrentUser|requireUser|requireOwned|requireAuth/;
 

@@ -2,66 +2,95 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
-import { googleGenAIProvider } from "@/lib/ai/providers/google-genai";
-import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  NO_FABRICATION_RULES,
+  candidateBrief,
+  completeStructured,
+  jobBrief,
+  proApiGate,
+  str,
+  strList,
+  unsupportedNumbers,
+} from "@/lib/ai/career-context";
 
 export const maxDuration = 60;
 
-export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+const SYSTEM = `You are a senior recruiter rewriting a candidate's resume content for ONE specific job. You optimise for a human hiring manager first and keyword screening second.
+1. keywords: 5-8 exact phrases from the JOB that the candidate can honestly claim (they appear in or are clearly supported by the CANDIDATE section). Put phrases the candidate CANNOT honestly claim in "missingKeywords" instead.
+2. summary: 2-3 sentences bridging the candidate's real background to this job. First person implied, no "I".
+3. bullets: 3-5 rewritten bullets. Each must be based on one real line of the candidate's experience: give that line in "basedOn" (copied from the CANDIDATE section) and the rewrite in "rewrite". Lead with a strong verb, name the tool/domain the job cares about, and keep only numbers that are already in "basedOn".
+${NO_FABRICATION_RULES}`;
+
+const SCHEMA = {
+  type: "object",
+  properties: {
+    keywords: { type: "array", items: { type: "string" } },
+    missingKeywords: { type: "array", items: { type: "string" } },
+    summary: { type: "string" },
+    bullets: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { basedOn: { type: "string" }, rewrite: { type: "string" } },
+        required: ["basedOn", "rewrite"],
+      },
+    },
+  },
+  required: ["keywords", "missingKeywords", "summary", "bullets"],
+};
+
+export async function POST(_req: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await proApiGate(user);
+  if (gate) return gate;
 
-  const isAllowed = await checkRateLimit(`ai:app:${user.id}`, 20, 3600);
-  if (!isAllowed) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  const { id } = await context.params;
+  const [app, profile] = await Promise.all([getApplicationWithJobById(user!.id, id), getFullCareerProfile(user!.id)]);
+  if (!app) return NextResponse.json({ error: "Application not found." }, { status: 404 });
+  if (!app.job) {
+    return NextResponse.json({ error: "This application has no saved job description to tailor against." }, { status: 400 });
   }
+  const candidate = candidateBrief(profile);
 
-  const params = await context.params;
-  const app = await getApplicationWithJobById(user.id, params.id);
-  const fullProfile = await getFullCareerProfile(user.id);
-  
-  if (!app?.job) {
-    return NextResponse.json({ error: "No job description found for this application." }, { status: 400 });
-  }
+  const result = await completeStructured({
+    system: SYSTEM,
+    user: `JOB\n===\n${jobBrief(app.job, app.roleTitle, app.company)}\n\nCANDIDATE\n=========\n${candidate}`,
+    schema: SCHEMA,
+    temperature: 0.3,
+    validate: (raw) => {
+      const r = raw as Record<string, unknown>;
+      const summary = str(r.summary, 800);
+      const bullets = Array.isArray(r.bullets)
+        ? r.bullets
+            .map((b) => ({ basedOn: str((b as Record<string, unknown>)?.basedOn, 400), rewrite: str((b as Record<string, unknown>)?.rewrite, 400) }))
+            .filter((b): b is { basedOn: string; rewrite: string } => Boolean(b.basedOn && b.rewrite))
+            .slice(0, 5)
+        : [];
+      if (!summary || bullets.length === 0) return null;
+      return { keywords: strList(r.keywords, 8, 80), missingKeywords: strList(r.missingKeywords, 8, 80), summary, bullets };
+    },
+  });
+  if (!result) return NextResponse.json({ error: "Couldn't tailor this one right now. Please try again." }, { status: 502 });
 
-  const candidateProfile = `
-Headline: ${fullProfile.profile?.headline || "None"}
-Summary: ${fullProfile.profile?.summary || "None"}
-Skills: ${fullProfile.skills.map(s => s.name).join(", ")}
-Experience:
-${fullProfile.experiences.map(e => `- ${e.title} at ${e.company} (${e.startDate} to ${e.endDate})\n  ${e.description}`).join("\n")}
-`;
+  // Flag (rather than silently ship) any number the model introduced.
+  const flagged = unsupportedNumbers(`${result.summary} ${result.bullets.map((b) => b.rewrite).join(" ")}`, candidate);
 
-  const jobDetails = app.job.description || app.job.title;
+  const text = [
+    "### Keywords you can honestly use",
+    result.keywords.length ? result.keywords.map((k) => `- ${k}`).join("\n") : "- (none found)",
+    result.missingKeywords.length
+      ? `\n### Keywords you can't claim yet\n${result.missingKeywords.map((k) => `- ${k}`).join("\n")}\n\nDon't add these to your resume until you can back them up.`
+      : "",
+    "\n### Tailored summary",
+    result.summary,
+    "\n### Rewritten bullets",
+    result.bullets.map((b) => `- **${b.rewrite}**\n  - Based on: _${b.basedOn}_`).join("\n"),
+    flagged.length
+      ? `\n> Check these numbers before using: ${flagged.join(", ")}. They don't appear in your profile.`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-  const prompt = `Act as an elite executive recruiter and ATS (Applicant Tracking System) optimizer.
-I am applying for the role of ${app.job.title} at ${app.company}.
-
-Here is my CURRENT background:
-${candidateProfile.substring(0, 2000)}
-
-Here is the TARGET JOB DESCRIPTION:
-${(jobDetails || "").substring(0, 2000)}
-
-Provide a highly optimized, tailored resume strategy for this exact role. Use the following markdown format EXACTLY. Do NOT use any emojis in your response. Keep the tone professional, minimal, and clinical.
-
-### Core ATS Keywords
-[List 5-8 critical keywords from the job description that must exist in my resume]
-
-### Tailored Professional Summary
-[Write a 2-3 sentence tailored resume summary that perfectly bridges my background with their needs]
-
-### Optimized Bullet Points
-[Take 3-4 aspects of my current experience and rewrite them into powerful, impact-driven bullet points that directly address the core requirements of the job description. Do not invent experience I don't have, but frame what I DO have perfectly for this role.]`;
-
-  try {
-    const result = await googleGenAIProvider.complete({
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    });
-    return NextResponse.json({ text: result.content });
-  } catch (err) {
-    console.error("AI evaluation error:", err);
-    return NextResponse.json({ error: "Failed to generate tailored resume." }, { status: 500 });
-  }
+  return NextResponse.json({ text });
 }

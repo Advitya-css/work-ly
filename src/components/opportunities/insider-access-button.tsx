@@ -25,7 +25,8 @@ export function InsiderAccessButton({ opportunityId, isPro = false }: { opportun
     setError(null);
     try {
       const res = await generateOutreachEmailAction(opportunityId);
-      setData(res);
+      if ("error" in res) setError(res.error);
+      else setData(res.data);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     }
@@ -94,7 +95,7 @@ export function InsiderAccessButton({ opportunityId, isPro = false }: { opportun
             {data && !loading && (
               <div className="flex flex-col gap-4">
                 <div className="text-sm text-muted-foreground border-l-4 border-primary pl-4 py-2">
-                  <span className="font-semibold text-foreground">Pro Tip:</span> Use LinkedIn or Apollo.io to find the likely hiring manager (e.g., "Director of Engineering" or "Head of Product") at this company. Send this message exactly as written to secure a 15-minute intro call.
+                  <span className="font-semibold text-foreground">Pro Tip:</span> Use LinkedIn or Apollo.io to find the likely hiring manager (e.g., "Director of Engineering" or "Head of Product") at this company. Read it once, make it sound like you, then send it with a short connection request.
                 </div>
                 
                 <div className="bg-muted/50 rounded-lg p-5 text-sm leading-relaxed whitespace-pre-wrap border border-border mt-2">

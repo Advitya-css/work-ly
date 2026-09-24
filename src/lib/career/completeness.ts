@@ -82,8 +82,10 @@ export function calculateProfileCompleteness(
       key: "goals",
       label: "Career goals",
       weight: 15,
-      met: careerGoals.length > 0,
-      hint: "Set a career goal so Work-ly knows what you're working toward.",
+      // An empty or "not sure yet" goal doesn't tell Work-ly anything to
+      // search or score against, so it doesn't count.
+      met: careerGoals.some((g) => !g.isUncertain && Boolean(g.primaryTargetRole || g.targetRole || g.title?.trim())),
+      hint: "Set a career goal with a target role so Work-ly knows what you're working toward.",
     },
   ];
 

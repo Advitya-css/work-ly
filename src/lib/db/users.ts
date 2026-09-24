@@ -149,22 +149,72 @@ export async function updateUserPassword(userId: string, passwordHash: string): 
   );
 }
 
-export async function processReferral(newUserId: string, referrerId: string): Promise<void> {
+/**
+ * Referrals, abuse-resistant.
+ *
+ * The first version granted both accounts a month of Pro at signup for
+ * ANY ?ref= value: an invalid code still gave the new account Pro, and
+ * with emails auto-verified anyone could farm unlimited Pro for their own
+ * account by signing up throwaways with their own id. Now:
+ *   - at signup we only RECORD a referral, and only if the referrer is a
+ *     real, different account and this account has no referrer yet;
+ *   - both rewards are granted on ACTIVATION - the referee's first
+ *     successfully parsed resume - exactly once (the marker "|credited");
+ *   - a referrer earns at most MAX_REFERRAL_CREDITS_PER_YEAR months a year;
+ *   - an account with open-ended Pro (proUntil NULL) is never shortened.
+ */
+export const MAX_REFERRAL_CREDITS_PER_YEAR = 12;
+const CREDITED = "|credited";
+
+export async function recordReferral(newUserId: string, referrerId: string): Promise<void> {
+  const ref = referrerId.trim();
+  if (!ref || ref === newUserId || ref.length > 64) return;
   await pool.query(
-    `UPDATE users 
-     SET "referredBy" = $2, 
-         "isPro" = true,
-         "proUntil" = COALESCE("proUntil", now()) + interval '30 days',
-         "updatedAt" = now() 
-     WHERE id = $1`,
-    [newUserId, referrerId]
+    `UPDATE users SET "referredBy" = $2, "updatedAt" = now()
+      WHERE id = $1 AND "referredBy" IS NULL
+        AND EXISTS (SELECT 1 FROM users r WHERE r.id = $2 AND r.id <> $1)`,
+    [newUserId, ref],
   );
-  await pool.query(
-    `UPDATE users 
-     SET "isPro" = true,
-         "proUntil" = COALESCE("proUntil", now()) + interval '30 days',
-         "updatedAt" = now() 
-     WHERE id = $1`,
-    [referrerId]
-  );
+}
+
+function extendProSql(param: string): string {
+  // Open-ended Pro stays open-ended; otherwise add 30 days from the later
+  // of "now" and the current expiry, so an expired account restarts today.
+  return `"isPro" = true,
+          "proUntil" = CASE WHEN "isPro" = true AND "proUntil" IS NULL THEN NULL
+                            ELSE GREATEST(COALESCE("proUntil", now()), now()) + interval '30 days' END,
+          "updatedAt" = now()
+     WHERE id = ${param}`;
+}
+
+/** Grants both referral rewards once the referred user has activated. Safe to call repeatedly. */
+export async function creditReferralOnActivation(userId: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      `SELECT "referredBy" FROM users WHERE id = $1 FOR UPDATE`,
+      [userId],
+    );
+    const referredBy: string | null = rows[0]?.referredBy ?? null;
+    if (!referredBy || referredBy.endsWith(CREDITED)) {
+      await client.query("ROLLBACK");
+      return;
+    }
+    await client.query(`UPDATE users SET "referredBy" = $2, ${extendProSql("$1")}`, [userId, `${referredBy}${CREDITED}`]);
+
+    const { rows: countRows } = await client.query(
+      `SELECT COUNT(*)::int AS n FROM users WHERE "referredBy" = $1 AND "updatedAt" > now() - interval '365 days'`,
+      [`${referredBy}${CREDITED}`],
+    );
+    if ((countRows[0]?.n ?? 0) <= MAX_REFERRAL_CREDITS_PER_YEAR) {
+      await client.query(`UPDATE users SET ${extendProSql("$1")}`, [referredBy]);
+    }
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 }

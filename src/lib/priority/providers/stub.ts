@@ -13,6 +13,21 @@ import {
   unavailable,
 } from "@/lib/scoring/shared";
 import { isReliable } from "@/lib/scoring/coverage";
+import { countryMatches } from "@/lib/text-utils";
+
+const TITLE_FILLER = new Set(["senior", "sr", "junior", "jr", "lead", "principal", "staff", "associate", "i", "ii", "iii", "iv", "entry", "level", "mid", "head", "of", "the", "and", "a", "an", "for", "remote", "hybrid", "contract", "intern"]);
+function titleWords(title: string): Set<string> {
+  return new Set(normalize(title).split(" ").filter((w) => w.length > 1 && !TITLE_FILLER.has(w)));
+}
+/** Share of the target title's core words that the job title contains ("Product Manager" vs "Senior Product Manager, Payments" = 1). */
+function titleOverlap(jobTitle: string, target: string): number {
+  const t = titleWords(target);
+  if (t.size === 0) return 0;
+  const j = titleWords(jobTitle);
+  let hit = 0;
+  for (const w of t) if (j.has(w)) hit++;
+  return hit / t.size;
+}
 
 // ---------------------------------------------------------------------------
 // Weights - Phase 4 spec's component list. Sum to 100. Deliberately NOT the
@@ -20,9 +35,13 @@ import { isReliable } from "@/lib/scoring/coverage";
 // lib/scoring/providers/stub.ts - Priority is its own question.
 // ---------------------------------------------------------------------------
 const WEIGHTS = {
-  candidateFit: 25,
+  candidateFit: 30,
   careerValue: 15,
-  competitiveness: 15,
+  // Stored under the old key for compatibility; it now measures TIMING
+  // (how fresh the posting is / how close the deadline), a real signal of
+  // how contested the role is. It used to re-count the same requirement
+  // checklist that Candidate Fit already scores.
+  competitiveness: 10,
   applicationEffort: 10,
   salary: 10,
   location: 10,
@@ -78,14 +97,16 @@ function scoreCareerValue(job: Job, careerGoal: CareerGoal | null) {
   }
 
   const goal = careerGoal!;
-  const jobTitle = job.title ? normalize(job.title) : "";
-  const titleMatch = Boolean(
-    jobTitle && goal.primaryTargetRole && jobTitle.includes(normalize(goal.primaryTargetRole)),
+  const jobTitle = job.title ?? "";
+  // Word overlap, not substring: "Product Lead" vs target "Product Manager"
+  // is a partial match, "Data Analyst" inside "Big Data Analyst Intern" is a
+  // full one, and "Engineer" alone no longer matches every engineering role.
+  const titleMatch = Boolean(jobTitle && goal.primaryTargetRole && titleOverlap(jobTitle, goal.primaryTargetRole) >= 0.99);
+  const partialPrimary = Boolean(
+    !titleMatch && jobTitle && goal.primaryTargetRole && titleOverlap(jobTitle, goal.primaryTargetRole) >= 0.5,
   );
   const secondaryMatch =
-    !titleMatch &&
-    jobTitle &&
-    goal.secondaryTargetRoles.some((role) => jobTitle.includes(normalize(role)) || normalize(role).includes(jobTitle));
+    !titleMatch && Boolean(jobTitle) && goal.secondaryTargetRoles.some((role) => titleOverlap(jobTitle, role) >= 0.99);
   const industryMatch = Boolean(
     job.industry && goal.industries.some((i) => normalize(i) === normalize(job.industry!)),
   );
@@ -95,6 +116,13 @@ function scoreCareerValue(job: Job, careerGoal: CareerGoal | null) {
       WEIGHTS.careerValue,
       WEIGHTS.careerValue,
       `This role's title lines up directly with your target role (${goal.primaryTargetRole}).`,
+    );
+  }
+  if (partialPrimary) {
+    return component(
+      0.75 * WEIGHTS.careerValue,
+      WEIGHTS.careerValue,
+      `This role's title is a close variant of your target role (${goal.primaryTargetRole}).`,
     );
   }
   if (secondaryMatch) {
@@ -119,33 +147,56 @@ function scoreCareerValue(job: Job, careerGoal: CareerGoal | null) {
 }
 
 /**
- * Distinct from the Candidate Fit component above: this reads the literal
- * mandatory-requirements checklist (met/unmet counts) rather than the
- * blended Fit score, so it stays a meaningfully separate signal instead of
- * just echoing candidateFit a second time.
+ * TIMING (stored under the "competitiveness" key). Most applications to a
+ * posting arrive in its first days, so a fresh posting is genuinely less
+ * contested than a month-old one, and a passed deadline means don't bother.
+ * Only scored when the posting's date or deadline is actually known.
  */
-function scoreCompetitiveness(analysis: JobAnalysis) {
-  // Only requirements we could actually verify count on either side. An
-  // unverifiable requirement used to be filed as a failure, which turned a
-  // limitation of the text matcher into evidence against the candidate.
-  const checkable = analysis.mandatoryRequirements.filter((r) => r.status !== "unknown");
-  if (checkable.length === 0) {
+function scoreTiming(job: Job) {
+  const now = Date.now();
+  const deadline = job.deadline ? new Date(job.deadline).getTime() : NaN;
+  if (Number.isFinite(deadline)) {
+    const daysLeft = (deadline - now) / 86_400_000;
+    if (daysLeft < 0) {
+      return component(0, WEIGHTS.competitiveness, "The application deadline for this role has passed.");
+    }
+    if (daysLeft <= 5) {
+      return component(
+        WEIGHTS.competitiveness,
+        WEIGHTS.competitiveness,
+        `The deadline is in ${Math.max(1, Math.ceil(daysLeft))} day${Math.ceil(daysLeft) <= 1 ? "" : "s"}. Apply now or not at all.`,
+      );
+    }
+  }
+  const posted = job.datePosted ? new Date(job.datePosted).getTime() : NaN;
+  if (!Number.isFinite(posted)) {
     return unavailable(
       WEIGHTS.competitiveness,
-      "Work-ly could not verify any of this posting's mandatory requirements automatically, so it cannot judge how contested the role is.",
+      "Work-ly doesn't know when this role was posted, so it can't judge how many people have already applied.",
     );
   }
-  const met = checkable.filter((r) => r.status === "met").length;
-  const ratio = met / checkable.length;
+  const ageDays = Math.max(0, (now - posted) / 86_400_000);
+  const ratio = clamp(Math.exp(-ageDays / 21), 0.15, 1);
+  const age = Math.floor(ageDays);
   return component(
     ratio * WEIGHTS.competitiveness,
     WEIGHTS.competitiveness,
-    `You clearly meet ${met} of the ${checkable.length} mandatory requirement${checkable.length === 1 ? "" : "s"} Work-ly could check.`,
+    age <= 3
+      ? "Posted in the last few days: you'd be one of the early applicants."
+      : age <= 14
+        ? `Posted about ${age} days ago: still worth applying soon.`
+        : `Posted about ${age} days ago: many applications are likely already in.`,
   );
 }
 
 /** How much extra work this application is likely to take, inferred from the gap types and unmet mandatory items an analysis already surfaced - never a fabricated effort estimate. */
 function scoreApplicationEffort(analysis: JobAnalysis) {
+  if (analysis.mandatoryRequirements.length === 0 && analysis.gaps.length === 0) {
+    return unavailable(
+      WEIGHTS.applicationEffort,
+      "Work-ly couldn't read enough requirements from this posting to estimate the prep it needs.",
+    );
+  }
   const highEffortGaps = analysis.gaps.filter((g) => g.type === "PORTFOLIO_GAP" || g.type === "CREDENTIAL_GAP").length;
   const unmet = analysis.mandatoryRequirements.filter((r) => r.status === "not-met").length;
   const penalty = highEffortGaps * 0.35 + Math.max(0, unmet - 1) * 0.12;
@@ -200,6 +251,15 @@ function scoreSalary(job: Job, careerGoal: CareerGoal | null) {
   if (goalFloor == null || goalFloor <= 0) {
     return unavailable(WEIGHTS.salary, "You listed a target range with no clear floor to compare against.");
   }
+  // A figure under 1,000 against an annual target is almost always an
+  // hourly or daily rate. Comparing them would call a good contract rate
+  // "far below your target".
+  if (jobHigh < 1000 && goalFloor >= 10000) {
+    return unavailable(
+      WEIGHTS.salary,
+      "This posting's pay looks like an hourly or daily rate, and your target is annual, so Work-ly won't compare them.",
+    );
+  }
   if (jobHigh >= goalFloor) {
     return component(WEIGHTS.salary, WEIGHTS.salary, "This role's salary meets or exceeds your stated target minimum.");
   }
@@ -214,6 +274,14 @@ function scoreSalary(job: Job, careerGoal: CareerGoal | null) {
 /** Geography + work mode against the user's stated preferences - independent of Fit's own (much smaller) location component. */
 function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerGoal | null) {
   if (job.workMode === "REMOTE") {
+    const modes = careerGoal?.workModes ?? [];
+    if (modes.length > 0 && !modes.includes("REMOTE")) {
+      return component(0.3 * WEIGHTS.location, WEIGHTS.location, "This role is remote, but you said you want to work on-site or hybrid.");
+    }
+    const countries = careerGoal?.countries ?? [];
+    if (job.country && countries.length > 0 && !countries.some((c) => countryMatches(c, job.country))) {
+      return component(0.2 * WEIGHTS.location, WEIGHTS.location, `Remote, but restricted to ${job.country}, which isn't one of your target countries.`);
+    }
     return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, so location is not a constraint.");
   }
 
@@ -243,8 +311,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   }
   
   if (job.country && countries.length > 0) {
-    const c = job.country.toLowerCase();
-    checks.push(countries.some((x) => c.includes(x.toLowerCase()) || x.toLowerCase().includes(c)));
+    checks.push(countries.some((x) => countryMatches(x, job.country)));
   }
 
   if (checks.length === 0) {
@@ -273,7 +340,10 @@ function scoreCareerProgression(job: Job, profile: FullCareerProfile, careerGoal
     );
   }
   const candidateYears = estimateYearsExperience(profile);
-  const candidateLevel = deriveCandidateSeniority(candidateYears, careerGoal);
+  // CURRENT level from experience only. The career goal's seniority is
+  // where they want to GO; reading it as where they are called a step up a
+  // "lateral move".
+  const candidateLevel = deriveCandidateSeniority(candidateYears, null);
   if (!candidateLevel) {
     return unavailable(
       WEIGHTS.careerProgression,
@@ -350,7 +420,7 @@ function computePriority({
 }): PriorityResult {
   const candidateFit = scoreCandidateFit(analysis);
   const careerValue = scoreCareerValue(job, careerGoal);
-  const competitiveness = scoreCompetitiveness(analysis);
+  const competitiveness = scoreTiming(job);
   const applicationEffort = scoreApplicationEffort(analysis);
   const salary = scoreSalary(job, careerGoal);
   const location = scoreLocation(job, profile, careerGoal);
@@ -376,7 +446,9 @@ function computePriority({
   const total = totalFrom(priorityBreakdown as unknown as Record<string, (typeof priorityBreakdown)["salary"]>);
 
   return {
-    priorityScore: clamp(total.score ?? 0, 0, 100),
+    // The measured partial ratio when coverage is thin - never a stored 0
+    // that reads as "worst possible" when it really means "unknown".
+    priorityScore: clamp(total.score ?? total.raw ?? 0, 0, 100),
     coverage: total.coverage,
     unassessed: total.missing,
     priorityBreakdown,

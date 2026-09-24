@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFullPathwayById } from "@/lib/pathway/get-full-pathway";
 import { getUserById } from "@/lib/db/users";
+import { pool } from "@/lib/db/pool";
 import { MapPin, Flag, ArrowRight, Sparkles, Compass, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ACTION_WINDOW_LABEL, ACTION_WINDOW_ORDER } from "@/lib/pathway/labels";
@@ -11,9 +12,22 @@ interface PageProps {
   params: { id: string };
 }
 
+/**
+ * A pathway is only public if its owner opted in to sharing (the same
+ * revocable career_profiles."isPublic" switch the Share button sets).
+ * Without this, anyone holding a pathway id could read someone's plan.
+ */
+async function isSharedByOwner(userId: string): Promise<boolean> {
+  const { rows } = await pool.query(
+    `SELECT 1 FROM career_profiles WHERE "userId" = $1 AND "isPublic" = true LIMIT 1`,
+    [userId],
+  );
+  return rows.length > 0;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const pathway = await getFullPathwayById(params.id).catch(() => null);
-  if (!pathway) return { title: "Pathway not found" };
+  if (!pathway || !(await isSharedByOwner(pathway.userId))) return { title: "Pathway not found" };
   const user = await getUserById(pathway.userId);
   const name = user?.name ? user.name.split(" ")[0] : "Someone";
   return {
@@ -24,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PublicPathwayPage({ params }: PageProps) {
   const pathway = await getFullPathwayById(params.id).catch(() => null);
-  if (!pathway) notFound();
+  if (!pathway || !(await isSharedByOwner(pathway.userId))) notFound();
   const user = await getUserById(pathway.userId);
   const firstName = user?.name ? user.name.split(" ")[0] : "A Work-ly User";
 

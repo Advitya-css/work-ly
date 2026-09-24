@@ -217,6 +217,7 @@ export async function deleteApplicationAction(id: string): Promise<void> {
 }
 
 import { generateFollowUpEmail } from "@/lib/ai/providers/tailor-ai";
+import { withinProAiBudget } from "@/lib/ai/career-context";
 
 export async function generateFollowUpEmailAction(applicationId: string) {
   const user = await getCurrentUser();
@@ -226,11 +227,16 @@ export async function generateFollowUpEmailAction(applicationId: string) {
     const application = await requireOwnedApplication(applicationId);
     if (!application) return { error: "Not found" };
 
-    if (!application.jobId) return { error: "Application is not linked to a job" };
-    const job = await getJobById(user.id, application.jobId);
-    if (!job) return { error: "Job not found" };
-
-    const result = await generateFollowUpEmail(application, job);
+    if (!(await withinProAiBudget(user.id))) {
+      return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
+    }
+    // Works for manually logged applications too: the role and company on
+    // the application are enough for a follow-up note.
+    const job = application.jobId ? await getJobById(user.id, application.jobId) : null;
+    const result = await generateFollowUpEmail(
+      application,
+      job ?? ({ title: application.roleTitle, company: application.company ?? "the company" } as Parameters<typeof generateFollowUpEmail>[1]),
+    );
     return { data: result };
   } catch (err) {
     console.error(err);

@@ -15,6 +15,8 @@ import { listDiscoveredJobsByUserId, listSourcesByUserId, getLatestRun } from "@
 import { profileSearchText } from "@/lib/discovery/profile-text";
 import { buildAlert } from "@/lib/discovery/alerts";
 import { isStale } from "@/lib/discovery/sort";
+import { buildMarketRadar } from "@/lib/discovery/market-radar";
+import { MarketRadarCard } from "@/components/discovery/market-radar-card";
 import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL } from "@/lib/discovery/labels";
 import { embeddingProvider, profileEmbeddingText } from "@/lib/search/embeddings";
 import { deriveCandidateSeniority, estimateYearsExperience } from "@/lib/scoring/shared";
@@ -95,6 +97,8 @@ export default async function DiscoverPage() {
   };
 
   const alert = buildAlert(latestRun, jobs);
+  const targetRole = careerGoal?.primaryTargetRole ?? careerGoal?.targetRole ?? null;
+  const radar = buildMarketRadar({ jobs: rawJobs, skills: profile.skills, targetRole });
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,6 +119,8 @@ export default async function DiscoverPage() {
       )}
 
       <DiscoveryBoard jobs={jobs} context={context} />
+
+      <MarketRadarCard radar={radar} targetRole={targetRole} />
 
       <DiscoverySourcesCard
         sources={sources.map((source) => ({

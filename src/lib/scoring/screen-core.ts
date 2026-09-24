@@ -135,7 +135,7 @@ export function buildDossier(profile: FullCareerProfile): DossierEntry[] {
       label: "SK",
       where: "your skills list",
       kind: "skills",
-      text: skills.map((s) => `${s.name} [${s.evidenceLevel.toLowerCase()}]`).join(", "),
+      text: skills.map((s) => `${s.name} [${(s.evidenceLevel ?? "STATED").toLowerCase()}]`).join(", "),
     });
   }
 

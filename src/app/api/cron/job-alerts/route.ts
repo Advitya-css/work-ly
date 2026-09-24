@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/db/pool";
 import { runDiscovery } from "@/lib/discovery/run";
 import { sendJobAlertEmail } from "@/lib/email";
+import { newStrongMatches } from "@/lib/discovery/digest";
 
 // Enable this endpoint to run for up to 5 minutes on Vercel Pro/Hobby limits
 export const maxDuration = 300; 
@@ -37,6 +38,7 @@ export async function GET(req: Request) {
       WHERE cg.status = 'ACTIVE' 
         AND cg."primaryTargetRole" IS NOT NULL
         AND u."isPro" = true
+        AND (u."proUntil" IS NULL OR u."proUntil" > NOW())
         AND (u."lastAlertSentAt" IS NULL OR u."lastAlertSentAt" < NOW() - INTERVAL '7 days')
       LIMIT 50
     `);
@@ -54,7 +56,8 @@ export async function GET(req: Request) {
         
         // We only email them if the algorithm flagged at least one of the new jobs as a STRONG match
         if (result.newHighPriority > 0) {
-          await sendJobAlertEmail(email, targetRole, result.newJobs, result.newHighPriority);
+          const matches = await newStrongMatches(userId, result.startedAt).catch(() => []);
+          await sendJobAlertEmail(email, targetRole, result.newJobs, result.newHighPriority, matches);
           emailsSent++;
           totalNewJobs += result.newJobs;
         }

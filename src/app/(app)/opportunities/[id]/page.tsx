@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Flame,
   HelpCircle,
+  FileText,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -90,6 +91,12 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </Link>
         </Button>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button asChild className="gap-2">
+            <Link href={`/opportunities/${opportunity.id}/resume`}>
+              <FileText className="size-4" />
+              Tailored resume
+            </Link>
+          </Button>
           <TailorApplicationButton opportunityId={opportunity.id} isPro={user.isPro} />
           <InsiderAccessButton opportunityId={opportunity.id} isPro={user.isPro} />
           <InterviewIntelButton opportunityId={opportunity.id} isPro={user.isPro} />

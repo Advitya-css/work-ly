@@ -86,6 +86,10 @@ for (const [canonicalName, aliases] of Object.entries(SKILL_ALIASES)) {
   }
 }
 
+export function canonicalSkill(s: string): string {
+  return getCanonicalSkill(s);
+}
+
 function getCanonicalSkill(s: string): string {
   const norm = normalizeToken(s);
   return ALIAS_MAP.get(norm) ?? norm;
@@ -218,4 +222,54 @@ export function requirementSatisfiedBy(candidateSkill: string, requirement: stri
     if (next && blocked?.includes(next)) return false;
   }
   return true;
+}
+
+const COUNTRY_ALIASES: Record<string, string[]> = {
+  "united states": ["us", "usa", "u s", "u s a", "united states of america", "america"],
+  "united kingdom": ["uk", "u k", "gb", "great britain", "britain", "england", "scotland", "wales"],
+  india: ["in", "bharat"],
+  canada: ["ca"],
+  australia: ["au"],
+  germany: ["de", "deutschland"],
+  "united arab emirates": ["uae", "ae"],
+  singapore: ["sg"],
+  netherlands: ["nl", "holland", "the netherlands"],
+  ireland: ["ie"],
+  "new zealand": ["nz"],
+  france: ["fr"],
+};
+const COUNTRY_CANONICAL = new Map<string, string>();
+for (const [name, aliases] of Object.entries(COUNTRY_ALIASES)) {
+  COUNTRY_CANONICAL.set(name, name);
+  for (const a of aliases) COUNTRY_CANONICAL.set(a, name);
+}
+
+/** Canonical country name for a free-text country or code ("US", "USA", "United States" -> "united states"). */
+export function canonicalCountry(value: string | null | undefined): string {
+  const c = canonical(value ?? "");
+  return COUNTRY_CANONICAL.get(c) ?? c;
+}
+
+/**
+ * Whether two country strings mean the same country. Exact after
+ * canonicalising - the substring checks this replaces matched "US" inside
+ * "Russia" and "Australia".
+ */
+export function countryMatches(a: string | null | undefined, b: string | null | undefined): boolean {
+  const x = canonicalCountry(a);
+  const y = canonicalCountry(b);
+  return Boolean(x) && x === y;
+}
+
+/**
+ * The core of a requirement phrase with the filler removed: "Strong
+ * experience with Kubernetes" -> "kubernetes", "3+ years of SQL" -> "sql".
+ * Canonicalised through the alias table so "K8s" and "Kubernetes" count as
+ * one skill. Empty when nothing meaningful is left.
+ */
+export function requirementCore(requirement: string): string {
+  const tokens = normalizeToken(requirement.replace(/\([^)]*\)/g, " "))
+    .split(" ")
+    .filter((t) => t && !REQUIREMENT_FILLER.has(t) && !/^\d+\+?$/.test(t));
+  return tokens.length ? getCanonicalSkill(tokens.join(" ")) : "";
 }

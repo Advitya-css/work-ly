@@ -90,8 +90,11 @@ export default async function DashboardPage() {
   const discoveryBuckets = bucketJobs(discovered);
   const discoveryAlert = buildAlert(latestRun, discovered);
 
-  const applyNow = opportunities.filter((o) => o.recommendation === "APPLY_NOW" || o.recommendation === "APPLY");
-  const topPriority = [...opportunities].sort((a, b) => b.priorityScore - a.priorityScore)[0] ?? null;
+  // Not yet applied to: "worth applying to now" used to count jobs you'd
+  // already applied for.
+  const notApplied = opportunities.filter((o) => o.status !== "APPLIED");
+  const applyNow = notApplied.filter((o) => o.recommendation === "APPLY_NOW" || o.recommendation === "APPLY");
+  const topPriority = [...notApplied].sort((a, b) => b.priorityScore - a.priorityScore)[0] ?? null;
 
   return (
     <div className="flex flex-col gap-10">
@@ -224,7 +227,9 @@ export default async function DashboardPage() {
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       Highest priority
                     </p>
-                    <p className="text-sm text-foreground">{topPriority.priorityScore}/100 priority score</p>
+                    <Link href={`/opportunities/${topPriority.id}`} className="text-sm text-foreground underline-offset-2 hover:underline">
+                      {topPriority.priorityScore}/100 priority · open it
+                    </Link>
                   </div>
                 )}
                 <Button asChild size="sm" variant="outline" className="w-fit">

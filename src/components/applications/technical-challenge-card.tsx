@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isTechnicalRole } from "@/lib/role-kind";
 import { Code2, BriefcaseBusiness, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ interface TechnicalChallengeCardProps {
 }
 
 export function TechnicalChallengeCard({ applicationId, roleTitle = "", isPro = false }: TechnicalChallengeCardProps & { isPro?: boolean }) {
-  const isTechnical = /engineer|developer|software|data|programmer|frontend|backend|fullstack|tech|it|cloud|security/i.test(roleTitle);
+  const isTechnical = isTechnicalRole(roleTitle);
 
   return (
     <Card className="border-border">

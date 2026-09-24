@@ -25,7 +25,8 @@ export function InterviewIntelButton({ opportunityId, isPro = false }: { opportu
     setError(null);
     try {
       const res = await generateInterviewPrepAction(opportunityId);
-      setData(res);
+      if ("error" in res) setError(res.error);
+      else setData(res.data);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     }

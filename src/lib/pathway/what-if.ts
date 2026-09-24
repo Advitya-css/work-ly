@@ -1,8 +1,9 @@
 import "server-only";
 
 import { scoringProvider } from "@/lib/scoring";
+import { evaluateFit } from "@/lib/scoring/ai-evaluator";
 import { dreamJobToJobLike } from "@/lib/dream-job/to-job-like";
-import type { CareerGoal, DreamJob, Skill } from "@/lib/db/types";
+import type { CareerGoal, DreamJob, Project, Skill } from "@/lib/db/types";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 import type { Scenario, SimulationResult } from "@/lib/pathway/what-if-types";
 
@@ -66,6 +67,7 @@ function applyScenario(
   switch (scenario.kind) {
     case "LEARN_SKILL": {
       const name = scenario.value.trim();
+      const now = new Date();
       const simulated: Skill = {
         id: `simulated-${name}`,
         careerProfileId: clone.profile?.id ?? "simulated",
@@ -73,21 +75,38 @@ function applyScenario(
         category: "TECHNICAL",
         proficiency: "INTERMEDIATE",
         experienceLevel: "UNDER_1_YEAR",
-        // STATED, not DEMONSTRATED - see the honesty note at the top.
-        evidenceLevel: "STATED",
+        evidenceLevel: "DEMONSTRATED",
         source: "USER",
         recency: "CURRENT",
         isTransferable: false,
         transferableRationale: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
+      };
+      // The screen only credits skills shown in real work, so "learned it"
+      // is modelled the way it would actually be proven: one project that
+      // uses it.
+      const project: Project = {
+        id: `simulated-project-${name}`,
+        careerProfileId: clone.profile?.id ?? "simulated",
+        name: `${name} project`,
+        role: null,
+        description: `Built and shipped a working project using ${name} on a realistic problem, published with a write-up.`,
+        url: null,
+        startDate: now,
+        endDate: now,
+        source: "USER",
+        isUncertain: false,
+        createdAt: now,
+        updatedAt: now,
       };
       clone.skills = [...clone.skills, simulated];
+      clone.projects = [...clone.projects, project];
       return {
         profile: clone,
         careerGoal,
-        label: `If you learned ${name}`,
-        caveat: `Assumes ${name} on your profile as a stated skill. Backing it with a real project or certification would score higher still. This is the conservative version.`,
+        label: `If you learned ${name} and built one project with it`,
+        caveat: `Assumes one real, public project that uses ${name}. Only listing it on your profile would count for much less.`,
       };
     }
 
@@ -98,6 +117,12 @@ function applyScenario(
       const simulatedGoal: CareerGoal | null = careerGoal
         ? { ...careerGoal, countries: [place], preferredLocations: [place], isUncertain: false }
         : null;
+      // The fit engine reads the profile's own location first, so the move
+      // has to happen there too or it changes nothing.
+      if (clone.profile) {
+        clone.profile.location = place;
+        clone.profile.preferredLocations = [place];
+      }
       return {
         profile: clone,
         careerGoal: simulatedGoal,
@@ -111,10 +136,19 @@ function applyScenario(
     case "GAIN_EXPERIENCE": {
       const years = Number.parseFloat(scenario.value);
       const added = Number.isFinite(years) && years > 0 ? years : 1;
-      const base = clone.profile;
-      if (base) {
-        const current = base.yearsExperience ?? 0;
-        base.yearsExperience = Math.round(current + added);
+      // Years now come from role dates, so the hypothetical is "you stayed
+      // in your current (or latest) role this much longer". The old version
+      // overwrote yearsExperience with 0 + added when it was unset, which
+      // could make "+2 years" LOWER your readiness.
+      const latest = [...clone.experiences].sort(
+        (a, b) => new Date(b.startDate ?? 0).getTime() - new Date(a.startDate ?? 0).getTime(),
+      )[0];
+      if (latest?.startDate) {
+        const start = new Date(latest.startDate);
+        start.setMonth(start.getMonth() - Math.round(added * 12));
+        latest.startDate = start;
+      } else if (clone.profile) {
+        clone.profile.yearsExperience = (clone.profile.yearsExperience ?? 0) + added;
       }
       return {
         profile: clone,
@@ -126,23 +160,37 @@ function applyScenario(
   }
 }
 
-export function simulate(params: {
+/**
+ * Runs a what-if through the SAME scoring path the dream job analysis
+ * used (the grounded AI screen when available), so the "current" figure
+ * matches the readiness on the page and the change is measured the same
+ * way. It used to run the rules engine against a headline number the AI
+ * screen had produced - two different calculations side by side.
+ */
+export async function simulate(params: {
   profile: FullCareerProfile;
   careerGoal: CareerGoal | null;
   dreamJob: DreamJob;
   scenario: Scenario;
-}): SimulationResult {
+  /** The readiness shown on the page (from the stored analysis). */
+  currentReadiness: number | null;
+}): Promise<SimulationResult> {
   const { profile, careerGoal, dreamJob, scenario } = params;
   const job = dreamJobToJobLike(dreamJob);
-
-  const current = scoringProvider.analyzeFit({ profile, careerGoal, job }).fitScore;
-
   const applied = applyScenario(profile, careerGoal, scenario);
-  const simulated = scoringProvider.analyzeFit({
-    profile: applied.profile,
-    careerGoal: applied.careerGoal,
-    job,
-  }).fitScore;
+
+  const outcome = await evaluateFit({ profile: applied.profile, careerGoal: applied.careerGoal, job });
+  let simulated = outcome.analysis.fitScore;
+  let current: number;
+  if (outcome.analysis.method === "ai-screen" && params.currentReadiness != null) {
+    current = params.currentReadiness;
+  } else {
+    // Rules fallback: compare like with like.
+    current = scoringProvider.analyzeFit({ profile, careerGoal, job }).fitScore;
+  }
+  // Learning something or gaining experience can't make you LESS ready;
+  // a lower number here would only be model noise, not a finding.
+  if (scenario.kind !== "RELOCATE") simulated = Math.max(simulated, current);
 
   return {
     isSimulation: true,

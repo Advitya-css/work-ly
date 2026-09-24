@@ -100,6 +100,12 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
 
             {data && !loading && (
               <div className="flex flex-col gap-8">
+                {data.unverifiedNumbers && data.unverifiedNumbers.length > 0 && (
+                  <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
+                    Check before sending: {data.unverifiedNumbers.join(", ")}. These numbers don&apos;t appear in your
+                    profile, so only keep them if they&apos;re true.
+                  </p>
+                )}
                 <div className="flex flex-col gap-3">
                   <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
                     <FileText className="size-5" />
@@ -113,7 +119,7 @@ export function TailorApplicationButton({ opportunityId, isPro = false }: { oppo
                 <div className="flex flex-col gap-3">
                   <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="size-5" />
-                    ATS-Optimized Resume Bullets
+                    Tailored Resume Bullets
                   </h3>
                   <ul className="flex flex-col gap-2">
                     {data.resumeBullets.map((bullet, i) => (

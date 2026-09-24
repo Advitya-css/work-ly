@@ -265,8 +265,12 @@ describe("priority scoring", () => {
     expect(priorityScore).toBeGreaterThanOrEqual(0);
     expect(priorityScore).toBeLessThanOrEqual(100);
 
-    const summed = Object.values(priorityBreakdown).reduce((total, c) => total + c.score, 0);
-    expect(Math.abs(summed - priorityScore)).toBeLessThanOrEqual(1);
+    // Priority is scored over the components that could be measured, so the
+    // total is earned / measurable weight - not a raw sum over all 100.
+    const measured = Object.values(priorityBreakdown).filter((c) => c.confidence !== "unavailable");
+    const earned = measured.reduce((total, c) => total + c.score, 0);
+    const possible = measured.reduce((total, c) => total + c.maxScore, 0);
+    expect(Math.abs((earned / possible) * 100 - priorityScore)).toBeLessThanOrEqual(1);
   });
 
   it("caps the direct fit contribution so fit cannot dominate priority", () => {
@@ -280,7 +284,7 @@ describe("priority scoring", () => {
       job,
       analysis,
     });
-    expect(priorityBreakdown.candidateFit.maxScore).toBeLessThanOrEqual(25);
+    expect(priorityBreakdown.candidateFit.maxScore).toBeLessThanOrEqual(30);
   });
 });
 

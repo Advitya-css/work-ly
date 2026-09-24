@@ -252,7 +252,7 @@ describe("real text about the wrong subject is rejected", () => {
     expect(signal(result, "has-cv-sections")?.present).toBe(false);
     expect(signal(result, "has-contact-details")?.present).toBe(false);
     expect(result.message).toContain("This doesn't look like a CV.");
-    expect(result.message).toContain("Workly couldn't find");
+    expect(result.message).toContain("Work-ly couldn't find");
   });
 
   it("rejects a shopping list pasted as a job posting", () => {

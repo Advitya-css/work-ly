@@ -27,7 +27,7 @@ export interface DiscoveryAlert {
   shouldNotify: boolean;
 }
 
-/// Never interrupt someone for a single low-relevance listing.
+/// Only Apply Now / Strong matches count, so even one is worth mentioning.
 const MIN_JOBS_TO_NOTIFY = 1;
 
 export function buildAlert(run: DiscoveryRun | null, jobs: DiscoveredJob[]): DiscoveryAlert {
@@ -56,7 +56,7 @@ export function buildAlert(run: DiscoveryRun | null, jobs: DiscoveredJob[]): Dis
     };
   }
 
-  const headline = `${count} new high-priority opportunit${count === 1 ? "y was" : "ies were"} discovered.`;
+  const headline = `${count} new strong match${count === 1 ? " was" : "es were"} found.`;
   const topTitles = highPriority
     .slice(0, 3)
     .map((job) => `${job.title}${job.company ? ` at ${job.company}` : ""}`);

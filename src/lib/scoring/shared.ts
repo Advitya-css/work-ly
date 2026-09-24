@@ -67,7 +67,17 @@ export function findMatchingSkill(requirementName: string, profileSkills: Skill[
  * lasted no time.
  */
 export function estimateYearsExperience(profile: FullCareerProfile): number | null {
-  if (profile.profile?.yearsExperience != null) return profile.profile.yearsExperience;
+  // Dated roles first. The stored yearsExperience is usually a number the
+  // resume parser wrote once at upload (rounded, from dates it admits it
+  // doesn't verify) and it never updated as time passed or roles were
+  // edited. Live dates are the better fact; the stored figure is the
+  // fallback for profiles with no usable dates.
+  const fromDates = yearsFromDates(profile);
+  if (fromDates != null) return fromDates;
+  return profile.profile?.yearsExperience ?? null;
+}
+
+function yearsFromDates(profile: FullCareerProfile): number | null {
   if (profile.experiences.length === 0) return null;
 
   const intervals: { start: number; end: number }[] = [];
@@ -103,7 +113,9 @@ export function estimateYearsExperience(profile: FullCareerProfile): number | nu
   }
 
   const totalMs = merged.reduce((sum, iv) => sum + (iv.end - iv.start), 0);
-  return Math.round(totalMs / (1000 * 60 * 60 * 24 * 365));
+  // Nearest half year: whole-year rounding turned 2 years 7 months into 3
+  // and moved people across seniority bands.
+  return Math.round((totalMs / (1000 * 60 * 60 * 24 * 365.25)) * 2) / 2;
 }
 
 /**

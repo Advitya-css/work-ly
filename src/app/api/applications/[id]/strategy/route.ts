@@ -1,70 +1,89 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
-import { googleGenAIProvider } from "@/lib/ai/providers/google-genai";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
-import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  NO_FABRICATION_RULES,
+  candidateBrief,
+  completeStructured,
+  jobBrief,
+  proApiGate,
+  str,
+  unsupportedNumbers,
+} from "@/lib/ai/career-context";
 
-export const maxDuration = 60; // Allow 60s for AI generation
+export const maxDuration = 60;
 
-export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+const SYSTEM = `You are a senior recruiter preparing a candidate's application for ONE job.
+1. angle: one sentence - the single strongest, TRUE reason this candidate fits this job, citing their real experience.
+2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job. Skip a tweak rather than invent a "before".
+3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application.
+4. coverLetter: under 200 words, human, specific to this company and job, using only real facts. Use [Your Name] for the signature.
+${NO_FABRICATION_RULES}`;
+
+const SCHEMA = {
+  type: "object",
+  properties: {
+    angle: { type: "string" },
+    tweaks: {
+      type: "array",
+      items: { type: "object", properties: { before: { type: "string" }, after: { type: "string" } }, required: ["before", "after"] },
+    },
+    risks: {
+      type: "array",
+      items: { type: "object", properties: { risk: { type: "string" }, howToAddress: { type: "string" } }, required: ["risk", "howToAddress"] },
+    },
+    coverLetter: { type: "string" },
+  },
+  required: ["angle", "tweaks", "risks", "coverLetter"],
+};
+
+export async function POST(_req: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await proApiGate(user);
+  if (gate) return gate;
 
-  const isAllowed = await checkRateLimit(`ai:app:${user.id}`, 20, 3600);
-  if (!isAllowed) {
-    return NextResponse.json({ error: "Too many AI requests. Please try again later." }, { status: 429 });
-  }
+  const { id } = await context.params;
+  const [app, profile] = await Promise.all([getApplicationWithJobById(user!.id, id), getFullCareerProfile(user!.id)]);
+  if (!app) return NextResponse.json({ error: "Application not found." }, { status: 404 });
+  const candidate = candidateBrief(profile);
 
-  const params = await context.params;
-  const app = await getApplicationWithJobById(user.id, params.id);
-  if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
-  
-  const job = app.job;
-  const profile = await getFullCareerProfile(user.id);
-  
-  const candidateSkills = profile.skills.map(s => s.name).join(", ");
-  const candidateExperiences = profile.experiences.map(e => `${e.title} at ${e.company} (${e.description || 'No description'})`).join("\n");
-  
-  let jobDetails = app.job?.title ?? "a role";
-  if (job) {
-    jobDetails = `Title: ${job.title}
-Company: ${job.company || app.company || 'Unknown'}
-Requirements:\n${job.requirements?.map(r => r.text).join("\n") || job.description || job.title}`;
-  }
+  const result = await completeStructured({
+    system: SYSTEM,
+    user: `JOB\n===\n${jobBrief(app.job, app.roleTitle, app.company)}\n\nCANDIDATE\n=========\n${candidate}`,
+    schema: SCHEMA,
+    temperature: 0.4,
+    validate: (raw) => {
+      const r = raw as Record<string, unknown>;
+      const angle = str(r.angle, 400);
+      const coverLetter = str(r.coverLetter, 2000);
+      const pairs = (v: unknown, a: string, b: string) =>
+        Array.isArray(v)
+          ? v
+              .map((x) => ({ a: str((x as Record<string, unknown>)?.[a], 500), b: str((x as Record<string, unknown>)?.[b], 500) }))
+              .filter((x): x is { a: string; b: string } => Boolean(x.a && x.b))
+          : [];
+      if (!angle || !coverLetter) return null;
+      return { angle, coverLetter, tweaks: pairs(r.tweaks, "before", "after").slice(0, 3), risks: pairs(r.risks, "risk", "howToAddress").slice(0, 3) };
+    },
+  });
+  if (!result) return NextResponse.json({ error: "Couldn't build a strategy right now. Please try again." }, { status: 502 });
 
-  const prompt = `You are a world-class executive resume writer and career coach.
-Your client is applying for the role of ${app.job?.title ?? "a role"} at ${app.company || 'a company'}.
+  const flagged = unsupportedNumbers(`${result.coverLetter} ${result.tweaks.map((t) => t.b).join(" ")}`, candidate);
+  const text = [
+    "Your angle",
+    result.angle,
+    "",
+    "1. Resume tweaks",
+    ...result.tweaks.map((t) => `- Before: ${t.a}\n  After: ${t.b}`),
+    "",
+    "2. What a screener may flag",
+    ...(result.risks.length ? result.risks.map((r) => `- ${r.a} - ${r.b}`) : ["- Nothing major stood out."]),
+    "",
+    "3. Cover letter draft",
+    result.coverLetter,
+    flagged.length ? `\nCheck these numbers before sending: ${flagged.join(", ")}. They don't appear in your profile.` : "",
+  ].join("\n");
 
-Here is the Job Description / Requirements:
-${jobDetails}
-
-Here is the candidate's current profile:
-Skills: ${candidateSkills || "None listed."}
-Experience:
-${candidateExperiences || "None listed."}
-
-Your Task:
-Generate a powerful Application Strategy for this specific job. 
-Include exactly two sections:
-
-### 1. Resume Bullet Tweaks
-Suggest 3 specific ways the candidate should rewrite their current experience bullets to perfectly match the keywords and needs of this job. Show a "Before" (based on their actual experience) and an "After" (optimized for this job).
-
-### 2. Cover Letter Draft
-Write a concise, modern, and highly persuasive cover letter (under 200 words). Do not use generic fluff. Make it sound human, referencing their actual skills mapping to the job requirements. Use placeholders like [Your Name] where appropriate.
-
-Format as plain text. Do NOT use asterisks (*) for bolding or italics. Use standard dashes (-) for bullet points. Keep it clean and readable.`;
-
-  try {
-    const result = await googleGenAIProvider.complete({
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.5, // Slightly lower for more precise, less hallucinatory text
-    });
-    return NextResponse.json({ text: result.content });
-  } catch (err) {
-    console.error(err);
-    console.error("AI route error:", err);
-    return NextResponse.json({ error: "Failed to generate AI response. Please try again later." }, { status: 500 });
-  }
+  return NextResponse.json({ text });
 }

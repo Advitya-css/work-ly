@@ -319,23 +319,27 @@ export function classifyStudentJob(input: {
     else {
       const company = (input.company ?? "").toLowerCase();
 
+      // On-campus work rules (e.g. F-1's 20 h/week with no separate
+      // authorisation) apply only to the student's OWN school. A job at
+      // "Columbia University" is off-campus for an NYU student, and
+      // "Oxford University Press" or "Library Systems Inc" aren't campuses
+      // at all - the old generic keyword match gave them all on-campus
+      // guidance. A generic campus employer ("Campus Dining Services") or a
+      // campus-only title still counts, as long as the employer doesn't name
+      // some other school. When unsure, the stricter off-campus rules win.
+      const campusEmployer = /\b(campus|student union|students' union|dining services|residence life)\b/;
+      const campusTitle = /\b(student (assistant|worker|ambassador)|resident (adviser|advisor|assistant)|teaching assistant|work[\s-]?study)\b/;
+      // An employer that names a university or college which isn't theirs.
+      const namesOtherSchool = /\b(university|college|institute of technology)\b/.test(company);
       if (university && company.includes(university)) kind = "on-campus";
-      else {
-        const campusEmployer =
-          /\b(university|college|campus|student union|students' union|dining services|residence life|library)\b/;
-        if (campusEmployer.test(company)) kind = "on-campus";
-        else {
-          const campusTitle = /\b(student (assistant|worker|ambassador)|resident (adviser|advisor|assistant)|teaching assistant|research assistant|work[\s-]?study)\b/;
-          if (campusTitle.test(title)) kind = "on-campus";
-        }
-      }
+      else if (!namesOtherSchool && (campusEmployer.test(company) || campusTitle.test(title))) kind = "on-campus";
     }
   }
 
   // Enforce location matching across ALL jobs if we know the university's location.
   // This prevents jobs at OTHER universities (which might mistakenly be tagged as on-campus 
   // because the employer name contains the word 'university') from bypassing the location check.
-  if (input.location && university) {
+  if (input.location && university && !/\bremote\b/i.test(input.location)) {
     const validLocations = UNIVERSITY_LOCATIONS[university];
     if (validLocations) {
       const loc = input.location.toLowerCase();
