@@ -17,7 +17,31 @@ export const joobleSource: JobSourceAdapter = {
     const key = process.env.JOOBLE_API_KEY;
     if (!key) return [];
 
-    const loc = context.homeLocation || "";
+    
+    const loc = (context.homeLocation || "").toLowerCase();
+    
+    // Jooble uses localized domains (e.g., in.jooble.org for India, uk.jooble.org for UK)
+    const geoMap: Record<string, string[]> = {
+      in: ["india", "bangalore", "bengaluru", "mumbai", "delhi", "hyderabad", "pune", "chennai"],
+      uk: ["uk", "united kingdom", "london", "manchester", "birmingham"],
+      au: ["australia", "sydney", "melbourne", "brisbane", "perth"],
+      ca: ["canada", "toronto", "vancouver", "montreal", "calgary"],
+      sg: ["singapore"],
+      de: ["germany", "berlin", "munich"],
+      fr: ["france", "paris", "lyon"],
+      nl: ["netherlands", "amsterdam"],
+      za: ["south africa", "cape town", "johannesburg"],
+      nz: ["new zealand", "auckland"],
+    };
+
+    let domainPrefix = "";
+    for (const [code, terms] of Object.entries(geoMap)) {
+      if (terms.some(t => loc.includes(t))) {
+        domainPrefix = code + ".";
+        break;
+      }
+    }
+
 
     // Jooble's public API doesn't expose a documented employment-type
     // filter, so - same idea as Adzuna's `what` bias just above it in this
@@ -37,7 +61,7 @@ export const joobleSource: JobSourceAdapter = {
       page: 1
     });
 
-    const response = await fetchWithGuards(`https://jooble.org/api/${key}`, {
+    const response = await fetchWithGuards(`https://${domainPrefix}jooble.org/api/${key}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body
