@@ -50,7 +50,7 @@ export async function PlanSettings() {
               <h3 className="font-semibold text-lg text-foreground">Earn free months of Pro</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Share your personal invite link below. When a friend signs up using your link, <strong>both of you get 1 free month of Pro automatically.</strong> There is no limit to how many free months you can earn!
+              Share your personal invite link below. When a friend signs up with your link and uploads their resume, <strong>you both get 1 free month of Pro.</strong> There is no limit to how many free months you can earn!
             </p>
             <div className="mt-2">
               <CopyReferralLink link={`https://www.work-ly.in/signup?ref=${user.id}`} />

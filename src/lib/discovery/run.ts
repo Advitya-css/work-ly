@@ -349,7 +349,7 @@ export async function runDiscovery(
     // spent most of the 60-second request just waiting on the network and
     // left no time for the AI screen. A source still running when the
     // ingest window closes is skipped for this run, not allowed to stall it.
-    const INGEST_CONCURRENCY = 6;
+    const INGEST_CONCURRENCY = 8;
     const ingestDeadline = startedAt + Math.min(28_000, Math.max(12_000, (options.timeBudgetMs ?? 50_000) * 0.55));
     const ingestSource = async (source: (typeof activeSources)[number]): Promise<void> => {
       const adapter = getAdapter(inferAdapterId(source.kind, source.config));
@@ -529,7 +529,9 @@ export async function runDiscovery(
             )
             .slice(0, screenLimit)
         : [];
-    const screenBudget = Math.max(8_000, (options.timeBudgetMs ?? 50_000) - (Date.now() - startedAt));
+    // Whatever is left of the budget, but never more: the old 8-second floor
+    // let a slow ingest push the whole run past the request's time limit.
+    const screenBudget = Math.max(0, (options.timeBudgetMs ?? 50_000) - (Date.now() - startedAt));
     const screened = await evaluateFitBatch(toScreen, (p) => ({ profile, careerGoal, job: p.jobLike }), {
       concurrency: 4,
       budgetMs: screenBudget,

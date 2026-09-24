@@ -2,9 +2,17 @@ import "server-only";
 import type { AICompletionRequest, AICompletionResult, AIProvider } from "@/lib/ai/types";
 
 let loggedConfig = false;
-// Two attempts at 22s keeps the worst case (~45s) inside the 60s function limit.
-const REQUEST_TIMEOUT_MS = 22_000;
-const MAX_ATTEMPTS = 2;
+// One call gets up to 45s, and all attempts together stay inside 50s so
+// the 60s function limit is never hit. The old 22s-per-attempt cap cut off
+// long generations (a tailored resume, a full strategy) that routinely take
+// 20-30s - they timed out, retried, and timed out again, and the user saw
+// "Couldn't build... try again" every time. A timeout is no longer retried
+// (it would only repeat the same slow call); quick failures (429, 5xx,
+// network) are, while time remains.
+const REQUEST_TIMEOUT_MS = 45_000;
+const TOTAL_BUDGET_MS = 50_000;
+const MIN_RETRY_WINDOW_MS = 8_000;
+const MAX_ATTEMPTS = 3;
 const RETRY_BASE_DELAY_MS = 500;
 
 function isRetryableStatus(status: number): boolean {
@@ -71,7 +79,13 @@ export const googleGenAIProvider: AIProvider = {
       console.info(`[workly:ai] live Google GenAI calls enabled: model=${model} key=***${apiKey.slice(-4)}`);
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    // Optional second model for when the first is out of quota (HTTP 429) or
+    // overloaded (503): free-tier limits are per model, so a sibling model
+    // usually still has room. Only used when AI_FALLBACK_MODEL is set.
+    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || null;
+    const urlFor = (m: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
+    let url = urlFor(model);
+    let usingFallback = false;
     
     // Map messages
     let systemInstruction;
@@ -103,6 +117,8 @@ export const googleGenAIProvider: AIProvider = {
     });
 
     let lastError: unknown;
+    const deadline = Date.now() + TOTAL_BUDGET_MS;
+    const canRetry = (attempt: number) => attempt < MAX_ATTEMPTS && deadline - Date.now() > MIN_RETRY_WINDOW_MS;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       let response: Response;
@@ -111,14 +127,15 @@ export const googleGenAIProvider: AIProvider = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
-          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          signal: AbortSignal.timeout(Math.max(1_000, Math.min(REQUEST_TIMEOUT_MS, deadline - Date.now()))),
         });
       } catch (error) {
         lastError = error;
         const isTimeout = error instanceof Error && error.name === "TimeoutError";
         const isNetworkFailure = error instanceof TypeError;
-        if ((isTimeout || isNetworkFailure) && attempt < MAX_ATTEMPTS) {
-          console.warn(`[workly:ai] request timed out or network error (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`);
+        if (isTimeout) console.warn(`[workly:ai] model=${model} took longer than the time allowed (attempt ${attempt})`);
+        if (!isTimeout && isNetworkFailure && canRetry(attempt)) {
+          console.warn(`[workly:ai] network error (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`);
           await delay(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
           continue;
         }
@@ -128,7 +145,14 @@ export const googleGenAIProvider: AIProvider = {
       if (!response.ok) {
         const responseBody = await response.text();
         console.error(`[workly:ai] request failed ${response.status} against Google API (model=${model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
-        if (isRetryableStatus(response.status) && attempt < MAX_ATTEMPTS) {
+        if ((response.status === 429 || response.status === 503) && fallbackModel && !usingFallback && canRetry(attempt)) {
+          console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model ${fallbackModel}`);
+          usingFallback = true;
+          url = urlFor(fallbackModel);
+          lastError = new Error(`AI provider request failed (${response.status})`);
+          continue;
+        }
+        if (isRetryableStatus(response.status) && canRetry(attempt)) {
           lastError = new Error(`AI provider request failed (${response.status}): ${responseBody}`);
           await delay(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
           continue;

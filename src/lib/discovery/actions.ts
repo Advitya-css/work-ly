@@ -136,7 +136,10 @@ export async function runDiscoveryAction(
     query,
     expandSearch: options.expandSearch,
     aiScreenLimit: user.isPro ? 15 : 8,
-    timeBudgetMs: 50_000,
+    // The request has 60 seconds in total, and after the run it still has
+    // to save every listing and re-render the page. 50s for the run itself
+    // left too little, and the page timed out after the results were saved.
+    timeBudgetMs: 38_000,
   });
   revalidateDiscoveryViews();
 

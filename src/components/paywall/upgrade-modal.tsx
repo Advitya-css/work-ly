@@ -80,10 +80,10 @@ export function UpgradeModal({
 
         <div className="flex flex-col gap-4 py-4 relative z-10">
           <ul className="space-y-3 text-sm font-medium pb-2">
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Unlimited AI Dream Job Analyses</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>AI Resume Tailoring (Pass ATS systems)</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>The Dream Pathway (30-day coaching)</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview Simulator & Tech Sandbox</span></li>
+            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Unlimited AI job analyses</span></li>
+            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>AI resume tailoring</span></li>
+            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>The Dream Pathway</span></li>
+            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview simulator</span></li>
           </ul>
 
           <div className="flex flex-col gap-2">

@@ -186,7 +186,16 @@ export function DiscoveryBoard({
     setUpgradeRequired(false);
     setLastSearchTermsUsed(null);
     startTransition(async () => {
-      const result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" || searchMode === "company" || searchMode === "major" });
+      // A network drop or a server timeout used to throw straight into the
+      // page, which replaced Discover with "This page couldn't load" even
+      // though the run had saved its results. Now it just says so.
+      let result: Awaited<ReturnType<typeof runDiscoveryAction>>;
+      try {
+        result = await runDiscoveryAction(query || undefined, { expandSearch: searchMode === "explore" || searchMode === "company" || searchMode === "major" });
+      } catch {
+        setMessage("That search took longer than expected. Any jobs it found are saved - refresh the page to see them.");
+        return;
+      }
       if (result.upgradeRequired) {
         setUpgradeRequired(true);
       } else {
@@ -522,6 +531,15 @@ export function DiscoveryBoard({
   );
 }
 
+/**
+ * Some sources (Adzuna, Jooble) only return a few sentences of the posting,
+ * so any fit read from them is shallow. Say so on the card instead of
+ * letting a number built on two skills look like a full analysis.
+ */
+function isSummaryOnly(job: DiscoveredJob): boolean {
+  return (job.description?.length ?? 0) < 700 && !isAiScreened(job);
+}
+
 function DiscoveryCard({
   job,
   reasons,
@@ -580,6 +598,15 @@ function DiscoveryCard({
                 </Badge>
               )}
               {isNewListing(job) && <Badge variant="success">New</Badge>}
+              {isSummaryOnly(job) && (
+                <Badge
+                  variant="outline"
+                  className="text-muted-foreground"
+                  title="This source only shares a short summary of the job. Open it and use Save to Work-ly for a full fit check."
+                >
+                  Summary only
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-muted-foreground truncate">
               {[job.company, placeLine(job.location, job.country, " · ")].filter(Boolean).join(" · ") || "-"}
@@ -654,6 +681,15 @@ function DiscoveryCard({
           {job.convertedOpportunityId ? (
             <Button asChild size="sm" variant="outline">
               <Link href={`/opportunities/${job.convertedOpportunityId}`}>View opportunity</Link>
+            </Button>
+          ) : isSummaryOnly(job) && job.sourceUrl ? (
+            // Analyzing three sentences would give a confident-looking but
+            // hollow score. Send the user to the full posting instead, where
+            // the Save to Work-ly button captures the whole description.
+            <Button asChild size="sm">
+              <a href={job.sourceUrl} target="_blank" rel="noreferrer noopener" title="Open the full posting, then click Save to Work-ly">
+                Open full posting
+              </a>
             </Button>
           ) : (
             <Button type="button" size="sm" onClick={onTrack} disabled={pending}>
