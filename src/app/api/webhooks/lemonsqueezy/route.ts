@@ -24,8 +24,9 @@ export async function POST(req: Request) {
     if (eventName === "subscription_created" || eventName === "order_created" || eventName === "subscription_updated") {
       const userId = customData?.user_id;
       const variantId = payload.data?.attributes?.variant_id?.toString();
-      const isYearly = variantId === process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID;
-      const intervalAmount = isYearly ? "1 year" : "1 month";
+      let intervalAmount = "1 month";
+      if (variantId === process.env.LEMON_SQUEEZY_QUARTERLY_VARIANT_ID) intervalAmount = "3 months";
+      if (variantId === process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID) intervalAmount = "1 year";
       
       if (!userId) {
         console.error("No user_id found in Lemon Squeezy custom data");

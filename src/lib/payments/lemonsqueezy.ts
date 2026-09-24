@@ -3,14 +3,14 @@
 import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function createCheckoutUrl(interval: "monthly" | "yearly" = "monthly") {
+export async function createCheckoutUrl(interval: "monthly" | "quarterly" | "yearly" = "quarterly") {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
   const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
-  const variantId = interval === "yearly" 
-    ? (process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID || process.env.LEMON_SQUEEZY_VARIANT_ID)
-    : process.env.LEMON_SQUEEZY_VARIANT_ID;
+  let variantId = process.env.LEMON_SQUEEZY_MONTHLY_VARIANT_ID || process.env.LEMON_SQUEEZY_VARIANT_ID;
+  if (interval === "quarterly") variantId = process.env.LEMON_SQUEEZY_QUARTERLY_VARIANT_ID || variantId;
+  if (interval === "yearly") variantId = process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID || variantId;
 
   if (!apiKey || !variantId) {
     throw new Error("Missing Lemon Squeezy environment variables");
