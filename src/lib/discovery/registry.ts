@@ -1,4 +1,4 @@
-import { greenhouseSource, leverSource, jobPostingSchemaSource } from "@/lib/discovery/sources/company-career";
+import { greenhouseSource, leverSource, ashbySource, jobPostingSchemaSource } from "@/lib/discovery/sources/company-career";
 import { employerFeedSource, universitySource, publicJobBoardSource } from "@/lib/discovery/sources/feeds";
 import { governmentSource } from "@/lib/discovery/sources/government";
 import { apiProviderSource } from "@/lib/discovery/sources/api-provider";
@@ -48,6 +48,7 @@ export const SOURCE_ADAPTERS: JobSourceAdapter[] = [
   workingNomadsSource,
   greenhouseSource,
   leverSource,
+  ashbySource,
   jobPostingSchemaSource,
   employerFeedSource,
   universitySource,

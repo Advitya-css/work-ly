@@ -77,6 +77,59 @@ interface LeverPosting {
   categories?: { location?: string; team?: string; commitment?: string };
 }
 
+
+
+interface AshbyPosting {
+  id?: string;
+  title?: string;
+  jobUrl?: string;
+  publishedAt?: string;
+  locationName?: string;
+  departmentName?: string;
+  employmentType?: string;
+  descriptionPlain?: string;
+}
+
+export const ashbySource: JobSourceAdapter = {
+  ...sourceDefaults,
+  kind: "COMPANY_CAREER",
+  id: "ashby",
+  name: "Ashby board",
+  legalBasis: "Ashby provides a public JSON endpoint (api.ashbyhq.com/posting-api/job-board/) intended for displaying open roles.",
+  requires: "The company's Ashby handle",
+
+  isConfigured(config) {
+    return typeof config.boardToken === "string" && config.boardToken.trim().length > 0;
+  },
+
+  async ingest(context: IngestContext): Promise<RawListing[]> {
+    const boardToken = String(context.config.boardToken ?? "").trim();
+    if (!boardToken) return [];
+
+    try {
+      const body = await fetchWithGuards(
+        `https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(boardToken)}`
+      );
+      const parsed = JSON.parse(body) as { jobs?: AshbyPosting[] };
+      const jobs = parsed.jobs ?? [];
+
+      return jobs.slice(0, context.limit).map((job) => ({
+        externalId: `ashby:${boardToken}:${job.id ?? job.jobUrl ?? job.title}`,
+        title: asString(job.title) ?? "Untitled role",
+        company: boardToken,
+        location: asString(job.locationName),
+        description: asString(job.descriptionPlain),
+        url: asString(job.jobUrl),
+        postedAt: asDate(job.publishedAt),
+        employmentTypeRaw: asString(job.employmentType),
+        industry: asString(job.departmentName),
+      }));
+    } catch {
+      return [];
+    }
+  },
+};
+
 export const leverSource: JobSourceAdapter = {
   ...sourceDefaults,
   kind: "COMPANY_CAREER",

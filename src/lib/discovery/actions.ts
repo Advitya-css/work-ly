@@ -72,6 +72,32 @@ export async function ensureDefaultSourcesAction() {
   }
 
   // All API providers to add (only if configured in env, though we can add them anyway so the user sees them and can configure them)
+  
+  // Target Company boards that have good supply for Indian tech roles
+  const targetCompanies = [
+    { name: "Postman", adapterId: "greenhouse", boardToken: "postman" },
+    { name: "DoorDash India", adapterId: "greenhouse", boardToken: "doordashindia" },
+    { name: "CRED", adapterId: "lever", boardToken: "cred" },
+    { name: "Ramp", adapterId: "ashby", boardToken: "ramp" },
+    { name: "Notion", adapterId: "ashby", boardToken: "notion" },
+    { name: "Atlassian", adapterId: "lever", boardToken: "atlassian" },
+    { name: "Swiggy", adapterId: "lever", boardToken: "swiggy" }
+  ];
+
+  for (const comp of targetCompanies) {
+    if (!existing.some(s => s.config?.boardToken === comp.boardToken)) {
+      const adapter = getAdapter(comp.adapterId);
+      if (adapter) {
+        await createSource(user.id, {
+          kind: adapter.kind,
+          name: comp.name + " (" + adapter.name + ")",
+          config: { adapterId: adapter.id, boardToken: comp.boardToken },
+          legalBasis: adapter.legalBasis,
+        });
+      }
+    }
+  }
+
   const apiIds = ["adzuna", "usajobs", "jooble", "reed", "findwork"];
   for (const id of apiIds) {
     if (!existing.some((s) => s.config?.adapterId === id)) {
