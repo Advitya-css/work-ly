@@ -29,6 +29,7 @@ import { SalaryNegotiatorCard } from "@/components/applications/salary-negotiato
 import { ResumeTailorCard } from "@/components/applications/resume-tailor-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
 import { FollowUpTemplateCard } from "@/components/applications/follow-up-template-card";
+import { AcceptOfferCard } from "@/components/applications/accept-offer-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { formatSalaryRange } from "@/lib/format";
@@ -143,7 +144,14 @@ export default async function ApplicationDetailPage({
           )}
 
           {application.status === "OFFER" && (
-            <SalaryNegotiatorCard applicationId={application.id} />
+            <>
+              <SalaryNegotiatorCard applicationId={application.id} />
+              <AcceptOfferCard
+                applicationId={application.id}
+                roleTitle={application.roleTitle}
+                company={application.company}
+              />
+            </>
           )}
 
           {application.reachedInterviewAt && (

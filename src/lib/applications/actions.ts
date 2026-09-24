@@ -127,32 +127,60 @@ export async function setApplicationStatusAction(
   if (!application) return;
   await setApplicationStatus(id, status);
 
-  // Feature: Auto-add to resume when hired
-  if (status === "OFFER") {
-    try {
-      const profile = await getCareerProfileByUserId(application.userId);
-      if (profile && application.company) {
-        // Prevent duplicates
-        const { rows } = await pool.query(
-          `SELECT id FROM experiences WHERE "careerProfileId" = $1 AND company = $2 AND title = $3 LIMIT 1`,
-          [profile.id, application.company, application.roleTitle]
-        );
-        if (rows.length === 0) {
-          await pool.query(
-            // The column is "title" - this used to insert into a "role"
-            // column that doesn't exist, so the insert always failed silently.
-            `INSERT INTO experiences (id, "careerProfileId", company, title, "startDate", "isCurrent", "updatedAt")
-             VALUES ($1, $2, $3, $4, now(), true, now())`,
-            [randomUUID(), profile.id, application.company, application.roleTitle]
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Failed to auto-add experience on hire", error);
-    }
-  }
+  // An offer is not a hire: it can still be negotiated or declined, so
+  // nothing is added to the profile here. acceptOfferAction does that when
+  // the user says they took the job.
 
   revalidateApplicationViews(id);
+}
+
+/**
+ * The user accepted this offer: add the role to their profile as their
+ * current job. Optionally marks their other current roles as ended today
+ * (most people leave the old job; some keep a side role, so it's a choice).
+ */
+export async function acceptOfferAction(
+  id: string,
+  options: { endOtherCurrentRoles?: boolean } = {},
+): Promise<{ ok: true; alreadyAdded: boolean } | { error: string }> {
+  const application = await requireOwnedApplication(id);
+  if (!application) return { error: "Application not found." };
+  if (application.status !== "OFFER") return { error: "Mark this application as an offer first." };
+
+  try {
+    const profile = await getCareerProfileByUserId(application.userId);
+    if (!profile) return { error: "Set up your career profile first." };
+    const company = application.company?.trim() || "Unknown company";
+
+    const { rows } = await pool.query(
+      `SELECT id FROM experiences WHERE "careerProfileId" = $1 AND company = $2 AND title = $3 LIMIT 1`,
+      [profile.id, company, application.roleTitle],
+    );
+    const alreadyAdded = rows.length > 0;
+
+    if (options.endOtherCurrentRoles) {
+      await pool.query(
+        `UPDATE experiences SET "isCurrent" = false, "endDate" = COALESCE("endDate", now()), "updatedAt" = now()
+         WHERE "careerProfileId" = $1 AND "isCurrent" = true AND NOT (company = $2 AND title = $3)`,
+        [profile.id, company, application.roleTitle],
+      );
+    }
+
+    if (!alreadyAdded) {
+      await pool.query(
+        `INSERT INTO experiences (id, "careerProfileId", company, title, location, "startDate", "isCurrent", source, "updatedAt")
+         VALUES ($1, $2, $3, $4, $5, now(), true, 'USER', now())`,
+        [randomUUID(), profile.id, company, application.roleTitle, application.location ?? null],
+      );
+    }
+
+    revalidateApplicationViews(id);
+    revalidatePath("/career-profile");
+    return { ok: true, alreadyAdded };
+  } catch (error) {
+    console.error("[workly] acceptOfferAction failed", error);
+    return { error: "Couldn't update your profile. Please try again." };
+  }
 }
 
 export async function updateApplicationAction(

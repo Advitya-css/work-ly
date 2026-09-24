@@ -71,7 +71,7 @@ function sourceLines(text: string | null | undefined): string[] {
 }
 
 const SYSTEM = `You tailor a candidate's EXISTING resume content to ONE job. You never add facts.
-For each ROLE (by its id), return 2-5 bullets ordered by relevance to the JOB. Each bullet has "basedOn" (one line copied exactly from that role's LINES) and "text" (the rewrite: strong past-tense verb - present tense only for an ongoing duty in a current role - the tool/domain this job cares about, the real outcome). KEEP EVERY NUMBER, metric and scale from the basedOn line exactly as written (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - they are the candidate's strongest proof, and a rewrite that drops them is worse than the original. Roles with no LINES get no bullets. You may skip weak or irrelevant lines, but never skip a line with a measurable result that is relevant to the JOB.
+For each ROLE (by its id), return bullets ordered by relevance to the JOB: 3-5 for R1 (the most recent role) and 2-4 for the others, fewer only when the role has fewer LINES. Each bullet has "basedOn" (one line copied exactly from that role's LINES) and "text" (the rewrite: strong past-tense verb - present tense only for an ongoing duty in a current role - the tool/domain this job cares about, the real outcome). KEEP EVERY NUMBER, metric and scale from the basedOn line exactly as written (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - they are the candidate's strongest proof, and a rewrite that drops them is worse than the original. Roles with no LINES get no bullets. You may skip weak or irrelevant lines, but never skip a line with a measurable result that is relevant to the JOB.
 For each PROJECT (by its id) that is relevant, return 1-2 bullets the same way; omit irrelevant projects.
 "skills": up to 14 names chosen ONLY from the SKILLS list, most relevant to the job first, copied exactly.
 "summary": 2-3 sentences positioning the candidate for this job using only real facts: their actual title, years of experience if given, the 2 most relevant tools, and their single strongest measurable result. No first person, no clichés ("results-driven", "passionate", "extensive experience").
@@ -221,6 +221,18 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
 
       for (const n of unsupportedNumbers(summary, candidate)) flagged.add(n);
 
+      const candidateText = normalizeForMatch(candidate);
+      const supported = (phrase: string) => {
+        const words = normalizeForMatch(phrase).split(" ").filter((w) => w.length > 2);
+        return words.length > 0 && words.every((w) => candidateText.includes(w.slice(0, Math.max(4, w.length - 2))));
+      };
+      const mentionsKnownSkill = (phrase: string) => {
+        const p = ` ${normalizeForMatch(phrase)} `;
+        return skillNames.some((name) => {
+          const n = normalizeForMatch(name);
+          return n.length > 1 && p.includes(` ${n} `);
+        });
+      };
       const list = (v: unknown, max: number) =>
         Array.isArray(v) ? v.map((x) => str(x, 80)).filter((x): x is string => Boolean(x)).slice(0, max) : [];
 
@@ -234,8 +246,12 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
           dates: dateRange(e.startDate, e.endDate, false),
         })),
         certifications: profile.certifications.map((c) => [c.name, c.issuer].filter(Boolean).join(", ")),
-        keywordsCovered: list(r.keywordsCovered, 10),
-        keywordsMissing: list(r.keywordsMissing, 8),
+        // "Covered" has to be literally supported by the candidate's own text -
+        // the model listed "forecasts" for someone who never forecast anything.
+        keywordsCovered: list(r.keywordsCovered, 16).filter((k) => supported(k)).slice(0, 10),
+        // And a "missing" phrase can't contradict a covered one ("Tableau,
+        // Looker, or similar tools" listed as missing next to Tableau and Looker).
+        keywordsMissing: list(r.keywordsMissing, 12).filter((k) => !supported(k) && !mentionsKnownSkill(k)).slice(0, 8),
         unverifiedNumbers: [],
       } satisfies TailoredResume;
     },

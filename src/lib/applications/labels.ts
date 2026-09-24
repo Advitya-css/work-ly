@@ -24,7 +24,9 @@ const DEFAULT_STATUS_LABEL: Record<ApplicationStatus, string> = {
   ASSESSMENT: "Assessment",
   INTERVIEW: "Interview",
   FINAL_INTERVIEW: "Final interview",
-  OFFER: "Got the job",
+  // "Offer", not "Got the job": an offer can still be negotiated or turned
+  // down. Accepting it is a separate, explicit step on the application page.
+  OFFER: "Offer",
   REJECTED: "Rejected",
   WITHDRAWN: "Withdrawn",
 };
@@ -36,7 +38,7 @@ const FREELANCE_STATUS_LABEL: Record<ApplicationStatus, string> = {
   ASSESSMENT: "Assessment",
   INTERVIEW: "Audition / Discussions",
   FINAL_INTERVIEW: "Final Discussions",
-  OFFER: "Booked / Hired",
+  OFFER: "Offer / Booked",
   REJECTED: "Passed",
   WITHDRAWN: "Withdrawn",
 };
@@ -68,12 +70,12 @@ export const APPLICATION_STATUS_VARIANT: Record<
 export const APPLICATION_OUTCOME_LABEL: Record<string, string> = {
   PENDING: "In progress",
   REJECTED: "Rejected",
-  OFFER: "Got the job",
+  OFFER: "Offer received",
   WITHDRAWN: "Withdrawn",
 };
 
 export function getApplicationOutcomeLabel(outcome: string, isFreelanceMode: boolean = false): string {
-  if (isFreelanceMode && outcome === "OFFER") return "Booked / Hired";
+  if (isFreelanceMode && outcome === "OFFER") return "Offer / Booked";
   if (isFreelanceMode && outcome === "REJECTED") return "Passed";
   return APPLICATION_OUTCOME_LABEL[outcome] ?? outcome;
 }
