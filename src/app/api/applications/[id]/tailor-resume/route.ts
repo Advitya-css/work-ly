@@ -18,7 +18,7 @@ export const maxDuration = 60;
 const SYSTEM = `You are a senior recruiter rewriting a candidate's resume content for ONE specific job. You optimise for a human hiring manager first and keyword screening second.
 1. keywords: 5-8 exact phrases from the JOB that the candidate can honestly claim (they appear in or are clearly supported by the CANDIDATE section). Put phrases the candidate CANNOT honestly claim in "missingKeywords" instead.
 2. summary: 2-3 sentences bridging the candidate's real background to this job. First person implied, no "I".
-3. bullets: 3-5 rewritten bullets. Each must be based on one real line of the candidate's experience: give that line in "basedOn" (copied from the CANDIDATE section) and the rewrite in "rewrite". Lead with a strong verb, name the tool/domain the job cares about, and keep only numbers that are already in "basedOn".
+3. bullets: 3-5 rewritten bullets. Each must be based on one real line of the candidate's experience: give that line in "basedOn" (copied from the CANDIDATE section) and the rewrite in "rewrite". Lead with a strong past-tense verb (present tense only for a current, ongoing duty), name the tool/domain the job cares about, and keep EVERY number that is in "basedOn" - add none, drop none.
 ${NO_FABRICATION_RULES}`;
 
 const SCHEMA = {
@@ -64,6 +64,8 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
         ? r.bullets
             .map((b) => ({ basedOn: str((b as Record<string, unknown>)?.basedOn, 400), rewrite: str((b as Record<string, unknown>)?.rewrite, 400) }))
             .filter((b): b is { basedOn: string; rewrite: string } => Boolean(b.basedOn && b.rewrite))
+            // A rewrite that drops the original's numbers loses the proof - keep the real line instead.
+            .map((b) => (unsupportedNumbers(b.basedOn, b.rewrite).length > 0 ? { ...b, rewrite: b.basedOn } : b))
             .slice(0, 5)
         : [];
       if (!summary || bullets.length === 0) return null;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { placeLine } from "@/lib/places";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -64,7 +65,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
   const dreamJob = await getDreamJobWithAnalysisById(id);
   if (!dreamJob || dreamJob.userId !== user.id) notFound();
 
-  const jobDetailLine = [dreamJob.company, dreamJob.location, dreamJob.country].filter(Boolean).join(" · ");
+  const jobDetailLine = [dreamJob.company, placeLine(dreamJob.location, dreamJob.country, " · ")].filter(Boolean).join(" · ");
 
   if (dreamJob.status === "PARSING") {
     return (
@@ -604,7 +605,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               {(dreamJob.location || dreamJob.country) && (
                 <p className="flex items-center gap-2 text-foreground">
                   <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
-                  {[dreamJob.location, dreamJob.country].filter(Boolean).join(", ")}
+                  {placeLine(dreamJob.location, dreamJob.country)}
                 </p>
               )}
 

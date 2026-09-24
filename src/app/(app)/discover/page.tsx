@@ -98,7 +98,18 @@ export default async function DiscoverPage() {
 
   const alert = buildAlert(latestRun, jobs);
   const targetRole = careerGoal?.primaryTargetRole ?? careerGoal?.targetRole ?? null;
-  const radar = buildMarketRadar({ jobs: rawJobs, skills: profile.skills, targetRole });
+  const evidenceText = [
+    ...profile.experiences.map((e) => `${e.title} ${e.description ?? ""}`),
+    ...profile.projects.map((p) => `${p.name} ${p.description ?? ""}`),
+    ...profile.achievements.map((a) => `${a.title} ${a.description ?? ""}`),
+  ].join("\n");
+  const radar = buildMarketRadar({
+    jobs: rawJobs,
+    skills: profile.skills,
+    targetRole,
+    otherRoles: careerGoal?.secondaryTargetRoles ?? [],
+    evidenceText,
+  });
 
   return (
     <div className="flex flex-col gap-6">

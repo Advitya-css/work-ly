@@ -114,7 +114,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
               </p>
               <div className="flex flex-col gap-3">
                 {actions.map(action => (
-                  <ActionCard key={action.id} action={action} />
+                  <ActionCard key={action.id} action={action} showControls={actions.length > 1} />
                 ))}
               </div>
             </div>

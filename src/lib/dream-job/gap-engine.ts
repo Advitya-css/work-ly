@@ -268,9 +268,27 @@ function buildCvImprovements(dreamJobLike: Job, profile: FullCareerProfile, fit:
   }
 
   const confirmed = profile.skills.filter((s) => !s.isTransferable);
+  // A skill named in a role, project or achievement IS backed by real work,
+  // whatever evidence level was stored for it. Without this, "SQL, dbt,
+  // Looker are self-stated" was reported for someone whose roles say
+  // "Built 40+ dbt models" and "scheduled SQL and Looker".
+  const workText = normalize(
+    [
+      ...profile.experiences.map((e) => `${e.title} ${e.description ?? ""}`),
+      ...profile.projects.map((p) => `${p.name} ${p.description ?? ""}`),
+      ...profile.achievements.map((a) => `${a.title} ${a.description ?? ""}`),
+    ].join(" "),
+  );
+  const namedInWork = (name: string) => {
+    const n = normalize(name);
+    return n.length > 0 && ` ${workText} `.includes(` ${n} `);
+  };
   const weaklyEvidenced = [...dreamJobLike.requiredSkills, ...dreamJobLike.preferredSkills]
     .map((name) => confirmed.find((s) => requirementSatisfiedBy(s.name, name)))
-    .filter((s): s is Skill => s != null && (s.evidenceLevel === "STATED" || s.evidenceLevel === "INFERRED"));
+    .filter(
+      (s): s is Skill =>
+        s != null && (s.evidenceLevel === "STATED" || s.evidenceLevel === "INFERRED") && !namedInWork(s.name),
+    );
   const uniqueWeak = Array.from(new Map(weaklyEvidenced.map((s) => [s.id, s])).values());
   if (uniqueWeak.length > 0) {
     improvements.push({
@@ -498,7 +516,7 @@ function skillLabelForProjectTitle(skillName: string): string {
 function projectTemplateFor(skillName: string, industry: string, roleTitle: string): { project: string; deliverables: string[]; skillsDemonstrated: string[] } {
   const label = skillLabelForProjectTitle(skillName);
   const n = normalize(skillName);
-  const ind = industry ? industry.toLowerCase() : "real-world";
+  const ind = industry ? industry.toLowerCase() : "realistic";
   const role = roleTitle ? roleTitle.toLowerCase() : "your target role";
 
   // Cloud & DevOps
@@ -566,8 +584,10 @@ function projectTemplateFor(skillName: string, industry: string, roleTitle: stri
 
   // Generic fallback with industry contextualization
   return {
-    project: `Build a small portfolio asset demonstrating ${label} applied to the ${ind} sector`,
-    deliverables: ["A working, publicly shared deliverable", `A short write-up of how this solves a problem in ${ind}`, "A portfolio entry with screenshots or a demo link"],
+    project: industry
+      ? `Build a small portfolio asset demonstrating ${label} applied to the ${ind} sector`
+      : `Build a small portfolio asset demonstrating ${label} on a realistic problem a ${role} would face`,
+    deliverables: ["A working, publicly shared deliverable", industry ? `A short write-up of how this solves a problem in ${ind}` : "A short write-up of the problem, your approach and the result", "A portfolio entry with screenshots or a demo link"],
     skillsDemonstrated: [skillName],
   };
 }

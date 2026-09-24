@@ -122,8 +122,25 @@ function profileRoleKeywords(profile: FullCareerProfile, careerGoal: CareerGoal 
     .map(normalize);
 }
 
-function matchSkills(coreSkills: string[], confirmed: Skill[]): string[] {
-  return coreSkills.filter((core) => confirmed.some((s) => requirementSatisfiedBy(s.name, core)));
+function stems(text: string): string[] {
+  return normalize(text)
+    .split(" ")
+    .filter((w) => w.length > 2)
+    .map((w) => w.slice(0, 5));
+}
+
+/**
+ * A core skill counts when it's a confirmed skill OR the candidate's own
+ * work text shows it ("Gathered requirements from stakeholders" shows
+ * "Requirements gathering"). Every significant word must appear.
+ */
+function matchSkills(coreSkills: string[], confirmed: Skill[], workText: string): string[] {
+  const workStems = new Set(stems(workText));
+  return coreSkills.filter((core) => {
+    if (confirmed.some((s) => requirementSatisfiedBy(s.name, core))) return true;
+    const need = stems(core);
+    return need.length > 0 && need.every((w) => workStems.has(w));
+  });
 }
 
 export function exploreCareers(params: {
@@ -136,6 +153,16 @@ export function exploreCareers(params: {
   const { profile, careerGoal, opportunities, currentTarget } = params;
   const confirmed = profile.skills.filter((s) => !s.isTransferable);
   const keywords = profileRoleKeywords(profile, careerGoal);
+  const workText = [
+    ...profile.experiences.map((e) => `${e.title} ${e.description ?? ""}`),
+    ...profile.projects.map((p) => `${p.name} ${p.description ?? ""}`),
+  ].join(" ");
+  // Roles they already hold or have held are not "adjacent careers".
+  const heldRoles = new Set(
+    [profile.profile?.currentRole, ...profile.experiences.map((e) => e.title)]
+      .filter((v): v is string => Boolean(v?.trim()))
+      .map(normalize),
+  );
   const results: AdjacentCareer[] = [];
   const seen = new Set<string>();
 
@@ -179,7 +206,7 @@ export function exploreCareers(params: {
   // --- Source 2: curated adjacencies --------------------------------------
   for (const entry of ADJACENCY_TABLE) {
     const key = normalize(entry.role);
-    if (seen.has(key)) continue;
+    if (seen.has(key) || heldRoles.has(key)) continue;
     if (currentTarget && key === normalize(currentTarget)) continue;
 
     // Whole words: "lead" must not match "team lead" in a sales role as if
@@ -190,7 +217,9 @@ export function exploreCareers(params: {
     );
     if (!isAdjacent) continue;
 
-    const matched = matchSkills(entry.coreSkills, confirmed);
+    const matched = matchSkills(entry.coreSkills, confirmed, workText);
+    // A 0/100 "adjacent career" is a different career, not a suggestion.
+    if (matched.length === 0) continue;
     // Indicative fit: how much of the role's core skill set they already
     // hold. Deliberately NOT presented with the same authority as a
     // measured fit - see isMeasured.

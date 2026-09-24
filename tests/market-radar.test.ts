@@ -57,3 +57,37 @@ describe("market radar", () => {
     expect(radar.sampleSize).toBe(6);
   });
 });
+
+describe("market radar field and evidence", () => {
+  const mk = (i: number, title: string, req: string[]) => job(10 + i, title, req);
+  const jobs = [
+    mk(1, "Analytics Engineer", ["SQL", "dbt", "communication"]),
+    mk(2, "Senior Analytics Engineer", ["sql", "dbt", "Python"]),
+    mk(3, "Analytics Engineer II", ["SQL", "Python"]),
+    mk(4, "Senior DevOps Engineer", ["Java", "AWS", "Kubernetes"]),
+    mk(5, "Backend Engineer", ["Java", "AWS"]),
+    mk(6, "Staff Analytics Engineer", ["SQL", "dbt"]),
+    mk(7, "Analytics Engineer", ["Python", "dbt"]),
+    mk(8, "Lead Analytics Engineer", ["SQL", "Python"]),
+  ];
+  it("counts only postings in the target's field", () => {
+    const radar = buildMarketRadar({ jobs, skills: [], targetRole: "Analytics Engineer", now });
+    expect(radar.sampleSize).toBe(6);
+    expect(radar.items.find((i) => i.skill === "Java")).toBeUndefined();
+  });
+  it("drops soft phrases and formats acronyms", () => {
+    const radar = buildMarketRadar({ jobs, skills: [], targetRole: "Analytics Engineer", now });
+    expect(radar.items.some((i) => i.skill.toLowerCase() === "communication")).toBe(false);
+    expect(radar.items.some((i) => i.skill === "SQL")).toBe(true);
+  });
+  it("counts a skill named in real work as shown even when stored as stated", () => {
+    const radar = buildMarketRadar({
+      jobs,
+      skills: [skill("Python", "STATED")],
+      targetRole: "Analytics Engineer",
+      evidenceText: "Built a churn model in Python (scikit-learn)",
+      now,
+    });
+    expect(radar.items.find((i) => i.skill === "Python")?.status).toBe("shown");
+  });
+});

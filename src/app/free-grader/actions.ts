@@ -6,6 +6,7 @@ import { screenPastedResume } from "@/lib/scoring/ai-evaluator";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getCurrentUser } from "@/lib/auth";
 
 /**
  * One free scan per device, enforced with a long-lived cookie rather than an
@@ -23,7 +24,16 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
   }
 
   const cookieStore = await cookies();
-  if (cookieStore.get(FREE_GRADER_COOKIE)) {
+  // The limit message promises "create a free account to keep scoring" -
+  // so a signed-in user is never held to the one-scan device cookie. They
+  // get a per-account hourly cap instead (the same cost control, keyed to
+  // them rather than to a browser).
+  const user = await getCurrentUser().catch(() => null);
+  if (user) {
+    if (!(await checkRateLimit(`free-grader-user:${user.id}`, 10, 60 * 60))) {
+      return { error: "You've run a lot of checks this hour. Please try again a little later." };
+    }
+  } else if (cookieStore.get(FREE_GRADER_COOKIE)) {
     return {
       error:
         "You've already used your free scan on this device. Create a free account to keep scoring resumes.",
@@ -70,7 +80,7 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
 
     // Only spend the visitor's one free scan on a request that actually
     // succeeded - a failed AI call shouldn't burn their only try.
-    cookieStore.set(FREE_GRADER_COOKIE, "1", {
+    if (!user) cookieStore.set(FREE_GRADER_COOKIE, "1", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

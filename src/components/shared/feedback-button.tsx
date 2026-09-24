@@ -52,6 +52,8 @@ export function FeedbackButton() {
         <Button
           variant="default"
           size="icon"
+          aria-label="Send feedback"
+          title="Send feedback"
           className="fixed bottom-5 left-4 md:left-[264px] h-10 w-10 md:h-12 md:w-12 rounded-full shadow-lg z-50 transition-transform hover:scale-110"
         >
           <MessageSquare className="size-5" />

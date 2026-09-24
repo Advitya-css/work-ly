@@ -95,7 +95,7 @@ export function AnalyticsPanel({
               <p className="text-xs text-muted-foreground">
                 You&apos;ve sent {insights.sentCount} application
                 {insights.sentCount === 1 ? "" : "s"}. Work-ly waits until{" "}
-                {INSIGHT_THRESHOLDS.MIN_SENT} before drawing any conclusions , {" "}
+                {INSIGHT_THRESHOLDS.MIN_SENT} before drawing any conclusions:{" "}
                 {insights.needed} more to go.
               </p>
               <p className="text-xs text-muted-foreground">

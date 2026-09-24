@@ -15,9 +15,10 @@ import {
 export const maxDuration = 60;
 
 const SYSTEM = `You are a senior recruiter preparing a candidate's application for ONE job.
-1. angle: one sentence - the single strongest, TRUE reason this candidate fits this job, citing their real experience.
-2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job. Skip a tweak rather than invent a "before".
-3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application.
+Write "angle" and "risks" TO the candidate in the second person ("You have...", "Your..."), never "the candidate".
+1. angle: one sentence - the single strongest, TRUE reason you fit this job, citing your real experience.
+2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job's language and priorities. The "after" MUST keep every number and metric in the "before" (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - a tweak that removes a real result makes the resume weaker, so skip it instead. Skip a tweak rather than invent a "before".
+3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application. Only name tools and platforms that literally appear in the CANDIDATE section.
 4. coverLetter: under 200 words, human, specific to this company and job, using only real facts. Use [Your Name] for the signature.
 ${NO_FABRICATION_RULES}`;
 
@@ -64,7 +65,10 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
               .filter((x): x is { a: string; b: string } => Boolean(x.a && x.b))
           : [];
       if (!angle || !coverLetter) return null;
-      return { angle, coverLetter, tweaks: pairs(r.tweaks, "before", "after").slice(0, 3), risks: pairs(r.risks, "risk", "howToAddress").slice(0, 3) };
+      return { angle, coverLetter, tweaks: pairs(r.tweaks, "before", "after")
+          // An "after" that loses the original's numbers is a downgrade, not a tweak.
+          .filter((t) => unsupportedNumbers(t.a, t.b).length === 0)
+          .slice(0, 3), risks: pairs(r.risks, "risk", "howToAddress").slice(0, 3) };
     },
   });
   if (!result) return NextResponse.json({ error: "Couldn't build a strategy right now. Please try again." }, { status: 502 });

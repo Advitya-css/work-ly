@@ -44,7 +44,7 @@ export function MarketRadarCard({ radar, targetRole }: { radar: MarketRadar; tar
           What employers are asking for
         </CardTitle>
         <CardDescription>
-          From {radar.sampleSize} {targetRole ? `${targetRole} ` : ""}postings Work-ly found in the last {radar.sinceDays}{" "}
+          From {radar.sampleSize} {targetRole ? `${targetRole} and related ` : ""}postings Work-ly found in the last {radar.sinceDays}{" "}
           days. Of the 10 most-asked-for skills, you show {radar.shownInTop10} in real work
           {radar.listedInTop10 > 0 ? `, only list ${radar.listedInTop10}` : ""}
           {missing > 0 ? `, and are missing ${missing}` : ""}.

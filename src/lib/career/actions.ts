@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth";
-import { upsertCareerProfile, setCareerProfilePublic } from "@/lib/db/career-profile";
+import { getOrCreateCareerProfile, upsertCareerProfile, setCareerProfilePublic } from "@/lib/db/career-profile";
 import { createCareerGoal, deleteCareerGoal, getCareerGoalById, updateCareerGoal } from "@/lib/db/career-goals";
 import { careerGoalSchema, careerProfileSchema } from "@/lib/validations/career";
 
@@ -167,7 +167,20 @@ import { markUserOnboarded } from "@/lib/db/users";
 export async function saveLocationAction(location: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
-  await upsertCareerProfile(user.id, { location });
+  // upsertCareerProfile overwrites the whole row: passing only the location
+  // used to erase the headline, summary, current role/company and years of
+  // experience the CV parse had just filled in - which then made every fit
+  // score treat the user as having no experience.
+  const current = await getOrCreateCareerProfile(user.id);
+  await upsertCareerProfile(user.id, {
+    headline: current.headline,
+    summary: current.summary,
+    location: location.trim() || current.location,
+    currentRole: current.currentRole,
+    currentCompany: current.currentCompany,
+    yearsExperience: current.yearsExperience,
+    skills: current.skills,
+  });
   await markUserOnboarded(user.id);
   revalidatePath("/career-profile");
   return { success: true };

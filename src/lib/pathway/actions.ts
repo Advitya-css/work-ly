@@ -9,7 +9,9 @@ import {
   getActionById,
   getPathwayById,
   getStepById,
+  listActionsForStep,
   setActionStatus,
+  setActionsStatusForStep,
   setStepStatus,
   updateActionContent,
   updateStepContent,
@@ -103,16 +105,24 @@ export async function setStepStatusAction(stepId: string, status: PathwayItemSta
   if (!step) return;
 
   await setStepStatus(stepId, status);
+  // A step and its action items are one piece of work. Completing the step
+  // used to leave its actions open, so the 30/60/90 plan still said "0 done".
+  await setActionsStatusForStep(stepId, status);
 
-  if (status === "COMPLETED" && step.relatedSkill) {
+  // Only a real skill name goes on the profile - not a requirement sentence
+  // like "Redshift hands-on experience; Databricks exposure preferred".
+  const skillName = step.relatedSkill?.trim() ?? "";
+  const looksLikeSkill = skillName.length > 0 && skillName.length <= 40 && !/[;:,.]/.test(skillName) && skillName.split(/\s+/).length <= 4;
+
+  if (status === "COMPLETED" && looksLikeSkill) {
     const pathway = await getPathwayById(step.pathwayId);
     if (pathway) {
       const profile = await getFullCareerProfile(pathway.userId);
       // Record the skill on the profile (as a self-stated skill - the user
       // ticked a box, they didn't upload proof), keyed by the PROFILE id.
       // This used to pass the user id, which isn't a career profile id.
-      if (profile.profile && !profile.skills.some((s) => s.name.toLowerCase() === step.relatedSkill!.toLowerCase())) {
-        await createSkill(profile.profile.id, { name: step.relatedSkill, proficiency: "BEGINNER" });
+      if (profile.profile && !profile.skills.some((s) => s.name.toLowerCase() === skillName.toLowerCase())) {
+        await createSkill(profile.profile.id, { name: skillName, proficiency: "BEGINNER" });
       }
 
       // Re-score readiness with the same engine the analysis used. This is
@@ -136,6 +146,22 @@ export async function setActionStatusAction(actionId: string, status: PathwayIte
   const action = await requireOwnedAction(actionId);
   if (!action) return;
   await setActionStatus(actionId, status);
+
+  // Keep the parent step in step: finishing its last open action finishes
+  // the step (with the step's own side effects), reopening one reopens it.
+  if (action.stepId) {
+    const siblings = await listActionsForStep(action.stepId);
+    const allDone = siblings.length > 0 && siblings.every((a) => a.status === "COMPLETED" || a.status === "SKIPPED");
+    const anyCompleted = siblings.some((a) => a.status === "COMPLETED");
+    const step = await getStepById(action.stepId);
+    if (step && allDone && anyCompleted && step.status !== "COMPLETED") {
+      await setStepStatusAction(action.stepId, "COMPLETED");
+      return;
+    }
+    if (step && status === "PENDING" && step.status !== "PENDING") {
+      await setStepStatus(action.stepId, "PENDING");
+    }
+  }
   revalidatePathwayViews();
 }
 

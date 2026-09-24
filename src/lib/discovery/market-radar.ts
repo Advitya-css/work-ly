@@ -1,5 +1,6 @@
 import type { DiscoveredJob, Skill } from "@/lib/db/types";
-import { requirementCore, requirementSatisfiedBy, canonical } from "@/lib/text-utils";
+import { requirementCore, requirementSatisfiedBy } from "@/lib/text-utils";
+import { titleIsRelevant } from "@/lib/discovery/relevance";
 
 /**
  * MARKET RADAR - what employers hiring for your target actually ask for,
@@ -37,30 +38,44 @@ const MAX_CORE_WORDS = 3;
 const NOT_A_SKILL = new Set([
   "english", "degree", "bachelor", "bachelors", "team", "teamwork", "work", "remote", "startup", "fast paced",
   "detail oriented", "self starter", "motivated", "passion", "passionate", "travel", "driving license",
+  "communication", "communication skills", "written communication", "collaboration", "problem solving",
+  "operations", "sales", "marketing", "leadership", "analytical", "analytical skills", "ownership", "curiosity",
 ]);
 
-/** Title words that mark level rather than the job itself - ignored when matching a posting to the target role. */
-const LEVEL_WORDS = new Set(["senior", "sr", "junior", "jr", "lead", "principal", "staff", "associate", "intern", "entry", "level", "mid", "i", "ii", "iii"]);
-
-function titleCore(title: string): Set<string> {
-  return new Set(canonical(title).split(" ").filter((w) => w.length > 1 && !LEVEL_WORDS.has(w)));
+/** How a skill is shown on the card: "sql" -> "SQL", "power bi" -> "Power BI", "tableau" -> "Tableau". */
+const DISPLAY: Record<string, string> = {
+  sql: "SQL", aws: "AWS", gcp: "GCP", "ci/cd": "CI/CD", "ci cd": "CI/CD", "power bi": "Power BI", etl: "ETL", elt: "ELT",
+  dbt: "dbt", api: "API", apis: "APIs", nlp: "NLP", llm: "LLM", llms: "LLMs", ml: "ML", ai: "AI", bi: "BI",
+  "a/b testing": "A/B testing", "a b testing": "A/B testing", javascript: "JavaScript", typescript: "TypeScript",
+  bigquery: "BigQuery", postgresql: "PostgreSQL", mysql: "MySQL", nosql: "NoSQL", pyspark: "PySpark", github: "GitHub",
+};
+function displaySkill(label: string): string {
+  const key = label.trim().toLowerCase();
+  if (DISPLAY[key]) return DISPLAY[key];
+  if (label !== key) return label; // the posting already capitalised it
+  return key.replace(/\b([a-z])/g, (c) => c.toUpperCase());
 }
 
-function relevantToTarget(job: DiscoveredJob, targetRole: string | null): boolean {
-  if (job.recommendation === "APPLY_NOW" || job.recommendation === "APPLY" || job.recommendation === "STRETCH") return true;
-  if (!targetRole) return false;
-  const target = titleCore(targetRole);
-  if (target.size === 0) return false;
-  const title = titleCore(job.title);
-  let hit = 0;
-  for (const w of target) if (title.has(w)) hit++;
-  return hit / target.size >= 0.5;
+function relevantToTarget(job: DiscoveredJob, targets: string[]): boolean {
+  if (job.recommendation === "APPLY_NOW" || job.recommendation === "APPLY") return true;
+  if (targets.length === 0) return job.recommendation === "STRETCH";
+  // Same field test Discover uses: "Senior DevOps Engineer" is not an
+  // Analytics Engineer posting just because both titles say "Engineer".
+  return titleIsRelevant(job.title, targets);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function buildMarketRadar(params: {
   jobs: DiscoveredJob[];
   skills: Skill[];
   targetRole: string | null;
+  /** Secondary target roles - postings for these count too. */
+  otherRoles?: string[];
+  /** The candidate's own role, project and achievement text. A skill named there counts as shown in real work. */
+  evidenceText?: string;
   now?: number;
 }): MarketRadar {
   const now = params.now ?? Date.now();
@@ -70,7 +85,7 @@ export function buildMarketRadar(params: {
       !j.isDismissed &&
       !j.duplicateOfId &&
       new Date(j.postedAt ?? j.discoveredAt).getTime() >= cutoff &&
-      relevantToTarget(j, params.targetRole),
+      relevantToTarget(j, [params.targetRole, ...(params.otherRoles ?? [])].filter((t): t is string => Boolean(t?.trim()))),
   );
 
   const counts = new Map<string, { count: number; label: string }>();
@@ -95,12 +110,14 @@ export function buildMarketRadar(params: {
     .slice(0, 12)
     .map(([core, v]) => {
       const match = confirmed.find((s) => requirementSatisfiedBy(s.name, core) || requirementSatisfiedBy(s.name, v.label));
+      const namedInWork = (name: string) =>
+        Boolean(params.evidenceText) && new RegExp(`(^|[^a-z0-9])${escapeRegExp(name.toLowerCase())}([^a-z0-9]|$)`).test(params.evidenceText!.toLowerCase());
       const status: RadarStatus = !match
         ? "missing"
-        : match.evidenceLevel === "DEMONSTRATED" || match.evidenceLevel === "CERTIFIED"
+        : match.evidenceLevel === "DEMONSTRATED" || match.evidenceLevel === "CERTIFIED" || namedInWork(match.name)
           ? "shown"
           : "listed";
-      return { skill: v.label, count: v.count, share: pool.length ? v.count / pool.length : 0, status };
+      return { skill: displaySkill(v.label), count: v.count, share: pool.length ? v.count / pool.length : 0, status };
     });
 
   const top10 = items.slice(0, 10);

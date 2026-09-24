@@ -120,9 +120,9 @@ export default async function CareerPathPage() {
           </div>
           <Progress value={progress.percent} label="Career pathway progress" />
           <p className="text-xs text-muted-foreground">
-            Readiness when this pathway was generated: {pathway.startingReadiness}/100 Candidate Fit.
-            Regenerate after completing steps to see it move. That number is a fit score, never a
-            hiring probability.
+            Current readiness: {pathway.startingReadiness}/100 Candidate Fit. It is re-checked each time you
+            complete a step, and moves most when you add the project or result to your profile. That number
+            is a fit score, never a hiring probability.
           </p>
         </CardContent>
       </Card>

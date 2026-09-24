@@ -353,6 +353,13 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
   );
 }
 
+/** "Industry" -> "industries", "Company" -> "companies", "Role" -> "roles", "Date" -> "dates". */
+function pluralLabel(label: string): string {
+  const l = label.toLowerCase();
+  if (/[^aeiou]y$/.test(l)) return `${l.slice(0, -1)}ies`;
+  return `${l}s`;
+}
+
 function FilterSelect({
   label,
   value,
@@ -370,10 +377,10 @@ function FilterSelect({
       <Label className="text-xs">{label}</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger size="sm" className="w-[140px]">
-          <SelectValue placeholder={`All ${label.toLowerCase()}s`} />
+          <SelectValue placeholder={`All ${pluralLabel(label)}`} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All {label.toLowerCase()}s</SelectItem>
+          <SelectItem value={ALL}>All {pluralLabel(label)}</SelectItem>
           {options.map((option) => (
             <SelectItem key={option} value={option}>
               {option}

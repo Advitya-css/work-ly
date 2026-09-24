@@ -9,7 +9,7 @@ export const ACTION_WINDOW_LABEL: Record<string, string> = {
 };
 
 export const ACTION_WINDOW_CAPTION: Record<string, string> = {
-  DAYS_0_30: "Start here: quick wins that improve every application.",
+  DAYS_0_30: "Start here: the work that begins this month.",
   DAYS_31_60: "Build on the groundwork with substantive work.",
   DAYS_61_90: "Longer-running work, then start applying in earnest.",
 };

@@ -282,6 +282,23 @@ export async function setActionStatus(id: string, status: PathwayItemStatus): Pr
   return mapAction(rows[0]);
 }
 
+/** Every action that belongs to one step, e.g. to keep them in sync with the step's own status. */
+export async function listActionsForStep(stepId: string): Promise<PathwayAction[]> {
+  const { rows } = await pool.query(`SELECT * FROM pathway_actions WHERE "stepId" = $1`, [stepId]);
+  return rows.map(mapAction);
+}
+
+export async function setActionsStatusForStep(stepId: string, status: PathwayItemStatus): Promise<void> {
+  await pool.query(
+    `UPDATE pathway_actions
+       SET status = $2::"PathwayItemStatus",
+           "completedAt" = CASE WHEN $2::text = 'COMPLETED' THEN now() ELSE NULL END,
+           "updatedAt" = now()
+     WHERE "stepId" = $1`,
+    [stepId, status],
+  );
+}
+
 export async function updateStepContent(
   id: string,
   fields: { title?: string; description?: string; note?: string | null },

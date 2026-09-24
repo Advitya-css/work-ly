@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { placeLine } from "@/lib/places";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -70,7 +71,7 @@ export default async function ApplicationDetailPage({
   if (!application || application.userId !== user.id) notFound();
 
   const { job, opportunity } = application;
-  const detailLine = [application.company, application.location, application.country]
+  const detailLine = [application.company, placeLine(application.location, application.country, " · ")]
     .filter(Boolean)
     .join(" · ");
   const offeredSalary = formatSalaryRange(
@@ -256,7 +257,7 @@ export default async function ApplicationDetailPage({
               {(application.location || application.country) && (
                 <p className="flex items-center gap-2 text-foreground">
                   <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
-                  {[application.location, application.country].filter(Boolean).join(", ")}
+                  {placeLine(application.location, application.country)}
                 </p>
               )}
               {application.dateApplied && (

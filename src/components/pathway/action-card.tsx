@@ -23,7 +23,12 @@ import { setActionStatusAction, updateActionAction } from "@/lib/pathway/actions
 import { DIFFICULTY_VARIANT, ITEM_STATUS_LABEL, ITEM_STATUS_VARIANT } from "@/lib/pathway/labels";
 import type { PathwayAction } from "@/lib/db/types";
 
-export function ActionCard({ action }: { action: PathwayAction }) {
+/**
+ * `showControls` is false when the card sits inside a step that has only
+ * this one action: the step's own Complete / Skip / Edit / Note buttons
+ * already cover it, and showing both sets read as a duplicated card.
+ */
+export function ActionCard({ action, showControls = true }: { action: PathwayAction; showControls?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -63,7 +68,11 @@ export function ActionCard({ action }: { action: PathwayAction }) {
           {action.estimatedTime}
         </Badge>
         <Badge variant={DIFFICULTY_VARIANT[action.difficulty] ?? "outline"}>{action.difficulty}</Badge>
-        {action.relatedSkill && <Badge variant="secondary">{action.relatedSkill}</Badge>}
+        {action.relatedSkill && (
+          <Badge variant="secondary" className="max-w-full whitespace-normal break-words text-left">
+            {action.relatedSkill}
+          </Badge>
+        )}
       </div>
 
       <p className="text-xs text-muted-foreground">
@@ -84,7 +93,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
         </p>
       )}
 
-      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+      {showControls && <div className="mt-1 flex flex-wrap items-center gap-1.5">
         {action.status !== "COMPLETED" && (
           <Button
             type="button"
@@ -143,7 +152,7 @@ export function ActionCard({ action }: { action: PathwayAction }) {
           <StickyNote />
           {action.note ? "Edit note" : "Add note"}
         </Button>
-      </div>
+      </div>}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
