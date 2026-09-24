@@ -555,10 +555,12 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-foreground">{SCORE_COMPONENT_LABEL[key]}</span>
                       <span className="text-muted-foreground">
-                        {roundForDisplay(c.score)}/{c.maxScore} · {c.weight}% weight
+                        {"confidence" in c && c.confidence === "unavailable" ? `Not scored · ${c.weight}% weight` : `${roundForDisplay(c.score)}/${c.maxScore} · ${c.weight}% weight`}
                       </span>
                     </div>
-                    <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    {!("confidence" in c && c.confidence === "unavailable") && (
+                      <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    )}
                     <p className="text-xs text-muted-foreground">{c.reasoning}</p>
                   </div>
                 );

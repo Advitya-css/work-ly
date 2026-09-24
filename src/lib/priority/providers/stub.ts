@@ -1,4 +1,5 @@
 import type { CareerGoal, Job, JobAnalysis, PriorityBreakdown } from "@/lib/db/types";
+import { placeMatches, remoteAllowsCountry } from "@/lib/places";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 import type { PriorityProvider, PriorityResult } from "@/lib/priority/types";
 import {
@@ -282,6 +283,10 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
     if (job.country && countries.length > 0 && !countries.some((c) => countryMatches(c, job.country))) {
       return component(0.2 * WEIGHTS.location, WEIGHTS.location, `Remote, but restricted to ${job.country}, which isn't one of your target countries.`);
     }
+    const home = profile.profile?.location ?? "";
+    if (remoteAllowsCountry(job.location, job.country, [...countries, home].filter(Boolean)) === false) {
+      return component(0.2 * WEIGHTS.location, WEIGHTS.location, `Remote, but only open to people in ${job.location}.`);
+    }
     return assumed(WEIGHTS.location, WEIGHTS.location, "This role is remote, so location is not a constraint.");
   }
 
@@ -306,8 +311,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   
   if (job.location && (preferredLocations.length > 0 || home)) {
     const candidates = [home, ...preferredLocations].filter(Boolean) as string[];
-    const loc = job.location.toLowerCase();
-    checks.push(candidates.some((l) => loc.includes(l.toLowerCase()) || l.toLowerCase().includes(loc)));
+    checks.push(candidates.some((l) => placeMatches(l, job.location, job.country)));
   }
   
   if (job.country && countries.length > 0) {

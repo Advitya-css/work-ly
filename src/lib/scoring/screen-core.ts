@@ -447,7 +447,7 @@ export function combineScreen(params: {
 
   const sg = weightedRatio(skillsGroup);
   const skills: ScoreComponent = sg
-    ? component(sg.ratio * WEIGHTS.skills, WEIGHTS.skills, groupReasoning("key requirements", sg))
+    ? component(sg.ratio * WEIGHTS.skills, WEIGHTS.skills, groupReasoning("skill requirements (required and preferred)", sg))
     : unavailable(WEIGHTS.skills, "Work-ly could not verify this role's skill requirements either way from your profile.");
 
   const eg = weightedRatio(expGroup);

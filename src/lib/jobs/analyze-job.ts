@@ -90,6 +90,16 @@ export async function submitJob(userId: string, input: SubmitJobInput): Promise<
 }
 
 /** Step 2: parse the raw text into structured fields (AI or heuristic - see lib/ai/job-parser.ts). */
+/** Where the posting came from: the link's site when there is one (a tracked Discover listing, a URL), else "Pasted by user". */
+function sourceHost(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 export async function parseJob(jobId: string, userId: string): Promise<Job> {
   const job = await getJobById(userId, jobId);
   if (!job || job.userId !== userId) throw new Error("Job not found.");
@@ -136,7 +146,7 @@ export async function parseJob(jobId: string, userId: string): Promise<Job> {
       industry: extracted.industry,
       deadline: parseDate(extracted.deadline),
       datePosted: parseDate(extracted.datePosted),
-      source: job.inputMethod === "URL" ? new URL(job.url ?? "").hostname : "Pasted by user",
+      source: sourceHost(job.url) ?? "Pasted by user",
       requiredSkills: extracted.requiredSkills,
       preferredSkills: extracted.preferredSkills,
       requirements: extracted.requirements,

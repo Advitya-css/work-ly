@@ -1,5 +1,6 @@
 "use client";
 
+import { resolvePlace } from "@/lib/places";
 import { useState, useTransition } from "react";
 import { Plus, Pencil } from "lucide-react";
 
@@ -57,6 +58,39 @@ const STATUSES = [
   { value: "PAUSED", label: "Paused" },
   { value: "ARCHIVED", label: "Archived" },
 ] as const;
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  india: "INR",
+  "united states": "USD",
+  "united kingdom": "GBP",
+  canada: "CAD",
+  australia: "AUD",
+  "new zealand": "NZD",
+  singapore: "SGD",
+  "united arab emirates": "AED",
+  germany: "EUR",
+  france: "EUR",
+  netherlands: "EUR",
+  ireland: "EUR",
+  spain: "EUR",
+  italy: "EUR",
+  austria: "EUR",
+  belgium: "EUR",
+  portugal: "EUR",
+  poland: "PLN",
+  switzerland: "CHF",
+  sweden: "SEK",
+  denmark: "DKK",
+  brazil: "BRL",
+  mexico: "MXN",
+  "south africa": "ZAR",
+};
+
+/** A sensible currency default from where the user lives, instead of USD for everyone. */
+function currencyForPlace(place: string | null | undefined): string {
+  const [country] = resolvePlace(place).countries;
+  return (country && COUNTRY_CURRENCY[country]) || "USD";
+}
 
 export function NewCareerGoalDialog({ goal, homeLocation }: { goal?: CareerGoal; homeLocation?: string | null }) {
   const [open, setOpen] = useState(false);
@@ -304,7 +338,7 @@ export function NewCareerGoalDialog({ goal, homeLocation }: { goal?: CareerGoal;
                 id="goal-salary-currency"
                 name="salaryCurrency"
                 placeholder="USD"
-                defaultValue={goal?.salaryCurrency ?? "USD"}
+                defaultValue={goal?.salaryCurrency ?? currencyForPlace(homeLocation)}
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 // Imported from text-utils rather than discovery/normalize or
 // scoring/shared: both of those are server-only, and this engine runs in
 // the browser on every keystroke. Same implementations, no server bundle.
+import { placeMatches } from "@/lib/places";
 import { canonical, countryMatches, requirementSatisfiedBy } from "@/lib/text-utils";
 import { cosineSimilarity, localEmbed } from "@/lib/search/embeddings";
 import { expandQuery, type QueryExpansion } from "@/lib/search/role-graph";
@@ -154,7 +155,8 @@ export function filterJobs(jobs: DiscoveredJob[], filters: JobFilters): Discover
     }
     if (
       filters.location &&
-      !canonical(`${job.location ?? ""} ${job.country ?? ""}`).includes(canonical(filters.location))
+      !canonical(`${job.location ?? ""} ${job.country ?? ""}`).includes(canonical(filters.location)) &&
+      !placeMatches(filters.location, job.location, job.country)
     ) {
       return false;
     }

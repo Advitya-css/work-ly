@@ -1,5 +1,6 @@
 "use client";
 
+import { placeLine } from "@/lib/places";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { ScrambleText } from "@/components/shared/scramble-text";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -330,7 +331,7 @@ export function DiscoveryBoard({
         <Alert>
           <Sparkles className="size-4" />
           <AlertDescription>
-            <span className="font-medium text-purple-600">✨ AI Thought Translation: </span> Based on your interest, we scraped the web for: 
+            <span className="font-medium text-primary">Searched for: </span>
             {lastSearchTermsUsed.join(", ")}.
           </AlertDescription>
         </Alert>
@@ -578,7 +579,7 @@ function DiscoveryCard({
               {isNewListing(job) && <Badge variant="success">New</Badge>}
             </div>
             <p className="text-xs text-muted-foreground truncate">
-              {[job.company, job.location, job.country].filter(Boolean).join(" · ") || "-"}
+              {[job.company, placeLine(job.location, job.country, " · ")].filter(Boolean).join(" · ") || "-"}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5">

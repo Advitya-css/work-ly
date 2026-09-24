@@ -1,5 +1,6 @@
 import "server-only";
 
+import { titleIsRelevant } from "@/lib/discovery/relevance";
 import { scoringProvider } from "@/lib/scoring";
 import { getFullCareerProfile, type FullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
@@ -430,9 +431,27 @@ export async function runDiscovery(
       }
     }
 
+    // --- Field gate: drop listings from a different field entirely -------
+    // (copywriters for a "BI Analyst" search). Company-targeted sources are
+    // exempt - the user asked for everything that company has.
+    const relevanceTargets = [
+      query,
+      ...searchTermsUsed,
+      ...expansion.expandedRoles.map((r) => r.role),
+      careerGoal?.primaryTargetRole,
+      careerGoal?.targetRole,
+      ...(careerGoal?.secondaryTargetRoles ?? []),
+      profile.profile?.currentRole,
+    ];
+    const inField = collected.filter(
+      (c) => c.sourceConfigId.startsWith("dynamic-") || titleIsRelevant(c.listing.title, relevanceTargets),
+    );
+    const offField = collected.length - inField.length;
+    if (offField > 0) console.info(`[workly:discovery] skipped ${offField} off-field listing(s) of ${collected.length}`);
+
     // --- Cross-source dedup, then against what's already stored ----------
     const accepted: typeof collected = [];
-    for (const candidate of collected) {
+    for (const candidate of inField) {
       const clashesInBatch = accepted.find(
         (other) =>
           isDuplicate(candidate.listing, {

@@ -1,3 +1,5 @@
+import { placeMatches, remoteAllowsCountry, resolvePlace } from "@/lib/places";
+
 /**
  * Whether a job's location satisfies a user's stated location preferences:
  * a home base, any other places they said they would work, and whether
@@ -29,25 +31,18 @@ export function matchesLocationPreference(
 
   const isRemote = workMode === "REMOTE" || (jobLocation && jobLocation.toLowerCase().includes("remote"));
   if (isRemote && !preference.openToRemote) return false;
+  // Remote, but only for people somewhere else ("USA, Canada", "Europe").
+  if (isRemote && remoteAllowsCountry(jobLocation, null, candidates) === false) return false;
   if (workMode === "REMOTE") return true;
   if (candidates.length === 0) return true;
   if (!jobLocation?.trim()) return true;
+  // "Remote" / "Anywhere (Remote)" with no place named: the user is open to remote, so it fits.
+  if (isRemote) {
+    const place = resolvePlace(jobLocation);
+    if (place.cities.size === 0 && place.countries.size === 0) return true;
+  }
 
-  const text = jobLocation.toLowerCase();
-  return candidates.some((candidate) => {
-    const c = candidate.toLowerCase().trim();
-    if (!c) return false;
-    if (text.includes(c) || c.includes(text)) return true;
-    
-    const textWords = text.split(/[\s,]+/).filter(w => w.length > 3);
-    const cWords = c.split(/[\s,]+/).filter(w => w.length > 3);
-    
-    for (const w of cWords) {
-      if (textWords.includes(w)) return true;
-    }
-    
-    return false;
-  });
+  return candidates.some((candidate) => placeMatches(candidate, jobLocation));
 }
 
 /** Home base plus willing-to-work places, deduped. */

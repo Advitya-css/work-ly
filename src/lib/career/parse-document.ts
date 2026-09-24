@@ -20,7 +20,17 @@ import { storageProvider } from "@/lib/storage";
 
 function parseDate(value: string | undefined): Date | null {
   if (!value) return null;
-  const parsed = new Date(value);
+  const v = value.trim();
+  if (!v || /^(present|current|now|ongoing|till date|to date)$/i.test(v)) return null;
+  // "2016" or "2016-09": pin to the middle of the day in UTC so the stored
+  // month never drifts a day backwards into the previous month/year in a
+  // negative-offset timezone.
+  const ym = /^(\d{4})(?:-(\d{1,2}))?$/.exec(v);
+  if (ym) {
+    const month = ym[2] ? Math.min(12, Math.max(1, Number(ym[2]))) - 1 : 0;
+    return new Date(Date.UTC(Number(ym[1]), month, 1, 12));
+  }
+  const parsed = new Date(v);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
@@ -194,17 +204,29 @@ export async function parseDocumentAndBuildProfile(
         ? extraction.yearsExperience
         : profile.yearsExperience;
 
+    // Same fill-only-blanks rule for where they live and what they do now:
+    // a CV that says "Bengaluru" and lists a current role used to leave
+    // Home location, Current role and Current company empty, so location
+    // matching and every "your current role" prompt started from nothing.
+    const currentExperience = extraction.experience.find((e) => e.isCurrent && e.title && e.company);
+    const nextLocation = profile.location || extraction.location?.trim() || null;
+    const nextCurrentRole = profile.currentRole || currentExperience?.title || null;
+    const nextCurrentCompany = profile.currentCompany || currentExperience?.company || null;
+
     if (
       nextHeadline !== profile.headline ||
       nextSummary !== profile.summary ||
-      nextYearsExperience !== profile.yearsExperience
+      nextYearsExperience !== profile.yearsExperience ||
+      nextLocation !== profile.location ||
+      nextCurrentRole !== profile.currentRole ||
+      nextCurrentCompany !== profile.currentCompany
     ) {
       await upsertCareerProfile(userId, {
         headline: nextHeadline,
         summary: nextSummary,
-        location: profile.location,
-        currentRole: profile.currentRole,
-        currentCompany: profile.currentCompany,
+        location: nextLocation,
+        currentRole: nextCurrentRole,
+        currentCompany: nextCurrentCompany,
         yearsExperience: nextYearsExperience,
         skills: profile.skills,
       });

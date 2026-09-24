@@ -39,12 +39,44 @@ const WORK_MODE_PATTERNS: [RegExp, WorkMode][] = [
 const SENIORITY_PATTERNS: [RegExp, SeniorityLevel][] = [
   [/\b(chief|c[eto]o|vp|vice president|head of|director)\b/i, "EXECUTIVE"],
   [/\bprincipal\b/i, "PRINCIPAL"],
-  [/\b(staff|lead|manager)\b/i, "LEAD"],
+  // "Manager" alone is not a level: Account/Office/Community Managers are
+  // individual contributors. Only people-management phrasing counts.
+  [/\b(staff|lead|engineering manager|people manager|team manager|manager of)\b/i, "LEAD"],
   [/\bsenior|snr|sr\.?\b/i, "SENIOR"],
   [/\b(junior|jnr|jr\.?|associate)\b/i, "JUNIOR"],
   [/\b(intern|graduate|entry[\s-]?level|trainee|apprentice)\b/i, "ENTRY"],
   [/\b(mid[\s-]?level|intermediate)\b/i, "MID"],
 ];
+
+/**
+ * What a DESCRIPTION may say about level. Much stricter than the title
+ * patterns: descriptions mention "our leadership team", "lead generation",
+ * "report to the manager" or "senior stakeholders" all the time, and the
+ * loose patterns tagged freelance writers and office assistants as LEAD or
+ * SENIOR - which then told users an office-assistant job was "one level up".
+ */
+const DESCRIPTION_SENIORITY_PATTERNS: [RegExp, SeniorityLevel][] = [
+  [/\b(entry[\s-]?level|no (?:prior )?experience (?:required|needed)|fresh(?:er|ers)?\b|new grads?|graduate program)/i, "ENTRY"],
+  [/\b(senior[\s-]?level|seniority:\s*senior)\b/i, "SENIOR"],
+  [/\b(mid[\s-]?level|seniority:\s*mid)\b/i, "MID"],
+  [/\b(junior[\s-]?level|seniority:\s*junior)\b/i, "JUNIOR"],
+];
+
+/** "5+ years of experience" -> a level. The smallest number stated is the floor the posting asks for. */
+function seniorityFromYears(text: string | null | undefined): SeniorityLevel | null {
+  if (!text) return null;
+  const matches = Array.from(
+    text.matchAll(/\b(\d{1,2})\s*\+?\s*(?:(?:-|–|to)\s*\d{1,2}\s*)?(?:years?|yrs?)(?:\s+of)?\s+(?:professional\s+|relevant\s+|work\s+|industry\s+|hands[\s-]on\s+)?experience/gi),
+  );
+  if (matches.length === 0) return null;
+  const years = Math.min(...matches.map((m) => Number(m[1])).filter((n) => n <= 20));
+  if (!Number.isFinite(years)) return null;
+  if (years <= 1) return "ENTRY";
+  if (years <= 2) return "JUNIOR";
+  if (years <= 4) return "MID";
+  if (years <= 7) return "SENIOR";
+  return "LEAD";
+}
 
 function matchFirst<T>(text: string | null | undefined, patterns: [RegExp, T][]): T | null {
   if (!text) return null;
@@ -171,7 +203,8 @@ export function normalizeListing(raw: RawListing): NormalizedListing {
   const seniority =
     matchFirst(raw.seniorityRaw, SENIORITY_PATTERNS) ??
     matchFirst(raw.title, SENIORITY_PATTERNS) ??
-    matchFirst(description, SENIORITY_PATTERNS);
+    matchFirst(description, DESCRIPTION_SENIORITY_PATTERNS) ??
+    seniorityFromYears(description);
 
   const salaryStated =
     raw.salaryMin != null || raw.salaryMax != null

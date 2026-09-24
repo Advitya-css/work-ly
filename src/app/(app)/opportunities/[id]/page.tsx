@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { placeLine } from "@/lib/places";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -72,7 +73,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const { job, analysis } = opportunity;
   if (!analysis) notFound();
 
-  const jobDetailLine = [job.company, job.location, job.country].filter(Boolean).join(" · ");
+  const jobDetailLine = [job.company, placeLine(job.location, job.country, " · ")].filter(Boolean).join(" · ");
   const fitBreakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const priorityBreakdown = opportunity.priorityBreakdown;
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
@@ -368,10 +369,12 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-foreground">{PRIORITY_COMPONENT_LABEL[key]}</span>
                       <span className="text-muted-foreground">
-                        {roundForDisplay(c.score)}/{c.maxScore} · {c.weight}% weight
+                        {"confidence" in c && c.confidence === "unavailable" ? `Not scored · ${c.weight}% weight` : `${roundForDisplay(c.score)}/${c.maxScore} · ${c.weight}% weight`}
                       </span>
                     </div>
-                    <Progress value={pct} label={`${PRIORITY_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    {!("confidence" in c && c.confidence === "unavailable") && (
+                      <Progress value={pct} label={`${PRIORITY_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    )}
                     <p className="text-xs text-muted-foreground">{c.reasoning}</p>
                   </div>
                 );
@@ -395,10 +398,12 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-foreground">{SCORE_COMPONENT_LABEL[key]}</span>
                       <span className="text-muted-foreground">
-                        {roundForDisplay(c.score)}/{c.maxScore} · {c.weight}% weight
+                        {"confidence" in c && c.confidence === "unavailable" ? `Not scored · ${c.weight}% weight` : `${roundForDisplay(c.score)}/${c.maxScore} · ${c.weight}% weight`}
                       </span>
                     </div>
-                    <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    {!("confidence" in c && c.confidence === "unavailable") && (
+                      <Progress value={pct} label={`${SCORE_COMPONENT_LABEL[key]}: ${roundForDisplay(c.score)} of ${c.maxScore}`} />
+                    )}
                     <p className="text-xs text-muted-foreground">{c.reasoning}</p>
                   </div>
                 );
@@ -421,7 +426,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
               {(job.location || job.country) && (
                 <p className="flex items-center gap-2 text-foreground">
                   <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
-                  {[job.location, job.country].filter(Boolean).join(", ")}
+                  {placeLine(job.location, job.country)}
                 </p>
               )}
               {job.deadline && (

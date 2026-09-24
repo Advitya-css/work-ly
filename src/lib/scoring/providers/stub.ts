@@ -10,6 +10,7 @@ import type {
   ScoreBreakdown,
   Skill,
 } from "@/lib/db/types";
+import { placeMatches, remoteAllowsCountry } from "@/lib/places";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 import type { JobFitAnalysis, ScoringProvider } from "@/lib/scoring/types";
 import {
@@ -395,6 +396,12 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
     if (job.country && countries.length > 0 && !countries.some((c) => countryMatches(c, job.country))) {
       return component(0, WEIGHTS.location, `Remote, but restricted to ${job.country}, which isn't one of your target countries.`);
     }
+    // "Remote · USA, Canada" is not open to someone in India. The location
+    // line used to be ignored for remote roles, so every one of these was
+    // called "broadly location-compatible".
+    if (remoteAllowsCountry(job.location, job.country, [...countries, home ?? ""].filter(Boolean)) === false) {
+      return component(0, WEIGHTS.location, `Remote, but only open to people in ${job.location}.`);
+    }
     if (workModes.length > 0 && !workModes.includes("REMOTE")) {
       return component(0.4 * WEIGHTS.location, WEIGHTS.location, "This role is remote, but you said you want on-site or hybrid work.");
     }
@@ -419,8 +426,7 @@ function scoreLocation(job: Job, profile: FullCareerProfile, careerGoal: CareerG
   if (job.workMode && workModes.length > 0) checks.push(workModes.includes(job.workMode));
   if (job.location && (preferredLocations.length > 0 || home)) {
     const candidates = [home, ...preferredLocations].filter(Boolean) as string[];
-    const loc = job.location.toLowerCase();
-    checks.push(candidates.some((c) => loc.includes(c.toLowerCase()) || c.toLowerCase().includes(loc)));
+    checks.push(candidates.some((c) => placeMatches(c, job.location, job.country)));
   }
   if (job.country && countries.length > 0) {
     checks.push(countries.some((x) => countryMatches(x, job.country)));
@@ -706,6 +712,12 @@ function classifyGaps(params: {
   return gaps;
 }
 
+/** 2.5 -> "2.5", 3 -> "3": requirement counts rounded to the nearest half. */
+function formatHalves(n: number): string {
+  const r = Math.round(n * 2) / 2;
+  return Number.isInteger(r) ? String(r) : r.toFixed(1);
+}
+
 /**
  * The recommendation.
  *
@@ -756,7 +768,7 @@ export function buildRecommendation(
 
   const basis =
     mandatoryMetRatio != null
-      ? `You clearly meet ${Math.round(mandatoryMetRatio * 100)}% of the ${checkedCount} mandatory requirement${checkedCount === 1 ? "" : "s"} Work-ly could check, with a Candidate Fit of ${fitScore}/100.`
+      ? `Counting partial matches as half, you meet ${formatHalves(mandatoryMetRatio * checkedCount)} of the ${checkedCount} mandatory requirement${checkedCount === 1 ? "" : "s"} Work-ly could check, with a Candidate Fit of ${fitScore}/100.`
       : `Work-ly could not verify any mandatory requirements automatically. Candidate Fit is ${fitScore}/100.`;
 
   // With no requirement signal, decide on fit alone rather than on an
