@@ -63,7 +63,7 @@ export function UpgradeModal({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md overflow-hidden">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto sm:max-w-md">
         <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
           <Sparkles className="size-32" />
         </div>
