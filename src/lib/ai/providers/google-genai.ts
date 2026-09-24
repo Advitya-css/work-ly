@@ -67,24 +67,25 @@ function toGeminiSchema(schema: any): any {
 export const googleGenAIProvider: AIProvider = {
   name: "google-genai",
   async complete(request: AICompletionRequest): Promise<AICompletionResult> {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
+    const primaryApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
+    const fallbackApiKey = process.env.AI_FALLBACK_API_KEY?.trim() || (primaryApiKey as string);
     const model = process.env.AI_MODEL ?? "gemini-3.5-flash-lite";
 
-    if (!apiKey) {
+    if (!primaryApiKey) {
       throw new Error("A Google API Key (GOOGLE_GENERATIVE_AI_API_KEY, GOOGLE_API_KEY, or AI_API_KEY) is required for Google GenAI.");
     }
 
     if (!loggedConfig) {
       loggedConfig = true;
-      console.info(`[workly:ai] live Google GenAI calls enabled: model=${model} key=***${apiKey.slice(-4)}`);
+      console.info(`[workly:ai] live Google GenAI calls enabled: model=${model} key=***${primaryApiKey.slice(-4)}`);
     }
 
     // Optional second model for when the first is out of quota (HTTP 429) or
     // overloaded (503): free-tier limits are per model, so a sibling model
     // usually still has room. Only used when AI_FALLBACK_MODEL is set.
-    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || null;
-    const urlFor = (m: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
-    let url = urlFor(model);
+    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || model;
+    const urlFor = (m: string, key: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
+    let url = urlFor(model, primaryApiKey);
     let usingFallback = false;
     
     // Map messages
@@ -145,10 +146,10 @@ export const googleGenAIProvider: AIProvider = {
       if (!response.ok) {
         const responseBody = await response.text();
         console.error(`[workly:ai] request failed ${response.status} against Google API (model=${model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
-        if ((response.status === 429 || response.status === 503) && fallbackModel && !usingFallback && canRetry(attempt)) {
-          console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model ${fallbackModel}`);
+        if ((response.status === 429 || response.status === 503) && !usingFallback && (process.env.AI_FALLBACK_MODEL || process.env.AI_FALLBACK_API_KEY) && canRetry(attempt)) {
+          console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model/key`);
           usingFallback = true;
-          url = urlFor(fallbackModel);
+          url = urlFor(fallbackModel, fallbackApiKey);
           lastError = new Error(`AI provider request failed (${response.status})`);
           continue;
         }
