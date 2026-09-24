@@ -136,8 +136,8 @@ export function UpgradeModal({
             </button>
           </div>
 
-          <Button onClick={handleUpgrade} disabled={loading} size="lg" className="w-full mt-2 gap-2">
-            {loading ? <WorklyLoader className="size-4 animate-spin" /> : <>Get Access <ArrowRight className="size-4" /></>}
+          <Button disabled variant="outline" size="lg" className="w-full mt-2 gap-2 cursor-not-allowed">
+            Public Checkouts Coming Soon
           </Button>
 
           <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
