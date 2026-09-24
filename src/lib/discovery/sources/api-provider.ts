@@ -61,7 +61,7 @@ export const apiProviderSource: JobSourceAdapter = {
       ca: ["ca", "canada", "toronto", "vancouver", "montreal", "calgary", "ottawa", "ontario", "bc", "quebec", "alberta", "waterloo"],
       gb: ["gb", "uk", "united kingdom", "london", "manchester", "edinburgh", "birmingham", "scotland", "wales", "england", "glasgow"],
       au: ["au", "australia", "sydney", "melbourne", "brisbane", "perth", "adelaide", "nsw", "victoria", "queensland"],
-      in: ["in", "india", "bangalore", "bengaluru", "mumbai", "delhi", "hyderabad", "pune", "chennai", "gurgaon", "noida", "kerala"],
+      in: ["in", "india", "bangalore", "bengaluru", "banglore", "benglaruru", "mumbai", "delhi", "hyderabad", "pune", "chennai", "gurgaon", "noida", "kerala"],
       sg: ["sg", "singapore"],
       de: ["de", "germany", "berlin", "munich", "hamburg", "frankfurt", "cologne", "stuttgart"],
       fr: ["fr", "france", "paris", "lyon", "marseille", "toulouse"],

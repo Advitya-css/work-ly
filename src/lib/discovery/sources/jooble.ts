@@ -22,7 +22,7 @@ export const joobleSource: JobSourceAdapter = {
     
     // Jooble uses localized domains (e.g., in.jooble.org for India, uk.jooble.org for UK)
     const geoMap: Record<string, string[]> = {
-      in: ["india", "bangalore", "bengaluru", "mumbai", "delhi", "hyderabad", "pune", "chennai"],
+      in: ["india", "bangalore", "bengaluru", "banglore", "benglaruru", "mumbai", "delhi", "hyderabad", "pune", "chennai"],
       uk: ["uk", "united kingdom", "london", "manchester", "birmingham"],
       au: ["australia", "sydney", "melbourne", "brisbane", "perth"],
       ca: ["canada", "toronto", "vancouver", "montreal", "calgary"],
