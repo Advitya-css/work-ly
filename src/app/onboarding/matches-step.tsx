@@ -9,7 +9,7 @@ import { listDiscoveredJobsByUserId } from "@/lib/db/discovery";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { bucketJobs } from "@/lib/discovery/run";
-import { comparePriority } from "@/lib/discovery/sort";
+import { comparePriority, recommendationRank } from "@/lib/discovery/sort";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { RECOMMENDATION_LABEL } from "@/lib/jobs/labels";
 import { placeLine } from "@/lib/places";
@@ -59,7 +59,15 @@ export async function MatchesStep({ userId, intent }: { userId: string; intent: 
     .map((job) => ({ job, score: 0 }))
     .sort(comparePriority)
     .slice(0, 3)
-    .map((r) => r.job);
+    .map((r) => r.job)
+    // Shown best-first by the number the user can see: within the same
+    // tier, a Fit 69 listed under a Fit 64 reads as a mistake even when
+    // freshness put it there.
+    .sort(
+      (a, b) =>
+        recommendationRank(b.recommendation) - recommendationRank(a.recommendation) ||
+        (b.fitScore ?? 0) - (a.fitScore ?? 0),
+    );
 
   return (
     <div className="flex w-full flex-col gap-8 text-left">

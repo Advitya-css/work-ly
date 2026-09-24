@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { PageHeader } from "@/components/shared/page-header";
 import { ChallengeClient } from "./challenge-client";
 import { isTechnicalRole } from "@/lib/role-kind";
+
+
+export const metadata: Metadata = { title: "Practice task" };
 
 export default async function ChallengePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();

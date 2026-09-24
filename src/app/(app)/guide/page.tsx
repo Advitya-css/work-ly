@@ -172,7 +172,9 @@ export default async function GuidePage() {
                   return (
                     <li key={id} className="flex items-start justify-between gap-3 text-sm">
                       <span className="font-medium text-foreground">{tool.name}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">{tool.pro ? "Pro" : "Free"}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {tool.pro ? (tool.freeNote ?? "Pro") : "Free"}
+                      </span>
                     </li>
                   );
                 })}

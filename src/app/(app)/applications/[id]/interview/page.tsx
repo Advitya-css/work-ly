@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { PageHeader } from "@/components/shared/page-header";
 import { HotSeatClient } from "./hot-seat-client";
+
+
+export const metadata: Metadata = { title: "Mock interview" };
 
 export default async function InterviewPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
