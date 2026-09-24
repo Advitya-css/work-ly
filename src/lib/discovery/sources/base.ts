@@ -94,6 +94,9 @@ export async function fetchWithGuards(
         Accept: "application/json, application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
         ...(init.headers as Record<string, string> | undefined ?? {}),
       },
+      // Was never passed on: every POST source (Jooble) sent an empty body
+      // and got "HTTP 400" back on every run.
+      body: typeof init.body === "string" ? init.body : undefined,
       signal: controller.signal,
     });
     if (!response.ok) {

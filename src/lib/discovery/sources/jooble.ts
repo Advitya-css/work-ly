@@ -55,10 +55,13 @@ export const joobleSource: JobSourceAdapter = {
       keywords = keywords ? `${keywords} part-time` : "part-time";
     }
 
+    // Jooble wants a place name, not "bengaluru, india" - and the country is
+    // already chosen by the regional domain above.
+    const city = (context.homeLocation || "").split(",")[0]?.trim() ?? "";
     const body = JSON.stringify({
       keywords,
-      location: loc,
-      page: 1
+      location: domainPrefix ? city : context.homeLocation || "",
+      page: 1,
     });
 
     const response = await fetchWithGuards(`https://${domainPrefix}jooble.org/api/${key}`, {

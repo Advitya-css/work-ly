@@ -117,7 +117,7 @@ async function resolvePublicAddress(hostname: string): Promise<{ address: string
  */
 export async function guardedFetch(
   initialUrl: string,
-  init: { method?: string; headers?: Record<string, string>; signal?: AbortSignal },
+  init: { method?: string; headers?: Record<string, string>; signal?: AbortSignal; body?: string },
 ): Promise<Response> {
   let current = initialUrl;
 
@@ -159,9 +159,13 @@ export async function guardedFetch(
     // stubs `globalThis.fetch`) can only intercept calls that actually go
     // through the global. A direct undici import would silently bypass
     // that and hit the real network in tests.
+    // A POST body is only sent to the first hop: a redirect of a POST is
+    // followed as a GET (what browsers do for 301/302/303), never replayed.
+    const firstHop = hop === 0;
     const response = await fetch(parsed.toString(), {
-      method: init.method ?? "GET",
+      method: firstHop ? init.method ?? "GET" : "GET",
       headers: init.headers,
+      body: firstHop ? init.body : undefined,
       signal: init.signal,
       redirect: "manual",
       // @ts-expect-error -- `dispatcher` is a real, documented Node fetch

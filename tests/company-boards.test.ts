@@ -113,3 +113,23 @@ describe("company boards by country", () => {
     expect(companyBoardsFor(["India"]).some((b) => b.boardToken === "swiggy")).toBe(false);
   });
 });
+
+describe("Lever descriptions", () => {
+  it("include the requirement lists, not just the intro", async () => {
+    fetchMock.mockResolvedValue(
+      JSON.stringify([
+        {
+          id: "z",
+          text: "Senior Data Analyst",
+          categories: { location: "Bengaluru" },
+          createdAt: Date.now(),
+          descriptionPlain: "About us.",
+          lists: [{ text: "Requirements", content: "<li>5+ years of SQL</li><li>Looker</li>" }],
+        },
+      ]),
+    );
+    const out = await leverSource.ingest({ query: "Data Analyst", config: { boardToken: "hevo-" + Math.random() }, limit: 5 });
+    expect(out[0].description).toContain("5+ years of SQL");
+    expect(out[0].description).toContain("About us.");
+  });
+});

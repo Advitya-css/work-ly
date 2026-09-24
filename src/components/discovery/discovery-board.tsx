@@ -144,6 +144,9 @@ export function DiscoveryBoard({
          const rec = result.job.recommendation;
          return rec === "APPLY_NOW" || rec === "APPLY" || rec === "STRETCH";
       });
+      // Top Picks are already shown above - don't list the same card twice.
+      const pickIds = new Set(topPicks.map((p) => p.job.id));
+      filtered = filtered.filter((result) => !pickIds.has(result.job.id));
     }
 
     return [...filtered].sort((a, b) => {
@@ -160,7 +163,7 @@ export function DiscoveryBoard({
       }
       return 0;
     });
-  }, [seniorityFilteredResults, activeBucket, sort]);
+  }, [seniorityFilteredResults, activeBucket, sort, query, topPicks]);
 
   const counts = useMemo(() => {
     const all = seniorityFilteredResults;

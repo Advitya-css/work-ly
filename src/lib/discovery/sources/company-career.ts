@@ -134,6 +134,9 @@ interface LeverPosting {
   createdAt?: number;
   descriptionPlain?: string;
   workplaceType?: string;
+  /** "Requirements", "Responsibilities"... as HTML list items. Where most of a Lever posting's substance lives. */
+  lists?: { text?: string; content?: string }[];
+  additionalPlain?: string;
   categories?: { location?: string; allLocations?: string[]; team?: string; commitment?: string };
 }
 
@@ -242,7 +245,17 @@ export const leverSource: JobSourceAdapter = {
       title,
       company,
       location,
-      description: asString(posting.descriptionPlain),
+      // descriptionPlain is only the intro on Lever; the requirements are in
+      // `lists`. Reading just the intro left most Lever jobs with nothing to
+      // score, so they showed up without a Fit at all.
+      description:
+        [
+          posting.descriptionPlain,
+          ...(posting.lists ?? []).map((l) => [l.text, l.content].filter(Boolean).join("\n")),
+          posting.additionalPlain,
+        ]
+          .filter((part): part is string => Boolean(part?.trim()))
+          .join("\n\n") || null,
       url: asString(posting.hostedUrl),
       postedAt: posting.createdAt ? new Date(posting.createdAt) : null,
       employmentTypeRaw: asString(posting.categories?.commitment),

@@ -33,6 +33,24 @@ interface AdzunaResult {
   category?: { label?: string };
 }
 
+/**
+ * Adzuna's free tier allows a small number of calls a day, and the same
+ * search (same country, keywords and place) was being repeated by every
+ * manual run and every cron run - the source hit HTTP 429 and showed
+ * "Error". Identical searches within a few hours now reuse the answer.
+ */
+const ADZUNA_CACHE_MS = 3 * 60 * 60_000;
+const adzunaCache = new Map<string, { at: number; body: Promise<string> }>();
+function adzunaCached(url: string): Promise<string> {
+  const hit = adzunaCache.get(url);
+  if (hit && Date.now() - hit.at < ADZUNA_CACHE_MS) return hit.body;
+  const body = fetchWithGuards(url);
+  adzunaCache.set(url, { at: Date.now(), body });
+  body.catch(() => adzunaCache.delete(url));
+  if (adzunaCache.size > 500) adzunaCache.delete(adzunaCache.keys().next().value as string);
+  return body;
+}
+
 export const apiProviderSource: JobSourceAdapter = {
   ...sourceDefaults,
   kind: "API_PROVIDER",
@@ -119,7 +137,7 @@ export const apiProviderSource: JobSourceAdapter = {
       params.set("contract", "1");
     }
 
-    const body = await fetchWithGuards(
+    const body = await adzunaCached(
       `https://api.adzuna.com/v1/api/jobs/${encodeURIComponent(country)}/search/1?${params.toString()}`,
     );
     const parsed = JSON.parse(body) as { results?: AdzunaResult[] };
