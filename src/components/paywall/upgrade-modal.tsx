@@ -85,13 +85,13 @@ export function UpgradeModal({
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview Simulator & Tech Sandbox</span></li>
           </ul>
 
-          <div className="mt-4 p-4 rounded-lg bg-muted border border-border flex items-center justify-between opacity-80">
+          <div className="mt-4 p-4 rounded-lg bg-muted border border-border flex items-center justify-between opacity-100">
             <div className="flex flex-col">
-              <span className="font-semibold text-lg line-through">Work-ly Pro</span>
+              <span className="font-semibold text-lg">Work-ly Pro</span>
               <span className="text-sm text-muted-foreground">$15 / month</span>
             </div>
-            <Button disabled variant="outline" size="lg" className="gap-2 cursor-not-allowed">
-              Coming Soon
+            <Button onClick={handleUpgrade} disabled={loading} size="lg" className="gap-2">
+              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <>Subscribe <ArrowRight className="size-4" /></>}
             </Button>
           </div>
 
