@@ -10,6 +10,7 @@ import {
   IconProfile,
   IconSettings,
   IconGuide,
+  IconInsight,
   IconStudent,
   type IconProps,
 } from "@/components/icons";
@@ -112,6 +113,7 @@ export const CAREER_TABS: SectionTab[] = [
   { label: "Dream job", href: "/dream-job", icon: IconDream },
   { label: "Action Plan", href: "/career-path", icon: IconPathway },
   { label: "Pivot", href: "/career-pivot", icon: IconPathway },
+  { label: "Insights", href: "/insights", icon: IconInsight },
 ];
 
 export const STUDENT_TABS: SectionTab[] = [

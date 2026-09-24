@@ -197,3 +197,65 @@ export async function sendJobAlertEmail(
     console.error(`[workly:email] Resend API error (${res.status}):`, body);
   }
 }
+
+/**
+ * The always-on job watch email (yearly perk): sent only when a daily
+ * search turns up something at or above the member's Fit bar, so it stays
+ * rare enough to be worth opening even when they're happily employed.
+ */
+export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFit: number): Promise<void> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log(`[workly:email] No RESEND_API_KEY set. Job watch for ${to} (${matches.length} matches)`);
+    return;
+  }
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+  const rows = matches
+    .slice(0, 3)
+    .map(
+      (m) => `
+        <tr><td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
+          ${m.fitScore != null ? `<div style="font-size: 13px; color: #7a2e55; margin-top: 2px;">Candidate Fit is ${m.fitScore}/100</div>` : ""}
+          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(m.reason.slice(0, 200))}</div>` : ""}
+        </td></tr>`,
+    )
+    .join("");
+
+  const first = matches[0];
+  const subject =
+    matches.length === 1 && first
+      ? `Worth a look: ${first.title}${first.company ? ` at ${first.company}` : ""}`
+      : `${matches.length} exceptional matches worth a look`;
+
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: `Work-ly <noreply@${fromDomain}>`,
+      to,
+      subject,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="font-size: 22px; color: #1c1a19; margin-bottom: 12px;">Your job watch found something</h1>
+          <p style="font-size: 15px; color: #6b6560; line-height: 1.5; margin-bottom: 8px;">
+            Work-ly searches for you every day and only writes when a role clears your bar of Candidate Fit ${minFit}+. This one did.
+          </p>
+          <table style="width: 100%; border-collapse: collapse; margin: 8px 0 24px;">${rows}</table>
+          <a href="${appUrl}/discover" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
+            Open it in Work-ly
+          </a>
+          <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
+            You're receiving this because always-on job watch is switched on. Turn it off or change your bar under Insights in Work-ly.
+          </p>
+        </div>
+      `,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[workly:email] Resend API error (${res.status}):`, body);
+  }
+}

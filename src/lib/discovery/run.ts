@@ -93,8 +93,8 @@ function toJobLike(listing: NormalizedListing, userId: string): Job {
   };
 }
 
-function buildMatchReasons(
-  listing: NormalizedListing,
+export function buildMatchReasons(
+  listing: Pick<NormalizedListing, "workMode">,
   fit: JobFitAnalysis,
   expansionRole: string | null,
   sourceName: string,
@@ -264,7 +264,11 @@ export async function runDiscovery(
         profile.profile?.currentRole?.trim() || profile.experiences.find((e) => e.isCurrent)?.title?.trim() || null;
       const idealTitles = await suggestIdealJobSearches(profileText, targetRole, profile.profile?.location ?? null);
       const seen = new Set<string>();
-      searchTerms = [targetRole, ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 1), ...idealTitles, currentRole]
+      // The current role goes second: roles like the one you already do are
+      // where you're strongest ("Apply now"), while the target role alone
+      // mostly finds stretch roles - the default feed used to show zero
+      // Apply-now matches for a strong analyst targeting Analytics Engineer.
+      searchTerms = [targetRole, currentRole, ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 1), ...idealTitles]
         .filter((t): t is string => Boolean(t && t.trim()))
         .filter((t) => {
           const key = t.toLowerCase();

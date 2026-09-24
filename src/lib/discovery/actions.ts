@@ -16,6 +16,7 @@ import {
   setSourceEnabled,
 } from "@/lib/db/discovery";
 import { runDiscovery } from "@/lib/discovery/run";
+import { screenTopDiscovered, type DeepScreenResult } from "@/lib/discovery/deep-screen";
 import { syncCompanyBoards } from "@/lib/discovery/sync-company-boards";
 import { getAdapter, SOURCE_ADAPTERS } from "@/lib/discovery/registry";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -151,6 +152,36 @@ export async function runDiscoveryAction(
     return { error: "All active job sources failed to connect. Please try again shortly.", searchTermsUsed: run.searchTermsUsed };
   }
   return { found: run.newJobs, searchTermsUsed: run.searchTermsUsed };
+}
+
+/**
+ * Reads the user's top matches in full against their profile (see
+ * lib/discovery/deep-screen.ts). Called by the page right after results
+ * appear, and again while top matches remain unread. Pro reads more per
+ * call; both are capped per hour because every listing is a model call.
+ */
+export async function screenTopMatchesAction(): Promise<DeepScreenResult & { error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const allowed = await checkRateLimit(`deep_screen_${user.id}`, user.isPro ? 12 : 4, 60 * 60);
+  if (!allowed) return { available: true, screened: 0, remaining: 0, error: "rate-limited" };
+
+  try {
+    const result = await screenTopDiscovered(user.id, {
+      limit: user.isPro ? 10 : 5,
+      window: user.isPro ? 15 : 8,
+      budgetMs: 45_000,
+    });
+    if (result.screened > 0) {
+      revalidateDiscoveryViews();
+      revalidatePath("/onboarding");
+    }
+    return result;
+  } catch (error) {
+    console.error("[workly:deep-screen] failed", error);
+    return { available: true, screened: 0, remaining: 0, error: "failed" };
+  }
 }
 
 export interface AddSourceInput {

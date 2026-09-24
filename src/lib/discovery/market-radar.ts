@@ -49,7 +49,7 @@ const DISPLAY: Record<string, string> = {
   "a/b testing": "A/B testing", "a b testing": "A/B testing", javascript: "JavaScript", typescript: "TypeScript",
   bigquery: "BigQuery", postgresql: "PostgreSQL", mysql: "MySQL", nosql: "NoSQL", pyspark: "PySpark", github: "GitHub",
 };
-function displaySkill(label: string): string {
+export function displaySkill(label: string): string {
   const key = label.trim().toLowerCase();
   if (DISPLAY[key]) return DISPLAY[key];
   if (label !== key) return label; // the posting already capitalised it

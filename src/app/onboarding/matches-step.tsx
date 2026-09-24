@@ -4,6 +4,9 @@ import { ArrowRight, ExternalLink, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrackMatchButton } from "@/components/onboarding/track-match-button";
+import { PersonalizeMatches } from "@/components/discovery/personalize-matches";
+import { unscreenedTopCount } from "@/lib/discovery/deep-screen";
+import { getLatestRun } from "@/lib/db/discovery";
 import { completeOnboardingAction } from "@/lib/onboarding/actions";
 import { listDiscoveredJobsByUserId } from "@/lib/db/discovery";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
@@ -44,7 +47,12 @@ const NEXT_STEPS = [
  * do the sorting themselves.
  */
 export async function MatchesStep({ userId, intent }: { userId: string; intent: OnboardingIntent }) {
-  const [jobs, profile] = await Promise.all([listDiscoveredJobsByUserId(userId), getCareerProfileByUserId(userId)]);
+  const [jobs, profile, pendingScreens, latestRun] = await Promise.all([
+    listDiscoveredJobsByUserId(userId),
+    getCareerProfileByUserId(userId),
+    unscreenedTopCount(userId, 8),
+    getLatestRun(userId),
+  ]);
 
   const inScope = jobs.filter((job) => {
     if (profile?.isFreelanceMode && job.employmentType !== "CONTRACT" && job.employmentType !== "FREELANCE") return false;
@@ -85,6 +93,8 @@ export async function MatchesStep({ userId, intent }: { userId: string; intent: 
             : "The first search didn't turn up roles that fit your profile well. Try a different search, or add more detail to your profile so matches can be scored properly."}
         </p>
       </div>
+
+      {top.length > 0 && <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={`onboarding-${latestRun?.id ?? "none"}`} />}
 
       {top.length > 0 && (
         <ol className="flex flex-col gap-3">

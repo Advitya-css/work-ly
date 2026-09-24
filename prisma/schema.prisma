@@ -44,6 +44,13 @@ model User {
   termsVersion    String?
   proUntil        DateTime?
   lastAlertSentAt DateTime?
+  /// Which pass paid for Pro: "monthly" | "quarterly" | "yearly" | "beta". Null before this was tracked.
+  proPlan         String?
+  /// Always-on job watch (yearly perk): daily search, emails only matches at or above watchMinFit.
+  watchEnabled    Boolean   @default(false)
+  watchMinFit     Int       @default(85)
+  /// When the job watch last searched for this user.
+  lastWatchAt     DateTime?
 
   careerProfile    CareerProfile?
   careerPivot      CareerPivot?
@@ -60,6 +67,7 @@ model User {
   jobSourceConfigs JobSourceConfig[]
   discoveredJobs   DiscoveredJob[]
   discoveryRuns    DiscoveryRun[]
+  readinessSnapshots ReadinessSnapshot[]
 
   @@map("users")
 }
@@ -754,6 +762,8 @@ model DreamJob {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  readinessSnapshots ReadinessSnapshot[]
+
   @@map("dream_jobs")
 }
 
@@ -1340,4 +1350,22 @@ model CareerPivot {
   updatedAt      DateTime @updatedAt
 
   @@map("career_pivots")
+}
+
+/// Every dream-job readiness score over time - the yearly progress tracker.
+model ReadinessSnapshot {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dreamJobId     String
+  dreamJob       DreamJob @relation(fields: [dreamJobId], references: [id], onDelete: Cascade)
+  readinessScore Int
+  coverage       Float?
+  /// "analysis" (a full dream-job analysis) or "monthly" (the automatic re-check).
+  source         String
+  stepsCompleted Int?
+  createdAt      DateTime @default(now())
+
+  @@index([userId, dreamJobId, createdAt])
+  @@map("readiness_snapshots")
 }

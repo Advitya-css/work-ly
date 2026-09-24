@@ -23,6 +23,7 @@ const PLACE_LABEL: Record<Tool["place"], string> = {
   jobs: "Jobs",
   opportunity: "A job's analysis page",
   application: "An application",
+  insights: "Insights (under My career)",
 };
 
 function whenLabel(tool: Tool): string {
@@ -41,6 +42,7 @@ function whenLabel(tool: Tool): string {
 }
 
 function planLabel(tool: Tool): string {
+  if (tool.yearly) return "Yearly Pass";
   if (!tool.pro) return "Free";
   return tool.freeNote ? `Pro · ${tool.freeNote.toLowerCase()}` : "Pro";
 }
@@ -141,6 +143,13 @@ export default async function GuidePage() {
         ? { label: "Open my pathway", href: "/career-path" }
         : { label: "Check my dream job", href: "/dream-job" },
     },
+    {
+      key: "landed",
+      title: "I've landed a job (or I'm happy where I am)",
+      body: "Stay ready without the effort: know your worth, keep growing toward the next role, and hear about the rare job worth moving for.",
+      tools: ["market-value", "progress-tracker", "job-watch"],
+      cta: { label: "Open Insights", href: "/insights" },
+    },
   ];
 
   const allTools = Object.values(TOOLS);
@@ -173,7 +182,7 @@ export default async function GuidePage() {
                     <li key={id} className="flex items-start justify-between gap-3 text-sm">
                       <span className="font-medium text-foreground">{tool.name}</span>
                       <span className="shrink-0 text-xs text-muted-foreground">
-                        {tool.pro ? (tool.freeNote ?? "Pro") : "Free"}
+                        {tool.yearly ? "Yearly" : tool.pro ? (tool.freeNote ?? "Pro") : "Free"}
                       </span>
                     </li>
                   );

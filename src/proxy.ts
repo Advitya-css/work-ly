@@ -68,6 +68,7 @@ const PROTECTED_PATHS = [
   "/career-goals",
   "/dream-job",
   "/career-path",
+  "/insights",
   "/applications",
   "/settings",
   "/onboarding",

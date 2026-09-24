@@ -17,6 +17,8 @@ import { listSupportedStudentCountries } from "@/lib/student/country-rules-db";
 export const metadata: Metadata = { title: "Welcome" };
 // The matches step reads the first discovery run's results.
 export const dynamic = "force-dynamic";
+// The first-matches step reads the top matches in full (a model call each).
+export const maxDuration = 60;
 
 type OnboardingStep = "welcome" | "upload" | "review" | "matches" | "student-setup";
 

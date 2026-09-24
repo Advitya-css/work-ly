@@ -21,6 +21,9 @@ function toAuthUser(user: {
   emailVerified?: boolean;
   isPro?: boolean;
   proUntil?: Date | null;
+  proPlan?: string | null;
+  watchEnabled?: boolean;
+  watchMinFit?: number;
 }): AuthUser {
   let isPro = user.isPro ?? false;
   if (isPro && user.proUntil && new Date(user.proUntil) < new Date()) {
@@ -36,6 +39,9 @@ function toAuthUser(user: {
     emailVerified: user.emailVerified ?? false,
     isPro,
     proUntil: user.proUntil ?? null,
+    proPlan: user.proPlan ?? null,
+    watchEnabled: user.watchEnabled ?? false,
+    watchMinFit: user.watchMinFit ?? 85,
   };
 }
 

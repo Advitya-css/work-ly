@@ -24,6 +24,9 @@ export interface AuthUser {
   emailVerified?: boolean;
   isPro?: boolean;
   proUntil?: Date | null;
+  proPlan?: string | null;
+  watchEnabled?: boolean;
+  watchMinFit?: number;
 }
 
 export interface AuthResult {

@@ -393,3 +393,22 @@ export async function getLatestRun(userId: string): Promise<DiscoveryRun | null>
   );
   return rows[0] ? mapRun(rows[0]) : null;
 }
+
+/** Replaces a stored listing's score after a later, deeper screen (see lib/discovery/deep-screen.ts). */
+export async function updateDiscoveredJobScore(
+  id: string,
+  input: {
+    fitScore: number | null;
+    fitCoverage: number | null;
+    recommendation: DiscoveredJob["recommendation"];
+    matchReasons: DiscoveredJob["matchReasons"];
+  },
+): Promise<void> {
+  await pool.query(
+    `UPDATE discovered_jobs
+        SET "fitScore" = $2, "fitCoverage" = $3, recommendation = $4::"RecommendationType",
+            "matchReasons" = $5::jsonb, "updatedAt" = now()
+      WHERE id = $1`,
+    [id, input.fitScore, input.fitCoverage, input.recommendation, JSON.stringify(input.matchReasons)],
+  );
+}

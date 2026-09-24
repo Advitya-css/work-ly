@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { pool } from "@/lib/db/pool";
+import { planForVariant } from "@/lib/plans";
 
 export async function POST(req: Request) {
   try {
@@ -39,6 +40,13 @@ export async function POST(req: Request) {
         [userId]
       );
       
+      // Remember which pass it was, for the yearly-only perks (lib/plans.ts).
+      // Separate and best-effort: before the yearly-perks migration runs the
+      // column doesn't exist, and that must never undo the upgrade above.
+      await pool
+        .query(`UPDATE users SET "proPlan" = $2 WHERE id = $1`, [userId, planForVariant(variantId)])
+        .catch((error) => console.warn("[workly:webhook] could not record the plan:", error instanceof Error ? error.message : error));
+
       console.log(`Successfully upgraded user ${userId} to Pro! Interval: ${intervalAmount}`);
     }
 

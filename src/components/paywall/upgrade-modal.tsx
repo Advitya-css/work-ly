@@ -128,7 +128,7 @@ export function UpgradeModal({
             >
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground">Yearly Pass</span>
-                <span className="text-xs text-muted-foreground">One-time payment</span>
+                <span className="text-xs text-muted-foreground">One-time payment · plus job watch, progress report and market value</span>
               </div>
               <div className="flex flex-col items-end">
                 <div className="flex items-baseline gap-1.5">

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { PricingCard } from "@/components/paywall/pricing-card";
+import Link from "next/link";
+import { hasYearlyPerks } from "@/lib/plans";
 
 export async function PlanSettings() {
   const user = await getCurrentUser();
@@ -26,6 +28,14 @@ export async function PlanSettings() {
               <span className="font-semibold text-lg flex items-center gap-2">
                 Current Plan: {isPro ? <Badge className="bg-primary text-primary-foreground text-sm px-2 py-0.5"><Crown className="size-3 mr-1" /> Pro</Badge> : <Badge variant="secondary" className="text-sm px-2 py-0.5">Free</Badge>}
               </span>
+              {hasYearlyPerks(user) && (
+                <span className="text-sm text-muted-foreground">
+                  Yearly perks are on: job watch, progress tracker and market value.{" "}
+                  <Link href="/insights" className="font-medium text-primary underline-offset-4 hover:underline">
+                    Open Insights
+                  </Link>
+                </span>
+              )}
               {isPro && proUntil ? (
                 <span className="text-sm text-muted-foreground">
                   Your Pro access is valid until <strong className="text-foreground">{new Date(proUntil).toLocaleDateString()}</strong>.

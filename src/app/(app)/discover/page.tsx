@@ -18,6 +18,8 @@ import { buildAlert } from "@/lib/discovery/alerts";
 import { isStale } from "@/lib/discovery/sort";
 import { buildMarketRadar } from "@/lib/discovery/market-radar";
 import { MarketRadarCard } from "@/components/discovery/market-radar-card";
+import { PersonalizeMatches } from "@/components/discovery/personalize-matches";
+import { unscreenedTopCount } from "@/lib/discovery/deep-screen";
 import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL, sourceErrorHint } from "@/lib/discovery/labels";
 import { embeddingProvider, profileEmbeddingText } from "@/lib/search/embeddings";
 import { deriveCandidateSeniority, estimateYearsExperience } from "@/lib/scoring/shared";
@@ -112,6 +114,8 @@ export default async function DiscoverPage() {
     evidenceText,
   });
 
+  const pendingScreens = await unscreenedTopCount(user.id, user.isPro ? 15 : 8);
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -129,6 +133,8 @@ export default async function DiscoverPage() {
           </AlertDescription>
         </Alert>
       )}
+
+      <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={latestRun?.id ?? "none"} />
 
       <DiscoveryBoard jobs={jobs} context={context} />
 

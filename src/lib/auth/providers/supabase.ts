@@ -124,6 +124,9 @@ export const supabaseAuthProvider: AuthProvider = {
       }
       authUser.isPro = isPro;
       authUser.proUntil = dbUser.proUntil;
+      authUser.proPlan = dbUser.proPlan;
+      authUser.watchEnabled = dbUser.watchEnabled;
+      authUser.watchMinFit = dbUser.watchMinFit;
       authUser.onboardedAt = dbUser.onboardedAt;
     }
     

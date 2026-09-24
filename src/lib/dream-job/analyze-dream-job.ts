@@ -4,6 +4,9 @@ import { safeMessage } from "@/lib/errors";
 
 import { jobParsingProvider } from "@/lib/ai/job-parser";
 import { evaluateFit } from "@/lib/scoring/ai-evaluator";
+import { recordReadinessSnapshot } from "@/lib/db/readiness-snapshots";
+import { completedStepsNow } from "@/lib/insights/progress";
+import { coverageOf } from "@/lib/scoring/coverage";
 import {
   createDreamJob,
   getDreamJobById,
@@ -145,7 +148,7 @@ export async function analyzeDreamJob(dreamJobId: string, userId: string): Promi
     gapAnalysis.highestImpactNextStep = planHeadline(plan, targetRole);
   }
 
-  return saveDreamJobAnalysis(userId, dreamJobId, {
+  const saved = await saveDreamJobAnalysis(userId, dreamJobId, {
     readinessScore: fit.fitScore,
     competitiveness: fit.competitiveness,
     scoreBreakdown: fit.scoreBreakdown,
@@ -156,6 +159,20 @@ export async function analyzeDreamJob(dreamJobId: string, userId: string): Promi
     preferredRequirements: fit.preferredRequirements,
     ...gapAnalysis,
   });
+
+  // Every analysis is a point on the progress tracker's chart. Recorded for
+  // everyone (so a new yearly member already has their history), shown to
+  // yearly members. Best-effort - never fails the analysis.
+  await recordReadinessSnapshot({
+    userId,
+    dreamJobId,
+    readinessScore: fit.fitScore,
+    coverage: coverageOf(fit.scoreBreakdown),
+    source: "analysis",
+    stepsCompleted: await completedStepsNow(userId),
+  });
+
+  return saved;
 }
 
 /** The full pipeline in one call: submit -> parse -> analyze. Used by the /dream-job form. */

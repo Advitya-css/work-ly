@@ -32,6 +32,7 @@ export async function redeemBetaCodeAction(code: string) {
       if (result.rowCount === 0) {
         return { error: "Failed to apply Pro status because the user record is missing in the database. Please reload and try again." };
       }
+      await markBetaPlan(user.id);
 
       revalidatePath("/", "layout");
       return { success: true };
@@ -75,6 +76,7 @@ export async function redeemBetaCodeAction(code: string) {
     } finally {
       client.release();
     }
+    await markBetaPlan(user.id);
 
     revalidatePath("/", "layout");
     return { success: true };
@@ -82,4 +84,15 @@ export async function redeemBetaCodeAction(code: string) {
     console.error("[workly:beta] Failed to redeem beta code:", error);
     return { error: "Failed to redeem code. Please try again." };
   }
+}
+
+/**
+ * Beta testers get the yearly perks too (lib/plans.ts), so they can try
+ * them. Best-effort: before the yearly-perks migration the column doesn't
+ * exist, and that must not fail the redemption.
+ */
+async function markBetaPlan(userId: string): Promise<void> {
+  await pool
+    .query(`UPDATE users SET "proPlan" = 'beta' WHERE id = $1 AND ("proPlan" IS NULL OR "proPlan" <> 'yearly')`, [userId])
+    .catch(() => undefined);
 }

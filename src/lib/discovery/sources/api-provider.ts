@@ -26,11 +26,24 @@ interface AdzunaResult {
   created?: string;
   salary_min?: number;
   salary_max?: number;
+  /** "1" when Adzuna estimated the salary itself rather than the employer stating it. */
+  salary_is_predicted?: string | number;
   contract_time?: string;
   contract_type?: string;
   company?: { display_name?: string };
   location?: { display_name?: string; area?: string[] };
   category?: { label?: string };
+}
+
+/** The currency each Adzuna country endpoint reports salaries in. */
+const ADZUNA_CURRENCY: Record<string, string> = {
+  gb: "GBP", us: "USD", in: "INR", au: "AUD", ca: "CAD", nz: "NZD", sg: "SGD", za: "ZAR",
+  de: "EUR", fr: "EUR", nl: "EUR", it: "EUR", es: "EUR", at: "EUR", be: "EUR",
+  pl: "PLN", br: "BRL", mx: "MXN", ch: "CHF",
+};
+
+function isPredicted(result: AdzunaResult): boolean {
+  return String(result.salary_is_predicted ?? "0") === "1";
 }
 
 /**
@@ -151,11 +164,13 @@ export const apiProviderSource: JobSourceAdapter = {
       description: asString(result.description),
       url: asString(result.redirect_url),
       postedAt: asDate(result.created),
-      salaryMin: typeof result.salary_min === "number" ? Math.round(result.salary_min) : null,
-      salaryMax: typeof result.salary_max === "number" ? Math.round(result.salary_max) : null,
-      // Only claim a currency when the country makes it unambiguous;
-      // guessing would put a wrong symbol in front of a real number.
-      salaryCurrency: country === "gb" ? "GBP" : country === "us" ? "USD" : null,
+      // Only salaries the employer stated. Adzuna fills the rest with its own
+      // estimate, and "your market value" must never be built from guesses.
+      salaryMin: !isPredicted(result) && typeof result.salary_min === "number" ? Math.round(result.salary_min) : null,
+      salaryMax: !isPredicted(result) && typeof result.salary_max === "number" ? Math.round(result.salary_max) : null,
+      // Each Adzuna country site lists pay in its own currency, so the
+      // country in the URL makes the currency unambiguous.
+      salaryCurrency: isPredicted(result) ? null : (ADZUNA_CURRENCY[country.toLowerCase()] ?? null),
       employmentTypeRaw: [result.contract_time, result.contract_type].filter(Boolean).join(" ") || null,
       industry: asString(result.category?.label),
     }));

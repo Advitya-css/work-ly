@@ -14,6 +14,11 @@ function mapRow(row: Record<string, unknown>): User {
     emailVerified: (row.emailVerified as boolean) ?? false,
     isPro: (row.isPro as boolean) ?? false,
     proUntil: (row.proUntil as Date | null) ?? null,
+    // Read defensively: these columns arrive with the yearly-perks
+    // migration, and the app must keep working before it's applied.
+    proPlan: (row.proPlan as string | null | undefined) ?? null,
+    watchEnabled: (row.watchEnabled as boolean | undefined) ?? false,
+    watchMinFit: (row.watchMinFit as number | undefined) ?? 85,
     verificationToken: (row.verificationToken as string | null) ?? null,
     verificationTokenExpiresAt: (row.verificationTokenExpiresAt as Date | null) ?? null,
     verificationCodeHash: (row.verificationCodeHash as string | null) ?? null,

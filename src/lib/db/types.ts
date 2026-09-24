@@ -32,6 +32,10 @@ export interface User {
   emailVerified: boolean;
   isPro: boolean;
   proUntil: Date | null;
+  /** Which pass paid for Pro - see lib/plans.ts. Null before it was tracked. */
+  proPlan: string | null;
+  watchEnabled: boolean;
+  watchMinFit: number;
   verificationToken: string | null;
   verificationTokenExpiresAt: Date | null;
   verificationCodeHash: string | null;

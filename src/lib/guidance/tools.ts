@@ -27,9 +27,12 @@ export type ToolId =
   | "mock-interview"
   | "practice-task"
   | "counter-offer"
-  | "accept-offer";
+  | "accept-offer"
+  | "job-watch"
+  | "progress-tracker"
+  | "market-value";
 
-export type ToolPlace = "career" | "jobs" | "opportunity" | "application";
+export type ToolPlace = "career" | "jobs" | "opportunity" | "application" | "insights";
 
 export interface Tool {
   id: ToolId;
@@ -40,6 +43,8 @@ export interface Tool {
   /** One line: the outcome, not the mechanism. */
   blurb: string;
   pro: boolean;
+  /** Only on the Yearly Pass (see lib/plans.ts). */
+  yearly?: boolean;
   /** "First one free" style note for tools that are partly free. */
   freeNote?: string;
   place: ToolPlace;
@@ -183,6 +188,30 @@ export const TOOLS: Record<ToolId, Tool> = {
     place: "application",
     unlocksAt: "OFFER",
     anchor: "tool-accept-offer",
+  },
+  "job-watch": {
+    id: "job-watch",
+    name: "Always-on job watch",
+    blurb: "Keeps searching every day after you land a job, and emails you only when a role clears your Fit bar (85+ by default).",
+    pro: true,
+    yearly: true,
+    place: "insights",
+  },
+  "progress-tracker": {
+    id: "progress-tracker",
+    name: "Career progress tracker",
+    blurb: "Your dream-job readiness re-checked every month and charted, so you can see the climb over the year.",
+    pro: true,
+    yearly: true,
+    place: "insights",
+  },
+  "market-value": {
+    id: "market-value",
+    name: "Your market value",
+    blurb: "What employers state they pay for roles you fit, and which skills are rising in demand - from real listings, never estimates.",
+    pro: true,
+    yearly: true,
+    place: "insights",
   },
 };
 

@@ -46,12 +46,18 @@ const PLANS: Plan[] = [
   {
     interval: "yearly",
     name: "Yearly Pass",
-    tagline: "For students & career switchers",
+    tagline: "Keeps working after you're hired",
     price: "$149.99",
     compareAt: "$240",
     note: { text: "Save 37%", tone: "success" },
     terms: "One-time payment. No auto-renew.",
-    features: ["Everything in Monthly", "12 full months of access", "No subscription to cancel"],
+    features: [
+      "Everything in Monthly, for 12 months",
+      "Yearly only: always-on job watch",
+      "Yearly only: monthly career progress report",
+      "Yearly only: your market value",
+      "No subscription to cancel",
+    ],
   },
 ];
 
