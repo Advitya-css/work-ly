@@ -64,11 +64,11 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Base Offer Received</Label>
-                <Input placeholder="e.g. $120,000" value={baseOffer} onChange={e => setBaseOffer(e.target.value)} />
+                <Input placeholder="e.g. $120,000 or ₹15,00,000" value={baseOffer} onChange={e => setBaseOffer(e.target.value)} />
               </div>
               <div className="space-y-1">
                 <Label>Target Salary</Label>
-                <Input placeholder="e.g. $135,000" value={targetSalary} onChange={e => setTargetSalary(e.target.value)} />
+                <Input placeholder="e.g. $135,000 or ₹18,00,000" value={targetSalary} onChange={e => setTargetSalary(e.target.value)} />
               </div>
             </div>
             <div className="space-y-1">

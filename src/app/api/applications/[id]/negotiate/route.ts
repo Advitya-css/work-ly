@@ -41,7 +41,7 @@ CANDIDATE
 =========
 ${candidateBrief(profile, 5000)}
 
-Rules: warm, confident, specific. Thank them, restate enthusiasm, anchor on the counter number, justify it with 2-3 REAL points from the candidate section or their stated leverage, propose a quick call, and leave room for non-salary levers (joining bonus, equity, review timeline) if the number can't move. Under 180 words. Output Subject line then body. Sign as [Your Name].
+Rules: warm, confident, specific. Thank them, restate enthusiasm, anchor on the counter number, justify it with 2-3 REAL points from the candidate section or their stated leverage, propose a quick call, and leave room for non-salary levers (joining bonus, equity, review timeline) if the number can't move. USE EXACTLY THE SAME CURRENCY SYMBOL AND NUMBER FORMAT (e.g. ₹ lakhs or $ thousands) AS THE CANDIDATE'S INPUT. Under 180 words. Output Subject line then body. Sign as [Your Name].
 ${NO_FABRICATION_RULES}`;
 
   try {
