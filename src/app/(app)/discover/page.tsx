@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Radar } from "lucide-react";
+import Link from "next/link";
+import { Bookmark, Radar } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
@@ -17,7 +18,7 @@ import { buildAlert } from "@/lib/discovery/alerts";
 import { isStale } from "@/lib/discovery/sort";
 import { buildMarketRadar } from "@/lib/discovery/market-radar";
 import { MarketRadarCard } from "@/components/discovery/market-radar-card";
-import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL } from "@/lib/discovery/labels";
+import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL, sourceErrorHint } from "@/lib/discovery/labels";
 import { embeddingProvider, profileEmbeddingText } from "@/lib/search/embeddings";
 import { deriveCandidateSeniority, estimateYearsExperience } from "@/lib/scoring/shared";
 import type { SearchContext } from "@/lib/search/engine";
@@ -131,6 +132,17 @@ export default async function DiscoverPage() {
 
       <DiscoveryBoard jobs={jobs} context={context} />
 
+      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Bookmark className="size-4 shrink-0" />
+        <span>
+          Found a job on LinkedIn or Naukri?{" "}
+          <Link href="/analyze-job" className="font-medium text-primary underline-offset-4 hover:underline">
+            Add the Save to Work-ly button
+          </Link>{" "}
+          and analyze it in one click.
+        </span>
+      </p>
+
       <MarketRadarCard radar={radar} targetRole={targetRole} />
 
       <DiscoverySourcesCard
@@ -141,6 +153,7 @@ export default async function DiscoverPage() {
           status: SOURCE_STATUS_LABEL[source.status],
           legalBasis: source.legalBasis,
           lastRunFoundCount: source.lastRunFoundCount,
+          errorHint: source.status === "ERROR" || source.status === "NEEDS_CREDENTIALS" ? sourceErrorHint(source.errorMessage) : null,
         }))}
       />
     </div>

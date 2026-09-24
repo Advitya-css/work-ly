@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { syncCompanyBoards } from "@/lib/discovery/sync-company-boards";
 import { pool } from "@/lib/db/pool";
 import { runDiscovery } from "@/lib/discovery/run";
 import { getAdapter } from "@/lib/discovery/registry";
@@ -78,6 +79,12 @@ export async function GET(req: Request) {
             );
           }
         }
+
+        // Verified company career boards for their country - the main
+        // source of Indian listings. Failure here must not skip the run.
+        await syncCompanyBoards(userId).catch((error) =>
+          console.warn(`[workly:cron] company board sync failed for ${userId}:`, error),
+        );
 
         // One smart run per user. With no query, runDiscovery searches the
         // user's own target role first plus AI-suggested adjacent titles

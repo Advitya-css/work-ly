@@ -60,6 +60,12 @@ export async function createApplicationFromOpportunityAction(
 
   const existing = await getApplicationByOpportunityId(opportunityId);
   if (existing) {
+    // "Preparing" first, "Applied" later used to leave the application
+    // stuck at Preparing, so it never counted as sent in the outcomes.
+    if (status === "APPLIED" && (existing.status === "SAVED" || existing.status === "PREPARING")) {
+      await setApplicationStatus(existing.id, "APPLIED");
+      revalidateApplicationViews(existing.id);
+    }
     return { applicationId: existing.id };
   }
 
@@ -128,12 +134,14 @@ export async function setApplicationStatusAction(
       if (profile && application.company) {
         // Prevent duplicates
         const { rows } = await pool.query(
-          `SELECT id FROM experiences WHERE "careerProfileId" = $1 AND company = $2 AND role = $3 LIMIT 1`,
+          `SELECT id FROM experiences WHERE "careerProfileId" = $1 AND company = $2 AND title = $3 LIMIT 1`,
           [profile.id, application.company, application.roleTitle]
         );
         if (rows.length === 0) {
           await pool.query(
-            `INSERT INTO experiences (id, "careerProfileId", company, role, "startDate", "isCurrent", "updatedAt")
+            // The column is "title" - this used to insert into a "role"
+            // column that doesn't exist, so the insert always failed silently.
+            `INSERT INTO experiences (id, "careerProfileId", company, title, "startDate", "isCurrent", "updatedAt")
              VALUES ($1, $2, $3, $4, now(), true, now())`,
             [randomUUID(), profile.id, application.company, application.roleTitle]
           );

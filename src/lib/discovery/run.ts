@@ -318,36 +318,25 @@ export async function runDiscovery(
     if (query && options.expandSearch) {
       const companySlug = await extractTargetCompany(query);
       if (companySlug) {
-        // Inject Greenhouse
-        activeSources.push({
-          id: `dynamic-greenhouse-${companySlug}`,
-          userId,
-          name: `${companySlug} (Greenhouse)`,
-          kind: "COMPANY_CAREER",
-          status: "ACTIVE",
-          config: { boardToken: companySlug },
-          legalBasis: "User-requested dynamic ATS search",
-          errorMessage: null,
-          lastRunAt: null,
-          lastRunFoundCount: 0,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        // Inject Lever
-        activeSources.push({
-          id: `dynamic-lever-${companySlug}`,
-          userId,
-          name: `${companySlug} (Lever)`,
-          kind: "COMPANY_CAREER",
-          status: "ACTIVE",
-          config: { boardToken: companySlug },
-          legalBasis: "User-requested dynamic ATS search",
-          errorMessage: null,
-          lastRunAt: null,
-          lastRunFoundCount: 0,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
+        // One dynamic source per ATS. The config names its adapter
+        // explicitly - without it every injected source (including the
+        // "Lever" one) was read by the Greenhouse adapter.
+        for (const ats of ["greenhouse", "lever", "ashby"] as const) {
+          activeSources.push({
+            id: `dynamic-${ats}-${companySlug}`,
+            userId,
+            name: `${companySlug} (${ats[0].toUpperCase()}${ats.slice(1)})`,
+            kind: "COMPANY_CAREER",
+            status: "ACTIVE",
+            config: { adapterId: ats, boardToken: companySlug, allRoles: true },
+            legalBasis: "User-requested dynamic ATS search",
+            errorMessage: null,
+            lastRunAt: null,
+            lastRunFoundCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
       }
     }
 
@@ -355,16 +344,23 @@ export async function runDiscovery(
     // caught before anything is written.
     const collected: { listing: NormalizedListing; sourceConfigId: string; sourceName: string; sourceKind: DiscoveredJob["sourceKind"] }[] = [];
 
-    for (const source of activeSources) {
+    // Sources run a few at a time rather than one after another. With a
+    // dozen public boards plus company career boards, a sequential loop
+    // spent most of the 60-second request just waiting on the network and
+    // left no time for the AI screen. A source still running when the
+    // ingest window closes is skipped for this run, not allowed to stall it.
+    const INGEST_CONCURRENCY = 6;
+    const ingestDeadline = startedAt + Math.min(28_000, Math.max(12_000, (options.timeBudgetMs ?? 50_000) * 0.55));
+    const ingestSource = async (source: (typeof activeSources)[number]): Promise<void> => {
       const adapter = getAdapter(inferAdapterId(source.kind, source.config));
-      if (!adapter) continue;
+      if (!adapter) return;
 
       if (!adapter.isConfigured(source.config)) {
         await updateSourceStatus(source.id, {
           status: "NEEDS_CREDENTIALS",
           errorMessage: adapter.requires ? `Needs: ${adapter.requires}` : "Not configured yet.",
         });
-        continue;
+        return;
       }
 
       try {
@@ -429,7 +425,24 @@ export async function runDiscovery(
         // source so the user can see which one is misbehaving.
         await updateSourceStatus(source.id, adapter.updateStatus({ found: 0, error: message }));
       }
-    }
+    };
+
+    const queue = [...activeSources];
+    const workers = Array.from({ length: Math.min(INGEST_CONCURRENCY, queue.length) }, async () => {
+      while (queue.length > 0 && Date.now() < ingestDeadline) {
+        const source = queue.shift()!;
+        const remaining = ingestDeadline - Date.now();
+        await Promise.race([
+          // One source failing in an unexpected way (even its status update)
+          // must never take the rest of the run down with it.
+          ingestSource(source).catch((error) =>
+            console.warn(`[workly:discovery] source ${source.name} failed: ${error instanceof Error ? error.message : String(error)}`),
+          ),
+          new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, remaining))),
+        ]);
+      }
+    });
+    await Promise.all(workers);
 
     // --- Field gate: drop listings from a different field entirely -------
     // (copywriters for a "BI Analyst" search). Company-targeted sources are

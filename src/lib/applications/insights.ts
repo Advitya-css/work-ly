@@ -1,5 +1,6 @@
 import type { Application } from "@/lib/db/types";
 import { wasSent } from "@/lib/applications/analytics";
+import { isTailoredCv } from "@/lib/applications/cv-version";
 
 /**
  * CAREER LEARNING - foundation only.
@@ -36,7 +37,7 @@ const MIN_MARGIN_POINTS = 15;
 
 export interface Insight {
   /// Which attribute produced this - the axis a future model would learn on.
-  dimension: "role" | "industry" | "company" | "location" | "fit_score" | "seniority";
+  dimension: "role" | "industry" | "company" | "location" | "fit_score" | "seniority" | "cv_version";
   text: string;
   /// Always shown alongside the claim so the user can judge it themselves.
   sampleSize: number;
@@ -145,6 +146,30 @@ function fitScoreInsight(sent: Application[]): Insight | null {
   };
 }
 
+/**
+ * Did tailoring pay off for THIS user? Compares interview rates for
+ * applications sent with a Work-ly tailored resume against everything else.
+ * Reported either way once both sides are big enough - "tailoring isn't
+ * moving your numbers" is as useful to know as "it is".
+ */
+function tailoringInsight(sent: Application[]): Insight | null {
+  const tailored = sent.filter((a) => isTailoredCv(a.cvVersion));
+  const other = sent.filter((a) => a.cvVersion?.trim() && !isTailoredCv(a.cvVersion));
+  if (tailored.length < MIN_GROUP || other.length < MIN_COMPARISON) return null;
+  const t = interviewRate(tailored);
+  const o = interviewRate(other);
+  const tPct = Math.round(t * 100);
+  const oPct = Math.round(o * 100);
+  const detail = `${tPct}% interview rate across ${tailored.length} tailored application${tailored.length === 1 ? "" : "s"}, against ${oPct}% across ${other.length} sent with another CV.`;
+  if (t - o >= MIN_MARGIN_POINTS / 100) {
+    return { dimension: "cv_version", text: "Tailored resumes are getting you more interviews. Keep tailoring.", sampleSize: tailored.length + other.length, supportingDetail: detail };
+  }
+  if (o - t >= MIN_MARGIN_POINTS / 100) {
+    return { dimension: "cv_version", text: "Your other CV is converting better than the tailored ones so far. Compare what's different.", sampleSize: tailored.length + other.length, supportingDetail: detail };
+  }
+  return null;
+}
+
 export function buildInsights(applications: Application[]): InsightsResult {
   const sent = applications.filter(wasSent);
 
@@ -183,6 +208,13 @@ export function buildInsights(applications: Application[]): InsightsResult {
       (key) => `Roles in ${key} are converting better than elsewhere.`,
     ),
     fitScoreInsight(sent),
+    tailoringInsight(sent),
+    bestGroupInsight(
+      sent,
+      (a) => (isTailoredCv(a.cvVersion) ? null : a.cvVersion),
+      "cv_version",
+      (key) => `Your "${key}" CV is getting more interviews than your others.`,
+    ),
   ].filter((insight): insight is Insight => insight !== null);
 
   return { insights, notEnoughData: false, sentCount: sent.length, needed: 0 };

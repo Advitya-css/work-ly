@@ -1,6 +1,58 @@
 import { fetchWithGuards, sourceDefaults, asString, asDate } from "@/lib/discovery/sources/base";
 import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discovery/types";
 
+import { titleIsRelevant } from "@/lib/discovery/relevance";
+import { placeMatches } from "@/lib/places";
+
+/**
+ * One fetch per board per run. Discovery calls ingest() once per search term
+ * (often 4), and a board's full listing is the same for every term - so the
+ * body is shared for a few minutes instead of downloading PhonePe's whole
+ * board four times.
+ */
+const BOARD_CACHE_MS = 5 * 60_000;
+const boardCache = new Map<string, { at: number; body: Promise<string> }>();
+function fetchBoard(url: string): Promise<string> {
+  const hit = boardCache.get(url);
+  if (hit && Date.now() - hit.at < BOARD_CACHE_MS) return hit.body;
+  const body = fetchWithGuards(url, {}, { timeoutMs: 15_000, maxBytes: 12_000_000 });
+  boardCache.set(url, { at: Date.now(), body });
+  // A failed fetch must not be cached as the answer for the next run.
+  body.catch(() => boardCache.delete(url));
+  return body;
+}
+
+/** "razorpaysoftwareprivatelimited" -> the configured display name, else a readable version of the handle. */
+function companyNameFor(config: Record<string, unknown>, boardToken: string): string {
+  const configured = typeof config.companyName === "string" ? config.companyName.trim() : "";
+  if (configured) return configured;
+  const cleaned = boardToken
+    .replace(/(softwareprivatelimited|privatelimited|technologies|inc|india|hq|careers|jobs)$/i, "")
+    .replace(/[-_.]+/g, " ")
+    .trim();
+  return (cleaned || boardToken).replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * A company board returns EVERY open role - PhonePe or Atlassian can list
+ * hundreds. Keep the ones in the field being searched for, put the ones in
+ * the user's own city (or remote) first, then apply the limit. The old
+ * code took the first N in the board's own order, so a data analyst's
+ * search got the first 40 roles of whatever department sorted first.
+ */
+function pickForContext<T extends { title: string; location?: string | null; remote?: boolean }>(
+  items: T[],
+  context: IngestContext,
+): T[] {
+  // A company the user asked for by name ("everything at Stripe") skips
+  // the field filter - the query is the company, not a job title.
+  const query = context.config.allRoles === true ? "" : context.query?.trim();
+  const inField = query ? items.filter((i) => titleIsRelevant(i.title, [query])) : items;
+  const home = context.homeLocation?.trim();
+  const score = (i: T) => (home && i.location && placeMatches(home, i.location) ? 2 : 0) + (i.remote ? 1 : 0);
+  return [...inField].sort((a, b) => score(b) - score(a)).slice(0, context.limit);
+}
+
 /**
  * COMPANY CAREER SOURCES
  *
@@ -23,6 +75,7 @@ interface GreenhouseJob {
   title?: string;
   absolute_url?: string;
   updated_at?: string;
+  first_published?: string;
   content?: string;
   location?: { name?: string };
   departments?: { name?: string }[];
@@ -45,24 +98,30 @@ export const greenhouseSource: JobSourceAdapter = {
     const boardToken = String(context.config.boardToken ?? "").trim();
     if (!boardToken) return [];
 
-    const body = await fetchWithGuards(
+    const body = await fetchBoard(
       `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(boardToken)}/jobs?content=true`,
     );
     const parsed = JSON.parse(body) as { jobs?: GreenhouseJob[] };
-    const jobs = parsed.jobs ?? [];
-
-    return jobs.slice(0, context.limit).map((job) => ({
-      externalId: `greenhouse:${boardToken}:${job.id ?? job.absolute_url ?? job.title}`,
+    const company = companyNameFor(context.config, boardToken);
+    const jobs = (parsed.jobs ?? []).map((job) => ({
+      job,
       title: asString(job.title) ?? "Untitled role",
-      company: boardToken,
       location: asString(job.location?.name),
+      remote: /remote/i.test(job.location?.name ?? ""),
+    }));
+
+    return pickForContext(jobs, context).map(({ job, title, location }) => ({
+      externalId: `greenhouse:${boardToken}:${job.id ?? job.absolute_url ?? job.title}`,
+      title,
+      company,
+      location,
       // Greenhouse returns HTML-escaped content; stripHtml in the shared
       // normalizer handles the tags, and this undoes the escaping first.
       description: job.content
-        ? job.content.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+        ? job.content.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&")
         : null,
       url: asString(job.absolute_url),
-      postedAt: asDate(job.updated_at),
+      postedAt: asDate(job.first_published) ?? asDate(job.updated_at),
       industry: asString(job.departments?.[0]?.name),
     }));
   },
@@ -74,20 +133,29 @@ interface LeverPosting {
   hostedUrl?: string;
   createdAt?: number;
   descriptionPlain?: string;
-  categories?: { location?: string; team?: string; commitment?: string };
+  workplaceType?: string;
+  categories?: { location?: string; allLocations?: string[]; team?: string; commitment?: string };
 }
 
 
 
+/** Field names as documented at developers.ashbyhq.com/docs/public-job-posting-api. */
 interface AshbyPosting {
   id?: string;
   title?: string;
   jobUrl?: string;
+  applyUrl?: string;
   publishedAt?: string;
-  locationName?: string;
-  departmentName?: string;
+  location?: string;
+  secondaryLocations?: { location?: string }[];
+  department?: string;
+  team?: string;
+  isListed?: boolean;
+  isRemote?: boolean;
+  workplaceType?: string;
   employmentType?: string;
   descriptionPlain?: string;
+  descriptionHtml?: string;
 }
 
 export const ashbySource: JobSourceAdapter = {
@@ -95,8 +163,9 @@ export const ashbySource: JobSourceAdapter = {
   kind: "COMPANY_CAREER",
   id: "ashby",
   name: "Ashby board",
-  legalBasis: "Ashby provides a public JSON endpoint (api.ashbyhq.com/posting-api/job-board/) intended for displaying open roles.",
-  requires: "The company's Ashby handle",
+  legalBasis:
+    "Ashby publishes a keyless, read-only job posting API (api.ashbyhq.com/posting-api/job-board) intended for displaying a company's open roles on other sites. Read-only, one request per configured board.",
+  requires: "The company's Ashby handle, e.g. the 'acme' in jobs.ashbyhq.com/acme",
 
   isConfigured(config) {
     return typeof config.boardToken === "string" && config.boardToken.trim().length > 0;
@@ -106,27 +175,33 @@ export const ashbySource: JobSourceAdapter = {
     const boardToken = String(context.config.boardToken ?? "").trim();
     if (!boardToken) return [];
 
-    try {
-      const body = await fetchWithGuards(
-        `https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(boardToken)}`
-      );
-      const parsed = JSON.parse(body) as { jobs?: AshbyPosting[] };
-      const jobs = parsed.jobs ?? [];
+    // Errors are NOT swallowed here: a wrong handle or an outage has to
+    // show as "Error" on the source, not as a healthy board with 0 jobs.
+    const body = await fetchBoard(`https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(boardToken)}`);
+    const parsed = JSON.parse(body) as { jobs?: AshbyPosting[] };
+    const company = companyNameFor(context.config, boardToken);
 
-      return jobs.slice(0, context.limit).map((job) => ({
-        externalId: `ashby:${boardToken}:${job.id ?? job.jobUrl ?? job.title}`,
-        title: asString(job.title) ?? "Untitled role",
-        company: boardToken,
-        location: asString(job.locationName),
-        description: asString(job.descriptionPlain),
-        url: asString(job.jobUrl),
-        postedAt: asDate(job.publishedAt),
-        employmentTypeRaw: asString(job.employmentType),
-        industry: asString(job.departmentName),
-      }));
-    } catch {
-      return [];
-    }
+    const jobs = (parsed.jobs ?? [])
+      .filter((job) => job.isListed !== false)
+      .map((job) => {
+        const places = [job.location, ...(job.secondaryLocations ?? []).map((l) => l.location)]
+          .filter((l): l is string => Boolean(l?.trim()));
+        const remote = job.isRemote === true || /remote/i.test(job.workplaceType ?? "");
+        return { job, title: asString(job.title) ?? "Untitled role", location: places.join(" / ") || null, remote };
+      });
+
+    return pickForContext(jobs, context).map(({ job, title, location, remote }) => ({
+      externalId: `ashby:${boardToken}:${job.id ?? job.jobUrl ?? job.title}`,
+      title,
+      company,
+      location,
+      description: asString(job.descriptionPlain) ?? asString(job.descriptionHtml),
+      url: asString(job.jobUrl) ?? asString(job.applyUrl),
+      postedAt: asDate(job.publishedAt),
+      employmentTypeRaw: asString(job.employmentType),
+      workModeRaw: remote ? "Remote" : asString(job.workplaceType),
+      industry: asString(job.department) ?? asString(job.team),
+    }));
   },
 };
 
@@ -147,20 +222,31 @@ export const leverSource: JobSourceAdapter = {
     const boardToken = String(context.config.boardToken ?? "").trim();
     if (!boardToken) return [];
 
-    const body = await fetchWithGuards(
-      `https://api.lever.co/v0/postings/${encodeURIComponent(boardToken)}?mode=json`,
-    );
+    const body = await fetchBoard(`https://api.lever.co/v0/postings/${encodeURIComponent(boardToken)}?mode=json`);
     const postings = JSON.parse(body) as LeverPosting[];
+    const company = companyNameFor(context.config, boardToken);
+    const jobs = (Array.isArray(postings) ? postings : []).map((posting) => {
+      const places = posting.categories?.allLocations?.length
+        ? posting.categories.allLocations
+        : [posting.categories?.location].filter((l): l is string => Boolean(l));
+      return {
+        posting,
+        title: asString(posting.text) ?? "Untitled role",
+        location: places.join(" / ") || null,
+        remote: posting.workplaceType === "remote" || /remote/i.test(places.join(" ")),
+      };
+    });
 
-    return (Array.isArray(postings) ? postings : []).slice(0, context.limit).map((posting) => ({
+    return pickForContext(jobs, context).map(({ posting, title, location, remote }) => ({
       externalId: `lever:${boardToken}:${posting.id ?? posting.hostedUrl ?? posting.text}`,
-      title: asString(posting.text) ?? "Untitled role",
-      company: boardToken,
-      location: asString(posting.categories?.location),
+      title,
+      company,
+      location,
       description: asString(posting.descriptionPlain),
       url: asString(posting.hostedUrl),
       postedAt: posting.createdAt ? new Date(posting.createdAt) : null,
       employmentTypeRaw: asString(posting.categories?.commitment),
+      workModeRaw: remote ? "Remote" : asString(posting.workplaceType),
       industry: asString(posting.categories?.team),
     }));
   },

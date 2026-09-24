@@ -44,6 +44,10 @@ export async function analyzeJobAction(
     ].filter(Boolean).join("\n\n"),
     url: formData.get("url") ?? "",
   });
+  // The page a captured job came from (LinkedIn, Naukri...) is kept as the
+  // posting's link, but only as a plain http(s) URL.
+  const sourceUrl = String(formData.get("sourceUrl") ?? "").trim();
+  const keptUrl = /^https?:\/\/[^\s]{3,1500}$/i.test(sourceUrl) ? sourceUrl : undefined;
   if (!parsed.success) {
     return { fieldErrors: fieldErrorsFrom(parsed.error.issues) };
   }
@@ -51,7 +55,7 @@ export async function analyzeJobAction(
   const result = await submitParseAndAnalyzeJob(user.id, {
     inputMethod: parsed.data.inputMethod,
     text: parsed.data.text,
-    url: parsed.data.url,
+    url: parsed.data.inputMethod === "URL" ? parsed.data.url : keptUrl,
   });
 
   if ("error" in result) {

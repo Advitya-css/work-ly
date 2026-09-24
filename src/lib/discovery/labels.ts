@@ -54,3 +54,25 @@ export const BUCKETS = [
 ] as const;
 
 export type BucketKey = (typeof BUCKETS)[number]["key"];
+
+/**
+ * A source's last error, in words a user can act on. Only recognised shapes
+ * are shown - a raw network error can carry the request URL, and for
+ * licensed APIs that URL contains the API key.
+ */
+export function sourceErrorHint(errorMessage: string | null | undefined): string | null {
+  if (!errorMessage) return null;
+  const http = /HTTP (\d{3})/.exec(errorMessage);
+  if (http) {
+    const code = Number(http[1]);
+    if (code === 401 || code === 403) return "The API key was rejected. Check it in the hosting settings.";
+    if (code === 404) return "This board or endpoint doesn't exist (HTTP 404).";
+    if (code === 429) return "Rate-limited by the provider. It will retry on the next run.";
+    if (code === 400) return "The provider rejected the search (HTTP 400).";
+    if (code >= 500) return `The provider had an outage (HTTP ${code}).`;
+    return `The provider returned HTTP ${code}.`;
+  }
+  if (/abort|timed? ?out/i.test(errorMessage)) return "The provider took too long to answer.";
+  if (/^Needs: /.test(errorMessage)) return errorMessage;
+  return "The last run failed. It will retry on the next run.";
+}

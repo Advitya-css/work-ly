@@ -23,9 +23,13 @@ export async function toggleOpportunitySavedAction(id: string, nextSaved: boolea
   revalidatePath(`/opportunities/${id}`);
 }
 
-export async function setOpportunityStatusAction(id: string, status: OpportunityStatus): Promise<void> {
+export async function setOpportunityStatusAction(
+  id: string,
+  status: OpportunityStatus,
+): Promise<{ applicationId?: string }> {
   await requireOwnedOpportunity(id);
   await setOpportunityStatus(id, status);
+  let applicationId: string | undefined;
 
   // Phase 4 shipped PREPARING/APPLIED as lightweight markers, with the
   // schema noting they'd "feed into" a real tracker later. This is that
@@ -34,13 +38,15 @@ export async function setOpportunityStatusAction(id: string, status: Opportunity
   // to record the same thing twice. Idempotent - the create action returns
   // the existing application if one already exists for this opportunity.
   if (status === "APPLIED" || status === "PREPARING") {
-    await createApplicationFromOpportunityAction(id, status === "APPLIED" ? "APPLIED" : "PREPARING");
+    const created = await createApplicationFromOpportunityAction(id, status === "APPLIED" ? "APPLIED" : "PREPARING");
+    if ("applicationId" in created) applicationId = created.applicationId;
   }
 
   revalidatePath("/opportunities");
   revalidatePath(`/opportunities/${id}`);
   revalidatePath("/applications");
   revalidatePath("/dashboard");
+  return { applicationId };
 }
 
 import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";

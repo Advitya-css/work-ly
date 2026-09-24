@@ -680,7 +680,7 @@ import { AddFeedForm } from "@/components/discovery/add-feed-form";
 export function DiscoverySourcesCard({
   sources,
 }: {
-  sources: { id: string; name: string; kind: string; status: string; legalBasis: string; lastRunFoundCount: number }[];
+  sources: { id: string; name: string; kind: string; status: string; legalBasis: string; lastRunFoundCount: number; errorHint?: string | null }[];
 }) {
   return (
     <Card>
@@ -706,7 +706,7 @@ export function DiscoverySourcesCard({
                   </span>
                 )}
               </div>
-              
+              {source.errorHint && <p className="text-xs text-muted-foreground">{source.errorHint}</p>}
             </div>
           ))
         )}

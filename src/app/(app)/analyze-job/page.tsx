@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { IconAnalyze } from "@/components/icons";
 import { JobInputForm } from "@/components/jobs/job-input-form";
+import { CaptureBookmarklet } from "@/components/jobs/capture-bookmarklet";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,8 @@ export default async function AnalyzeJobPage() {
           <JobInputForm />
         </CardContent>
       </Card>
+
+      <CaptureBookmarklet />
 
       {jobs.length > 0 && (
         <div className="flex flex-col gap-3">

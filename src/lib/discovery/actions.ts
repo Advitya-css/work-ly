@@ -16,6 +16,7 @@ import {
   setSourceEnabled,
 } from "@/lib/db/discovery";
 import { runDiscovery } from "@/lib/discovery/run";
+import { syncCompanyBoards } from "@/lib/discovery/sync-company-boards";
 import { getAdapter, SOURCE_ADAPTERS } from "@/lib/discovery/registry";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
@@ -73,30 +74,9 @@ export async function ensureDefaultSourcesAction() {
 
   // All API providers to add (only if configured in env, though we can add them anyway so the user sees them and can configure them)
   
-  // Target Company boards that have good supply for Indian tech roles
-  const targetCompanies = [
-    { name: "Postman", adapterId: "greenhouse", boardToken: "postman" },
-    { name: "DoorDash India", adapterId: "greenhouse", boardToken: "doordashindia" },
-    { name: "CRED", adapterId: "lever", boardToken: "cred" },
-    { name: "Ramp", adapterId: "ashby", boardToken: "ramp" },
-    { name: "Notion", adapterId: "ashby", boardToken: "notion" },
-    { name: "Atlassian", adapterId: "lever", boardToken: "atlassian" },
-    { name: "Swiggy", adapterId: "lever", boardToken: "swiggy" }
-  ];
-
-  for (const comp of targetCompanies) {
-    if (!existing.some(s => s.config?.boardToken === comp.boardToken)) {
-      const adapter = getAdapter(comp.adapterId);
-      if (adapter) {
-        await createSource(user.id, {
-          kind: adapter.kind,
-          name: comp.name + " (" + adapter.name + ")",
-          config: { adapterId: adapter.id, boardToken: comp.boardToken },
-          legalBasis: adapter.legalBasis,
-        });
-      }
-    }
-  }
+  // Verified company career boards for the user's country (see
+  // company-boards.ts), and retired handles removed.
+  await syncCompanyBoards(user.id);
 
   const apiIds = ["adzuna", "usajobs", "jooble", "reed", "findwork"];
   for (const id of apiIds) {

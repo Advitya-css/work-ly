@@ -1,5 +1,6 @@
 "use client";
 
+import { TAILORED_CV_LABEL } from "@/lib/applications/cv-version";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
 import { Loader2, Plus, Trash2, Save } from "lucide-react";
@@ -93,10 +94,15 @@ export function ApplicationEditor({ application }: { application: Application })
           <Label htmlFor="cv-version">CV version used</Label>
           <Input
             id="cv-version"
+            list="cv-version-options"
             value={cvVersion}
             onChange={(e) => setCvVersion(e.target.value)}
-            placeholder="e.g. analyst-cv-v3.pdf"
+            placeholder="e.g. Work-ly tailored resume"
           />
+          <datalist id="cv-version-options">
+            <option value={TAILORED_CV_LABEL} />
+            <option value="My base resume" />
+          </datalist>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="date-applied">Date applied</Label>

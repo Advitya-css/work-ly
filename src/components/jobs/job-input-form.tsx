@@ -1,8 +1,9 @@
 "use client";
 
 import { WorklyLoader } from "@/components/shared/workly-loader";
-import { useActionState, useState } from "react";
-import { Loader2, ScanSearch, AlertCircle } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { Loader2, ScanSearch, AlertCircle, Bookmark } from "lucide-react";
+import { decodeCapture, type CapturedJob } from "@/lib/capture/capture";
 
 import { analyzeJobAction, type AnalyzeJobActionState } from "@/lib/jobs/actions";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,32 @@ const initialState: AnalyzeJobActionState = {};
 export function JobInputForm() {
   const [state, formAction, pending] = useActionState(analyzeJobAction, initialState);
   const [method, setMethod] = useState<"PASTED_TEXT" | "URL">("PASTED_TEXT");
+  // A job sent here by the "Save to Work-ly" button arrives in the URL
+  // fragment. It prefills the form for review - it is never submitted on
+  // its own - and the fragment is cleared so a refresh doesn't re-apply it.
+  const [captured, setCaptured] = useState<CapturedJob | null>(null);
+  useEffect(() => {
+    const job = decodeCapture(window.location.hash);
+    if (!job) return;
+    setCaptured(job);
+    setMethod("PASTED_TEXT");
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, []);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="inputMethod" value={method} />
+      {captured?.url && <input type="hidden" name="sourceUrl" value={captured.url} />}
+
+      {captured && (
+        <Alert>
+          <Bookmark />
+          <AlertDescription>
+            Captured from {captured.site || "the page you were on"}. Check the description below is the job (not
+            the whole page), then press Analyze.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {state.error && (
         <Alert variant="destructive">
@@ -39,16 +62,18 @@ export function JobInputForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="job-title">Job title (optional)</Label>
-              <Input id="job-title" name="jobTitle" placeholder="e.g. Product Analytics Intern" disabled={pending} />
+              <Input key={`t-${captured?.url ?? ""}`} id="job-title" name="jobTitle" defaultValue={captured?.title ?? ""} placeholder="e.g. Product Analytics Intern" disabled={pending} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="job-company">Company (optional)</Label>
-              <Input id="job-company" name="jobCompany" placeholder="e.g. Stripe" disabled={pending} />
+              <Input key={`c-${captured?.url ?? ""}`} id="job-company" name="jobCompany" defaultValue={captured?.company ?? ""} placeholder="e.g. Stripe" disabled={pending} />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="job-text">Job description</Label>
             <Textarea
+              key={`x-${captured?.url ?? ""}`}
+              defaultValue={captured?.text ?? ""}
               id="job-text"
               name="text"
               rows={12}
