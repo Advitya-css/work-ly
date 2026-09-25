@@ -1,8 +1,16 @@
-export default function TermsOfService() {
+import { PageHeader } from "@/components/shared/page-header";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Work-ly",
+  description: "Work-ly terms of service.",
+};
+
+export default function TermsPage() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
       <h1 className="font-serif text-4xl text-foreground mb-4">Terms of Service</h1>
-      <p className="text-sm italic">Last updated: August 31, 2026</p>
+      <p className="text-sm italic">Last updated: September 25, 2026</p>
 
       <p>
         These Terms of Service (&quot;Terms&quot;) are an agreement between you and Advitya Bansal, operating
@@ -19,9 +27,7 @@ export default function TermsOfService() {
         employer, and it does not guarantee you a job, an interview, or any particular outcome.
       </p>
       <p>
-        Work-ly is currently free to use. If we introduce a paid &quot;Work-ly Pro&quot; tier, billing (processed
-        through our payment provider, Lemon Squeezy) and refund terms will be presented to you separately before
-        you&apos;re charged, and using a paid feature means you accept those terms too.
+        Work-ly offers a free tier and a paid &quot;Work-ly Pro&quot; tier. Work-ly Pro is available via a Monthly subscription, a 3-Month Pass (one-time payment), or a Yearly Pass (one-time payment). Billing and order fulfillment is processed securely through our Merchant of Record, Lemon Squeezy. By purchasing a Pro plan, you also agree to our <a href="/legal/refunds" className="text-foreground underline underline-offset-2">Refund Policy</a>.
       </p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">2. Eligibility and your account</h2>
@@ -98,8 +104,7 @@ export default function TermsOfService() {
         don&apos;t guarantee the service will be uninterrupted, error-free, or that using it will lead to any job
         offer, interview, or employment outcome. To the maximum extent permitted by law, we won&apos;t be liable
         for indirect, incidental, or consequential damages, and our total liability to you is limited to the
-        amount you&apos;ve paid us in the past 12 months (or the equivalent of INR 5,000, given Work-ly is currently
-        free). Nothing here limits any right you can&apos;t lawfully waive under the law that applies to you
+        amount you&apos;ve paid us in the past 12 months. Nothing here limits any right you can&apos;t lawfully waive under the law that applies to you
         (for example, statutory consumer guarantees in your country).
       </p>
 

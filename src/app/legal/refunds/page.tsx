@@ -8,31 +8,36 @@ export const metadata: Metadata = {
 };
 
 const markdown = `
-**Last Updated**: September 1, 2026
+**Last Updated**: September 25, 2026
 
-### Subscriptions & Auto-Renewal
+### Billing & Passes
 
-Work-ly Pro is billed as a recurring subscription (monthly or yearly). When you subscribe, you agree that your payment method will be charged automatically at the start of each billing cycle. 
+Work-ly Pro is offered in three tiers:
+* **Monthly Subscription**: Billed as a recurring monthly subscription. It auto-renews until cancelled.
+* **3-Month Pass**: A strict one-time payment for 3 months of access. It **does not** auto-renew.
+* **Yearly Pass**: A strict one-time payment for 12 months of access. It **does not** auto-renew.
 
-You can cancel your subscription at any time via the "Manage Subscription" link in your Work-ly Settings, or directly through the Lemon Squeezy portal. Your cancellation will take effect at the end of the current paid term.
+You can cancel the Monthly subscription at any time via your Work-ly Settings or the Lemon Squeezy portal. Your cancellation will take effect at the end of the current paid term.
 
-### Refund Policy
+### 14-Day Refund Policy
 
-Because our services involve immediate and intensive AI processing costs on our end, **all payments are generally non-refundable** unless required otherwise by applicable law (e.g., EU/UK statutory withdrawal rights where the service has not yet been utilized).
+We want you to be fully satisfied with Work-ly. If you purchase any Pro plan or pass and find that it does not meet your expectations, we offer a **14-day money-back guarantee**. 
 
-If you believe there was a billing error or a technical failure prevented you from accessing the service you paid for, please contact us immediately. We handle technical-failure refunds on a case-by-case basis.
+To request a refund within 14 days of your original purchase, simply email us at **advitya@work-ly.in**. We will process your refund no questions asked, provided your account has not engaged in abusive behavior or violated our Terms of Service (e.g., massive automated API scraping). 
+
+After 14 days, payments are non-refundable unless required otherwise by applicable law.
 
 ### Merchant of Record
 
-Our order process is conducted by our online reseller, **Lemon Squeezy**. Lemon Squeezy is the Merchant of Record for all our orders. They handle payment processing, sales tax collection, and issue your invoices.
+Our order process is conducted by our online reseller, **Lemon Squeezy**. Lemon Squeezy is the Merchant of Record for all our orders. They handle payment processing, global sales tax/VAT collection, and issue your invoices. All refunds are processed securely through Lemon Squeezy back to your original payment method.
 `;
 
 export default function RefundsPage() {
   return (
     <div className="flex max-w-3xl flex-col gap-8">
       <PageHeader
-        title="Refund & Subscription Policy"
-        description="Details about billing, renewals, and refunds."
+        title="Refund Policy"
+        description="Details about billing, passes, and our 14-day refund policy."
       />
       <div className="prose prose-sm dark:prose-invert">
         <MarkdownRenderer content={markdown} />
