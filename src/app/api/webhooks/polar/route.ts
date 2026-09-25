@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Webhooks } from "@polar-sh/sdk/webhooks";
+import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { pool } from "@/lib/db/pool";
 
 export async function POST(req: Request) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         "webhook-timestamp": req.headers.get("webhook-timestamp") || "",
         "webhook-signature": signature,
       };
-      event = Webhooks.verify(rawBody, webhookHeaders, secret);
+      event = validateEvent(rawBody, webhookHeaders, secret);
     } catch (err) {
       console.error("Invalid Polar webhook signature:", err);
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });

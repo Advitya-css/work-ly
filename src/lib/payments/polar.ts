@@ -1,7 +1,7 @@
 "use server";
 
 import { Polar } from "@polar-sh/sdk";
-import { getCurrentUser } from "@/lib/auth/providers/local"; // Assuming local auth
+import { getCurrentUser } from "@/lib/auth";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
