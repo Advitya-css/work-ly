@@ -139,6 +139,13 @@ export async function signInAction(
     redirect("/onboarding");
   }
 
+  // Back to the page that asked them to sign in - only ever a path on this
+  // site, never an absolute or protocol-relative URL (open redirect).
+  const callbackUrl = String(formData.get("callbackUrl") ?? "");
+  if (/^\/(?!\/)[^\s\\]*$/.test(callbackUrl) && !callbackUrl.startsWith("/login") && !callbackUrl.startsWith("/signup")) {
+    redirect(callbackUrl);
+  }
+
   redirect("/dashboard");
 }
 

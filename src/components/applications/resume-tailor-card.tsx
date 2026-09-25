@@ -78,10 +78,17 @@ export function ResumeTailorCard({
               </UpgradeModal>
             </ProPreview>
           ) : (
-            <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto gap-2">
-              {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {loading ? "Reading the job and your profile..." : "Tailor my bullets for this job"}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button onClick={handleTailor} disabled={loading} className="w-full sm:w-auto gap-2">
+                {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                {loading ? "Reading the job and your profile..." : error ? "Try again" : "Tailor my bullets for this job"}
+              </Button>
+              {error && !loading && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+            </div>
           )
         ) : (
           <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">

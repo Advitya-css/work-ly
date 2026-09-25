@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { signInAction, type AuthActionState } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,20 @@ import { AlertCircle } from "lucide-react";
 
 const initialState: AuthActionState = {};
 
+/** Where to go after signing in, when the login page was reached from a protected link. */
+function CallbackInput() {
+  const searchParams = useSearchParams();
+  return <input type="hidden" name="callbackUrl" value={searchParams?.get("callbackUrl") ?? ""} />;
+}
+
 export function SignInForm() {
   const [state, formAction, pending] = useActionState(signInAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
+      <Suspense fallback={null}>
+        <CallbackInput />
+      </Suspense>
       {state.error && (
         <Alert variant="destructive">
           <AlertCircle className="size-4" />

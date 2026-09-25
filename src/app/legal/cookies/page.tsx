@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description: "The cookies Work-ly uses and why.",
+};
+
 export default function CookiePolicy() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">

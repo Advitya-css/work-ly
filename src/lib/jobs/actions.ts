@@ -11,6 +11,8 @@ import { jobInputSchema } from "@/lib/validations/job-input";
 export interface AnalyzeJobActionState {
   error?: string;
   fieldErrors?: Record<string, string>;
+  /** What was submitted, so a failed attempt never wipes the user's paste. */
+  values?: { jobTitle: string; jobCompany: string; text: string; url: string };
 }
 
 function fieldErrorsFrom(issues: { path: PropertyKey[]; message: string }[]) {
@@ -31,6 +33,13 @@ export async function analyzeJobAction(
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const values = {
+    jobTitle: String(formData.get("jobTitle") ?? ""),
+    jobCompany: String(formData.get("jobCompany") ?? ""),
+    text: String(formData.get("text") ?? ""),
+    url: String(formData.get("url") ?? ""),
+  };
+
   const parsed = jobInputSchema.safeParse({
     inputMethod: formData.get("inputMethod"),
     // Radix Tabs unmounts the inactive tab's content, so whichever of
@@ -49,7 +58,7 @@ export async function analyzeJobAction(
   const sourceUrl = String(formData.get("sourceUrl") ?? "").trim();
   const keptUrl = /^https?:\/\/[^\s]{3,1500}$/i.test(sourceUrl) ? sourceUrl : undefined;
   if (!parsed.success) {
-    return { fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+    return { fieldErrors: fieldErrorsFrom(parsed.error.issues), values };
   }
 
   const result = await submitParseAndAnalyzeJob(user.id, {
@@ -59,7 +68,7 @@ export async function analyzeJobAction(
   });
 
   if ("error" in result) {
-    return { error: result.error };
+    return { error: result.error, values };
   }
 
   revalidatePath("/analyze-job");

@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Work-ly collects, uses and protects your data, and your rights under GDPR, DPDPA, CCPA and more.",
+};
+
 export default function PrivacyPolicy() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
@@ -28,7 +35,7 @@ export default function PrivacyPolicy() {
 
       <h2 className="text-2xl font-bold text-foreground mt-4">2. How we use it</h2>
       <ul className="list-disc pl-6 flex flex-col gap-2">
-        <li>To create your account, build your career profile, and parse résumés (using local pattern-matching by default; only where you enable an AI-assisted feature is relevant text sent to an AI model provider).</li>
+        <li>To create your account, build your career profile, and read your résumé. Résumé text, your profile and the job postings you check are sent to our AI model provider (Google Gemini) to extract details, check your fit and write the material you ask for; if the AI is unavailable, built-in pattern-matching is used instead.</li>
         <li>To show job opportunities and calculate Fit/Priority scores and skills-gap analysis based on your profile.</li>
         <li>To let you save, apply to, and track opportunities, and to generate AI-assisted content you request, like a tailored cover letter.</li>
         <li>To send service-related emails (via our email provider) and secure the service against fraud and abuse.</li>
@@ -52,7 +59,7 @@ export default function PrivacyPolicy() {
 
       <h2 className="text-2xl font-bold text-foreground mt-4">4. Who we share information with</h2>
       <ul className="list-disc pl-6 flex flex-col gap-2">
-        <li><strong className="text-foreground">Service providers</strong> who process data on our behalf under confidentiality obligations: our cloud hosting/database provider, our email-delivery provider, and, only for AI-assisted features you use, an AI model provider.</li>
+        <li><strong className="text-foreground">Service providers</strong> who process data on our behalf under confidentiality obligations: our cloud hosting/database provider, our email-delivery provider, and our AI model provider (Google, for Gemini), which receives only the text a feature needs.</li>
         <li><strong className="text-foreground">Job-data providers</strong> (Adzuna, Reed, Remotive, Jobicy, and similar) &mdash; we send search terms to fetch listings, not your résumé or identity.</li>
         <li><strong className="text-foreground">Payments</strong> are processed by our payment provider (named at checkout, and on our Sub-processors page); where it acts as reseller (Merchant of Record) it receives your name, email, billing country and payment details to complete the sale and handle tax. We never see or store your full card details.</li>
         <li>Legal authorities, where required by law, or in a business transfer such as a merger or acquisition.</li>

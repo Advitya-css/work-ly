@@ -163,7 +163,9 @@ const RESPONSE_SCHEMA = {
 };
 
 async function run(resumeText: string): Promise<ExtractedCareerProfile> {
-  const result = await aiProvider.complete({
+  let result: Awaited<ReturnType<typeof aiProvider.complete>>;
+  try {
+    result = await aiProvider.complete({
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       // Stripped only on this copy sent to the model - grounding still
@@ -178,7 +180,17 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
     // so it needs to be the same skill list every time the same resume
     // text is (re-)parsed, not a slightly different one each run.
     temperature: 0,
-  });
+    });
+  } catch (error) {
+    // Model down, overloaded or out of quota: a new user's first upload
+    // must still build a profile. The built-in parser reads it instead,
+    // and the profile page lets them fix anything it missed.
+    console.warn(
+      "[workly:ai] resume extraction failed; using the built-in parser:",
+      error instanceof Error ? error.message.slice(0, 200) : error,
+    );
+    return heuristicResumeParsingProvider.parseResume(resumeText);
+  }
 
   const parsed = (result.parsed ?? {}) as Partial<ExtractedCareerProfile>;
 

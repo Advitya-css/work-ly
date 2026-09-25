@@ -76,7 +76,7 @@ export default function PricingPage() {
       featured: Boolean(plan.featured),
       // Checkout needs an account: signed-in visitors land on the plans in
       // Settings; everyone else signs in (or signs up from there) first.
-      cta: { label: `Get ${plan.name}`, href: `/settings?plan=${plan.interval}` },
+      cta: { label: `Get ${plan.name}`, href: `/upgrade?plan=${plan.interval}` },
     })),
   ];
 

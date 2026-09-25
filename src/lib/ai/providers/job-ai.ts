@@ -62,7 +62,9 @@ const RESPONSE_SCHEMA = {
 };
 
 async function run(jobText: string): Promise<ExtractedJob> {
-  const result = await aiProvider.complete({
+  let result: Awaited<ReturnType<typeof aiProvider.complete>>;
+  try {
+    result = await aiProvider.complete({
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       // Stripped only on this copy sent to the model - grounding still
@@ -76,7 +78,17 @@ async function run(jobText: string): Promise<ExtractedJob> {
     // different skill list or seniority and silently shift the score - the
     // "the fit score changes for no reason" failure mode.
     temperature: 0,
-  });
+    });
+  } catch (error) {
+    // The model is down, overloaded or out of quota. Analysis must still
+    // work: the built-in parser reads the posting, and the fit is scored
+    // by the rules engine. Nothing the user pasted is lost.
+    console.warn(
+      "[workly:ai] job extraction failed; using the built-in parser:",
+      error instanceof Error ? error.message.slice(0, 200) : error,
+    );
+    return heuristicJobParsingProvider.parseJob(jobText);
+  }
 
   const validated = extractedJobSchema.safeParse(result.parsed);
   if (!validated.success) {

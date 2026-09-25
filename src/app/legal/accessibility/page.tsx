@@ -3,7 +3,7 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Accessibility Statement | Work-ly",
+  title: "Accessibility Statement",
   description: "Our commitment to digital accessibility.",
 };
 

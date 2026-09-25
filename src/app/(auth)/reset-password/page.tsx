@@ -86,7 +86,7 @@ export default function ResetPasswordPage({
           {state.fieldErrors?.password ? (
             <p className="text-xs text-destructive">{state.fieldErrors.password}</p>
           ) : (
-            <p className="text-xs text-muted-foreground">At least 12 characters, mixed case and numbers.</p>
+            <p className="text-xs text-muted-foreground">At least 10 characters, with a number.</p>
           )}
         </div>
 

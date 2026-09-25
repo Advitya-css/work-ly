@@ -4,7 +4,7 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sub-processors | Work-ly",
+  title: "Sub-processors",
   description: "Third-party services we use to process your data.",
 };
 

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { PLAN_INTENT_COOKIE, isPaidInterval } from "@/lib/payments/plan-intent";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -56,6 +58,13 @@ export default async function DashboardPage({
   }
 
   const user = await getCurrentUser();
+
+  // Picked a plan on the Pricing page before signing up: take them to it.
+  const planIntent = (await cookies()).get(PLAN_INTENT_COOKIE)?.value;
+  if (user && isPaidInterval(planIntent)) {
+    redirect(`/upgrade?plan=${planIntent}`);
+  }
+
   const [profile, goals, opportunities, pathway, applications, fullProfile] = user
     ? await Promise.all([
         getCareerProfileByUserId(user.id),

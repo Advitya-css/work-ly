@@ -20,6 +20,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { signOutAction } from "@/lib/auth/actions";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
+import { isPaidInterval } from "@/lib/payments/plan-intent";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -44,6 +45,7 @@ export default async function SettingsPage({
   }
   const payment = typeof params.payment === "string" ? params.payment : null;
   const pendingCheckout = typeof params.checkout === "string" ? params.checkout : null;
+  const chosenPlan = isPaidInterval(params.plan) && !payment ? params.plan : null;
 
   const profile = await getCareerProfileByUserId(user.id);
   const isStudent = profile?.isStudent ?? false;
@@ -51,7 +53,7 @@ export default async function SettingsPage({
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Settings" description="Your account, where you will work, and your data." />
-      <PlanSettings payment={payment} pendingCheckout={pendingCheckout} />
+      <PlanSettings payment={payment} pendingCheckout={pendingCheckout} chosenPlan={chosenPlan} />
 
       <Card>
         <CardHeader>

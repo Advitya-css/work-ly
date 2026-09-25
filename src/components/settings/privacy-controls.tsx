@@ -165,20 +165,11 @@ export function PrivacyControls() {
           <div>
             <p className="font-medium text-foreground">What is sent to AI</p>
             <p>
-              Nothing, unless you configure an AI provider. Out of the box, Work-ly reads CVs and job
-              postings with built-in pattern matching that runs entirely on this machine, and every
-              score: fit, priority, readiness, gap analysis ,  is calculated by ordinary code, not a
-              model. If you do add an API key, only the CV text and job descriptions you submit are
-              sent, and only at the moment you submit them.
-            </p>
-          </div>
-          <div>
-            <p className="font-medium text-foreground">AI Processing</p>
-            <p>
-              Your data (including your CV) is processed securely by Work-ly AI to provide tailored
-              job recommendations, interview prep, and career insights. We do not use your personal
-              information to train underlying public AI models.
-              
+              To read your CV, check your fit for a job and write tailored material, Work-ly sends the
+              relevant text (your CV and profile, and the job posting) to Google&apos;s Gemini models.
+              Only what a feature needs is sent, at the moment you use it or when your nightly job check
+              runs. Work-ly never uses your data to train AI models. If the AI is unavailable, Work-ly falls back to built-in parsing and rules
+              so you&apos;re never blocked.
             </p>
           </div>
           <div>

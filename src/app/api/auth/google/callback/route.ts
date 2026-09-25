@@ -13,11 +13,11 @@ export async function GET(request: Request) {
   const storedState = cookieStore.get("oauth_state")?.value;
 
   if (!code) {
-    return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=No_code_provided`);
+    return NextResponse.redirect(`${baseUrl}/login?error=google`);
   }
 
   if (!state || !storedState || state !== storedState) {
-    return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=Invalid_state_parameter`);
+    return NextResponse.redirect(`${baseUrl}/login?error=google`);
   }
 
   try {
@@ -58,7 +58,18 @@ export async function GET(request: Request) {
       });
 
       if (result.error) {
-        return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=${encodeURIComponent(result.error)}`);
+        return NextResponse.redirect(`${baseUrl}/login?error=google`);
+      }
+      // New Google accounts go through onboarding (resume upload, first
+      // matches) like email signups; returning users go to the dashboard.
+      if (result.user && !result.user.onboardedAt) {
+        const ref = cookieStore.get("workly_ref")?.value;
+        if (ref) {
+          const { recordReferral } = await import("@/lib/db/users");
+          await recordReferral(result.user.id, ref).catch((e) => console.error("Failed to record Google referral", e));
+          cookieStore.delete("workly_ref");
+        }
+        return NextResponse.redirect(`${baseUrl}/onboarding`);
       }
     } else {
       throw new Error("signInWithOAuth is not implemented on the current auth provider");
@@ -68,6 +79,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${baseUrl}/dashboard`);
   } catch (error) {
     console.error("Google OAuth Error:", error);
-    return NextResponse.redirect(`${baseUrl}/auth/sign-in?error=OAuth_failed`);
+    return NextResponse.redirect(`${baseUrl}/login?error=google`);
   }
 }

@@ -18,9 +18,10 @@ interface UpgradeButtonProps {
    * the card's edge.
    */
   fullWidth?: boolean;
+  label?: string;
 }
 
-export function UpgradeButton({ interval = "monthly", className, variant, fullWidth = false }: UpgradeButtonProps) {
+export function UpgradeButton({ interval = "monthly", className, variant, fullWidth = false, label = "Upgrade to Pro" }: UpgradeButtonProps) {
   return (
     <UpgradeModal
       defaultPlan={interval}
@@ -36,7 +37,7 @@ export function UpgradeButton({ interval = "monthly", className, variant, fullWi
         )}
       >
         <Sparkles className="size-4 shrink-0" />
-        Upgrade to Pro
+        {label}
       </Button>
     </UpgradeModal>
   );

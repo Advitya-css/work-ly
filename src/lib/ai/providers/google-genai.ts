@@ -80,13 +80,20 @@ export const googleGenAIProvider: AIProvider = {
       console.info(`[workly:ai] live Google GenAI calls enabled: model=${model} key=***${primaryApiKey.slice(-4)}`);
     }
 
-    // Optional second model for when the first is out of quota (HTTP 429) or
-    // overloaded (503): free-tier limits are per model, so a sibling model
-    // usually still has room. Only used when AI_FALLBACK_MODEL is set.
-    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || (model === "gemini-3.5-flash-lite" ? "gemini-1.5-flash" : "gemini-3.5-flash-lite");
+    // Models to try in order. When one is out of quota (429), overloaded
+    // (5xx) or no longer exists (404 - Google retires model names), the next
+    // is tried while time remains. The "-latest" aliases are kept current by
+    // Google, so the chain doesn't rot when a specific version is retired.
+    const chain = Array.from(
+      new Set(
+        [model, process.env.AI_FALLBACK_MODEL?.trim(), "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash"].filter(
+          (m): m is string => Boolean(m),
+        ),
+      ),
+    );
+    let modelIndex = 0;
     const urlFor = (m: string, key: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
-    let url = urlFor(model, primaryApiKey);
-    let usingFallback = false;
+    const currentUrl = () => urlFor(chain[modelIndex], modelIndex === 0 ? primaryApiKey : fallbackApiKey);
     
     // Map messages
     let systemInstruction;
@@ -119,12 +126,13 @@ export const googleGenAIProvider: AIProvider = {
 
     let lastError: unknown;
     const deadline = Date.now() + TOTAL_BUDGET_MS;
-    const canRetry = (attempt: number) => attempt < MAX_ATTEMPTS && deadline - Date.now() > MIN_RETRY_WINDOW_MS;
+    const maxAttempts = MAX_ATTEMPTS + chain.length - 1;
+    const canRetry = (attempt: number) => attempt < maxAttempts && deadline - Date.now() > MIN_RETRY_WINDOW_MS;
 
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       let response: Response;
       try {
-        response = await fetch(url, {
+        response = await fetch(currentUrl(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
@@ -134,7 +142,7 @@ export const googleGenAIProvider: AIProvider = {
         lastError = error;
         const isTimeout = error instanceof Error && error.name === "TimeoutError";
         const isNetworkFailure = error instanceof TypeError;
-        if (isTimeout) console.warn(`[workly:ai] model=${model} took longer than the time allowed (attempt ${attempt})`);
+        if (isTimeout) console.warn(`[workly:ai] model=${chain[modelIndex]} took longer than the time allowed (attempt ${attempt})`);
         if (!isTimeout && isNetworkFailure && canRetry(attempt)) {
           console.warn(`[workly:ai] network error (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`);
           await delay(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
@@ -145,11 +153,12 @@ export const googleGenAIProvider: AIProvider = {
 
       if (!response.ok) {
         const responseBody = await response.text();
-        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${usingFallback ? fallbackModel : model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
-        if ((response.status === 429 || response.status >= 500) && !usingFallback && canRetry(attempt)) {
-          console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model/key`);
-          usingFallback = true;
-          url = urlFor(fallbackModel, fallbackApiKey);
+        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${chain[modelIndex]}, attempt ${attempt}/${maxAttempts}): ${responseBody.slice(0, 500)}`);
+        const modelProblem =
+          response.status === 429 || response.status >= 500 || response.status === 404 || (response.status === 400 && /model/i.test(responseBody));
+        if (modelProblem && modelIndex < chain.length - 1 && canRetry(attempt)) {
+          modelIndex++;
+          console.warn(`[workly:ai] switching to ${chain[modelIndex]} after ${response.status}`);
           lastError = new Error(`AI provider request failed (${response.status})`);
           continue;
         }
@@ -169,7 +178,7 @@ export const googleGenAIProvider: AIProvider = {
         try {
           parsed = JSON.parse(content);
         } catch {
-          console.warn(`[workly:ai] model=${model} did not return valid JSON despite a response schema. First 200 chars: ${content.slice(0, 200)}`);
+          console.warn(`[workly:ai] model=${chain[modelIndex]} did not return valid JSON despite a response schema. First 200 chars: ${content.slice(0, 200)}`);
         }
       }
 

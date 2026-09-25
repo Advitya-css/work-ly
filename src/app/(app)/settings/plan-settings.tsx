@@ -10,6 +10,8 @@ import { hasYearlyPerks } from "@/lib/plans";
 import { PAID_PLANS } from "@/lib/pricing";
 import { BUSINESS } from "@/lib/business";
 import { restorePurchaseAction } from "@/lib/payments/polar";
+import { UpgradeButton } from "@/components/paywall/upgrade-button";
+import type { PaidInterval } from "@/lib/payments/plan-intent";
 
 /** What happened when we checked Polar for this account's payment (see settings/page.tsx). */
 function PaymentNotice({
@@ -83,9 +85,12 @@ function PaymentNotice({
 export async function PlanSettings({
   payment = null,
   pendingCheckout = null,
+  chosenPlan = null,
 }: {
   payment?: string | null;
   pendingCheckout?: string | null;
+  /** The plan picked on the Pricing page, if they came from there. */
+  chosenPlan?: PaidInterval | null;
 } = {}) {
   const user = await getCurrentUser();
   if (!user) return null;
@@ -99,6 +104,21 @@ export async function PlanSettings({
   return (
     <div id="plan" className="flex scroll-mt-24 flex-col gap-6">
       <PaymentNotice payment={payment} planName={paidPlan?.name ?? null} pendingCheckout={pendingCheckout} />
+      {chosenPlan && canBuy && (() => {
+        const chosen = PAID_PLANS.find((p) => p.interval === chosenPlan);
+        return chosen ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">
+              <strong className="text-foreground">You picked the {chosen.name}</strong>{" "}
+              <span className="text-muted-foreground">
+                ({chosen.price}
+                {chosen.priceSuffix ?? ""}). Checkout takes about a minute, with a {BUSINESS.refundDays}-day money-back guarantee.
+              </span>
+            </p>
+            <UpgradeButton interval={chosenPlan} label={`Continue with ${chosen.name}`} className="shrink-0" />
+          </div>
+        ) : null;
+      })()}
       <Card>
         <CardHeader>
           <CardTitle>Plan & Billing</CardTitle>

@@ -75,7 +75,7 @@ export default function FreeGraderPage() {
               </div>
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Reading the job against your resume...</h3>
-            <p className="text-sm text-muted-foreground">This takes about 5 seconds.</p>
+            <p className="text-sm text-muted-foreground">This usually takes 10-20 seconds.</p>
           </div>
         </div>
       )}

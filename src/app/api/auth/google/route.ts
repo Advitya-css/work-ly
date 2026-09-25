@@ -21,6 +21,18 @@ export async function GET(request: Request) {
     maxAge: 60 * 10 // 10 minutes
   });
 
+  // A referral link (/signup?ref=...) survives the trip through Google.
+  const ref = new URL(request.url).searchParams.get("ref")?.trim();
+  if (ref && /^[A-Za-z0-9-]{8,64}$/.test(ref)) {
+    cookieStore.set("workly_ref", ref, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 30,
+    });
+  }
+
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);

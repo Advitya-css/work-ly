@@ -62,18 +62,18 @@ export function JobInputForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="job-title">Job title (optional)</Label>
-              <Input key={`t-${captured?.url ?? ""}`} id="job-title" name="jobTitle" defaultValue={captured?.title ?? ""} placeholder="e.g. Product Analytics Intern" disabled={pending} />
+              <Input key={`t-${captured?.url ?? ""}`} id="job-title" name="jobTitle" defaultValue={state.values?.jobTitle ?? captured?.title ?? ""} placeholder="e.g. Product Analytics Intern" disabled={pending} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="job-company">Company (optional)</Label>
-              <Input key={`c-${captured?.url ?? ""}`} id="job-company" name="jobCompany" defaultValue={captured?.company ?? ""} placeholder="e.g. Stripe" disabled={pending} />
+              <Input key={`c-${captured?.url ?? ""}`} id="job-company" name="jobCompany" defaultValue={state.values?.jobCompany ?? captured?.company ?? ""} placeholder="e.g. Stripe" disabled={pending} />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="job-text">Job description</Label>
             <Textarea
               key={`x-${captured?.url ?? ""}`}
-              defaultValue={captured?.text ?? ""}
+              defaultValue={state.values?.text ?? captured?.text ?? ""}
               id="job-text"
               name="text"
               rows={12}
@@ -91,6 +91,7 @@ export function JobInputForm() {
               id="job-url"
               name="url"
               type="url"
+              defaultValue={state.values?.url ?? ""}
               placeholder="https://company.com/careers/senior-engineer"
               disabled={pending}
             />

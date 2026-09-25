@@ -106,10 +106,14 @@ export function InteractiveDemo() {
                         <span>Rewritten for this role</span>
                       </div>
                       <p className="text-sm font-mono leading-relaxed bg-background p-3 rounded border border-border">
-                        "Engineered responsive frontend architectures using React and global state management (Zustand), optimizing core web vitals and reducing time-to-interactive."
+                        "Built production websites in JavaScript and React, and made them load noticeably faster by improving page performance (web vitals)."
                       </p>
                       <p className="text-xs text-muted-foreground mt-3">
-                        <span className="font-semibold text-foreground">Keywords matched from your experience:</span> frontend engineer, state management, Zustand, core web vitals
+                        <span className="font-semibold text-foreground">Keywords matched from your experience:</span> React, JavaScript, web performance
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        <span className="font-semibold text-foreground">Not added:</span> Redux/Zustand - the posting asks for it, but your bullet
+                        doesn&apos;t show it. Work-ly flags it as a gap instead of inventing it.
                       </p>
                     </div>
                   </div>

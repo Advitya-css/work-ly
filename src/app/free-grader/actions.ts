@@ -69,7 +69,7 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
     // exactly three gaps forced even for a perfect match.
     const analysis = await screenPastedResume(safeResume, safeJob);
     if (!analysis || !analysis.screen) {
-      return { error: "The scanner is busy right now. Please try again in a minute." };
+      return { error: "Our AI checker is overloaded right now. Your text is still here - try again in a minute." };
     }
 
     const open = analysis.screen.requirements
