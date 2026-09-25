@@ -26,8 +26,8 @@ export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearl
       throw new Error("Invalid plan selected");
     }
 
-    const result = await polar.checkouts.custom.create({
-      productId: productId,
+    const result = await polar.checkouts.create({
+      products: [productId],
       customerEmail: user.email,
       customerMetadata: {
         user_id: user.id
