@@ -39,14 +39,15 @@ export async function POST(req: Request) {
       }
 
       // Determine pass length based on price (hacky fallback if product ID mapping isn't perfect)
-      const amount = order.amount;
+      // Use product ID to determine plan type exactly
+      const productId = order.product_id;
       let intervalAmount = "1 month";
       let planType = "monthly";
       
-      if (amount >= 10000) { // $100+ -> Yearly
+      if (productId === "a42ffed2-dd57-4e6c-af7c-ba112e9ec43f") {
         intervalAmount = "1 year";
         planType = "yearly";
-      } else if (amount >= 4000) { // $40+ -> 3-Month
+      } else if (productId === "7e7f1dbc-9f22-44f9-bd6b-196911383dbe") {
         intervalAmount = "3 months";
         planType = "quarterly";
       }
