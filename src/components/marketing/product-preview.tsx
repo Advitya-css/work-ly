@@ -10,9 +10,9 @@ const miniNav = [
 ];
 
 const opportunities = [
-  { role: "Senior Product Designer", company: "Linear", score: 92, tag: "Strong fit" },
-  { role: "Staff Product Manager", company: "Ramp", score: 78, tag: "Worth a look" },
-  { role: "Design Lead", company: "Vercel", score: 54, tag: "Stretch role" },
+  { role: "Senior Product Designer", company: "Example Labs", score: 92, tag: "Strong fit" },
+  { role: "Staff Product Manager", company: "Sample Studio", score: 78, tag: "Worth a look" },
+  { role: "Design Lead", company: "Demo Co.", score: 54, tag: "Stretch role" },
 ];
 
 export function ProductPreview() {

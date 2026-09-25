@@ -12,7 +12,7 @@ import { redeemBetaCodeAction } from "@/lib/beta/actions";
 export function UpgradeModal({ 
   children,
   title = "Unlock Work-ly Pro",
-  description = "Get the ultimate unfair advantage in your job hunt.",
+  description = "Every AI career tool, with a 7-day money-back guarantee.",
   defaultPlan,
   preview,
 }: { 

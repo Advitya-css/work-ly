@@ -98,7 +98,7 @@ export function InsiderAccessButton({
               Message the hiring manager
             </DialogTitle>
             <DialogDescription>
-              A strategic cold email designed to bypass the ATS and secure an introductory chat.
+              A short, specific note to the hiring manager, built on what you actually bring.
             </DialogDescription>
           </DialogHeader>
 

@@ -1,3 +1,4 @@
+import { BUSINESS } from "@/lib/business";
 import { PageHeader } from "@/components/shared/page-header";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { type Metadata } from "next";
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const markdown = `
-**Last Updated**: September 1, 2026
+**Last Updated**: September 25, 2026
 
 To provide Work-ly's services, we rely on a carefully selected group of third-party vendors who may process your personal data on our behalf ("Sub-processors"). We only partner with vendors who meet our strict security and privacy standards, including GDPR and DPDPA compliance.
 
@@ -20,12 +21,12 @@ To provide Work-ly's services, we rely on a carefully selected group of third-pa
 ### Core Service Providers
 
 * **Resend** (USA) – Transactional email delivery (e.g., login codes, account notifications).
-* **Lemon Squeezy** (USA) – Merchant of Record and payment processing (handles billing and subscriptions).
+* **Payment provider** – payment processing${BUSINESS.paymentProvider ? `: **${BUSINESS.paymentProvider}**${BUSINESS.providerIsMerchantOfRecord ? " (Merchant of Record: sells on our behalf and handles billing, tax and invoices)" : ""}` : " (named at checkout; this entry will name it once live)"}.
 
 ### AI & Job Data Processing
 
-* **OpenAI / Anthropic** (USA) – AI processing for gap analysis, resume tailoring, and interview simulation. Data sent to these providers is strictly via API and is explicitly opted-out of being used to train their models.
-* **Adzuna / Remotive / Jobicy** (Global) – Job listing data providers. We use these APIs to source job information, but we do not send your personal profile data to them.
+* **Google LLC – Gemini API** (USA) – AI processing for resume reading, fit scoring, tailoring, interview practice and career planning. Only the text needed for the feature you use is sent, via the API.
+* **Adzuna / Jooble / Remotive / Jobicy / Arbeitnow** (Global) – Job listing data providers. We use these APIs to source job information, but we do not send your personal profile data to them.
 
 ### Updates to this list
 We will update this list whenever we add or change a sub-processor.

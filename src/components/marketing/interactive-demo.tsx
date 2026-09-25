@@ -8,7 +8,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { id: "ats", label: "ATS Resume Tailor", icon: FileText },
+  { id: "ats", label: "Resume Tailor", icon: FileText },
   { id: "gaps", label: "Dream Job Gaps", icon: Target },
   { id: "discovery", label: "Smart Discovery", icon: Search },
 ];
@@ -39,10 +39,10 @@ export function InteractiveDemo() {
         <div className="mx-auto max-w-2xl text-center mb-10">
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
             <Sparkles className="size-6 text-primary" />
-            See the Magic Before You Sign Up
+            See it work before you sign up
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Experience how Work-ly gives you an unfair advantage in the job hunt.
+            Three things Work-ly does with your own resume. Examples below are illustrative.
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export function InteractiveDemo() {
               <div className="flex flex-col h-full animate-in fade-in zoom-in-95 duration-300">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="font-semibold text-lg">AI Resume Tailor</h3>
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">Bypass the ATS</span>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">Matched to the job</span>
                 </div>
                 
                 <div className="grid sm:grid-cols-2 gap-4 mb-4">
@@ -95,7 +95,7 @@ export function InteractiveDemo() {
                   <div className="mt-auto flex flex-col items-center justify-center py-6">
                     <Button onClick={handleSimulate} disabled={isSimulating} size="lg" className="w-full sm:w-auto">
                       {isSimulating ? <WorklyLoader className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />}
-                      {isSimulating ? "Tailoring for ATS..." : "Run AI Tailor Demo"}
+                      {isSimulating ? "Tailoring..." : "Run AI Tailor Demo"}
                     </Button>
                   </div>
                 ) : (
@@ -103,13 +103,13 @@ export function InteractiveDemo() {
                     <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2 text-primary font-semibold">
                         <CheckCircle2 className="size-4" />
-                        <span>Optimized for ATS Match</span>
+                        <span>Rewritten for this role</span>
                       </div>
                       <p className="text-sm font-mono leading-relaxed bg-background p-3 rounded border border-border">
                         "Engineered responsive frontend architectures using React and global state management (Zustand), optimizing core web vitals and reducing time-to-interactive."
                       </p>
                       <p className="text-xs text-muted-foreground mt-3">
-                        <span className="font-semibold text-foreground">Keywords injected:</span> frontend engineer, state management, Zustand, core web vitals
+                        <span className="font-semibold text-foreground">Keywords matched from your experience:</span> frontend engineer, state management, Zustand, core web vitals
                       </p>
                     </div>
                   </div>
@@ -132,7 +132,7 @@ export function InteractiveDemo() {
                   <ArrowRight className="size-4 text-muted-foreground" />
                   <div className="flex-1 text-right">
                     <p className="text-xs font-semibold text-muted-foreground">Dream Role</p>
-                    <p className="text-sm font-medium">Senior Data Scientist (Stripe)</p>
+                    <p className="text-sm font-medium">Senior Data Scientist (Example Co.)</p>
                   </div>
                 </div>
 
@@ -148,7 +148,7 @@ export function InteractiveDemo() {
                     <div className="bg-background border border-border rounded-lg overflow-hidden">
                       <div className="bg-destructive/10 p-3 border-b border-border">
                         <p className="text-sm font-semibold text-destructive flex items-center gap-2">
-                          Missing Core Skills (ATS Red Flags)
+                          Missing core skills
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">Python (Pandas/NumPy), A/B Testing, Machine Learning Basics</p>
                       </div>
@@ -198,12 +198,12 @@ export function InteractiveDemo() {
                         </div>
                         <div>
                           <p className="font-semibold text-sm">Product Manager</p>
-                          <p className="text-xs text-muted-foreground">TechCorp Inc. • Remote</p>
+                          <p className="text-xs text-muted-foreground">Example Labs • Remote</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-green-500">92%</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Fit Score</p>
+                        <p className="text-lg font-bold text-green-500">92/100</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Candidate Fit</p>
                       </div>
                     </div>
                     
@@ -214,12 +214,12 @@ export function InteractiveDemo() {
                         </div>
                         <div>
                           <p className="font-semibold text-sm">Associate PM</p>
-                          <p className="text-xs text-muted-foreground">StartupX • New York</p>
+                          <p className="text-xs text-muted-foreground">Sample Studio • New York</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-amber-500">78%</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Fit Score</p>
+                        <p className="text-lg font-bold text-amber-500">78/100</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Candidate Fit</p>
                       </div>
                     </div>
                   </div>

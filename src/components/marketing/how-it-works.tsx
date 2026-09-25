@@ -4,37 +4,37 @@ const steps = [
   {
     number: "01",
     icon: UserRound,
-    title: "Understand yourself",
+    title: "Build your profile",
     description:
-      "Your career profile captures real experience, skills, and preferences. Entered by you. Work-ly never invents qualifications you don't have.",
+      "Upload your resume once. Work-ly turns it into a career profile you can check and edit. It never invents qualifications you don't have.",
   },
   {
     number: "02",
     icon: Compass,
-    title: "Discover opportunities",
+    title: "Check your fit",
     description:
-      "Relevant roles are surfaced from legitimate sources and user submissions. Not scraped, not spammy, not thousands of duplicates.",
+      "Paste a role you're considering, or let Work-ly match you against public listings, and see your Candidate Fit with the reasons behind it.",
   },
   {
     number: "03",
     icon: ListFilter,
-    title: "Prioritize what matters",
+    title: "Tailor every application",
     description:
-      "Every opportunity is ranked with a plain-language explanation of why it's worth your time, so you're not sorting through noise.",
+      "Get a resume and cover letter written for that role from your real experience, plus a short note to the hiring manager.",
   },
   {
     number: "04",
     icon: TrendingUp,
-    title: "Close your gaps",
+    title: "Practise and grow",
     description:
-      "See exactly what separates your profile from a target role, and get a concrete, sequenced pathway for closing that gap.",
+      "Rehearse with mock interviews, see what separates you from the role you want, and follow a step-by-step plan to close the gap.",
   },
   {
     number: "05",
     icon: LineChart,
     title: "Track what works",
     description:
-      "Application outcomes feed back into the system, so future recommendations get sharper the more you use it.",
+      "Log your applications and outcomes, so you can see which roles and resumes actually get you interviews.",
   },
 ];
 
@@ -44,10 +44,10 @@ export function HowItWorks() {
       <div className="mx-auto max-w-5xl">
         <div className="mx-auto max-w-xl text-center">
           <h2 className="text-balance text-3xl font-semibold tracking-tight text-foreground">
-            One system, from profile to offer
+            One coach, from resume to offer
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Each step feeds the next. Nothing here is a standalone tool bolted onto a job board.
+            Work-ly is software you use for your own career. Each step builds on the last.
           </p>
         </div>
 

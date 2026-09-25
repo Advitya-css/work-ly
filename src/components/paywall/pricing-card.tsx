@@ -4,62 +4,10 @@ import { CheckCircle2, Sparkles, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { UpgradeButton } from "./upgrade-button";
+import { PAID_PLANS, type PaidPlan } from "@/lib/pricing";
 
-type Interval = "monthly" | "quarterly" | "yearly";
-
-interface Plan {
-  interval: Interval;
-  name: string;
-  tagline: string;
-  price: string;
-  /** Shown after the price, e.g. "/mo". */
-  priceSuffix?: string;
-  /** A struck-through comparison price. */
-  compareAt?: string;
-  /** The line under the price ("Just $16.67/mo", "Save 37%"). */
-  note?: { text: string; tone: "primary" | "success" };
-  terms: string;
-  features: string[];
-  featured?: boolean;
-}
-
-const PLANS: Plan[] = [
-  {
-    interval: "monthly",
-    name: "Monthly",
-    tagline: "Pay as you go",
-    price: "$19.99",
-    priceSuffix: "/mo",
-    terms: "Auto-renews. Cancel anytime.",
-    features: ["Unlimited AI job analyses", "AI resume tailoring", "The Dream Pathway", "Interview simulator"],
-  },
-  {
-    interval: "quarterly",
-    name: "3-Month Pass",
-    tagline: "Perfect for a focused hunt",
-    price: "$49.99",
-    note: { text: "Just $16.67/mo", tone: "primary" },
-    terms: "One-time payment. No auto-renew.",
-    features: ["Everything in Monthly", "3 full months of access", "No subscription to cancel"],
-    featured: true,
-  },
-  {
-    interval: "yearly",
-    name: "Yearly Pass",
-    tagline: "Keeps working after you're hired",
-    price: "$149.99",
-    compareAt: "$240",
-    note: { text: "Save 37%", tone: "success" },
-    terms: "One-time payment. No auto-renew.",
-    features: [
-      "Everything in Monthly, for 12 months",
-      "Yearly only: always-on job watch",
-      "Yearly only: monthly career progress report",
-      "Yearly only: your market value",
-      "No subscription to cancel",
-    ],
-  },
-];
+type Plan = PaidPlan;
+const PLANS = PAID_PLANS;
 
 /**
  * Pricing for Work-ly Pro.
@@ -81,7 +29,7 @@ export function PricingCard() {
           Work-ly Pro
         </h2>
         <p className="mx-auto mt-2 max-w-prose text-sm text-muted-foreground text-balance @md:text-base">
-          Get the ultimate unfair advantage in your job hunt.
+          Every AI career tool, with a 7-day money-back guarantee.
         </p>
       </div>
 

@@ -110,7 +110,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   "hiring-manager": {
     id: "hiring-manager",
     name: "Message the hiring manager",
-    brand: "Hiring Manager Bypass",
+    brand: "Hiring Manager Outreach",
     blurb: "A short, specific note to the person who'll actually decide, so you're not just one more resume in the pile.",
     pro: true,
     place: "opportunity",

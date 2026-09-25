@@ -497,7 +497,7 @@ export default async function GuidePage() {
                       You get a dedicated <span className="font-medium text-foreground">Student Home</span> tab to manage on-campus jobs, off-campus roles, and internships.
                     </p>
                     <ul className="ml-4 list-disc space-y-1.5 marker:text-purple-500">
-                      <li><span className="font-medium text-foreground">University Feeds</span> — Add your university's public job board feed directly into Work-ly, and it will scrape campus jobs into your Discovery queue.</li>
+                      <li><span className="font-medium text-foreground">University Feeds</span> — Add your university's public job board feed directly into Work-ly, and Work-ly adds its campus jobs to your Discovery queue.</li>
                       <li><span className="font-medium text-foreground">Legal Limits Tracking</span> — Input your student country, and Work-ly automatically warns you if an off-campus job exceeds your visa's permitted working hours.</li>
                       <li><span className="font-medium text-foreground">Auto-Classification</span> — The AI instantly categorizes new roles into On-Campus, Off-Campus, and Internships.</li>
                     </ul>

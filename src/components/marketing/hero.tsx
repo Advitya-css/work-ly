@@ -13,16 +13,16 @@ export function Hero() {
       />
       <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
         <span className="mb-6 inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-          Career intelligence, not another job board
+          AI career coach for individuals
         </span>
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          Work-ly: Stop searching for jobs.
+          Work-ly: Apply smarter.
           <br />
-          Start finding the right ones.
+          Interview better. Grow faster.
         </h1>
         <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
-          Work-ly is an AI co-pilot that understands your career, discovers opportunities you would otherwise miss, and
-          tells you exactly what to do to get hired.
+          Work-ly is AI software for your own career. It tailors your resume to each role, shows how well you fit and
+          why, rehearses interviews with you, and builds a plan to reach the role you want.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg">

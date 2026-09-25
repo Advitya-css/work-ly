@@ -11,8 +11,8 @@ export function CtaSection() {
           See where you actually stand
         </h2>
         <p className="max-w-md text-muted-foreground">
-          Build your career profile and get a clear-eyed read on what you already qualify for, 
-          and what to work on next.
+          Upload your resume and get an honest read on where you fit today and what to work on next. Free to start,
+          no card needed.
         </p>
         <Button asChild size="lg">
           <Link href="/signup">

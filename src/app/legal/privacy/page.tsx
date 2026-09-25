@@ -2,7 +2,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
       <h1 className="font-serif text-4xl text-foreground mb-4">Privacy Policy</h1>
-      <p className="text-sm italic">Last updated: August 31, 2026</p>
+      <p className="text-sm italic">Last updated: September 25, 2026</p>
 
       <p>
         Work-ly (work-ly.in) is operated by Advitya Bansal, based in India. Work-ly is used by people around the
@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
       <ul className="list-disc pl-6 flex flex-col gap-2">
         <li><strong className="text-foreground">Service providers</strong> who process data on our behalf under confidentiality obligations: our cloud hosting/database provider, our email-delivery provider, and, only for AI-assisted features you use, an AI model provider.</li>
         <li><strong className="text-foreground">Job-data providers</strong> (Adzuna, Reed, Remotive, Jobicy, and similar) &mdash; we send search terms to fetch listings, not your résumé or identity.</li>
-        <li><strong className="text-foreground">Payments</strong> (once Pro launches) are processed by Lemon Squeezy; we never see or store your card details.</li>
+        <li><strong className="text-foreground">Payments</strong> are processed by our payment provider (named at checkout, and on our Sub-processors page); where it acts as reseller (Merchant of Record) it receives your name, email, billing country and payment details to complete the sale and handle tax. We never see or store your full card details.</li>
         <li>Legal authorities, where required by law, or in a business transfer such as a merger or acquisition.</li>
       </ul>
       <p><strong className="text-foreground">We do not sell your personal information or share it with data brokers.</strong></p>

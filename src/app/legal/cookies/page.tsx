@@ -2,7 +2,7 @@ export default function CookiePolicy() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
       <h1 className="font-serif text-4xl text-foreground mb-4">Cookie Policy</h1>
-      <p className="text-sm italic">Last updated: August 31, 2026</p>
+      <p className="text-sm italic">Last updated: September 25, 2026</p>
 
       <p>
         This Cookie Policy explains how Work-ly (work-ly.in) uses cookies and similar technologies. Read it together
@@ -28,9 +28,9 @@ export default function CookiePolicy() {
           collect personally identifiable information.
         </li>
         <li>
-          <strong className="text-foreground">Payments (once Pro launches):</strong> our payment provider, Lemon
-          Squeezy, may set its own cookies during checkout to process a subscription. We don&apos;t control these
-          directly &mdash; see Lemon Squeezy&apos;s own privacy and cookie policy.
+          <strong className="text-foreground">Payments:</strong> our payment provider may set its own cookies on its
+          checkout pages to process your purchase and prevent fraud. We don&apos;t control these &mdash; see the
+          provider&apos;s own privacy and cookie policy, linked from its checkout.
         </li>
       </ul>
       <p>
