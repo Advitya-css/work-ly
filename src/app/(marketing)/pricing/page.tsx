@@ -10,7 +10,7 @@ import { FREE_FEATURES, PAID_PLANS, PRO_FEATURES, YEARLY_ONLY_FEATURES } from "@
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Work-ly pricing: free to start, $19.99/month, a $49.99 3-month pass or a $149.99 yearly pass. Every paid plan has a 7-day money-back guarantee.",
+    `Work-ly pricing: free to start, $19.99/month, a $49.99 3-month pass or a $149.99 yearly pass. Every paid plan has a ${BUSINESS.refundDays}-day money-back guarantee.`,
 };
 
 const FAQ = [

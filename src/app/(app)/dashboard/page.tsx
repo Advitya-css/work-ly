@@ -43,7 +43,19 @@ import { NextMoveCard } from "@/components/guidance/next-move-card";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Checkouts started before the success URL moved to Settings still land
+  // here; send them on so the purchase is confirmed.
+  const params = await searchParams;
+  if (params.success === "true" || typeof params.checkout_id === "string") {
+    const id = typeof params.checkout_id === "string" ? params.checkout_id : null;
+    redirect(id ? `/settings?checkout_id=${encodeURIComponent(id)}` : "/settings?restore=1");
+  }
+
   const user = await getCurrentUser();
   const [profile, goals, opportunities, pathway, applications, fullProfile] = user
     ? await Promise.all([

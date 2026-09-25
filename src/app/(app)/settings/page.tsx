@@ -19,12 +19,31 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { signOutAction } from "@/lib/auth/actions";
+import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  // Back from Polar checkout (or an old success link): confirm the payment
+  // with Polar now, then reload so the plan card shows the new plan.
+  const params = await searchParams;
+  const checkoutId = typeof params.checkout_id === "string" ? params.checkout_id : null;
+  if (checkoutId || params.restore === "1") {
+    const result = await syncPolarPurchases(user, checkoutId);
+    const retry = checkoutId && result.status === "pending" ? `&checkout=${encodeURIComponent(checkoutId)}` : "";
+    redirect(
+      `/settings?payment=${result.status}${result.status === "granted" ? `&plan=${result.plan}` : ""}${retry}#plan`,
+    );
+  }
+  const payment = typeof params.payment === "string" ? params.payment : null;
+  const pendingCheckout = typeof params.checkout === "string" ? params.checkout : null;
 
   const profile = await getCareerProfileByUserId(user.id);
   const isStudent = profile?.isStudent ?? false;
@@ -32,7 +51,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-8">
       <PageHeader title="Settings" description="Your account, where you will work, and your data." />
-      <PlanSettings />
+      <PlanSettings payment={payment} pendingCheckout={pendingCheckout} />
 
       <Card>
         <CardHeader>

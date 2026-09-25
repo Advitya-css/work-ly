@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createPolarCheckout } from "@/lib/payments/polar";
 import { redeemBetaCodeAction } from "@/lib/beta/actions";
+import { BUSINESS } from "@/lib/business";
 
 export function UpgradeModal({ 
   children,
   title = "Unlock Work-ly Pro",
-  description = "Every AI career tool, with a 7-day money-back guarantee.",
+  description = `Every AI career tool, with a ${BUSINESS.refundDays}-day money-back guarantee.`,
   defaultPlan,
   preview,
 }: { 

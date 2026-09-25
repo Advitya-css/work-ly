@@ -1,3 +1,4 @@
+import { BUSINESS } from "@/lib/business";
 /**
  * Work-ly's plans - the one source for the in-app pricing cards, the public
  * Pricing page and the Terms/Refund policy wording.
@@ -60,7 +61,7 @@ export const PAID_PLANS: PaidPlan[] = [
       "Tailored resumes & cover letters",
       "Mock interviews & practice tasks",
       "Dream-job analyses & career plans",
-      "14-day money-back guarantee",
+      `${BUSINESS.refundDays}-day money-back guarantee`,
     ],
   },
   {
@@ -73,7 +74,7 @@ export const PAID_PLANS: PaidPlan[] = [
     terms: "One-time payment. No auto-renew.",
     renews: false,
     term: "3 months from purchase",
-    features: ["Everything in Monthly, for 3 months", "No subscription to cancel", "14-day money-back guarantee"],
+    features: ["Everything in Monthly, for 3 months", "No subscription to cancel", `${BUSINESS.refundDays}-day money-back guarantee`],
     featured: true,
   },
   {
@@ -92,7 +93,7 @@ export const PAID_PLANS: PaidPlan[] = [
       "Yearly only: always-on job watch",
       "Yearly only: monthly career progress report",
       "Yearly only: your market value",
-      "14-day money-back guarantee",
+      `${BUSINESS.refundDays}-day money-back guarantee`,
     ],
   },
 ];

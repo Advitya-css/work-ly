@@ -5,8 +5,9 @@ import { cleanInput, withinProAiBudget, unsupportedNumbers } from "@/lib/ai/care
 import { quoteFound } from "@/lib/scoring/screen-core";
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db/pool";
-import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "crypto";
 
 /**
  * PIVOT DATA SHAPES
@@ -83,8 +84,8 @@ export async function generatePivotAction(
   }
 
   // Fetch the user's current experience
-  // Fetch the user's current experience
-  const profile = await getCareerProfileByUserId(user.id);
+  const full = await getFullCareerProfile(user.id);
+  const profile = full.profile ? { experiences: full.experiences, skillEntries: full.skills } : null;
 
   if (!profile || profile.experiences.length === 0) {
     return { error: "You need to add some experience to your Career Profile first before we can pivot it." };
@@ -235,16 +236,16 @@ export async function generatePivotAction(
          "updatedAt" = now()
        RETURNING *`,
       [
-        require('crypto').randomUUID(),
+        randomUUID(),
         user.id,
         targetRole,
         targetIndustry,
-        JSON.stringify(pivot.competencyMapping),
-        JSON.stringify(pivot.translatedBullets),
-        JSON.stringify(pivot.hardGaps),
-        pivot.superpowerPitch,
-        pivot.beforeScore,
-        pivot.afterScore
+        JSON.stringify(competencyMapping),
+        JSON.stringify(translatedBullets),
+        JSON.stringify(hardGaps),
+        superpowerPitch,
+        beforeScore,
+        afterScore
       ]
     );
     const saved = savedResult.rows[0];

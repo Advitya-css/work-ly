@@ -1,4 +1,4 @@
-import { Crown, Zap, Users } from "lucide-react";
+import { CheckCircle2, Clock, Crown, RotateCw, TriangleAlert, Users, Zap } from "lucide-react";
 import { CopyReferralLink } from "@/components/paywall/copy-referral-link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,16 +7,98 @@ import { getCurrentUser } from "@/lib/auth";
 import { PricingCard } from "@/components/paywall/pricing-card";
 import Link from "next/link";
 import { hasYearlyPerks } from "@/lib/plans";
+import { PAID_PLANS } from "@/lib/pricing";
+import { BUSINESS } from "@/lib/business";
+import { restorePurchaseAction } from "@/lib/payments/polar";
 
-export async function PlanSettings() {
+/** What happened when we checked Polar for this account's payment (see settings/page.tsx). */
+function PaymentNotice({
+  payment,
+  planName,
+  pendingCheckout,
+}: {
+  payment: string | null;
+  planName: string | null;
+  pendingCheckout: string | null;
+}) {
+  const email = (
+    <a href={`mailto:${BUSINESS.supportEmail}`} className="font-medium text-foreground underline underline-offset-2">
+      {BUSINESS.supportEmail}
+    </a>
+  );
+  switch (payment) {
+    case "granted":
+      return (
+        <div role="status" className="flex gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+          <p>
+            <strong className="text-foreground">Payment confirmed - you&apos;re on Work-ly Pro{planName ? ` (${planName})` : ""}.</strong>{" "}
+            Every AI tool is unlocked now. A receipt is on its way to your email.
+          </p>
+        </div>
+      );
+    case "pending":
+      return (
+        <div role="status" className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+          <Clock className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+          <div className="flex flex-col gap-2">
+            <p>
+              <strong className="text-foreground">Payment received - it&apos;s still being confirmed.</strong> This usually
+              takes less than a minute.
+            </p>
+            <Link
+              href={pendingCheckout ? `/settings?checkout_id=${encodeURIComponent(pendingCheckout)}` : "/settings?restore=1"}
+              className="inline-flex w-fit items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
+            >
+              <RotateCw className="size-3.5" aria-hidden /> Check again
+            </Link>
+          </div>
+        </div>
+      );
+    case "none":
+      return (
+        <div role="status" className="flex gap-3 rounded-xl border bg-muted/40 p-4 text-sm">
+          <TriangleAlert className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <p>
+            We couldn&apos;t find a completed payment for this account. If you were charged, email {email} with your
+            receipt and we&apos;ll switch Pro on the same day.
+          </p>
+        </div>
+      );
+    case "error":
+      return (
+        <div role="status" className="flex gap-3 rounded-xl border bg-muted/40 p-4 text-sm">
+          <TriangleAlert className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <p>
+            We couldn&apos;t reach our payment provider just now. Your payment is safe - press Restore purchase in a minute,
+            or email {email}.
+          </p>
+        </div>
+      );
+    default:
+      return null;
+  }
+}
+
+export async function PlanSettings({
+  payment = null,
+  pendingCheckout = null,
+}: {
+  payment?: string | null;
+  pendingCheckout?: string | null;
+} = {}) {
   const user = await getCurrentUser();
   if (!user) return null;
 
   const isPro = user.isPro;
   const proUntil = user.proUntil;
+  const paidPlan = PAID_PLANS.find((p) => p.interval === user.proPlan);
+  // Beta and referral Pro are free trials, not purchases - they can still buy.
+  const canBuy = !isPro || !paidPlan;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div id="plan" className="flex scroll-mt-24 flex-col gap-6">
+      <PaymentNotice payment={payment} planName={paidPlan?.name ?? null} pendingCheckout={pendingCheckout} />
       <Card>
         <CardHeader>
           <CardTitle>Plan & Billing</CardTitle>
@@ -26,7 +108,7 @@ export async function PlanSettings() {
           <div className="flex items-center justify-between p-5 bg-muted/30 rounded-xl border">
             <div className="flex flex-col gap-2">
               <span className="font-semibold text-lg flex items-center gap-2">
-                Current Plan: {isPro ? <Badge className="bg-primary text-primary-foreground text-sm px-2 py-0.5"><Crown className="size-3 mr-1" /> Pro</Badge> : <Badge variant="secondary" className="text-sm px-2 py-0.5">Free</Badge>}
+                Current Plan: {isPro ? <Badge className="bg-primary text-primary-foreground text-sm px-2 py-0.5"><Crown className="size-3 mr-1" /> Pro{paidPlan ? ` · ${paidPlan.name}` : ""}</Badge> : <Badge variant="secondary" className="text-sm px-2 py-0.5">Free</Badge>}
               </span>
               {hasYearlyPerks(user) && (
                 <span className="text-sm text-muted-foreground">
@@ -76,10 +158,16 @@ export async function PlanSettings() {
         </CardContent>
       </Card>
 
-      {/* Beta and referral Pro are free trials, not purchases - they can still buy. */}
-      {(!isPro || !user.proPlan || user.proPlan === "beta") && (
-        <PricingCard />
+      {canBuy && (
+        <form action={restorePurchaseAction} className="-mt-2 flex flex-wrap items-center justify-center gap-1 text-sm text-muted-foreground">
+          Already paid?
+          <Button type="submit" variant="link" size="sm" className="h-auto px-1">
+            Restore purchase
+          </Button>
+        </form>
       )}
+
+      {canBuy && <PricingCard />}
     </div>
   );
 }

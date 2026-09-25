@@ -5,6 +5,7 @@ import { CheckCircle2, Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UpgradeButton } from "./upgrade-button";
 import { PAID_PLANS, type PaidPlan } from "@/lib/pricing";
+import { BUSINESS } from "@/lib/business";
 
 type Plan = PaidPlan;
 const PLANS = PAID_PLANS;
@@ -29,7 +30,7 @@ export function PricingCard() {
           Work-ly Pro
         </h2>
         <p className="mx-auto mt-2 max-w-prose text-sm text-muted-foreground text-balance @md:text-base">
-          Every AI career tool, with a 7-day money-back guarantee.
+          Every AI career tool, with a {BUSINESS.refundDays}-day money-back guarantee.
         </p>
       </div>
 

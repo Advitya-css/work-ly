@@ -17,9 +17,11 @@ export const PLAN_INTERVAL: Record<"monthly" | "quarterly" | "yearly", string> =
   yearly: "1 year",
 };
 
-export function planForProduct(productId: string | null | undefined): Exclude<ProPlan, "beta"> | null {
+export type PolarPlan = Exclude<ProPlan, "beta">;
+
+export function planForProduct(productId: string | null | undefined): PolarPlan | null {
   for (const [plan, id] of Object.entries(POLAR_PRODUCT_IDS)) {
-    if (id === productId) return plan as Exclude<ProPlan, "beta">;
+    if (id === productId) return plan as PolarPlan;
   }
   return null;
 }
