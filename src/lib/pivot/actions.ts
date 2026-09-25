@@ -4,7 +4,8 @@ import { aiProvider } from "@/lib/ai";
 import { cleanInput, withinProAiBudget, unsupportedNumbers } from "@/lib/ai/career-context";
 import { quoteFound } from "@/lib/scoring/screen-core";
 import { getCurrentUser } from "@/lib/auth";
-import { prisma } from "@/lib/db/prisma";
+import { pool } from "@/lib/db/pool";
+import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -74,17 +75,16 @@ export async function generatePivotAction(
   }
   // Check storage BEFORE paying for the AI call. The career_pivots table
   // ships with its own migration; until that's applied, fail fast and say so.
+  // Replaced prisma check with direct pool query
   try {
-    await prisma.careerPivot.findUnique({ where: { userId: user.id } });
-  } catch {
+    await pool.query('SELECT id FROM career_pivots WHERE "userId" = $1 LIMIT 1', [user.id]);
+  } catch (err) {
     return { error: "Career Pivot isn't switched on yet. Please check back soon." };
   }
 
   // Fetch the user's current experience
-  const profile = await prisma.careerProfile.findUnique({
-    where: { userId: user.id },
-    include: { experiences: true, skillEntries: true },
-  });
+  // Fetch the user's current experience
+  const profile = await getCareerProfileByUserId(user.id);
 
   if (!profile || profile.experiences.length === 0) {
     return { error: "You need to add some experience to your Career Profile first before we can pivot it." };
@@ -220,30 +220,34 @@ export async function generatePivotAction(
     const afterScore = Math.max(beforeScore, Math.min(clampScore(parsed.afterScore), afterCap));
 
     // Save to database
-    const saved = await prisma.careerPivot.upsert({
-      where: { userId: user.id },
-      update: {
+    const savedResult = await pool.query(
+      `INSERT INTO career_pivots ("id", "userId", "targetRole", "targetIndustry", "competencyMapping", "translatedBullets", "hardGaps", "superpowerPitch", "beforeScore", "afterScore", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
+       ON CONFLICT ("userId") DO UPDATE SET
+         "targetRole" = EXCLUDED."targetRole",
+         "targetIndustry" = EXCLUDED."targetIndustry",
+         "competencyMapping" = EXCLUDED."competencyMapping",
+         "translatedBullets" = EXCLUDED."translatedBullets",
+         "hardGaps" = EXCLUDED."hardGaps",
+         "superpowerPitch" = EXCLUDED."superpowerPitch",
+         "beforeScore" = EXCLUDED."beforeScore",
+         "afterScore" = EXCLUDED."afterScore",
+         "updatedAt" = now()
+       RETURNING *`,
+      [
+        require('crypto').randomUUID(),
+        user.id,
         targetRole,
         targetIndustry,
-        competencyMapping: competencyMapping as any,
-        translatedBullets: translatedBullets as any,
-        hardGaps: hardGaps as any,
-        superpowerPitch,
-        beforeScore,
-        afterScore,
-      },
-      create: {
-        userId: user.id,
-        targetRole,
-        targetIndustry,
-        competencyMapping: competencyMapping as any,
-        translatedBullets: translatedBullets as any,
-        hardGaps: hardGaps as any,
-        superpowerPitch,
-        beforeScore,
-        afterScore,
-      },
-    });
+        JSON.stringify(pivot.competencyMapping),
+        JSON.stringify(pivot.translatedBullets),
+        JSON.stringify(pivot.hardGaps),
+        pivot.superpowerPitch,
+        pivot.beforeScore,
+        pivot.afterScore
+      ]
+    );
+    const saved = savedResult.rows[0];
 
     revalidatePath("/career-pivot");
     return {
@@ -271,7 +275,8 @@ export async function getPivotAction(): Promise<PivotData | null> {
 
   let pivot;
   try {
-    pivot = await prisma.careerPivot.findUnique({ where: { userId: user.id } });
+    const pivotRes = await pool.query('SELECT * FROM career_pivots WHERE "userId" = $1 LIMIT 1', [user.id]);
+    pivot = pivotRes.rows[0];
   } catch (error) {
     // Table not migrated yet: show an empty wizard rather than crash the page.
     console.warn("[workly:pivot] could not read pivots:", error instanceof Error ? error.message : error);
