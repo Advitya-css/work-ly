@@ -83,7 +83,7 @@ export const googleGenAIProvider: AIProvider = {
     // Optional second model for when the first is out of quota (HTTP 429) or
     // overloaded (503): free-tier limits are per model, so a sibling model
     // usually still has room. Only used when AI_FALLBACK_MODEL is set.
-    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || model;
+    const fallbackModel = process.env.AI_FALLBACK_MODEL?.trim() || (model === "gemini-3.5-flash-lite" ? "gemini-1.5-flash" : "gemini-3.5-flash-lite");
     const urlFor = (m: string, key: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
     let url = urlFor(model, primaryApiKey);
     let usingFallback = false;
@@ -145,7 +145,7 @@ export const googleGenAIProvider: AIProvider = {
 
       if (!response.ok) {
         const responseBody = await response.text();
-        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
+        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${usingFallback ? fallbackModel : model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
         if ((response.status === 429 || response.status >= 500) && !usingFallback && canRetry(attempt)) {
           console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model/key`);
           usingFallback = true;
