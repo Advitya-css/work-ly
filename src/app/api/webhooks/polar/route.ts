@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // Handle Order Created (for 3-Month and Yearly Passes)
-    if (event.type === "order.created") {
+    if (event.type === "order.created" || event.type === "order.paid" || event.type === "order.updated") {
       const order = event.data;
       const userId = order.metadata?.user_id || order.custom_field_data?.user_id || order.customer_metadata?.user_id || order.customer?.metadata?.user_id;
       
