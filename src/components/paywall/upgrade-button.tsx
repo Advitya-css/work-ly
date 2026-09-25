@@ -24,8 +24,7 @@ export function UpgradeButton({ interval = "monthly", className, variant, fullWi
   return (
     <UpgradeModal
       defaultPlan={interval}
-      title="Work-ly Pro (Coming Soon)"
-      description="Public checkouts are temporarily paused. Beta testers can redeem their invite codes below."
+      
     >
       <Button
         size="lg"
@@ -37,7 +36,7 @@ export function UpgradeButton({ interval = "monthly", className, variant, fullWi
         )}
       >
         <Sparkles className="size-4 shrink-0" />
-        Join Beta Waitlist
+        Upgrade to Pro
       </Button>
     </UpgradeModal>
   );
