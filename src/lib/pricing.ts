@@ -25,7 +25,7 @@ export interface PaidPlan {
 }
 
 export const PRO_FEATURES = [
-  "Unlimited AI job analyses and fit scores",
+  "Unlimited AI job analyses and fit scores (fair use)",
   "Resumes and cover letters tailored to each job",
   "Mock interviews and practice tasks",
   "Unlimited dream-job analyses and step-by-step career plans",
@@ -34,6 +34,7 @@ export const PRO_FEATURES = [
 
 export const FREE_FEATURES = [
   "Job matching with Candidate Fit scores",
+  "Up to 15 AI checks a day",
   "Application tracker",
   "One free dream-job analysis",
   "Follow-up and counter-offer emails",

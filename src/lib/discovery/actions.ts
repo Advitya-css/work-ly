@@ -1,5 +1,7 @@
 "use server";
 
+import { spendFreeAi } from "@/lib/ai/allowance";
+
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -133,10 +135,13 @@ export async function runDiscoveryAction(
 
   // Pro runs get a deeper grounded AI screen (more listings read against the
   // profile requirement by requirement); free runs still get the best few.
+  // Over the free daily AI allowance, the run still searches and scores
+  // every listing with the rules engine - it just skips the AI read.
+  const aiAllowed = await spendFreeAi(user);
   const run = await runDiscovery(user.id, {
     query,
     expandSearch: options.expandSearch,
-    aiScreenLimit: user.isPro ? 15 : 8,
+    aiScreenLimit: user.isPro ? 15 : aiAllowed ? 8 : 0,
     // The request has 60 seconds in total, and after the run it still has
     // to save every listing and re-render the page. 50s for the run itself
     // left too little, and the page timed out after the results were saved.
@@ -164,7 +169,8 @@ export async function screenTopMatchesAction(): Promise<DeepScreenResult & { err
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const allowed = await checkRateLimit(`deep_screen_${user.id}`, user.isPro ? 12 : 4, 60 * 60);
+  const allowed =
+    (await checkRateLimit(`deep_screen_${user.id}`, user.isPro ? 12 : 4, 60 * 60)) && (await spendFreeAi(user));
   if (!allowed) return { available: true, screened: 0, remaining: 0, error: "rate-limited" };
 
   try {

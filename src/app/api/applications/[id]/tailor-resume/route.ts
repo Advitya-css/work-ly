@@ -12,6 +12,7 @@ import {
   str,
   strList,
   unsupportedNumbers,
+  REWRITE_RULES,
 } from "@/lib/ai/career-context";
 
 export const maxDuration = 60;
@@ -20,6 +21,7 @@ const SYSTEM = `You are a senior recruiter rewriting a candidate's resume conten
 1. keywords: 5-8 exact phrases from the JOB that the candidate can honestly claim (they appear in or are clearly supported by the CANDIDATE section). Put phrases the candidate CANNOT honestly claim in "missingKeywords" instead.
 2. summary: 2-3 sentences bridging the candidate's real background to this job. First person implied, no "I".
 3. bullets: 3-5 rewritten bullets. Each must be based on one real line of the candidate's experience: give that line in "basedOn" (copied from the CANDIDATE section) and the rewrite in "rewrite". Keep the tense of "basedOn" (if it starts with a past-tense verb like "Built", the rewrite starts with a past-tense verb too), name the tool/domain the job cares about, and keep EVERY number that is in "basedOn" - add none, drop none.
+${REWRITE_RULES}
 ${NO_FABRICATION_RULES}`;
 
 const SCHEMA = {

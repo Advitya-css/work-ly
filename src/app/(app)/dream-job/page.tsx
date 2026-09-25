@@ -98,7 +98,7 @@ export default async function DreamJobPage() {
                             <span className={`text-sm font-medium ${readinessColor(analysis.readinessScore)}`}>
                               {analysis.readinessScore}/100
                             </span>
-                            <Badge variant="outline">Readiness</Badge>
+                            <Badge variant="outline">Readiness then</Badge>
                           </>
                         ) : (
                           <Badge variant="outline">Not enough info to score</Badge>

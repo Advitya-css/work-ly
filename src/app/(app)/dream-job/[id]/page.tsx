@@ -129,10 +129,14 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
 
   const profile = await getFullCareerProfile(user.id);
   const confirmedSkills = profile.skills.filter((s) => !s.isTransferable);
+  // A skill named in one of the biggest gaps isn't something you "already
+  // have" for this role (Airflow on your skills list, but the role wants
+  // proven orchestration) - showing it on both sides reads as a contradiction.
+  const gapText = analysis.gapPriorities.slice(0, 5).map((g) => g.title.toLowerCase()).join(" | ");
   const alreadyHave = Array.from(
     new Set(
-      [...dreamJob.requiredSkills, ...dreamJob.preferredSkills].filter((name) =>
-        confirmedSkills.some((s) => skillsMatch(s.name, name)),
+      [...dreamJob.requiredSkills, ...dreamJob.preferredSkills].filter(
+        (name) => confirmedSkills.some((s) => skillsMatch(s.name, name)) && !gapText.includes(name.toLowerCase()),
       ),
     ),
   );
@@ -167,7 +171,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
       <Card>
         <CardContent className="flex flex-col items-center gap-3 px-6 py-8 text-center">
           <ScoreReadout
-            label="Current Readiness"
+            label={`Readiness on ${new Date(analysis.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
             value={analysis.readinessScore}
             coverage={coverageOf(analysis.scoreBreakdown)}
             unassessed={unassessedIn(analysis.scoreBreakdown)}
@@ -179,8 +183,9 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            This is your Candidate Fit for this role. Not a hiring probability. Work-ly never estimates your odds of
-            being hired.
+            This is your Candidate Fit for this role on the day it was checked. Your Action Plan and Insights show it
+            re-checked as you complete steps. Not a hiring probability: Work-ly never estimates your odds of being
+            hired.
           </p>
           <Badge variant={COMPETITIVENESS_VARIANT[analysis.competitiveness]} className="mt-1">
             {analysis.competitiveness} competitiveness
@@ -232,7 +237,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             {topGaps.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {lowCoverage
-                  ? "Work-ly didn't have enough information to prioritize gaps - see Current Readiness above."
+                  ? "Work-ly didn't have enough information to prioritize gaps - see Readiness above."
                   : "No significant gaps identified."}
               </p>
             ) : (
@@ -343,7 +348,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               {analysis.gaps.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Work-ly didn't have enough information to classify gaps - see Current Readiness above."
+                    ? "Work-ly didn't have enough information to classify gaps - see Readiness above."
                     : "No significant gaps identified."}
                 </p>
               ) : (
@@ -377,7 +382,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               {analysis.gapPriorities.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {lowCoverage
-                    ? "Work-ly didn't have enough information to prioritize gaps - see Current Readiness above."
+                    ? "Work-ly didn't have enough information to prioritize gaps - see Readiness above."
                     : "No significant gaps identified."}
                 </p>
               ) : (

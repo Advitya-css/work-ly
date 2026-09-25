@@ -1,5 +1,7 @@
 "use server";
 
+import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
+
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -43,6 +45,8 @@ export async function analyzeDreamJobAction(
   if (!user.isPro && (await listDreamJobsByUserId(user.id)).some((dj) => dj.status === "PARSED")) {
     return { error: "Your free dream-job analysis has been used. Upgrade to Pro to analyze more." };
   }
+
+  if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };
 
   const result = await submitAndAnalyzeDreamJob(user.id, parsed.data);
   if ("error" in result) {

@@ -11,6 +11,7 @@ import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Lock } from "lucide-react";
 import { ProPreview, ToolBrand } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 interface ResumeTailorCardProps {
   applicationId: string;
@@ -83,6 +84,13 @@ export function ResumeTailorCard({
                 {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                 {loading ? "Reading the job and your profile..." : error ? "Try again" : "Tailor my bullets for this job"}
               </Button>
+              {loading && (
+                <AiProgress
+                  steps={["Reading the job", "Picking your most relevant lines", "Rewriting them in the job's language", "Checking every number against your profile"]}
+                  stepSeconds={8}
+                  note="Usually 25-40 seconds."
+                />
+              )}
               {error && !loading && (
                 <p role="alert" className="text-sm text-destructive">
                   {error}

@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
 import { deleteJob, getJobById } from "@/lib/db/jobs";
 import { jobInputSchema } from "@/lib/validations/job-input";
+import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
 
 export interface AnalyzeJobActionState {
   error?: string;
@@ -59,6 +60,10 @@ export async function analyzeJobAction(
   const keptUrl = /^https?:\/\/[^\s]{3,1500}$/i.test(sourceUrl) ? sourceUrl : undefined;
   if (!parsed.success) {
     return { fieldErrors: fieldErrorsFrom(parsed.error.issues), values };
+  }
+
+  if (!(await spendFreeAi(user))) {
+    return { error: FREE_AI_LIMIT_MESSAGE, values };
   }
 
   const result = await submitParseAndAnalyzeJob(user.id, {

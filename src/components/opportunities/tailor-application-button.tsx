@@ -1,6 +1,5 @@
 "use client";
 
-import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
 import { Sparkles, FileText, CheckCircle2, ChevronRight, X, Loader2, Copy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import type { TailoredApplication } from "@/lib/ai/providers/tailor-ai";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 export function TailorApplicationButton({
   opportunityId,
@@ -114,9 +114,12 @@ export function TailorApplicationButton({
 
           <div className="flex-1 p-6 overflow-y-auto">
             {loading && (
-              <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
-                <WorklyLoader className="size-8 animate-spin text-primary" />
-                <p>Analyzing job requirements & rewriting profile...</p>
+              <div className="flex justify-center py-10">
+                <AiProgress
+                  steps={["Reading the job", "Picking your two best proofs", "Writing the cover letter", "Rewriting your bullets in the job's language", "Checking every number against your profile"]}
+                  stepSeconds={7}
+                  note="Usually 30-45 seconds."
+                />
               </div>
             )}
             
@@ -153,12 +156,25 @@ export function TailorApplicationButton({
                     Tailored Resume Bullets
                   </h3>
                   <ul className="flex flex-col gap-2">
-                    {data.resumeBullets.map((bullet, i) => (
-                      <li key={i} className="bg-muted/50 rounded-lg p-4 text-sm leading-relaxed border border-border flex items-start gap-3">
-                        <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
+                    {(data.bulletChanges ?? data.resumeBullets.map((after) => ({ before: "", after }))).map((change, i) => {
+                      const unchanged =
+                        change.before && change.before.trim().replace(/[.\s]+$/, "").toLowerCase() === change.after.trim().replace(/[.\s]+$/, "").toLowerCase();
+                      return (
+                        <li key={i} className="bg-muted/50 rounded-lg p-4 text-sm leading-relaxed border border-border flex items-start gap-3">
+                          <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <span className="text-foreground">{change.after}</span>
+                            {unchanged ? (
+                              <span className="text-xs text-muted-foreground">Already strong for this job - keep as is.</span>
+                            ) : change.before ? (
+                              <span className="text-xs text-muted-foreground">
+                                Was: <span className="line-through decoration-muted-foreground/50">{change.before}</span>
+                              </span>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>

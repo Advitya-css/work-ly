@@ -579,7 +579,16 @@ export function combineScreen(params: {
   );
   let recommendation = built.recommendation;
   let reasoning = screen.summary ? `${screen.summary} ${built.reasoning}` : built.reasoning;
-  if (criticalMissing.length > 0) {
+  if (criticalMissing.length > 0 && (screen.roleRelevance === "transferable" || screen.roleRelevance === "unrelated")) {
+    // A different kind of role AND a must-have you don't show: the screen
+    // itself says you'd be filtered out, so it isn't worth recommending -
+    // a Cybersecurity Analyst posting for a data analyst, say.
+    const capped = capRecommendation(recommendation, "LOW_PRIORITY");
+    if (capped !== recommendation) {
+      recommendation = capped;
+      reasoning += ` Low priority: it's a different kind of role and you don't yet show ${criticalMissing.map((r) => r.requirement).join("; ")}.`;
+    }
+  } else if (criticalMissing.length > 0) {
     const capped = capRecommendation(recommendation, "STRETCH");
     if (capped !== recommendation) {
       recommendation = capped;

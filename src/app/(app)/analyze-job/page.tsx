@@ -25,7 +25,9 @@ export default async function AnalyzeJobPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const jobs = await listJobsByUserId(user.id);
+  // A failed attempt (the AI was down, the page couldn't be read) is not an
+  // analysis - listing it as "Untitled role · Parsing failed" is just noise.
+  const jobs = (await listJobsByUserId(user.id)).filter((job) => job.status !== "FAILED");
   const opportunities = await Promise.all(
     jobs.map(async (job) => (job.status === "PARSED" ? getOpportunityByJobId(job.id) : null)),
   );

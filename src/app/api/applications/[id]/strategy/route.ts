@@ -11,6 +11,7 @@ import {
   proApiGate,
   str,
   unsupportedNumbers,
+  REWRITE_RULES,
 } from "@/lib/ai/career-context";
 
 export const maxDuration = 60;
@@ -21,6 +22,7 @@ Write "angle" and "risks" TO the candidate in the second person ("You have...", 
 2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job's language and priorities. The "after" MUST keep every number and metric in the "before" (counts, percentages, time saved) - a tweak that removes a real result makes the resume weaker, so skip it instead. Keep the tense of the "before" (a line starting "Built" stays past tense). The "after" may reword and reorder, but must not add an activity, tool, skill or outcome the "before" doesn't show (no "presented insights", "forecasting" or "stakeholder management" unless the line says so). Skip a tweak rather than invent a "before".
 3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application. Only name tools, platforms, skills and experience that literally appear in the CANDIDATE section - never suggest highlighting something the candidate hasn't shown.
 4. coverLetter: under 200 words, human, specific to this company and job, using only real facts. Use [Your Name] for the signature.
+${REWRITE_RULES}
 ${NO_FABRICATION_RULES}`;
 
 const SCHEMA = {

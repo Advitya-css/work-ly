@@ -1,5 +1,4 @@
 "use client";
-import { WorklyLoader } from "@/components/shared/workly-loader";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useState } from "react";
@@ -10,6 +9,7 @@ import type { PreviewData } from "@/lib/guidance/preview-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 interface ApplicationStrategyCardProps {
   applicationId: string;
@@ -82,9 +82,12 @@ export function ApplicationStrategyCard({ applicationId, isPro = false, preview 
         )}
         
         {loading && (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <WorklyLoader className="size-6 animate-spin" />
-            <span className="ml-3">Reading the job against your profile and drafting your strategy...</span>
+          <div className="py-4">
+            <AiProgress
+              steps={["Reading the job against your profile", "Finding your strongest honest angle", "Spotting what a screener may flag", "Drafting your cover letter"]}
+              stepSeconds={8}
+              note="Usually 25-40 seconds."
+            />
           </div>
         )}
 

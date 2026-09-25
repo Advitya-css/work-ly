@@ -170,7 +170,7 @@ export function HotSeatClient({ applicationId }: { applicationId: string }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="size-5 text-primary" />
-              The Griller (Hyper-Real Generation)
+              Questions for this job
             </CardTitle>
             <CardDescription>
               Five questions a real hiring manager for this job would ask you: where your evidence is thin, deep dives into your own history, and a situation from the day-to-day work.
@@ -193,7 +193,7 @@ export function HotSeatClient({ applicationId }: { applicationId: string }) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Custom Fire</CardTitle>
+            <CardTitle className="text-base">Practise your own question</CardTitle>
             <CardDescription>Practice answering a specific question you struggle with.</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-2">

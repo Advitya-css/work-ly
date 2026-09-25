@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BrainCircuit, Loader2, CheckCircle2, Copy, Lock, ShieldAlert, ShieldCheck } from "lucide-react";
+import { BrainCircuit, CheckCircle2, Copy, Lock, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateInterviewPrepAction } from "@/lib/opportunities/pro-actions";
 import {
@@ -14,6 +14,7 @@ import {
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 export function InterviewIntelButton({
   opportunityId,
@@ -108,9 +109,12 @@ export function InterviewIntelButton({
 
           <div className="flex-1 p-6 overflow-y-auto bg-muted/10">
             {loading && (
-              <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
-                <Loader2 className="size-8 animate-spin text-primary" />
-                <p>Generating targeted interview questions...</p>
+              <div className="flex justify-center py-10">
+                <AiProgress
+                  steps={["Reading the job and the company", "Finding where your evidence is thin", "Writing the questions they're likely to ask", "Adding what strong and weak answers sound like"]}
+                  stepSeconds={8}
+                  note="Usually 25-40 seconds."
+                />
               </div>
             )}
             

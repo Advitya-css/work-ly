@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
-import { getActiveFullPathway, computeProgress } from "@/lib/pathway/get-full-pathway";
+import { getActiveFullPathway, computeProgress, nextUpFor } from "@/lib/pathway/get-full-pathway";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
@@ -82,8 +82,12 @@ export default async function CareerPathPage() {
 
   const progress = computeProgress(pathway);
 
-  // Find the first pending action to ask about
-  const firstPendingAction = pathway.actions.find((a: any) => a.status === "PENDING");
+  // Ask about what's actually next: the same step the dashboard names. The
+  // first PENDING action alone could belong to a step already marked done.
+  const firstPendingAction = (() => {
+    const next = nextUpFor(pathway);
+    return next ? { title: next.label } : null;
+  })();
 
   return (
     <div className="flex flex-col gap-6">
@@ -121,7 +125,7 @@ export default async function CareerPathPage() {
           </div>
           <Progress value={progress.percent} label="Career pathway progress" />
           <p className="text-xs text-muted-foreground">
-            Current readiness: {pathway.startingReadiness}/100 Candidate Fit. It is re-checked each time you
+            Readiness after your last completed step: {pathway.startingReadiness}/100 Candidate Fit. It is re-checked each time you
             complete a step, and moves most when you add the project or result to your profile. That number
             is a fit score, never a hiring probability.
           </p>

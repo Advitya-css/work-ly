@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { generateTailoredResumeDocAction } from "@/lib/resume/actions";
 import type { TailoredResume } from "@/lib/resume/tailored-resume";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 interface Candidate {
   name: string;
@@ -85,7 +86,13 @@ export function ResumeBuilder({
             {loading ? <WorklyLoader className="size-4 animate-spin" /> : <FileText className="size-4" />}
             {loading ? "Building your resume..." : "Build my resume"}
           </Button>
-          {loading && <p className="text-xs text-muted-foreground">This usually takes 15 to 30 seconds.</p>}
+          {loading && (
+            <AiProgress
+              steps={["Reading the job", "Picking your most relevant experience", "Rewriting each line in the job's language", "Ordering your skills by what it asks for", "Checking every fact against your profile"]}
+              stepSeconds={8}
+              note="Usually 30-45 seconds."
+            />
+          )}
           {error && <p className="text-sm text-destructive">{error}</p>}
         </CardContent>
       </Card>

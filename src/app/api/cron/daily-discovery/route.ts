@@ -5,6 +5,7 @@ import { runDiscovery } from "@/lib/discovery/run";
 import { getAdapter } from "@/lib/discovery/registry";
 import { newStrongMatches } from "@/lib/discovery/digest";
 import { sendJobAlertEmail } from "@/lib/email";
+import { spendFreeAi } from "@/lib/ai/allowance";
 
 export const maxDuration = 300; 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,8 @@ export async function GET(req: Request) {
     // being the second email of the day for someone job-alerts already
     // reached this week.
     const { rows } = await pool.query(`
-      SELECT u.id, u.email, cg."primaryTargetRole"
+      SELECT u.id, u.email, cg."primaryTargetRole",
+             (u."isPro" = true AND (u."proUntil" IS NULL OR u."proUntil" > now())) AS "isPro"
       FROM users u
       JOIN career_goals cg ON cg."userId" = u.id
       WHERE cg.status = 'ACTIVE'
@@ -91,7 +93,10 @@ export async function GET(req: Request) {
         // (see the SMART DEFAULT block in lib/discovery/run.ts) - it used to
         // be called once per suggested title here, which multiplied source
         // calls and, now that runs include an AI screen, AI cost by 4x.
-        const result = await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: 6, timeBudgetMs: 40_000 });
+        // Free accounts share the daily free AI total; over it, the run still
+        // finds and rule-scores listings, just without the AI read.
+        const aiAllowed = await spendFreeAi({ id: userId, isPro: Boolean(row.isPro) });
+        const result = await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: aiAllowed ? 6 : 0, timeBudgetMs: 40_000 });
         totalNewJobs += result.newJobs;
         userNewJobs += result.newJobs;
         userHighPriority += result.newHighPriority;

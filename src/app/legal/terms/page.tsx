@@ -211,6 +211,10 @@ export default function TermsOfService() {
           discovery searches per day). If you reach a limit, the app tells you and it resets automatically. We may
           restrict accounts whose use is clearly automated or far beyond individual use.
         </p>
+        <p>
+          The free plan includes a daily allowance of AI checks (currently 15 a day, shown on the Pricing page). It
+          refills within 24 hours. Paid plans have no daily allowance, only the fair-use limits above.
+        </p>
       </Section>
 
       <Section id="content" title="8. Your content">

@@ -104,16 +104,11 @@ export function DiscoveryBoard({
           // which is why Top Picks could come up empty even with plenty of
           // good matches sitting right there.
           (r.job.fitCoverage == null || r.job.fitCoverage >= 0.5) &&
-          (r.score >= 0.5 || isAiScreened(r.job)) &&
-          // A job Work-ly itself has bucketed Low Priority or Skip has no
-          // business calling itself a "Top Pick" even if its blended
-          // relevance score alone happens to clear the floor above - that
-          // was exactly the "top match is actually a Low Priority job"
-          // contradiction found on the bucket-count sort (see
-          // lib/discovery/sort.ts). Recommendation, not raw relevance, is
-          // the more authoritative signal here.
-          r.job.recommendation !== "LOW_PRIORITY" &&
-          r.job.recommendation !== "SKIP",
+          // A Top Pick is a promise: Work-ly read the whole posting against
+          // your profile and rates it worth applying to. A quick score or a
+          // Stretch is never enough, however fresh or keyword-rich.
+          isAiScreened(r.job) &&
+          (r.job.recommendation === "APPLY_NOW" || r.job.recommendation === "APPLY"),
       )
       .sort(comparePriority)
       .slice(0, 3);

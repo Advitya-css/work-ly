@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 const initialState: AnalyzeJobActionState = {};
 
@@ -119,9 +120,11 @@ export function JobInputForm() {
         )}
       </Button>
       {pending && (
-        <p className="text-sm text-muted-foreground" role="status">
-          Reading the posting and checking every requirement against your profile. This usually takes 30-60 seconds.
-        </p>
+        <AiProgress
+          steps={["Reading the posting", "Pulling out every requirement", "Checking each one against your profile", "Scoring your Candidate Fit and priority"]}
+          stepSeconds={12}
+          note="Usually 30-60 seconds. Keep this page open."
+        />
       )}
     </form>
   );

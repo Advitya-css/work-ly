@@ -254,6 +254,7 @@ export async function deleteApplicationAction(id: string): Promise<void> {
 
 import { generateFollowUpEmail } from "@/lib/ai/providers/tailor-ai";
 import { withinProAiBudget } from "@/lib/ai/career-context";
+import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
 
 export async function generateFollowUpEmailAction(applicationId: string) {
   const user = await getCurrentUser();
@@ -266,6 +267,7 @@ export async function generateFollowUpEmailAction(applicationId: string) {
     if (!(await withinProAiBudget(user.id))) {
       return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
     }
+    if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };
     // Works for manually logged applications too: the role and company on
     // the application are enough for a follow-up note.
     const job = application.jobId ? await getJobById(user.id, application.jobId) : null;

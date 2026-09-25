@@ -7,6 +7,7 @@ import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
+import { FREE_AI_LIMIT_MESSAGE, spendAnonymousAi, spendFreeAi } from "@/lib/ai/allowance";
 
 /**
  * One free scan per device, enforced with a long-lived cookie rather than an
@@ -33,6 +34,7 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
     if (!(await checkRateLimit(`free-grader-user:${user.id}`, 10, 60 * 60))) {
       return { error: "You've run a lot of checks this hour. Please try again a little later." };
     }
+    if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };
   } else if (cookieStore.get(FREE_GRADER_COOKIE)) {
     return {
       error:
@@ -51,9 +53,13 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
     headerList.get("x-real-ip")?.trim() ||
     headerList.get("x-forwarded-for")?.split(",").pop()?.trim() ||
     "unknown";
-  const withinRateLimit = await checkRateLimit(`free-grader:${ip}`, 5, 60 * 60);
-  if (!withinRateLimit) {
-    return { error: "Too many free scans from this network recently. Please try again later." };
+  // Signed-out visitors: 3 scans a day per network, and all of them share
+  // the free accounts' daily AI total (see lib/ai/allowance.ts).
+  if (!user) {
+    const withinRateLimit = await checkRateLimit(`free-grader:${ip}`, 3, 24 * 60 * 60);
+    if (!withinRateLimit || !(await spendAnonymousAi())) {
+      return { error: "The free checker has hit today's limit from your network. Create a free account to keep checking resumes." };
+    }
   }
 
   const safeResume = stripPromptInjectionMarkers(resumeText.slice(0, 8000));

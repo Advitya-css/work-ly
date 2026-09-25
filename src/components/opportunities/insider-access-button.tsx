@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Loader2, Copy, CheckCircle2, UserPlus, Lock } from "lucide-react";
+import { Mail, Copy, CheckCircle2, UserPlus, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateOutreachEmailAction } from "@/lib/opportunities/pro-actions";
 import {
@@ -14,6 +14,7 @@ import {
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 export function InsiderAccessButton({
   opportunityId,
@@ -104,9 +105,12 @@ export function InsiderAccessButton({
 
           <div className="flex-1 p-6 overflow-y-auto">
             {loading && (
-              <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
-                <Loader2 className="size-8 animate-spin text-primary" />
-                <p>Analyzing profile and crafting strategic hook...</p>
+              <div className="flex justify-center py-10">
+                <AiProgress
+                  steps={["Reading the job", "Finding your strongest proof for it", "Writing a short, specific note", "Checking every claim against your profile"]}
+                  stepSeconds={7}
+                  note="Usually 20-40 seconds."
+                />
               </div>
             )}
             

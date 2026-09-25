@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Lock } from "lucide-react";
+import { AiProgress } from "@/components/shared/ai-progress";
 
 const initialState: DreamJobActionState = {};
 
@@ -78,6 +79,13 @@ export function DreamJobForm({ isPro = false }: { isPro?: boolean }) {
             </>
           )}
         </Button>
+      )}
+      {pending && (
+        <AiProgress
+          steps={["Reading the role", "Checking every requirement against your profile", "Finding your biggest gaps", "Building your week-by-week plan"]}
+          stepSeconds={15}
+          note="Usually 45-90 seconds. Keep this page open."
+        />
       )}
     </form>
   );

@@ -3,6 +3,7 @@ import { matchSourceTense } from "@/lib/resume/tense";
 
 import {
   NO_FABRICATION_RULES,
+  REWRITE_RULES,
   completeStructured,
   jobBrief,
   str,
@@ -77,6 +78,7 @@ For each PROJECT (by its id) that is relevant, return 1-2 bullets the same way; 
 "skills": up to 14 names chosen ONLY from the SKILLS list, most relevant to the job first, copied exactly.
 "summary": 2-3 sentences positioning the candidate for this job using only real facts: their actual title, years of experience if given, the 2 most relevant tools, and their single strongest measurable result. No first person, no clichés ("results-driven", "passionate", "extensive experience").
 "keywordsCovered": up to 10 exact phrases from the JOB the candidate can honestly claim. "keywordsMissing": up to 8 phrases from the JOB the candidate cannot claim.
+${REWRITE_RULES}
 ${NO_FABRICATION_RULES}`;
 
 const SCHEMA = {
@@ -244,7 +246,10 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
         skills: skills.length > 0 ? skills : skillNames.slice(0, 14),
         education: profile.educations.map((e) => ({
           line: [[e.degree, e.fieldOfStudy].filter(Boolean).join(", "), e.institution].filter(Boolean).join(" — "),
-          dates: dateRange(e.startDate, e.endDate, false),
+          // A degree is dated by when it ended. With only a start date on the
+          // profile we'd be printing the year you enrolled as if you'd
+          // graduated then - leave it off rather than mislead.
+          dates: e.endDate ? dateRange(e.startDate, e.endDate, false) : "",
         })),
         certifications: profile.certifications.map((c) => [c.name, c.issuer].filter(Boolean).join(", ")),
         // "Covered" has to be literally supported by the candidate's own text -

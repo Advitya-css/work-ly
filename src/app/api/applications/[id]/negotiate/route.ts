@@ -4,6 +4,7 @@ import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { aiProvider } from "@/lib/ai";
 import { NO_FABRICATION_RULES, candidateBrief, cleanInput, withinProAiBudget } from "@/lib/ai/career-context";
+import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
 
 export const maxDuration = 60;
 
@@ -12,6 +13,9 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   if (!user) return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
   if (!(await withinProAiBudget(user.id))) {
     return NextResponse.json({ error: "You've used a lot of AI tools this hour. Try again in a little while." }, { status: 429 });
+  }
+  if (!(await spendFreeAi(user))) {
+    return NextResponse.json({ error: FREE_AI_LIMIT_MESSAGE, upgradeRequired: true }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
