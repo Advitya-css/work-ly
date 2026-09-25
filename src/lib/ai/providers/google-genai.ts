@@ -146,7 +146,7 @@ export const googleGenAIProvider: AIProvider = {
       if (!response.ok) {
         const responseBody = await response.text();
         console.error(`[workly:ai] request failed ${response.status} against Google API (model=${model}, attempt ${attempt}/${MAX_ATTEMPTS}): ${responseBody.slice(0, 500)}`);
-        if ((response.status === 429 || response.status === 503) && !usingFallback && (process.env.AI_FALLBACK_MODEL || process.env.AI_FALLBACK_API_KEY) && canRetry(attempt)) {
+        if ((response.status === 429 || response.status >= 500) && !usingFallback && canRetry(attempt)) {
           console.warn(`[workly:ai] ${model} returned ${response.status}; switching to fallback model/key`);
           usingFallback = true;
           url = urlFor(fallbackModel, fallbackApiKey);
