@@ -571,7 +571,9 @@ function DiscoveryCard({
   );
 
   return (
-    <Card>
+    // The dashboard briefing links to /discover#job-<id>. On the default
+    // feed a job appears once (Top Picks are left out of the list below).
+    <Card id={`job-${job.id}`} className="scroll-mt-24">
       <CardContent className="flex flex-col gap-2.5 px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0 flex-1">

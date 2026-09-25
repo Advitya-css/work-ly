@@ -59,10 +59,6 @@ function at(company: string | null): string {
   return company ? ` at ${company}` : "";
 }
 
-function mostRecent(apps: NextMoveApplication[]): NextMoveApplication | null {
-  return [...apps].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0] ?? null;
-}
-
 function lastActivity(app: NextMoveApplication): number {
   const dates = [app.reachedInterviewAt, app.reachedAssessmentAt, app.dateApplied]
     .filter((d): d is Date => d != null)
@@ -70,26 +66,34 @@ function lastActivity(app: NextMoveApplication): number {
   return dates.length ? Math.max(...dates) : new Date(app.updatedAt).getTime();
 }
 
-export function pickNextMove(input: NextMoveInput): NextMove {
+/**
+ * Every move worth making now, most time-sensitive first. The dashboard's
+ * single "next move" is the first of these; the Pro briefing shows the top
+ * few. One move per live application (an offer AND an interview are both
+ * today's business), then the profile-wide moves.
+ */
+export function listMoves(input: NextMoveInput): NextMove[] {
   const now = (input.now ?? new Date()).getTime();
+  const moves: NextMove[] = [];
 
   if (!input.hasProfile) {
-    return {
+    return [{
       id: "upload-resume",
       reason: "Start here",
       title: "Upload your resume",
       body: "Every fit score, match and tailored resume in Work-ly is built from it. It takes about a minute, and you can fix anything it reads wrong.",
       cta: { label: "Upload my resume", href: "/career-profile" },
       pro: false,
-    };
+    }];
   }
 
   const byStatus = (...statuses: ApplicationStatus[]) =>
-    mostRecent(input.applications.filter((a) => statuses.includes(a.status)));
+    [...input.applications.filter((a) => statuses.includes(a.status))].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
 
-  const offer = byStatus("OFFER");
-  if (offer) {
-    return {
+  for (const offer of byStatus("OFFER").slice(0, 2)) {
+    moves.push({
       id: "counter-offer",
       reason: "You have an offer",
       title: `Negotiate your offer${at(offer.company)}`,
@@ -98,12 +102,11 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       secondary: { label: "Already accepted? Add it to your profile", href: applicationToolHref(offer.id, "accept-offer") },
       toolId: "counter-offer",
       pro: TOOLS["counter-offer"].pro,
-    };
+    });
   }
 
-  const interview = byStatus("FINAL_INTERVIEW", "INTERVIEW");
-  if (interview) {
-    return {
+  for (const interview of byStatus("FINAL_INTERVIEW", "INTERVIEW").slice(0, 2)) {
+    moves.push({
       id: "mock-interview",
       reason: interview.status === "FINAL_INTERVIEW" ? "Final round coming up" : "You have an interview",
       title: `Rehearse for ${interview.roleTitle}${at(interview.company)}`,
@@ -114,12 +117,11 @@ export function pickNextMove(input: NextMoveInput): NextMove {
         : undefined,
       toolId: "mock-interview",
       pro: TOOLS["mock-interview"].pro,
-    };
+    });
   }
 
-  const assessment = byStatus("ASSESSMENT");
-  if (assessment) {
-    return {
+  for (const assessment of byStatus("ASSESSMENT").slice(0, 2)) {
+    moves.push({
       id: "practice-task",
       reason: "You have an assessment",
       title: `Practise for the ${assessment.company ?? "company"} assessment`,
@@ -127,15 +129,16 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       cta: { label: "Try a practice task", href: applicationToolHref(assessment.id, "practice-task") },
       toolId: "practice-task",
       pro: TOOLS["practice-task"].pro,
-    };
+    });
   }
 
-  const quiet = input.applications
+  const quietOnes = input.applications
     .filter((a) => a.status === "APPLIED" && now - lastActivity(a) >= 7 * DAY_MS)
-    .sort((a, b) => lastActivity(a) - lastActivity(b))[0];
-  if (quiet) {
+    .sort((a, b) => lastActivity(a) - lastActivity(b))
+    .slice(0, 3);
+  for (const quiet of quietOnes) {
     const days = Math.floor((now - lastActivity(quiet)) / DAY_MS);
-    return {
+    moves.push({
       id: "follow-up",
       reason: `No reply in ${days} days`,
       title: `Follow up${at(quiet.company)}`,
@@ -143,12 +146,11 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       cta: { label: "Draft a follow-up email", href: applicationToolHref(quiet.id, "follow-up") },
       toolId: "follow-up",
       pro: TOOLS["follow-up"].pro,
-    };
+    });
   }
 
-  const preparing = byStatus("PREPARING", "SAVED");
-  if (preparing) {
-    return {
+  for (const preparing of byStatus("PREPARING", "SAVED").slice(0, 2)) {
+    moves.push({
       id: "tailor",
       reason: "Ready to apply?",
       title: `Tailor your resume for ${preparing.roleTitle}${at(preparing.company)}`,
@@ -158,24 +160,24 @@ export function pickNextMove(input: NextMoveInput): NextMove {
         : { label: "Tailor my resume bullets", href: applicationToolHref(preparing.id, "resume-bullets") },
       toolId: preparing.opportunityId ? "tailored-resume" : "resume-bullets",
       pro: true,
-    };
+    });
   }
 
   if (input.topOpportunity) {
     const o = input.topOpportunity;
     const name = o.title ?? "your top job";
-    return {
+    moves.push({
       id: "apply-top",
       reason: "Your highest-priority job",
       title: `Apply to ${name}${at(o.company)}`,
       body: "It's the best-scoring job you've tracked and you haven't applied yet. Open it for the fit breakdown, a tailored resume and a note to the hiring manager.",
       cta: { label: "Open it", href: `/opportunities/${o.id}` },
       pro: false,
-    };
+    });
   }
 
   if (input.discoveredCount === 0) {
-    return {
+    moves.push({
       id: "discover",
       reason: "Next step",
       title: "Find jobs that fit you",
@@ -183,23 +185,23 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       cta: { label: "Find my matches", href: "/discover" },
       toolId: "discover",
       pro: false,
-    };
+    });
   }
 
   if (input.trackedCount === 0 && input.topDiscovered) {
     const t = input.topDiscovered;
-    return {
+    moves.push({
       id: "review-matches",
       reason: `${input.discoveredCount} matches waiting`,
       title: t.fitScore != null ? `${t.title}${at(t.company)}: Candidate Fit is ${t.fitScore}/100` : `${t.title}${at(t.company)}`,
       body: "That's your strongest match so far. Press Analyze & track on any job you like - it moves into your pipeline and unlocks tailoring, outreach and interview prep for it.",
       cta: { label: "Review my matches", href: "/discover" },
       pro: false,
-    };
+    });
   }
 
   if (!input.hasDreamJob) {
-    return {
+    moves.push({
       id: "dream-job",
       reason: "Think one step further",
       title: "How close are you to your dream job?",
@@ -207,11 +209,9 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       cta: { label: "Check my dream job", href: "/dream-job" },
       toolId: "dream-job",
       pro: false,
-    };
-  }
-
-  if (!input.hasPathway) {
-    return {
+    });
+  } else if (!input.hasPathway) {
+    moves.push({
       id: "pathway",
       reason: "You know the gaps",
       title: "Turn them into a plan",
@@ -219,21 +219,19 @@ export function pickNextMove(input: NextMoveInput): NextMove {
       cta: { label: "Build my pathway", href: "/career-path" },
       toolId: "pathway",
       pro: TOOLS.pathway.pro,
-    };
-  }
-
-  if (input.pathwayNext) {
-    return {
+    });
+  } else if (input.pathwayNext) {
+    moves.push({
       id: "pathway-next",
       reason: "Next on your plan",
       title: input.pathwayNext,
       body: "Mark it complete when it's done - your pathway and fit scores move with you.",
       cta: { label: "Open my pathway", href: "/career-path" },
       pro: false,
-    };
+    });
   }
 
-  return {
+  moves.push({
     id: "discover-more",
     reason: "Keep the pipeline full",
     title: "Look for new matches",
@@ -241,5 +239,11 @@ export function pickNextMove(input: NextMoveInput): NextMove {
     cta: { label: "Find new matches", href: "/discover" },
     toolId: "discover",
     pro: false,
-  };
+  });
+  return moves;
+}
+
+/** The one thing worth doing now (the dashboard's "Your next move"). */
+export function pickNextMove(input: NextMoveInput): NextMove {
+  return listMoves(input)[0];
 }

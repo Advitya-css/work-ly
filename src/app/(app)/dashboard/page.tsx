@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/shared/page-header";
 import {
   IconApplication,
   IconDashboard,
-  IconDiscover,
   IconGoal,
   IconOpportunity,
 } from "@/components/icons";
@@ -32,14 +31,14 @@ import { summarize } from "@/lib/applications/analytics";
 import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, getLatestRun } from "@/lib/db/discovery";
 import { bucketJobs } from "@/lib/discovery/run";
-import { buildAlert } from "@/lib/discovery/alerts";
-import { BUCKETS } from "@/lib/discovery/labels";
 import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getJobById } from "@/lib/db/jobs";
 import { nextUpFor } from "@/lib/pathway/get-full-pathway";
-import { pickNextMove } from "@/lib/guidance/next-move";
+import { listMoves } from "@/lib/guidance/next-move";
+import { buildBriefing } from "@/lib/guidance/briefing";
+import { PAID_PLANS } from "@/lib/pricing";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
-import { NextMoveCard } from "@/components/guidance/next-move-card";
+import { CommandCenter } from "@/components/dashboard/command-center";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -106,7 +105,6 @@ export default async function DashboardPage({
     });
   });
   const discoveryBuckets = bucketJobs(discovered);
-  const discoveryAlert = buildAlert(latestRun, discovered);
 
   // Not yet applied to: "worth applying to now" used to count jobs you'd
   // already applied for.
@@ -121,7 +119,7 @@ export default async function DashboardPage({
       ])
     : [[], null];
   const bestDiscovered = discoveryBuckets.applyNow[0] ?? discoveryBuckets.strong[0] ?? null;
-  const nextMove = pickNextMove({
+  const moves = listMoves({
     hasProfile,
     discoveredCount: discoveryBuckets.total,
     topDiscovered: bestDiscovered
@@ -144,6 +142,9 @@ export default async function DashboardPage({
     hasPathway: pathway != null,
     pathwayNext: pathway ? nextUpFor(pathway)?.label ?? null : null,
   });
+  const briefing = buildBriefing({ moves, jobs: discovered, latestRun, applications });
+  const isPro = user?.isPro ?? false;
+  const planName = PAID_PLANS.find((p) => p.interval === user?.proPlan)?.name ?? null;
 
   return (
     <div className="flex flex-col gap-10">
@@ -153,64 +154,12 @@ export default async function DashboardPage({
         action={<EnterStudentModeButton />}
       />
 
-      <NextMoveCard move={nextMove} isPro={user?.isPro ?? false} />
-
-
-      {/* New opportunities for you. Spec requirement #10 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            New opportunities for you
-          </CardTitle>
-          <CardDescription>
-            {discoveryAlert.shouldNotify
-              ? `${discoveryAlert.headline} ${discoveryAlert.body}`
-              : "Pulled from sources that permit it, scored against your profile."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {discoveryBuckets.total === 0 ? (
-            <EmptyState
-              icon={IconDiscover}
-              title="Nothing discovered yet"
-              description="Run discovery to pull in listings and see them sorted by what's worth your time."
-              action={{ label: "Discover opportunities", href: "/discover" }}
-              className="border-0 px-0 py-4"
-            />
-          ) : (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-4">
-                {BUCKETS.map((bucket) => (
-                  <div key={bucket.key} className="flex items-baseline gap-1.5">
-                    <bucket.icon className={`size-4 self-center ${bucket.tone}`} />
-                    <span className="text-xl font-bold tabular-nums text-foreground">
-                      {discoveryBuckets[bucket.key].length}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{bucket.label}</span>
-                  </div>
-                ))}
-              </div>
-              {discoveryBuckets.applyNow[0] && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  Top find:{" "}
-                  <span className="font-medium text-foreground break-words">
-                    {discoveryBuckets.applyNow[0].title}
-                  </span>
-                  {discoveryBuckets.applyNow[0].company
-                    ? ` at ${discoveryBuckets.applyNow[0].company}`
-                    : ""}
-                </p>
-              )}
-              <Button asChild size="sm" variant="outline" className="w-fit">
-                <Link href="/discover">
-                  Review {discoveryBuckets.total} discovered
-                  <ArrowRight />
-                </Link>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <CommandCenter
+        briefing={briefing}
+        isPro={isPro}
+        planName={planName}
+        matchCount={discoveryBuckets.applyNow.length + discoveryBuckets.strong.length}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <ProfileCompletenessCard completeness={profileCompleteness} />
