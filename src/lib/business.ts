@@ -29,7 +29,7 @@ export const BUSINESS = {
    * "Razorpay"), and whether it acts as Merchant of Record (the reseller
    * that is legally the seller and handles sales tax and invoices).
    */
-  paymentProvider: "Paddle",
+  paymentProvider: "Polar",
   providerIsMerchantOfRecord: true,
   /** Shown as "Last updated" on the Terms and Refund policy. */
   legalUpdated: "25 September 2026",

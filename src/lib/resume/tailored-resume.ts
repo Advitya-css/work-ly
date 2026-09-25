@@ -1,4 +1,5 @@
 import "server-only";
+import { matchSourceTense } from "@/lib/resume/tense";
 
 import {
   NO_FABRICATION_RULES,
@@ -71,7 +72,7 @@ function sourceLines(text: string | null | undefined): string[] {
 }
 
 const SYSTEM = `You tailor a candidate's EXISTING resume content to ONE job. You never add facts.
-For each ROLE (by its id), return bullets ordered by relevance to the JOB: 3-5 for R1 (the most recent role) and 2-4 for the others, fewer only when the role has fewer LINES. Each bullet has "basedOn" (one line copied exactly from that role's LINES) and "text" (the rewrite: strong past-tense verb - present tense only for an ongoing duty in a current role - the tool/domain this job cares about, the real outcome). KEEP EVERY NUMBER, metric and scale from the basedOn line exactly as written (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - they are the candidate's strongest proof, and a rewrite that drops them is worse than the original. Roles with no LINES get no bullets. You may skip weak or irrelevant lines, but never skip a line with a measurable result that is relevant to the JOB.
+For each ROLE (by its id), return bullets ordered by relevance to the JOB: 3-5 for R1 (the most recent role) and 2-4 for the others, fewer only when the role has fewer LINES. Each bullet has "basedOn" (one line copied exactly from that role's LINES) and "text" (the rewrite: keep the TENSE of the basedOn line - if it starts "Built", the rewrite starts with a past-tense verb too, never "Build" - then the tool/domain this job cares about and the real outcome). KEEP EVERY NUMBER, metric and scale from the basedOn line exactly as written (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - they are the candidate's strongest proof, and a rewrite that drops them is worse than the original. Roles with no LINES get no bullets. You may skip weak or irrelevant lines, but never skip a line with a measurable result that is relevant to the JOB.
 For each PROJECT (by its id) that is relevant, return 1-2 bullets the same way; omit irrelevant projects.
 "skills": up to 14 names chosen ONLY from the SKILLS list, most relevant to the job first, copied exactly.
 "summary": 2-3 sentences positioning the candidate for this job using only real facts: their actual title, years of experience if given, the 2 most relevant tools, and their single strongest measurable result. No first person, no clichés ("results-driven", "passionate", "extensive experience").
@@ -141,7 +142,7 @@ function groundedBullets(raw: RawBullets | undefined, lines: string[], flagged: 
     // used by 120 city managers" -> "Built dbt models") throws away the
     // proof. Keep the candidate's own line instead.
     const lostNumbers = unsupportedNumbers(basedOn, text).length > 0;
-    out.push((lostNumbers ? basedOn : text).replace(/^[\s•\-*]+/, ""));
+    out.push((lostNumbers ? basedOn : matchSourceTense(text, basedOn)).replace(/^[\s•\-*]+/, ""));
     if (out.length >= max) break;
   }
   return out;

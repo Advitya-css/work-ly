@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { WorklyLoader } from "@/components/shared/workly-loader";
 import { recheckReadinessNowAction } from "@/lib/insights/actions";
 
 export function RecheckButton({ dreamJobId }: { dreamJobId: string }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   return (
@@ -21,6 +23,7 @@ export function RecheckButton({ dreamJobId }: { dreamJobId: string }) {
             setMessage(null);
             const result = await recheckReadinessNowAction(dreamJobId);
             setMessage(result.error ?? `Re-checked: ${result.score}/100.`);
+            if (!result.error) router.refresh();
           })
         }
       >

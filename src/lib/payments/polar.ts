@@ -2,17 +2,14 @@
 
 import { Polar } from "@polar-sh/sdk";
 import { getCurrentUser } from "@/lib/auth";
+import { POLAR_PRODUCT_IDS } from "@/lib/payments/polar-plans";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
   // We can pass organizationId if needed, but not strictly required if using default org for the token
 });
 
-const PRODUCT_IDS = {
-  monthly: "e1ee10eb-0538-4363-99aa-a2d8141ec127",
-  quarterly: "7e7f1dbc-9f22-44f9-bd6b-196911383dbe",
-  yearly: "a42ffed2-dd57-4e6c-af7c-ba112e9ec43f",
-};
+const PRODUCT_IDS = POLAR_PRODUCT_IDS;
 
 export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearly") {
   try {
@@ -29,6 +26,9 @@ export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearl
     const result = await polar.checkouts.create({
       products: [productId],
       customerEmail: user.email,
+      // Ties the Polar customer to this account, so renewals and refunds
+      // map back to the right user even without checkout metadata.
+      externalCustomerId: user.id,
       metadata: { user_id: user.id },
       customerMetadata: { user_id: user.id },
       customFieldData: { user_id: user.id },

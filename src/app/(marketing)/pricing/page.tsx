@@ -74,7 +74,9 @@ export default function PricingPage() {
       terms: plan.terms,
       features: plan.features,
       featured: Boolean(plan.featured),
-      cta: { label: `Get ${plan.name}`, href: `/signup?plan=${plan.interval}` },
+      // Checkout needs an account: signed-in visitors land on the plans in
+      // Settings; everyone else signs in (or signs up from there) first.
+      cta: { label: `Get ${plan.name}`, href: `/settings?plan=${plan.interval}` },
     })),
   ];
 

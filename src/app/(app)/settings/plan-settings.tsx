@@ -76,7 +76,8 @@ export async function PlanSettings() {
         </CardContent>
       </Card>
 
-      {!isPro && (
+      {/* Beta and referral Pro are free trials, not purchases - they can still buy. */}
+      {(!isPro || !user.proPlan || user.proPlan === "beta") && (
         <PricingCard />
       )}
     </div>
