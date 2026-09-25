@@ -6,7 +6,7 @@ import { Sparkles, CheckCircle2, ArrowRight, Star } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createCheckoutUrl } from "@/lib/payments/lemonsqueezy";
+import { createPolarCheckout } from "@/lib/payments/polar";
 import { redeemBetaCodeAction } from "@/lib/beta/actions";
 
 export function UpgradeModal({ 
@@ -52,11 +52,15 @@ export function UpgradeModal({
   const handleUpgrade = async () => {
     try {
       setLoading(true);
-      const { url } = await createCheckoutUrl(selectedPlan);
-      if (url) window.location.href = url;
-    } catch (error) {
+      const result = await createPolarCheckout(selectedPlan);
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        throw new Error(result.error || "Failed to generate checkout link.");
+      }
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to generate checkout link. Please make sure all environment variables are set.");
+      alert(error.message || "Failed to generate checkout link.");
       setLoading(false);
     }
   };
@@ -140,8 +144,8 @@ export function UpgradeModal({
             </button>
           </div>
 
-          <Button disabled variant="outline" size="lg" className="w-full mt-2 gap-2 cursor-not-allowed">
-            Public Checkouts Coming Soon
+          <Button onClick={handleUpgrade} disabled={loading} size="lg" className="w-full mt-2 gap-2">
+            {loading ? <WorklyLoader className="size-4 animate-spin" /> : <><Sparkles className="size-4" /> Continue to Checkout</>}
           </Button>
 
           <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
