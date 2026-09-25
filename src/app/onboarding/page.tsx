@@ -18,7 +18,8 @@ export const metadata: Metadata = { title: "Welcome" };
 // The matches step reads the first discovery run's results.
 export const dynamic = "force-dynamic";
 // The first-matches step reads the top matches in full (a model call each).
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 type OnboardingStep = "welcome" | "upload" | "review" | "matches" | "student-setup";
 

@@ -1,3 +1,4 @@
+import { matchSourceTense } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -17,8 +18,8 @@ export const maxDuration = 60;
 const SYSTEM = `You are a senior recruiter preparing a candidate's application for ONE job.
 Write "angle" and "risks" TO the candidate in the second person ("You have...", "Your..."), never "the candidate".
 1. angle: one sentence - the single strongest, TRUE reason you fit this job, citing your real experience.
-2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job's language and priorities. The "after" MUST keep every number and metric in the "before" (40+, 120 city managers, 6 hours to 25 minutes, 3.2%) - a tweak that removes a real result makes the resume weaker, so skip it instead. Skip a tweak rather than invent a "before".
-3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application. Only name tools and platforms that literally appear in the CANDIDATE section.
+2. tweaks: 3 resume edits. "before" must be copied from a real line in the CANDIDATE section; "after" rewrites it for this job's language and priorities. The "after" MUST keep every number and metric in the "before" (counts, percentages, time saved) - a tweak that removes a real result makes the resume weaker, so skip it instead. Keep the tense of the "before" (a line starting "Built" stays past tense). The "after" may reword and reorder, but must not add an activity, tool, skill or outcome the "before" doesn't show (no "presented insights", "forecasting" or "stakeholder management" unless the line says so). Skip a tweak rather than invent a "before".
+3. risks: up to 3 things a screener may flag (real gaps between JOB and CANDIDATE) and how to address each honestly in the application. Only name tools, platforms, skills and experience that literally appear in the CANDIDATE section - never suggest highlighting something the candidate hasn't shown.
 4. coverLetter: under 200 words, human, specific to this company and job, using only real facts. Use [Your Name] for the signature.
 ${NO_FABRICATION_RULES}`;
 
@@ -68,6 +69,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       return { angle, coverLetter, tweaks: pairs(r.tweaks, "before", "after")
           // An "after" that loses the original's numbers is a downgrade, not a tweak.
           .filter((t) => unsupportedNumbers(t.a, t.b).length === 0)
+          .map((t) => ({ ...t, b: matchSourceTense(t.b, t.a) }))
           .slice(0, 3), risks: pairs(r.risks, "risk", "howToAddress").slice(0, 3) };
     },
   });

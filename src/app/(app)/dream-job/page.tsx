@@ -16,7 +16,8 @@ import { coverageOf, MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 
 export const metadata: Metadata = { title: "Dream Job" };
 // Dream job analysis runs the grounded screen and builds the plan.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 function readinessColor(score: number): string {
   if (score >= 75) return "text-success";

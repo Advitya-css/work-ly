@@ -48,7 +48,8 @@ import {
 
 export const metadata: Metadata = { title: "Dream Job Analysis" };
 // Re-analysis and "Build my pathway" run the grounded screen and the plan model.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 function readinessCopy(score: number): string {
   if (score >= 75) return "You're closer than you think. This is within reach with a few targeted moves.";

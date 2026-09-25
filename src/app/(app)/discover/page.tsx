@@ -28,7 +28,8 @@ import type { SearchContext } from "@/lib/search/engine";
 export const metadata: Metadata = { title: "Discover" };
 // Discovery runs (a server action on this page) fetch every source and then
 // run the grounded AI screen on the best candidates - give them room.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 export default async function DiscoverPage() {
   const user = await getCurrentUser();

@@ -22,7 +22,8 @@ import { hasYearlyPerks, YEARLY_PERKS } from "@/lib/plans";
 
 export const metadata: Metadata = { title: "Insights" };
 // "Re-check now" runs one screening call.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 function relative(date: Date): string {
   const hours = Math.round((Date.now() - new Date(date).getTime()) / 3_600_000);

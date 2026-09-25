@@ -88,8 +88,22 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       : "",
     "\n### Tailored summary",
     result.summary,
-    "\n### Rewritten bullets",
-    result.bullets.map((b) => `- **${b.rewrite}**\n  - Based on: _${b.basedOn}_`).join("\n"),
+    ...(() => {
+      // A line that already says what this job wants is kept as is - shown
+      // once as "keep", never printed twice as a fake rewrite.
+      const same = (b: { basedOn: string; rewrite: string }) =>
+        b.rewrite.trim().replace(/[.\s]+$/, "").toLowerCase() === b.basedOn.trim().replace(/[.\s]+$/, "").toLowerCase();
+      const changed = result.bullets.filter((b) => !same(b));
+      const kept = result.bullets.filter(same);
+      return [
+        changed.length
+          ? `\n### Rewritten bullets\n${changed.map((b) => `- **${b.rewrite}**\n  - Based on: _${b.basedOn}_`).join("\n")}`
+          : "",
+        kept.length
+          ? `\n### Already strong for this job - keep as is\n${kept.map((b) => `- ${b.basedOn}`).join("\n")}`
+          : "",
+      ];
+    })(),
     flagged.length
       ? `\n> Check these numbers before using: ${flagged.join(", ")}. They don't appear in your profile.`
       : "",

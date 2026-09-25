@@ -79,7 +79,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
               </div>
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
-            <p className="text-sm text-muted-foreground">This takes about 5 seconds.</p>
+            <p className="text-sm text-muted-foreground">This usually takes 20-40 seconds.</p>
           </div>
         </div>
       )}
@@ -123,7 +123,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
               <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
-            <p className="text-sm text-muted-foreground">This takes about 5 seconds.</p>
+            <p className="text-sm text-muted-foreground">This usually takes 20-40 seconds.</p>
           </div>
         </div>
       )}

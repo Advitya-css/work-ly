@@ -34,7 +34,8 @@ import { ACTION_WINDOW_ORDER, ACTION_WINDOW_LABEL, ACTION_WINDOW_CAPTION } from 
 
 export const metadata: Metadata = { title: "Action Plan" };
 // Pathway generation and step completion re-run the screen.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 export default async function CareerPathPage() {
   const user = await getCurrentUser();

@@ -118,6 +118,11 @@ export function JobInputForm() {
           </>
         )}
       </Button>
+      {pending && (
+        <p className="text-sm text-muted-foreground" role="status">
+          Reading the posting and checking every requirement against your profile. This usually takes 30-60 seconds.
+        </p>
+      )}
     </form>
   );
 }

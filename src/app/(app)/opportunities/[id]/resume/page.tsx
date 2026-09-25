@@ -15,7 +15,8 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 
 export const metadata: Metadata = { title: "Tailored Resume" };
 // Building the resume is one model call; give it room.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 export default async function TailoredResumePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

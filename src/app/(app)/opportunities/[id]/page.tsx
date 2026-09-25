@@ -53,7 +53,8 @@ import type { ScoreBreakdown } from "@/lib/db/types";
 
 export const metadata: Metadata = { title: "Opportunity" };
 // Re-analysis and the AI tools on this page call the model.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 function scoreColor(score: number): string {
   if (score >= 75) return "text-success";

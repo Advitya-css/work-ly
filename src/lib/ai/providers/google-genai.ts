@@ -86,7 +86,7 @@ export const googleGenAIProvider: AIProvider = {
     // Google, so the chain doesn't rot when a specific version is retired.
     const chain = Array.from(
       new Set(
-        [model, process.env.AI_FALLBACK_MODEL?.trim(), "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash"].filter(
+        [model, process.env.AI_FALLBACK_MODEL?.trim(), "gemini-flash-lite-latest", "gemini-flash-latest", "gemini-2.5-flash"].filter(
           (m): m is string => Boolean(m),
         ),
       ),

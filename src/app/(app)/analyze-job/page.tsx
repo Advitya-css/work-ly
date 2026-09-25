@@ -18,7 +18,8 @@ import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Analyze a Job" };
 // Analysis runs the grounded AI screen.
-export const maxDuration = 60;
+// Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
+export const maxDuration = 180;
 
 export default async function AnalyzeJobPage() {
   const user = await getCurrentUser();
