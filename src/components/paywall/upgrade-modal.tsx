@@ -151,11 +151,11 @@ export function UpgradeModal({
 
           <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
             <p className="text-sm font-medium text-foreground text-center">
-              Want early access? Become a beta tester.
+              Got a code?
             </p>
             <div className="flex gap-2">
               <Input 
-                placeholder="Enter beta invite code" 
+                placeholder="Enter code" 
                 value={betaCode} 
                 onChange={(e) => setBetaCode(e.target.value)}
                 className="uppercase"
@@ -165,9 +165,7 @@ export function UpgradeModal({
               </Button>
             </div>
             {betaError && <p className="text-xs text-center text-destructive">{betaError}</p>}
-            <p className="text-xs text-center text-muted-foreground mt-1">
-              Don't have a code? <a href="mailto:advitya@work-ly.in?subject=Work-ly%20Beta%20Access%20Request" className="underline hover:text-primary transition-colors">Email us to request one.</a>
-            </p>
+            
           </div>
         </div>
       </DialogContent>
