@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     // Handle Order Created (for 3-Month and Yearly Passes)
     if (event.type === "order.created") {
       const order = event.data;
-      const userId = order.custom_field_data?.user_id || order.customer_metadata?.user_id;
+      const userId = order.metadata?.user_id || order.custom_field_data?.user_id || order.customer_metadata?.user_id || order.customer?.metadata?.user_id;
       
       if (!userId) {
         console.error("No user_id found in Polar order metadata");
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     if (event.type === "subscription.created" || event.type === "subscription.updated") {
       const subscription = event.data;
       if (subscription.status === "active") {
-        const userId = subscription.custom_field_data?.user_id || subscription.customer_metadata?.user_id || subscription.metadata?.user_id;
+        const userId = subscription.metadata?.user_id || subscription.custom_field_data?.user_id || subscription.customer_metadata?.user_id || subscription.customer?.metadata?.user_id;
         
         if (userId) {
           await pool.query(

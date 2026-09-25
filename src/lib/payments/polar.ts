@@ -29,9 +29,9 @@ export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearl
     const result = await polar.checkouts.create({
       products: [productId],
       customerEmail: user.email,
-      customerMetadata: {
-        user_id: user.id
-      },
+      metadata: { user_id: user.id },
+      customerMetadata: { user_id: user.id },
+      customFieldData: { user_id: user.id },
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://work-ly.in"}/dashboard?success=true`,
     });
 
