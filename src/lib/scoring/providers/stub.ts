@@ -302,7 +302,8 @@ function scoreEducation(job: Job, profile: FullCareerProfile) {
 }
 
 function scoreIndustry(job: Job, profile: FullCareerProfile, careerGoal: CareerGoal | null) {
-  if (!job.industry) {
+  // A job board's own category ("IT Jobs") is not an industry to judge by.
+  if (!isRealIndustry(job.industry)) {
     return unavailable(
       WEIGHTS.industryRelevance,
       "Work-ly could not identify an industry for this posting, so it cannot judge how relevant your background is.",
@@ -698,18 +699,31 @@ function classifyGaps(params: {
     });
   }
 
-  if (job.industry && (profile.profile?.headline || profile.profile?.summary)) {
+  if (isRealIndustry(job.industry) && (profile.profile?.headline || profile.profile?.summary)) {
     const haystack = [profile.profile?.headline, profile.profile?.summary].filter(Boolean).join(" ").toLowerCase();
     if (!haystack.includes(job.industry.toLowerCase())) {
       gaps.push({
         type: "POSITIONING_GAP" as GapType,
         title: "Profile does not position you for this industry",
-        description: `Your headline and summary do not currently mention ${job.industry}. Worth tailoring if you apply.`,
+        description: `Your headline and summary do not currently mention ${job.industry.trim()}. Worth tailoring if you apply.`,
       });
     }
   }
 
   return gaps;
+}
+
+/**
+ * Whether a posting's "industry" is a real industry worth positioning for.
+ * Job boards fill the field with their own category labels ("IT Jobs",
+ * "Other/General Jobs"), which produced advice like "your summary doesn't
+ * mention IT Jobs".
+ */
+export function isRealIndustry(industry: string | null | undefined): industry is string {
+  const v = industry?.trim().toLowerCase();
+  if (!v) return false;
+  if (/\bjobs?$/.test(v)) return false;
+  return !["it", "other", "general", "unknown", "n/a", "na", "various", "miscellaneous"].includes(v);
 }
 
 /** 2.5 -> "2.5", 3 -> "3": requirement counts rounded to the nearest half. */
