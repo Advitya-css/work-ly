@@ -295,8 +295,20 @@ export async function screenPastedResume(resumeText: string, jobText: string): P
     updatedAt: now,
   };
   const dossier: DossierEntry[] = [{ label: "CV", where: "your resume", kind: "experience", text: resumeText }];
-  const screen = await runScreen({ dossier, posting: postingText(job), profile: EMPTY_PROFILE });
-  if (!screen) return null;
+  const screened = await runScreen({ dossier, posting: postingText(job), profile: EMPTY_PROFILE });
+  if (!screened) return null;
+  // Here the resume IS the whole dossier, so a hard requirement it doesn't
+  // show is exactly what a recruiter would screen out on - not "can't
+  // tell". Treating it as unknown hid a missing must-have (A/B testing) and
+  // scored the resume 91/100. Soft traits ("other") stay unclear.
+  const requirements = screened.requirements.map((r) =>
+    r.verdict === "unclear" && r.category !== "other" ? { ...r, verdict: "missing" as const, evidenceQuote: null } : r,
+  );
+  const screen = {
+    ...screened,
+    requirements,
+    dealbreakers: requirements.filter((r) => r.importance === "critical" && r.verdict === "missing").map((r) => r.requirement),
+  };
   const rules = scoringProvider.analyzeFit({ profile: EMPTY_PROFILE, careerGoal: null, job });
   return combineScreen({ screen, rules, job, profile: EMPTY_PROFILE });
 }
