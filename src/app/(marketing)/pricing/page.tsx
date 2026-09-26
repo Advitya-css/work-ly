@@ -24,7 +24,7 @@ const FAQ = [
   },
   {
     q: "What if it isn't for me?",
-    a: `Every paid plan has a ${BUSINESS.refundDays}-day money-back guarantee: email us within ${BUSINESS.refundDays} days of your first purchase and we refund it in full, no questions asked. The details are in our refund policy.`,
+    a: `Every paid plan has a ${BUSINESS.refundDays}-day money-back guarantee: email us within ${BUSINESS.refundDays} days of your first purchase and we refund it in full, as long as you've used fewer than ${BUSINESS.refundUsageLimit} Pro AI tools - enough to try everything, not to run a whole job search. Settings shows your count. The details are in our refund policy.`,
   },
   {
     q: "What happens to my data when Pro ends?",

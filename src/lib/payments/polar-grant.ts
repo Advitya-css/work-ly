@@ -2,6 +2,7 @@ import "server-only";
 
 import { pool } from "@/lib/db/pool";
 import { PLAN_INTERVAL, planForProduct, type PolarPlan } from "@/lib/payments/polar-plans";
+import { openRefundWindow } from "@/lib/payments/refund-window";
 
 /**
  * TURNING A POLAR ORDER INTO PRO ACCESS - the one place it happens.
@@ -117,6 +118,7 @@ export async function grantForOrder(order: PaidOrder, userId: string): Promise<P
     console.error(`[workly:polar] paid order ${order.id}: user ${userId} not found`);
     return null;
   }
+  await openRefundWindow(userId, order.createdAt).catch((e) => console.error("[workly:polar] refund window", e));
   console.log(`[workly:polar] order ${order.id} paid: ${plan} for user ${userId}`);
   return plan;
 }

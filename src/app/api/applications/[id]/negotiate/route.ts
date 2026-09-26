@@ -11,7 +11,7 @@ export const maxDuration = 60;
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
-  if (!(await withinProAiBudget(user.id))) {
+  if (!(await withinProAiBudget(user.id, { countsTowardRefund: false }))) {
     return NextResponse.json({ error: "You've used a lot of AI tools this hour. Try again in a little while." }, { status: 429 });
   }
   if (!(await spendFreeAi(user))) {

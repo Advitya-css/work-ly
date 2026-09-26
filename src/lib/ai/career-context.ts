@@ -1,4 +1,5 @@
 import "server-only";
+import { recordProToolUse } from "@/lib/payments/refund-window";
 
 import { NextResponse } from "next/server";
 
@@ -88,8 +89,15 @@ export { isTechnicalRole } from "@/lib/role-kind";
 export const PRO_AI_LIMIT = 40;
 export const PRO_AI_WINDOW_SECONDS = 3600;
 
-export async function withinProAiBudget(userId: string): Promise<boolean> {
-  return checkRateLimit(`pro_ai_${userId}`, PRO_AI_LIMIT, PRO_AI_WINDOW_SECONDS);
+export async function withinProAiBudget(
+  userId: string,
+  options: { countsTowardRefund?: boolean } = {},
+): Promise<boolean> {
+  const allowed = await checkRateLimit(`pro_ai_${userId}`, PRO_AI_LIMIT, PRO_AI_WINDOW_SECONDS);
+  // Every Pro AI tool use counts toward the light-use money-back guarantee
+  // (free tools such as the follow-up and counter-offer emails pass false).
+  if (allowed && options.countsTowardRefund !== false) await recordProToolUse(userId);
+  return allowed;
 }
 
 /** Standard gate for Pro API routes: 401 / 403 / 429, or null when the call may proceed. */

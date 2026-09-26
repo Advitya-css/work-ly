@@ -1,6 +1,7 @@
 "use server";
 
 import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
+import { recordProToolUse } from "@/lib/payments/refund-window";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -47,6 +48,7 @@ export async function analyzeDreamJobAction(
   }
 
   if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };
+  if (user.isPro) await recordProToolUse(user.id);
 
   const result = await submitAndAnalyzeDreamJob(user.id, parsed.data);
   if ("error" in result) {

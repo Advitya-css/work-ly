@@ -25,7 +25,7 @@ To provide Work-ly's services, we rely on a carefully selected group of third-pa
 
 ### AI & Job Data Processing
 
-* **Google LLC – Gemini API** (USA) – AI processing for resume reading, fit scoring, tailoring, interview practice and career planning. Only the text needed for the feature you use is sent, via the API.
+* **Google LLC – Gemini API** (USA) – AI processing for resume reading, fit scoring, tailoring, interview practice and career planning. Only the text needed for the feature you use is sent, via the paid API. Under Google's paid-service terms, prompts and responses are not used to improve Google's products and are kept only for a limited period to detect abuse.
 * **Adzuna / Jooble / Remotive / Jobicy / Arbeitnow** (Global) – Job listing data providers. We use these APIs to source job information, but we do not send your personal profile data to them.
 
 ### Updates to this list

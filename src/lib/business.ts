@@ -23,7 +23,9 @@ export const BUSINESS = {
   /** Courts with exclusive jurisdiction under the Terms. */
   courts: "Jaipur, Rajasthan, India",
   /** Days after a first purchase in which a full refund is guaranteed. */
-  refundDays: 14,
+  refundDays: 7,
+  /** The guarantee holds while the buyer has used fewer Pro AI tools than this (see lib/payments/refund-window.ts). */
+  refundUsageLimit: 10,
   /**
    * The payment provider, once one is live (e.g. "Paddle", "Dodo Payments",
    * "Razorpay"), and whether it acts as Merchant of Record (the reseller
@@ -32,5 +34,5 @@ export const BUSINESS = {
   paymentProvider: "Polar",
   providerIsMerchantOfRecord: true,
   /** Shown as "Last updated" on the Terms and Refund policy. */
-  legalUpdated: "25 September 2026",
+  legalUpdated: "26 September 2026",
 } as const;

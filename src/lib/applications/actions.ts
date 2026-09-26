@@ -264,7 +264,7 @@ export async function generateFollowUpEmailAction(applicationId: string) {
     const application = await requireOwnedApplication(applicationId);
     if (!application) return { error: "Not found" };
 
-    if (!(await withinProAiBudget(user.id))) {
+    if (!(await withinProAiBudget(user.id, { countsTowardRefund: false }))) {
       return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
     }
     if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };

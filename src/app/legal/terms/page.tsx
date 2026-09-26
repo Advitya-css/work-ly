@@ -68,7 +68,7 @@ export default function TermsOfService() {
         <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
           <li>Work-ly is AI career software for individuals. It is not a recruiter, job board or employer, and it can&apos;t guarantee you a job.</li>
           <li>Monthly renews until you cancel. The 3-Month and Yearly passes are one-time payments that don&apos;t renew.</li>
-          <li>Your first purchase has a {BUSINESS.refundDays}-day money-back guarantee (see the <A href="/legal/refunds">Refund policy</A>).</li>
+          <li>Your first purchase has a {BUSINESS.refundDays}-day money-back guarantee while you&apos;ve used fewer than {BUSINESS.refundUsageLimit} Pro AI tools (see the <A href="/legal/refunds">Refund policy</A>).</li>
           <li>Your resume and data stay yours. Always check AI-written content before you send it to anyone.</li>
           <li>Indian law applies, with courts in {BUSINESS.courts}, without taking away consumer rights you have where you live.</li>
         </ul>
@@ -223,7 +223,7 @@ export default function TermsOfService() {
           produces for you are yours to use. You give us a limited, worldwide, non-exclusive licence to host, copy and
           process Your Content only to provide and improve the service for you, including sending it to the AI and
           infrastructure providers listed on our <A href="/legal/subprocessors">Sub-processors</A> page. We don&apos;t sell
-          Your Content, and we don&apos;t use it to train AI models of our own.
+          Your Content, and we don&apos;t use it to train AI models of our own. Our AI provider (Google&apos;s paid Gemini API) doesn&apos;t use it to train or improve its models either.
         </p>
         <p>
           You&apos;re responsible for having the right to upload Your Content. Don&apos;t upload other people&apos;s personal

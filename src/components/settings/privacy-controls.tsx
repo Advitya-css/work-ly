@@ -168,7 +168,9 @@ export function PrivacyControls() {
               To read your CV, check your fit for a job and write tailored material, Work-ly sends the
               relevant text (your CV and profile, and the job posting) to Google&apos;s Gemini models.
               Only what a feature needs is sent, at the moment you use it or when your nightly job check
-              runs. Work-ly never uses your data to train AI models. If the AI is unavailable, Work-ly falls back to built-in parsing and rules
+              runs. Work-ly uses Google&apos;s paid Gemini API, under which Google does not use your data to train or
+              improve its models (it keeps requests only briefly, to detect abuse), and Work-ly never trains AI models on
+              your data either. If the AI is unavailable, Work-ly falls back to built-in parsing and rules
               so you&apos;re never blocked.
             </p>
           </div>

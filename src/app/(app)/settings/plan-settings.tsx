@@ -10,6 +10,7 @@ import { hasYearlyPerks } from "@/lib/plans";
 import { PAID_PLANS } from "@/lib/pricing";
 import { BUSINESS } from "@/lib/business";
 import { restorePurchaseAction } from "@/lib/payments/polar";
+import { getRefundStatus } from "@/lib/payments/refund-window";
 import { UpgradeButton } from "@/components/paywall/upgrade-button";
 import type { PaidInterval } from "@/lib/payments/plan-intent";
 
@@ -100,6 +101,8 @@ export async function PlanSettings({
   const paidPlan = PAID_PLANS.find((p) => p.interval === user.proPlan);
   // Beta and referral Pro are free trials, not purchases - they can still buy.
   const canBuy = !isPro || !paidPlan;
+  const refund = isPro && paidPlan ? await getRefundStatus(user.id) : null;
+  const shortDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
   return (
     <div id="plan" className="flex scroll-mt-24 flex-col gap-6">
@@ -135,6 +138,24 @@ export async function PlanSettings({
                   Yearly perks are on: job watch, progress tracker and market value.{" "}
                   <Link href="/insights" className="font-medium text-primary underline-offset-4 hover:underline">
                     Open Insights
+                  </Link>
+                </span>
+              )}
+              {refund && refund.until && refund.until.getTime() > Date.now() && (
+                <span className="text-sm text-muted-foreground">
+                  {refund.eligible ? (
+                    <>
+                      Money-back guarantee: until <strong className="text-foreground">{shortDate(refund.until)}</strong>, while
+                      you&apos;ve used fewer than {refund.limit} Pro AI tools ({refund.used} used so far).{" "}
+                    </>
+                  ) : (
+                    <>
+                      You&apos;ve used {refund.used} Pro AI tools, so the money-back guarantee no longer applies to this
+                      purchase.{" "}
+                    </>
+                  )}
+                  <Link href="/legal/refunds" className="underline underline-offset-2">
+                    Refund policy
                   </Link>
                 </span>
               )}

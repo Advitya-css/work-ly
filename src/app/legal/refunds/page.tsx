@@ -8,7 +8,7 @@ import { PAID_PLANS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Refund policy",
-  description: `Work-ly's ${BUSINESS.refundDays}-day money-back guarantee, cancellations, renewals and how refunds are paid.`,
+  description: `Work-ly's ${BUSINESS.refundDays}-day light-use money-back guarantee, cancellations, renewals and how refunds are paid.`,
 };
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -28,6 +28,7 @@ const Mail = () => (
 
 export default function RefundsPage() {
   const days = BUSINESS.refundDays;
+  const limit = BUSINESS.refundUsageLimit;
   const monthly = PAID_PLANS.find((p) => p.interval === "monthly");
 
   return (
@@ -41,7 +42,8 @@ export default function RefundsPage() {
           <p className="font-semibold text-foreground">{days}-day money-back guarantee</p>
           <p>
             If {BUSINESS.product} isn&apos;t right for you, email us within {days} days of your first purchase and we&apos;ll
-            refund it in full. No questions, no forms.
+            refund it in full, as long as you&apos;ve used fewer than {limit} Pro AI tools. No forms. Settings shows how
+            many you&apos;ve used.
           </p>
         </div>
       </div>
@@ -61,6 +63,13 @@ export default function RefundsPage() {
             Ask within <strong className="text-foreground">{days} days</strong> of the purchase date, by emailing <Mail /> from
             the address on your account (or including it). You don&apos;t need to give a reason.
           </li>
+          <li>
+            It covers trying Pro, not using it for a full job search: it applies while you&apos;ve used fewer than{" "}
+            <strong className="text-foreground">{limit} Pro AI tools</strong> (each tailored resume, cover letter, hiring
+            manager message, set of interview questions, mock-interview answer, practice task, strategy, dream-job
+            analysis or pathway counts as one). Free features, job matching and tracking don&apos;t count. Your count is
+            shown in Settings &rarr; Plan &amp; Billing.
+          </li>
           <li>We refund the full amount you paid, including any tax charged, to your original payment method.</li>
           <li>Your account returns to the free plan when the refund is issued. Everything you created stays in your account.</li>
           <li>
@@ -72,8 +81,9 @@ export default function RefundsPage() {
 
       <Section title="2. After the guarantee period">
         <p>
-          After {days} days, payments are non-refundable, including any unused time on a pass or a partly used month. We
-          don&apos;t give partial refunds for switching plans or stopping early. The exceptions in section 4 always apply.
+          After {days} days, or once you&apos;ve used {limit} or more Pro AI tools, payments are non-refundable, including
+          any unused time on a pass or a partly used month. We don&apos;t give partial refunds for switching plans or
+          stopping early. The exceptions in section 4 always apply.
         </p>
       </Section>
 
