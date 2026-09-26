@@ -190,10 +190,12 @@ export async function PlanSettings({
             </div>
           </div>
 
-          {isPro && proUntil && (
+          {/* Beta testers only: paying members were promised nothing like this. */}
+          {isPro && proUntil && user.proPlan === "beta" && (
             <p className="text-sm text-muted-foreground bg-accent/50 p-4 rounded-lg border border-accent">
               <Zap className="size-4 inline mr-2 text-primary" />
-              <strong>Want another month free?</strong> Fill out our beta feedback form and we will extend your Pro access by an additional month.
+              <strong>Want another month free?</strong> Send us your beta feedback with the Send feedback button (bottom
+              left) and we&apos;ll extend your Pro access by a month.
             </p>
           )}
         </CardContent>
