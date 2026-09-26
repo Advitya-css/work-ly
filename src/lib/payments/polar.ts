@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth";
 import { POLAR_PRODUCT_IDS } from "@/lib/payments/polar-plans";
+import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 
 const polar = new Polar({
@@ -14,12 +15,22 @@ const polar = new Polar({
 
 const PRODUCT_IDS = POLAR_PRODUCT_IDS;
 
-export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearly") {
+export async function createPolarCheckout(
+  plan: "monthly" | "quarterly" | "yearly",
+  consent: { acceptedTerms?: boolean } = {},
+) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       throw new Error("Must be logged in to checkout");
     }
+
+    // The upgrade dialog makes buyers tick the Terms / Refund policy box
+    // before checkout; refuse a checkout that skipped it.
+    if (!consent.acceptedTerms) {
+      return { error: "Please agree to the Terms of Service and Refund policy first." };
+    }
+    const acceptedAt = new Date().toISOString();
 
     const productId = PRODUCT_IDS[plan];
     if (!productId) {
@@ -32,7 +43,14 @@ export async function createPolarCheckout(plan: "monthly" | "quarterly" | "yearl
       // Ties the Polar customer to this account, so renewals and refunds
       // map back to the right user even without checkout metadata.
       externalCustomerId: user.id,
-      metadata: { user_id: user.id },
+      // Kept on the order in Polar: proof of what the buyer agreed to, and
+      // when, if a refund or chargeback is ever disputed.
+      metadata: {
+        user_id: user.id,
+        terms_accepted_at: acceptedAt,
+        terms_version: BUSINESS.legalUpdated,
+        refund_rule: `${BUSINESS.refundDays} days, under ${BUSINESS.refundUsageLimit} Pro AI tools`,
+      },
       customerMetadata: { user_id: user.id },
       customFieldData: { user_id: user.id },
       // Polar fills in {CHECKOUT_ID}. Settings uses it to confirm the payment

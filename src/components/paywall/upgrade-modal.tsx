@@ -30,6 +30,8 @@ export function UpgradeModal({
   const [betaCode, setBetaCode] = useState("");
   const [betaLoading, setBetaLoading] = useState(false);
   const [betaError, setBetaError] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const handleRedeemBeta = async () => {
     if (!betaCode.trim()) return;
@@ -51,9 +53,14 @@ export function UpgradeModal({
   };
 
   const handleUpgrade = async () => {
+    if (!agreed) {
+      setCheckoutError("Please tick the box to agree to the Terms and Refund policy first.");
+      return;
+    }
     try {
       setLoading(true);
-      const result = await createPolarCheckout(selectedPlan);
+      setCheckoutError("");
+      const result = await createPolarCheckout(selectedPlan, { acceptedTerms: true });
       if (result.url) {
         window.location.href = result.url;
       } else {
@@ -61,7 +68,7 @@ export function UpgradeModal({
       }
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Failed to generate checkout link.");
+      setCheckoutError("Couldn't open checkout just now. Please try again in a moment.");
       setLoading(false);
     }
   };
@@ -145,7 +152,32 @@ export function UpgradeModal({
             </button>
           </div>
 
-          <Button onClick={handleUpgrade} disabled={loading} size="lg" className="w-full mt-2 gap-2">
+          <label className="mt-1 flex items-start gap-2.5 rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                if (e.target.checked) setCheckoutError("");
+              }}
+              className="mt-0.5 size-4 shrink-0 rounded border-border accent-primary"
+            />
+            <span>
+              I agree to the{" "}
+              <a href="/legal/terms" target="_blank" rel="noopener" className="font-medium text-foreground underline underline-offset-2">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/legal/refunds" target="_blank" rel="noopener" className="font-medium text-foreground underline underline-offset-2">
+                Refund policy
+              </a>
+              . I want Pro to start straight away, and I understand the money-back guarantee lasts {BUSINESS.refundDays} days
+              from my first purchase and ends once I&apos;ve used {BUSINESS.refundUsageLimit} Pro AI tools.
+            </span>
+          </label>
+          {checkoutError && <p role="alert" className="text-xs text-destructive">{checkoutError}</p>}
+
+          <Button onClick={handleUpgrade} disabled={loading || !agreed} size="lg" className="w-full mt-1 gap-2">
             {loading ? <WorklyLoader className="size-4 animate-spin" /> : <><Sparkles className="size-4" /> Continue to Checkout</>}
           </Button>
 
