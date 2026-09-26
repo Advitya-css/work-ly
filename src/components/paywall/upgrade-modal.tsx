@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { createPolarCheckout } from "@/lib/payments/polar";
 import { redeemBetaCodeAction } from "@/lib/beta/actions";
 import { BUSINESS } from "@/lib/business";
+import { LegalLinks } from "@/components/legal/legal-links";
 
 export function UpgradeModal({ 
   children,
@@ -166,6 +167,10 @@ export function UpgradeModal({
               I agree to the{" "}
               <a href="/legal/terms" target="_blank" rel="noopener" className="font-medium text-foreground underline underline-offset-2">
                 Terms of Service
+              </a>
+              ,{" "}
+              <a href="/legal/privacy" target="_blank" rel="noopener" className="font-medium text-foreground underline underline-offset-2">
+                Privacy Policy
               </a>{" "}
               and{" "}
               <a href="/legal/refunds" target="_blank" rel="noopener" className="font-medium text-foreground underline underline-offset-2">
@@ -180,6 +185,7 @@ export function UpgradeModal({
           <Button onClick={handleUpgrade} disabled={loading || !agreed} size="lg" className="w-full mt-1 gap-2">
             {loading ? <WorklyLoader className="size-4 animate-spin" /> : <><Sparkles className="size-4" /> Continue to Checkout</>}
           </Button>
+          <LegalLinks />
 
           <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
             <p className="text-sm font-medium text-foreground text-center">

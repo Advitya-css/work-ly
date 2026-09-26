@@ -4,6 +4,7 @@ import { CheckCircle2, Sparkles, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { UpgradeButton } from "./upgrade-button";
+import { LegalLinks } from "@/components/legal/legal-links";
 import { PAID_PLANS, type PaidPlan } from "@/lib/pricing";
 import { BUSINESS } from "@/lib/business";
 
@@ -39,6 +40,10 @@ export function PricingCard() {
           <PlanCard key={plan.interval} plan={plan} />
         ))}
       </div>
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        Before you pay, you&apos;ll be asked to agree to these. Please read them:
+      </p>
+      <LegalLinks className="mt-2" />
     </section>
   );
 }

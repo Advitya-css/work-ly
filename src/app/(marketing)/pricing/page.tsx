@@ -198,6 +198,10 @@ export default function PricingPage() {
           By buying you agree to our{" "}
           <Link href="/legal/terms" className="underline underline-offset-4 hover:text-foreground">
             Terms of Service
+          </Link>
+          ,{" "}
+          <Link href="/legal/privacy" className="underline underline-offset-4 hover:text-foreground">
+            Privacy Policy
           </Link>{" "}
           and{" "}
           <Link href="/legal/refunds" className="underline underline-offset-4 hover:text-foreground">

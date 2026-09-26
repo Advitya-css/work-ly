@@ -23,7 +23,7 @@ export const BUSINESS = {
   /** Courts with exclusive jurisdiction under the Terms. */
   courts: "Jaipur, Rajasthan, India",
   /** Days after a first purchase in which a full refund is guaranteed. */
-  refundDays: 7,
+  refundDays: 14,
   /** The guarantee holds while the buyer has used fewer Pro AI tools than this (see lib/payments/refund-window.ts). */
   refundUsageLimit: 10,
   /**
