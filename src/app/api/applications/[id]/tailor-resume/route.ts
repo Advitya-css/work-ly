@@ -1,3 +1,4 @@
+import { normalizeForMatch } from "@/lib/scoring/screen-core";
 import { safeRewrite } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
@@ -78,6 +79,15 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     },
   });
   if (!result) return NextResponse.json({ error: "Couldn't tailor this one right now. Please try again." }, { status: 502 });
+
+  // "Keywords you can honestly use" must actually be on the profile - the
+  // model listed "forecasts" for someone who never forecast anything.
+  const candidateText = normalizeForMatch(candidate);
+  const onProfile = (phrase: string) => {
+    const words = normalizeForMatch(phrase).split(" ").filter((w) => w.length > 2);
+    return words.length > 0 && words.every((w) => candidateText.includes(w.slice(0, Math.max(4, w.length - 2))));
+  };
+  result.keywords = result.keywords.filter(onProfile);
 
   // Flag (rather than silently ship) any number the model introduced.
   const flagged = unsupportedNumbers(`${result.summary} ${result.bullets.map((b) => b.rewrite).join(" ")}`, candidate);

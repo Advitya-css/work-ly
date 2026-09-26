@@ -83,7 +83,16 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     result.angle,
     "",
     "1. Resume tweaks",
-    ...result.tweaks.map((t) => `- Before: ${t.a}\n  After: ${t.b}`),
+    ...(() => {
+      // Only show edits that change something; an identical "After" reads
+      // as the tool doing nothing.
+      const same = (t: { a: string; b: string }) =>
+        t.a.trim().replace(/[.\s]+$/, "").toLowerCase() === t.b.trim().replace(/[.\s]+$/, "").toLowerCase();
+      const changed = result.tweaks.filter((t) => !same(t));
+      return changed.length
+        ? changed.map((t) => `- Before: ${t.a}\n  After: ${t.b}`)
+        : ["- Your strongest lines already say what this job asks for. Keep them as they are."];
+    })(),
     "",
     "2. What a screener may flag",
     ...(result.risks.length ? result.risks.map((r) => `- ${r.a} - ${r.b}`) : ["- Nothing major stood out."]),
