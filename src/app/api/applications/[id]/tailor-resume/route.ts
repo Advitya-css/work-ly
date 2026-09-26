@@ -1,4 +1,4 @@
-import { matchSourceTense } from "@/lib/resume/tense";
+import { safeRewrite } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -70,7 +70,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
             // A rewrite that drops the original's numbers loses the proof - keep the real line instead.
             .map((b) => (unsupportedNumbers(b.basedOn, b.rewrite).length > 0 ? { ...b, rewrite: b.basedOn } : b))
             // "Built X" must not come back as "Build X".
-            .map((b) => ({ ...b, rewrite: matchSourceTense(b.rewrite, b.basedOn) }))
+            .map((b) => ({ ...b, rewrite: safeRewrite(b.rewrite, b.basedOn) }))
             .slice(0, 5)
         : [];
       if (!summary || bullets.length === 0) return null;

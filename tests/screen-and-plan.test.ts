@@ -111,3 +111,29 @@ describe("discovery ranking", () => {
     expect(sorted.map((s) => (s.job as { id: string }).id)).toEqual(["now-80", "apply-88", "apply-61", "stretch-95"]);
   });
 });
+
+describe("grounded screen when the model leaves out the quote", () => {
+  const rawNoQuotes = {
+    ...raw,
+    requirements: [
+      { requirement: "Expert SQL and dbt", postingQuote: "Expert SQL and dbt", importance: "critical", category: "skill", verdict: "met", evidenceRef: "E1", evidenceQuote: null },
+      { requirement: "Experience orchestrating pipelines with Airflow", postingQuote: "Experience orchestrating pipelines with Airflow", importance: "critical", category: "skill", verdict: "met", evidenceRef: null, evidenceQuote: null },
+      { requirement: "Production Python", postingQuote: "Production Python (testing, packaging)", importance: "important", category: "skill", verdict: "met", evidenceRef: "E1", evidenceQuote: null },
+    ],
+  };
+  const screen = groundScreen(rawNoQuotes, buildDossier(priya), posting, priya)!;
+
+  it("quotes the real line from the referenced entry instead of calling it unclear", () => {
+    const sql = screen.requirements.find((r) => r.requirement === "Expert SQL and dbt")!;
+    expect(sql.verdict).not.toBe("unclear");
+    expect(sql.evidenceQuote).toMatch(/dbt models|SQL pipelines/);
+  });
+
+  it("never rescues a claim the profile has no words for", () => {
+    const py = screen.requirements.find((r) => r.requirement === "Production Python")!;
+    expect(py.verdict).toBe("unclear");
+    const airflow = screen.requirements.find((r) => r.requirement.includes("Airflow"))!;
+    expect(["unclear", "partial"]).toContain(airflow.verdict);
+    expect(airflow.verdict).not.toBe("met");
+  });
+});

@@ -37,10 +37,10 @@ export const NO_FABRICATION_RULES = `HONESTY RULES (non-negotiable):
  * like the tool did nothing.
  */
 export const REWRITE_RULES = `HOW TO REWRITE A LINE FOR THIS JOB:
-- Lead with the part of the line this job cares about most (the skill, tool or outcome the JOB asks for), then the proof.
-- Use the JOB's own word for something the line already shows (the job says "data modeling" and the line says "built dbt models" -> "Data modeling in dbt: built ..."). Never use the job's word for something the line doesn't show.
-- Cut filler, keep it to one line, keep every number, keep the tense (a line starting "Built" stays past tense).
-- Return a line unchanged only when it already leads with exactly what this job wants - at most one per answer.`;
+- Write ONE complete, natural sentence that starts with a strong past-tense action verb for past work ("Built", "Designed", "Cut"). Never start with a keyword, a tool name or a label followed by a colon.
+- Bring forward what this JOB cares about: name the skill or outcome it asks for early in the sentence, in the job's own word when the line already shows that thing (the job says "data modeling" and the line says "built dbt models" -> "Built 40+ dbt data models ...").
+- Keep EVERY tool, product, company and number the line names. Never drop one to make room, and never leave a sentence unfinished.
+- Cut filler words only. If you can't improve the line under these rules, return it unchanged.`;
 
 /** The candidate, as cited evidence: every role with dates, projects, achievements, education, certifications, skills with evidence level. */
 export function candidateBrief(profile: FullCareerProfile, maxChars = 9000): string {

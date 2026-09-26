@@ -1,5 +1,5 @@
 import "server-only";
-import { matchSourceTense } from "@/lib/resume/tense";
+import { safeRewrite } from "@/lib/resume/tense";
 
 import {
   NO_FABRICATION_RULES,
@@ -144,7 +144,7 @@ function groundedBullets(raw: RawBullets | undefined, lines: string[], flagged: 
     // used by 120 city managers" -> "Built dbt models") throws away the
     // proof. Keep the candidate's own line instead.
     const lostNumbers = unsupportedNumbers(basedOn, text).length > 0;
-    out.push((lostNumbers ? basedOn : matchSourceTense(text, basedOn)).replace(/^[\s•\-*]+/, ""));
+    out.push((lostNumbers ? basedOn : safeRewrite(text, basedOn)).replace(/^[\s•\-*]+/, ""));
     if (out.length >= max) break;
   }
   return out;

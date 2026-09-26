@@ -44,10 +44,28 @@ export function toPast(verb: string): string {
   return verb[0] === verb[0].toUpperCase() ? past[0].toUpperCase() + past.slice(1) : past;
 }
 
-/** Looks like a base-form verb we can safely conjugate: a plain word, not already past, not "-ing"/"-s". */
+/**
+ * Resume action verbs we'll conjugate. Only these: a rewrite that leads
+ * with a tool or skill ("BigQuery and dbt: built...", "Tableau dashboards")
+ * must never be "conjugated" into "Bigqueried and dbted".
+ */
+const ACTION_VERBS = new Set(
+  `achieve adapt administer advise align analyse analyze architect assemble assess audit automate balance boost build
+  calculate champion clean coach collaborate collect communicate compile complete conduct configure consolidate construct
+  consult coordinate create cut debug decrease define deliver deploy design detect develop devise diagnose direct document
+  draft drive enable engineer enhance establish estimate evaluate execute expand expedite extract facilitate forecast
+  generate guide handle identify implement improve increase influence initiate innovate inspect install integrate interpret
+  introduce investigate launch lead maintain manage map measure mentor migrate model modernize monitor negotiate optimize
+  orchestrate organize oversee own partner pilot plan predict prepare present prioritize process produce program project
+  propose prototype provide publish recommend reconcile redesign reduce refactor refine report research resolve restructure
+  review revamp run scale schedule secure segment select ship simplify solve spearhead standardize streamline strengthen
+  structure supervise support survey synthesize test track train transform translate troubleshoot unify update upgrade
+  validate visualize write`.split(/\s+/),
+);
+
+/** A base-form resume verb we can safely conjugate. */
 function looksLikeBaseVerb(word: string): boolean {
-  const w = word.toLowerCase();
-  return /^[a-z]+$/.test(w) && !isPastTense(w) && !/ing$/.test(w) && !/[^s]s$/.test(w) && w.length > 1;
+  return ACTION_VERBS.has(word.toLowerCase());
 }
 
 function firstWord(text: string): string {
@@ -64,4 +82,29 @@ export function matchSourceTense(rewrite: string, source: string): string {
     return `${lead[1]}${toPast(lead[2])}${lead[3]}${toPast(lead[4])}${rewrite.slice(lead[0].length)}`;
   }
   return `${single[1]}${toPast(single[2])}${rewrite.slice(single[0].length)}`;
+}
+
+/** Tool and product names in a line (capitalised or with digits/symbols), minus its first word. */
+function namedTerms(text: string): string[] {
+  const words = text.trim().split(/\s+/).slice(1);
+  return words
+    .map((w) => w.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9+#]+$/g, ""))
+    .filter((w) => w.length > 1 && (/[A-Z]/.test(w) || /\d/.test(w)));
+}
+
+/**
+ * The guard every AI resume rewrite passes through before a user sees it.
+ * Falls back to the user's own line when the rewrite
+ *  - drops a tool, product or number the line named ("Power BI and for 3
+ *    clients", "moving Excel workflows to scheduled."), or
+ *  - is a "Keyword: rest of line" fragment rather than a sentence.
+ * Otherwise it only fixes the tense.
+ */
+export function safeRewrite(rewrite: string, source: string): string {
+  const r = rewrite.trim();
+  if (!r) return source;
+  if (/^[^.:]{1,40}:\s/.test(r)) return source;
+  const lower = r.toLowerCase();
+  if (namedTerms(source).some((t) => !lower.includes(t.toLowerCase()))) return source;
+  return matchSourceTense(r, source);
 }

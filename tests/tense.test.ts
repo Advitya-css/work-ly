@@ -21,3 +21,27 @@ describe("matchSourceTense", () => {
     expect(toPast("Lead")).toBe("Led");
   });
 });
+
+import { safeRewrite } from "@/lib/resume/tense";
+
+describe("safeRewrite", () => {
+  const src = "Built 40+ dbt models on BigQuery that power the delivery-ops dashboards used by 120 city managers.";
+  it("never conjugates a tool name", () => {
+    expect(matchSourceTense("BigQuery and dbt models power dashboards", src)).toBe("BigQuery and dbt models power dashboards");
+    expect(matchSourceTense("Tableau dashboards for 3 clients", "Delivered Tableau dashboards for 3 clients")).toBe("Tableau dashboards for 3 clients");
+  });
+  it("rejects 'Keyword: rest' fragments", () => {
+    expect(safeRewrite("Bigqueried and dbted: built 40+ models that power dashboards used by 120 city managers.", src)).toBe(src);
+  });
+  it("rejects rewrites that drop a named tool", () => {
+    const s = "Delivered Power BI and Tableau dashboards for 3 retail and banking clients.";
+    expect(safeRewrite("Delivered Power BI and for 3 retail and banking clients.", s)).toBe(s);
+    const s2 = "Cut the weekly reporting run from 6 hours to 25 minutes by moving Excel workflows to scheduled SQL and Looker.";
+    expect(safeRewrite("Cut the weekly reporting run from 6 hours to 25 minutes by moving Excel workflows to scheduled pipelines.", s2)).toBe(s2);
+  });
+  it("keeps a real rewrite and fixes its tense", () => {
+    expect(
+      safeRewrite("Design 40+ dbt data models on BigQuery behind the delivery-ops dashboards 120 city managers use.", src),
+    ).toBe("Designed 40+ dbt data models on BigQuery behind the delivery-ops dashboards 120 city managers use.");
+  });
+});

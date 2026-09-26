@@ -9,7 +9,7 @@ import {
   unsupportedNumbers,
 } from "@/lib/ai/career-context";
 import type { Application, Job } from "@/lib/db/types";
-import { matchSourceTense } from "@/lib/resume/tense";
+import { safeRewrite } from "@/lib/resume/tense";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 
 export interface TailoredApplication {
@@ -66,7 +66,7 @@ export async function generateTailoredApplication(profile: FullCareerProfile, jo
         .filter((p) => p.after)
         // A rewrite that drops the original's numbers loses the proof - keep the real line.
         .map((p) => (p.before && unsupportedNumbers(p.before, p.after).length > 0 ? { ...p, after: p.before } : p))
-        .map((p) => (p.before ? { ...p, after: matchSourceTense(p.after, p.before) } : p))
+        .map((p) => (p.before ? { ...p, after: safeRewrite(p.after, p.before) } : p))
         .slice(0, 6);
       return coverLetter && pairs.length > 0 ? { coverLetter, bulletChanges: pairs } : null;
     },

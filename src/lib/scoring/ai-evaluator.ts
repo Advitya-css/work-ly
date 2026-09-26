@@ -85,7 +85,10 @@ const RESPONSE_SCHEMA = {
             evidenceQuote: { type: ["string", "null"] },
             gapToClose: { type: ["string", "null"] },
           },
-          required: ["requirement", "postingQuote", "importance", "category", "verdict"],
+          // evidenceRef / evidenceQuote / gapToClose are nullable but required,
+          // so a model can't just leave the evidence out (which grounding then
+          // had to treat as "can't tell" - every requirement came back unclear).
+          required: ["requirement", "postingQuote", "importance", "category", "verdict", "evidenceRef", "evidenceQuote", "gapToClose"],
         },
       },
       strengths: {

@@ -1,4 +1,4 @@
-import { matchSourceTense } from "@/lib/resume/tense";
+import { safeRewrite } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -71,7 +71,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       return { angle, coverLetter, tweaks: pairs(r.tweaks, "before", "after")
           // An "after" that loses the original's numbers is a downgrade, not a tweak.
           .filter((t) => unsupportedNumbers(t.a, t.b).length === 0)
-          .map((t) => ({ ...t, b: matchSourceTense(t.b, t.a) }))
+          .map((t) => ({ ...t, b: safeRewrite(t.b, t.a) }))
           .slice(0, 3), risks: pairs(r.risks, "risk", "howToAddress").slice(0, 3) };
     },
   });

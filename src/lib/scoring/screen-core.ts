@@ -256,6 +256,35 @@ function findSkillInQuote(quote: string, skills: Skill[]): Skill | undefined {
  * Returns null when nothing usable survives, so the caller falls back to
  * the rules engine instead of showing an empty screen.
  */
+const MATCH_STOPWORDS = new Set(
+  "and the for with from into that this your you our are was were have has had not but any all can will years year experience strong expert advanced proven ability using use work working".split(" "),
+);
+
+/** The sentence in the given entries sharing the most of the requirement's own words (at least one). */
+function bestEvidenceSentence(
+  requirement: string,
+  entries: DossierEntry[],
+): { entry: DossierEntry; sentence: string; overlap: number } | null {
+  const want = new Set(
+    normalizeForMatch(requirement)
+      .split(" ")
+      .filter((t) => t.length > 1 && !MATCH_STOPWORDS.has(t)),
+  );
+  if (want.size === 0) return null;
+  let best: { entry: DossierEntry; sentence: string; overlap: number } | null = null;
+  for (const entry of entries) {
+    for (const raw of entry.text.split(/\n|(?<=[.!?])\s+/)) {
+      const sentence = raw.trim();
+      if (sentence.length < 12) continue;
+      const tokens = new Set(normalizeForMatch(sentence).split(" "));
+      let overlap = 0;
+      for (const t of want) if (tokens.has(t)) overlap++;
+      if (overlap > 0 && (!best || overlap > best.overlap)) best = { entry, sentence: sentence.slice(0, 220), overlap };
+    }
+  }
+  return best;
+}
+
 export function groundScreen(
   raw: RawScreen,
   dossier: DossierEntry[],
@@ -293,8 +322,22 @@ export function groundScreen(
     if (verdict === "met" || verdict === "partial") {
       const ref = asString(r.evidenceRef, 10)?.replace(/[[\]]/g, "") ?? null;
       const byRef = ref ? dossier.find((d) => d.label === ref) : undefined;
-      const entry =
+      let entry =
         byRef && quoteFound(evidenceQuote, byRef.text) ? byRef : dossier.find((d) => quoteFound(evidenceQuote, d.text));
+      if (!entry) {
+        // Some models give the right entry but leave the quote out (or
+        // paraphrase it). Quote the real sentence from that entry that best
+        // matches the requirement instead of throwing the verdict away - but
+        // only when the sentence shares the requirement's own words, and a
+        // weak match counts as partial, never met.
+        const fallback = bestEvidenceSentence(requirement, byRef ? [byRef] : dossier.filter((d) => d.kind !== "skills"));
+        if (fallback && (byRef || fallback.overlap >= 2)) {
+          entry = fallback.entry;
+          evidenceQuote = fallback.sentence;
+          if (verdict === "met" && fallback.overlap < 2) verdict = "partial";
+          if (!byRef) verdict = "partial";
+        }
+      }
       if (!entry) {
         verdict = "unclear";
         evidenceQuote = null;
