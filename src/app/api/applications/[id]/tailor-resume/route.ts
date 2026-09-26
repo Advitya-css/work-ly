@@ -16,7 +16,8 @@ import {
   REWRITE_RULES,
 } from "@/lib/ai/career-context";
 
-export const maxDuration = 60;
+// 120s: this runs on the stronger model, with time to fall back if it is slow.
+export const maxDuration = 120;
 
 const SYSTEM = `You are a senior recruiter rewriting a candidate's resume content for ONE specific job. You optimise for a human hiring manager first and keyword screening second.
 1. keywords: 5-8 exact phrases from the JOB that the candidate can honestly claim (they appear in or are clearly supported by the CANDIDATE section). Put phrases the candidate CANNOT honestly claim in "missingKeywords" instead.
@@ -57,6 +58,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const candidate = candidateBrief(profile);
 
   const result = await completeStructured({
+    quality: "high",
     system: SYSTEM,
     user: `JOB\n===\n${jobBrief(app.job, app.roleTitle, app.company)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: SCHEMA,

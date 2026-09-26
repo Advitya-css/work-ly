@@ -19,6 +19,14 @@ export interface AICompletionRequest {
   /** JSON schema the response should conform to, for structured extraction tasks. */
   responseSchema?: Record<string, unknown>;
   temperature?: number;
+  /**
+   * "high" runs the call on the stronger model (AI_QUALITY_MODEL), used
+   * only for the few Pro features where quality decides whether a user
+   * keeps paying. Everything else stays on the standard model (AI_MODEL).
+   * If the stronger model is busy, slow or unavailable, the call falls
+   * back to the standard model, so a Pro user never gets an error instead.
+   */
+  quality?: "standard" | "high";
 }
 
 export interface AICompletionResult {

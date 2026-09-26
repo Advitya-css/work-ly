@@ -13,7 +13,8 @@ import {
   strList,
 } from "@/lib/ai/career-context";
 
-export const maxDuration = 60;
+// 120s: this runs on the stronger model, with time to fall back if it is slow.
+export const maxDuration = 120;
 
 const SYSTEM = `You are the hiring manager for this job, scoring ONE spoken interview answer the way you would in a real debrief.
 Score 1-10 against this rubric: directly answers the question (3), specific evidence - a real situation, the candidate's own actions and a result (3), relevance to this job's needs (2), clarity and structure (2).
@@ -40,6 +41,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   if (!app) return NextResponse.json({ error: "Application not found." }, { status: 404 });
 
   const result = await completeStructured({
+    quality: "high",
     system: SYSTEM,
     user: `JOB\n===\n${jobBrief(app.job, app.roleTitle, app.company, 3000)}\n\nCANDIDATE\n=========\n${candidateBrief(profile, 4000)}\n\nQUESTION: ${question}\nANSWER: ${answer}`,
     schema: {

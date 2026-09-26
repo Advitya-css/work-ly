@@ -14,7 +14,8 @@ import {
   REWRITE_RULES,
 } from "@/lib/ai/career-context";
 
-export const maxDuration = 60;
+// 120s: this runs on the stronger model, with time to fall back if it is slow.
+export const maxDuration = 120;
 
 const SYSTEM = `You are a senior recruiter preparing a candidate's application for ONE job.
 Write "angle" and "risks" TO the candidate in the second person ("You have...", "Your..."), never "the candidate".
@@ -53,6 +54,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const candidate = candidateBrief(profile);
 
   const result = await completeStructured({
+    quality: "high",
     system: SYSTEM,
     user: `JOB\n===\n${jobBrief(app.job, app.roleTitle, app.company)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: SCHEMA,

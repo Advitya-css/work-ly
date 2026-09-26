@@ -11,6 +11,40 @@ let loggedConfig = false;
 // network) are, while time remains.
 const REQUEST_TIMEOUT_MS = 45_000;
 const TOTAL_BUDGET_MS = 50_000;
+// The stronger model thinks longer. It gets its own, longer window, and the
+// routes that use it allow 120s, so if it is slow there is still time to
+// answer on the standard model instead of failing.
+const QUALITY_REQUEST_TIMEOUT_MS = 55_000;
+const QUALITY_TOTAL_BUDGET_MS = 100_000;
+const MIN_FALLBACK_WINDOW_MS = 20_000;
+
+/** The stronger model for the most important Pro features. */
+export const DEFAULT_QUALITY_MODEL = "gemini-3.8-flash";
+/** The standard model for everything else. */
+export const DEFAULT_STANDARD_MODEL = "gemini-3.5-flash-lite";
+
+/**
+ * Models to try in order. When one is out of quota (429), overloaded (5xx)
+ * or no longer exists (404 - Google retires model names), the next is
+ * tried while time remains. The "-latest" aliases are kept current by
+ * Google, so the chain doesn't rot when a specific version is retired.
+ */
+export function modelChain(quality: "standard" | "high" | undefined, env: Record<string, string | undefined> = process.env): string[] {
+  const standard = env.AI_MODEL?.trim() || DEFAULT_STANDARD_MODEL;
+  const strong = env.AI_QUALITY_MODEL?.trim() || DEFAULT_QUALITY_MODEL;
+  return Array.from(
+    new Set(
+      [
+        quality === "high" ? strong : null,
+        standard,
+        env.AI_FALLBACK_MODEL?.trim(),
+        "gemini-flash-lite-latest",
+        "gemini-3.5-flash-lite",
+        "gemini-flash-latest",
+      ].filter((m): m is string => Boolean(m)),
+    ),
+  );
+}
 const MIN_RETRY_WINDOW_MS = 8_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_BASE_DELAY_MS = 500;
@@ -69,7 +103,8 @@ export const googleGenAIProvider: AIProvider = {
   async complete(request: AICompletionRequest): Promise<AICompletionResult> {
     const primaryApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
     const fallbackApiKey = process.env.AI_FALLBACK_API_KEY?.trim() || (primaryApiKey as string);
-    const model = process.env.AI_MODEL ?? "gemini-3.5-flash-lite";
+    const model = process.env.AI_MODEL?.trim() || DEFAULT_STANDARD_MODEL;
+    const highQuality = request.quality === "high";
 
     if (!primaryApiKey) {
       throw new Error("A Google API Key (GOOGLE_GENERATIVE_AI_API_KEY, GOOGLE_API_KEY, or AI_API_KEY) is required for Google GenAI.");
@@ -80,20 +115,13 @@ export const googleGenAIProvider: AIProvider = {
       console.info(`[workly:ai] live Google GenAI calls enabled: model=${model} key=***${primaryApiKey.slice(-4)}`);
     }
 
-    // Models to try in order. When one is out of quota (429), overloaded
-    // (5xx) or no longer exists (404 - Google retires model names), the next
-    // is tried while time remains. The "-latest" aliases are kept current by
-    // Google, so the chain doesn't rot when a specific version is retired.
-    const chain = Array.from(
-      new Set(
-        [model, process.env.AI_FALLBACK_MODEL?.trim(), "gemini-flash-lite-latest", "gemini-flash-latest", "gemini-2.5-flash"].filter(
-          (m): m is string => Boolean(m),
-        ),
-      ),
-    );
+    const chain = modelChain(request.quality);
+    // The primary key serves the standard model and anything tried before
+    // it (the stronger model); the fallback key only the backup models.
+    const standardIndex = chain.indexOf(model);
     let modelIndex = 0;
     const urlFor = (m: string, key: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
-    const currentUrl = () => urlFor(chain[modelIndex], modelIndex === 0 ? primaryApiKey : fallbackApiKey);
+    const currentUrl = () => urlFor(chain[modelIndex], modelIndex <= standardIndex ? primaryApiKey : fallbackApiKey);
     
     // Map messages
     let systemInstruction;
@@ -125,7 +153,8 @@ export const googleGenAIProvider: AIProvider = {
     });
 
     let lastError: unknown;
-    const deadline = Date.now() + TOTAL_BUDGET_MS;
+    const deadline = Date.now() + (highQuality ? QUALITY_TOTAL_BUDGET_MS : TOTAL_BUDGET_MS);
+    const attemptTimeout = () => (highQuality && modelIndex < standardIndex ? QUALITY_REQUEST_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
     const maxAttempts = MAX_ATTEMPTS + chain.length - 1;
     const canRetry = (attempt: number) => attempt < maxAttempts && deadline - Date.now() > MIN_RETRY_WINDOW_MS;
 
@@ -136,13 +165,20 @@ export const googleGenAIProvider: AIProvider = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
-          signal: AbortSignal.timeout(Math.max(1_000, Math.min(REQUEST_TIMEOUT_MS, deadline - Date.now()))),
+          signal: AbortSignal.timeout(Math.max(1_000, Math.min(attemptTimeout(), deadline - Date.now()))),
         });
       } catch (error) {
         lastError = error;
         const isTimeout = error instanceof Error && error.name === "TimeoutError";
         const isNetworkFailure = error instanceof TypeError;
         if (isTimeout) console.warn(`[workly:ai] model=${chain[modelIndex]} took longer than the time allowed (attempt ${attempt})`);
+        // The stronger model was too slow: answer on the standard model
+        // rather than fail, if there is still time for it.
+        if (isTimeout && modelIndex < standardIndex && deadline - Date.now() > MIN_FALLBACK_WINDOW_MS) {
+          modelIndex = standardIndex;
+          console.warn(`[workly:ai] switching to ${chain[modelIndex]} after a slow answer`);
+          continue;
+        }
         if (!isTimeout && isNetworkFailure && canRetry(attempt)) {
           console.warn(`[workly:ai] network error (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`);
           await delay(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
@@ -182,6 +218,7 @@ export const googleGenAIProvider: AIProvider = {
         }
       }
 
+      if (highQuality) console.info(`[workly:ai] quality call answered by model=${chain[modelIndex]}`);
       return { content, parsed };
     }
 

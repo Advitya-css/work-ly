@@ -4,6 +4,7 @@ import { safeMessage } from "@/lib/errors";
 
 import { jobParsingProvider } from "@/lib/ai/job-parser";
 import { evaluateFit } from "@/lib/scoring/ai-evaluator";
+import { fitQualityForUser } from "@/lib/ai/quality";
 import { recordReadinessSnapshot } from "@/lib/db/readiness-snapshots";
 import { completedStepsNow } from "@/lib/insights/progress";
 import { coverageOf } from "@/lib/scoring/coverage";
@@ -112,16 +113,18 @@ export async function analyzeDreamJob(dreamJobId: string, userId: string): Promi
   if (!dreamJob || dreamJob.userId !== userId) throw new Error("Dream job not found.");
   if (dreamJob.status !== "PARSED") throw new Error("This dream job hasn't finished parsing yet.");
 
-  const [profile, careerGoal, opportunities] = await Promise.all([
+  const [profile, careerGoal, opportunities, quality] = await Promise.all([
     getFullCareerProfile(userId),
     getPrimaryCareerGoal(userId),
     listOpportunitiesWithJobByUserId(userId),
+    fitQualityForUser(userId),
   ]);
 
   const dreamJobLike = dreamJobToJobLike(dreamJob);
   // Grounded screen (requirement-by-requirement, evidence-quoted) when a
   // model is configured; rules engine otherwise.
-  const { analysis: fit, internals } = await evaluateFit({ profile, careerGoal, job: dreamJobLike });
+  // Pro members get the stronger model for this read.
+  const { analysis: fit, internals } = await evaluateFit({ profile, careerGoal, job: dreamJobLike }, { quality });
   const gapAnalysis = buildGapAnalysis({ dreamJobLike, fit, profile, opportunities });
 
   // The week-by-week plan, with a readiness trajectory computed by

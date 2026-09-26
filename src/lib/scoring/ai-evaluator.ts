@@ -168,6 +168,7 @@ async function runScreen(params: {
   profile: FullCareerProfile;
   extra?: string;
   timeoutMs?: number;
+  quality?: "standard" | "high";
 }): Promise<GroundedScreen | null> {
   try {
     const result = await withTimeout(
@@ -185,8 +186,11 @@ async function runScreen(params: {
         // Zero: the same job and profile should screen the same way every
         // time. A score that drifts on re-analysis is not a measurement.
         temperature: 0,
+        quality: params.quality,
       }),
-      params.timeoutMs ?? 25_000,
+      // The stronger model thinks longer, and falls back to the standard
+      // one inside this window if it is slow.
+      params.timeoutMs ?? (params.quality === "high" ? 80_000 : 25_000),
     );
     if (!result) {
       console.warn("[workly:screen] timed out");
@@ -222,7 +226,7 @@ async function runScreen(params: {
  */
 export async function evaluateFit(
   input: { profile: FullCareerProfile; careerGoal: CareerGoal | null; job: Job },
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; quality?: "standard" | "high" } = {},
 ): Promise<ScreenOutcome> {
   const rules = scoringProvider.analyzeFit(input);
   if (!aiScreeningAvailable() || !dossierIsUsable(input.profile)) return { analysis: rules, internals: null };
@@ -234,7 +238,14 @@ export async function evaluateFit(
   const extra = input.careerGoal?.primaryTargetRole
     ? `\nCANDIDATE'S STATED TARGET ROLE: ${input.careerGoal.primaryTargetRole}`
     : "";
-  const screen = await runScreen({ dossier, posting, profile: input.profile, extra, timeoutMs: options.timeoutMs });
+  const screen = await runScreen({
+    dossier,
+    posting,
+    profile: input.profile,
+    extra,
+    timeoutMs: options.timeoutMs,
+    quality: options.quality,
+  });
   if (!screen) return { analysis: rules, internals: null };
   const analysis = combineScreen({ screen, rules, job: input.job, profile: input.profile });
   return { analysis, internals: { screen, rules } };

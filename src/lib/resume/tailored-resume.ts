@@ -181,6 +181,7 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
 
   const flagged = new Set<string>();
   const result = await completeStructured({
+    quality: "high",
     system: SYSTEM,
     user: `JOB\n===\n${jobBrief(job, job.title ?? "this role", job.company, 5000)}\n\nCANDIDATE\n=========\n${candidate.slice(0, 14000)}`,
     schema: SCHEMA,

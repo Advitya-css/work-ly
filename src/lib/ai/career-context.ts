@@ -122,6 +122,8 @@ export async function completeStructured<T>(params: {
   schema: Record<string, unknown>;
   validate: (value: unknown) => T | null;
   temperature?: number;
+  /** "high" = the stronger model; only for the most important Pro features. */
+  quality?: "standard" | "high";
 }): Promise<T | null> {
   try {
     const result = await aiProvider.complete({
@@ -131,6 +133,7 @@ export async function completeStructured<T>(params: {
       ],
       responseSchema: { name: "result", schema: params.schema },
       temperature: params.temperature ?? 0.3,
+      quality: params.quality,
     });
     let raw: unknown = result.parsed;
     if (raw == null) {

@@ -36,6 +36,7 @@ ${NO_FABRICATION_RULES}`;
 export async function generateTailoredApplication(profile: FullCareerProfile, job: Job): Promise<TailoredApplication> {
   const candidate = candidateBrief(profile);
   const result = await completeStructured({
+    quality: "high",
     system: TAILOR_SYSTEM,
     user: `JOB\n===\n${jobBrief(job, job.title ?? "this role", job.company)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: {

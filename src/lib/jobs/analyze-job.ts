@@ -6,6 +6,7 @@ import { jobParsingProvider } from "@/lib/ai/job-parser";
 import { checkAuthenticity } from "@/lib/validation/document-authenticity";
 import { groundJobExtraction } from "@/lib/ai/grounding";
 import { evaluateFit } from "@/lib/scoring/ai-evaluator";
+import { fitQualityForUser } from "@/lib/ai/quality";
 import { priorityProvider } from "@/lib/priority";
 import {
   createJob,
@@ -164,15 +165,17 @@ export async function analyzeJob(jobId: string, userId: string): Promise<JobAnal
   if (!job || job.userId !== userId) throw new Error("Job not found.");
   if (job.status !== "PARSED") throw new Error("This job hasn't finished parsing yet.");
 
-  const [profile, careerGoal] = await Promise.all([
+  const [profile, careerGoal, quality] = await Promise.all([
     getFullCareerProfile(userId),
     getPrimaryCareerGoal(userId),
+    fitQualityForUser(userId),
   ]);
 
   // Grounded AI screen when a model is configured (requirement-by-requirement
   // verdicts with quoted evidence, scored deterministically), rules engine
   // otherwise - see lib/scoring/ai-evaluator.ts.
-  const { analysis } = await evaluateFit({ profile, careerGoal, job });
+  // Pro members get the stronger model for this read.
+  const { analysis } = await evaluateFit({ profile, careerGoal, job }, { quality });
 
   return saveJobAnalysis(userId, jobId, analysis);
 }
