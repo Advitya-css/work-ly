@@ -167,7 +167,7 @@ export default async function DashboardPage({
         action={<EnterStudentModeButton />}
       />
 
-      <GraderImportCard />
+      <GraderImportCard hasProfile={hasProfile} />
 
       <CommandCenter
         briefing={briefing}

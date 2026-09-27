@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * "Pick up where you left off": shown to someone who used the free grader
  * before signing up (or signing in). Renders nothing otherwise.
  */
-export function GraderImportCard({ className }: { className?: string }) {
+export function GraderImportCard({ className, hasProfile = false }: { className?: string; hasProfile?: boolean }) {
   const router = useRouter();
   const [draft, setDraft] = useState<GraderDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +55,9 @@ export function GraderImportCard({ className }: { className?: string }) {
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
         You checked your resume against <span className="font-medium text-foreground">{draftJobLabel(draft.jobText)}</span>.
-        Work-ly can build your profile from that resume and open the full report for that job, including how to close
-        each gap.
+        {hasProfile
+          ? "Work-ly can open the full report for that job in your account, including how to close each gap."
+          : "Work-ly can build your profile from that resume and open the full report for that job, including how to close each gap."}
       </p>
       {error && (
         <p role="alert" className="mt-3 text-sm text-destructive">

@@ -33,6 +33,7 @@ export default function FreeGraderPage() {
   const [founding, setFounding] = useState<PublicFoundingOffer | null>(null);
   const [result, setResult] = useState<{
     signedIn: boolean;
+    isPro: boolean;
     score: number | null;
     summary: string;
     strengths: { requirement: string; evidence: string }[];
@@ -252,7 +253,10 @@ export default function FreeGraderPage() {
                               {gap.partly && <span className="ml-2 text-xs text-muted-foreground">(partly shown)</span>}
                             </span>
                             {gap.fix && (
-                              <span className="blur-[5px] select-none text-xs text-muted-foreground" aria-hidden="true">
+                              <span
+                                className={result.signedIn ? "text-xs text-muted-foreground" : "blur-[5px] select-none text-xs text-muted-foreground"}
+                                aria-hidden={result.signedIn ? undefined : true}
+                              >
                                 {gap.fix}
                               </span>
                             )}
@@ -282,9 +286,11 @@ export default function FreeGraderPage() {
                     Next: a resume tailored to this job
                   </p>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    Work-ly Pro rewrites your resume and writes the cover letter for this exact job, using only what&apos;s
-                    already on your resume. It never adds skills you don&apos;t have.
+                    {result.isPro
+                      ? "Open this job in your account to build the tailored resume and cover letter - only from what's already on your resume."
+                      : "Work-ly Pro rewrites your resume and writes the cover letter for this exact job, using only what's already on your resume. It never adds skills you don't have."}
                   </p>
+                  {!result.isPro && (
                   <p className="text-xs text-muted-foreground">
                     {founding ? (
                       <>
@@ -296,12 +302,15 @@ export default function FreeGraderPage() {
                     )}
                     {GUARANTEE.sentence}.
                   </p>
+                  )}
                 </div>
                 <div className="flex shrink-0 flex-col gap-2 sm:w-56">
                   {fullReportCta("Tailor my resume for this job")}
-                  <Button asChild size="sm" variant="ghost">
-                    <Link href="/pricing">See Pro plans</Link>
-                  </Button>
+                  {!result.isPro && (
+                    <Button asChild size="sm" variant="ghost">
+                      <Link href="/pricing">See Pro plans</Link>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

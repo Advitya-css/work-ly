@@ -89,6 +89,19 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     const words = normalizeForMatch(phrase).split(" ").filter((w) => w.length > 2);
     return words.length > 0 && words.every((w) => candidateText.includes(w.slice(0, Math.max(4, w.length - 2))));
   };
+  // And the reverse: a "can't claim yet" phrase that IS on the profile
+  // (the model listed Python for someone whose resume uses Python) moves
+  // to the usable list instead of telling them to leave out a real skill.
+  const wronglyMissing = result.missingKeywords.filter(onProfile);
+  result.missingKeywords = result.missingKeywords.filter((k) => !onProfile(k));
+  const seen = new Set(result.keywords.map((k) => normalizeForMatch(k)));
+  for (const k of wronglyMissing) {
+    if (result.keywords.length >= 8) break;
+    if (!seen.has(normalizeForMatch(k))) {
+      result.keywords.push(k);
+      seen.add(normalizeForMatch(k));
+    }
+  }
   result.keywords = result.keywords.filter(onProfile);
 
   // Flag (rather than silently ship) any number the model introduced.

@@ -98,6 +98,8 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
       data: {
         /** Signed-in visitors can open the full report in their account straight away. */
         signedIn: Boolean(user),
+        /** Pro members aren't shown prices for what they already have. */
+        isPro: Boolean(user?.isPro),
         score: reliable ? analysis.fitScore : null,
         summary: analysis.screen.summary,
         strengths: met.slice(0, 4).map((r) => ({ requirement: r.requirement, evidence: r.evidenceQuote ?? "" })),

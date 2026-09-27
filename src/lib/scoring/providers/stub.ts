@@ -790,12 +790,14 @@ export function buildRecommendation(
     // Generate dynamic, useful reasoning based on the actual gaps found
   const gapPhrases = gaps.map(g => {
     if (g.type === "SKILL_GAP") return g.description ? `missing skills (${g.description})` : g.title.toLowerCase();
-    if (g.type === "EXPERIENCE_GAP") return `lacking required years of experience`;
+    if (g.type === "EXPERIENCE_GAP") return `fewer years of experience than the posting asks for`;
     if (g.type === "SENIORITY_GAP") return `a seniority mismatch`;
         return g.title.toLowerCase();
   });
   const gapText = gapPhrases.length > 0 
-    ? ` Note: You have ${gapPhrases.slice(0, 2).join(" and ")}.`
+    // "Main gaps: X and Y." - the phrases are noun phrases, so they read
+    // correctly without a verb ("Note: You have lacking..." did not).
+    ? ` Main gaps: ${gapPhrases.slice(0, 2).join(" and ")}.`
     : "";
 
   if (mandatoryMetRatio == null) {
