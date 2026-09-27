@@ -1,5 +1,5 @@
 import { normalizeForMatch } from "@/lib/scoring/screen-core";
-import { safeRewrite } from "@/lib/resume/tense";
+import { isCosmeticRewrite, safeRewrite } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
@@ -119,7 +119,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       // A line that already says what this job wants is kept as is - shown
       // once as "keep", never printed twice as a fake rewrite.
       const same = (b: { basedOn: string; rewrite: string }) =>
-        b.rewrite.trim().replace(/[.\s]+$/, "").toLowerCase() === b.basedOn.trim().replace(/[.\s]+$/, "").toLowerCase();
+        isCosmeticRewrite(b.basedOn, b.rewrite);
       const changed = result.bullets.filter((b) => !same(b));
       const kept = result.bullets.filter(same);
       return [

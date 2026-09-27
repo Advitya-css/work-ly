@@ -108,3 +108,32 @@ export function safeRewrite(rewrite: string, source: string): string {
   if (namedTerms(source).some((t) => !lower.includes(t.toLowerCase()))) return source;
   return matchSourceTense(r, source);
 }
+
+const FILLER = new Set(
+  "a an the that which who to for of and or by with in on at as is are was were be been this these those its their our your from into".split(" "),
+);
+
+function contentWords(text: string): Set<string> {
+  return new Set(
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9+#%.\s-]/g, " ")
+      .split(/[\s-]+/)
+      .map((w) => w.replace(/^[.]+|[.]+$/g, ""))
+      .filter((w) => w && !FILLER.has(w))
+      .map((w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w)),
+  );
+}
+
+/**
+ * A "rewrite" that only swaps filler words ("that power the" -> "to power")
+ * says nothing new. Shown as a rewrite it looks like padding, so callers
+ * list such lines under "keep as is" instead.
+ */
+export function isCosmeticRewrite(before: string, after: string): boolean {
+  const a = contentWords(before);
+  const b = contentWords(after);
+  if (a.size !== b.size) return false;
+  for (const w of a) if (!b.has(w)) return false;
+  return true;
+}

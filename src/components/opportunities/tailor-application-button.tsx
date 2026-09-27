@@ -17,6 +17,7 @@ import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
 import { AiProgress } from "@/components/shared/ai-progress";
+import { isCosmeticRewrite } from "@/lib/resume/tense";
 
 export function TailorApplicationButton({
   opportunityId,
@@ -158,7 +159,7 @@ export function TailorApplicationButton({
                   <ul className="flex flex-col gap-2">
                     {(data.bulletChanges ?? data.resumeBullets.map((after) => ({ before: "", after }))).map((change, i) => {
                       const unchanged =
-                        change.before && change.before.trim().replace(/[.\s]+$/, "").toLowerCase() === change.after.trim().replace(/[.\s]+$/, "").toLowerCase();
+                        Boolean(change.before) && isCosmeticRewrite(change.before, change.after);
                       return (
                         <li key={i} className="bg-muted/50 rounded-lg p-4 text-sm leading-relaxed border border-border flex items-start gap-3">
                           <ChevronRight className="size-4 mt-0.5 text-primary shrink-0" />

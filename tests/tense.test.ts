@@ -45,3 +45,24 @@ describe("safeRewrite", () => {
     ).toBe("Designed 40+ dbt data models on BigQuery behind the delivery-ops dashboards 120 city managers use.");
   });
 });
+
+import { isCosmeticRewrite } from "@/lib/resume/tense";
+
+describe("isCosmeticRewrite", () => {
+  it("treats filler-only changes as no change", () => {
+    expect(
+      isCosmeticRewrite(
+        "Built 40+ dbt models on BigQuery that power the delivery-ops dashboards used by 120 city managers.",
+        "Built 40+ dbt models on BigQuery to power delivery-ops dashboards used by 120 city managers.",
+      ),
+    ).toBe(true);
+  });
+  it("counts a real change as a change", () => {
+    expect(
+      isCosmeticRewrite(
+        "Delivered Power BI and Tableau dashboards for 3 retail and banking clients.",
+        "Delivered Power BI and Tableau dashboards for 3 retail and banking clients, tracking revenue KPIs.",
+      ),
+    ).toBe(false);
+  });
+});
