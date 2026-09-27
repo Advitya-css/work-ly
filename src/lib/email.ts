@@ -66,7 +66,7 @@ export async function sendVerificationCodeEmail(to: string, code: string): Promi
  * Sends a password reset email using the Resend API.
  */
 export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = appBaseUrl();
   const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -112,11 +112,38 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
   }
 }
 
+/** The site's address for links in emails. Never localhost in a real inbox. */
+function appBaseUrl(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://www.work-ly.in").replace(/\/$/, "");
+}
+
+/** Opens Discover scrolled to this job; the ?job= survives a sign-in redirect, the #hash doesn't. */
+function jobUrl(appUrl: string, id: string): string {
+  return `${appUrl}/discover?job=${encodeURIComponent(id)}#job-${encodeURIComponent(id)}`;
+}
+
+/**
+ * Shortens a reason for an email without cutting a sentence in half
+ * ("...provided the"). Ends at the last full sentence that fits, or at a
+ * word with an ellipsis when even the first sentence is too long.
+ */
+export function trimReason(text: string, max: number): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const sentenceEnd = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  if (sentenceEnd >= 60) return cut.slice(0, sentenceEnd + 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 40 ? cut.slice(0, space) : cut).replace(/[,;:\s]+$/, "")}…`;
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
 export interface AlertMatch {
+  /** The discovered job's id, so the email can link straight to it. */
+  id?: string;
   title: string;
   company: string | null;
   fitScore: number | null;
@@ -135,8 +162,9 @@ export async function sendJobAlertEmail(
   highPriorityCount: number,
   matches: AlertMatch[] = [],
 ): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const discoverUrl = `${appUrl}/discover`;
+  const appUrl = appBaseUrl();
+  const top = matches.find((m) => m.id);
+  const discoverUrl = top?.id ? jobUrl(appUrl, top.id) : `${appUrl}/discover`;
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -152,9 +180,9 @@ export async function sendJobAlertEmail(
     .map(
       (m) => `
         <tr><td style="padding: 12px 0; border-bottom: 1px solid #eee;">
-          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
+          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${m.id ? `<a href="${jobUrl(appUrl, m.id)}" style="color: #1c1a19; text-decoration: underline;">${escapeHtml(m.title)}</a>` : escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
           ${m.fitScore != null ? `<div style="font-size: 13px; color: #7a2e55; margin-top: 2px;">Candidate Fit ${m.fitScore}/100</div>` : ""}
-          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(m.reason.slice(0, 180))}</div>` : ""}
+          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(trimReason(m.reason, 220))}</div>` : ""}
         </td></tr>`,
     )
     .join("");
@@ -206,7 +234,7 @@ export async function sendJobAlertEmail(
  * rare enough to be worth opening even when they're happily employed.
  */
 export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFit: number): Promise<void> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = appBaseUrl();
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log(`[workly:email] No RESEND_API_KEY set. Job watch for ${to} (${matches.length} matches)`);
@@ -219,9 +247,9 @@ export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFi
     .map(
       (m) => `
         <tr><td style="padding: 12px 0; border-bottom: 1px solid #eee;">
-          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
+          <div style="font-size: 15px; font-weight: 600; color: #1c1a19;">${m.id ? `<a href="${jobUrl(appUrl, m.id)}" style="color: #1c1a19; text-decoration: underline;">${escapeHtml(m.title)}</a>` : escapeHtml(m.title)}${m.company ? ` <span style="font-weight: 400; color: #6b6560;">at ${escapeHtml(m.company)}</span>` : ""}</div>
           ${m.fitScore != null ? `<div style="font-size: 13px; color: #7a2e55; margin-top: 2px;">Candidate Fit is ${m.fitScore}/100</div>` : ""}
-          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(m.reason.slice(0, 200))}</div>` : ""}
+          ${m.reason ? `<div style="font-size: 13px; color: #6b6560; margin-top: 4px; line-height: 1.4;">${escapeHtml(trimReason(m.reason, 220))}</div>` : ""}
         </td></tr>`,
     )
     .join("");
@@ -246,7 +274,7 @@ export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFi
             Work-ly searches for you every day and only writes when a role clears your bar of Candidate Fit ${minFit}+. This one did.
           </p>
           <table style="width: 100%; border-collapse: collapse; margin: 8px 0 24px;">${rows}</table>
-          <a href="${appUrl}/discover" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
+          <a href="${matches[0]?.id ? jobUrl(appUrl, matches[0].id) : `${appUrl}/discover`}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
             Open it in Work-ly
           </a>
           <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">

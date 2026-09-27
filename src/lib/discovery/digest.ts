@@ -11,7 +11,7 @@ import type { AlertMatch } from "@/lib/email";
  */
 export async function newStrongMatches(userId: string, since: Date, limit = 3): Promise<AlertMatch[]> {
   const { rows } = await pool.query(
-    `SELECT title, company, "fitScore", "matchReasons"
+    `SELECT id, title, company, "fitScore", "matchReasons"
        FROM discovered_jobs
       WHERE "userId" = $1
         AND "discoveredAt" >= $2
@@ -26,6 +26,7 @@ export async function newStrongMatches(userId: string, since: Date, limit = 3): 
     const reasons = Array.isArray(r.matchReasons) ? (r.matchReasons as { kind?: string; text?: string }[]) : [];
     const screen = reasons.find((m) => m.kind === "screen") ?? reasons.find((m) => m.kind === "skill");
     return {
+      id: String(r.id),
       title: String(r.title),
       company: r.company ?? null,
       fitScore: typeof r.fitScore === "number" ? r.fitScore : null,

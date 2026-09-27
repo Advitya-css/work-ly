@@ -77,6 +77,27 @@ export function DiscoveryBoard({
     setActiveBucket(null);
   }, [searchMode]);
 
+  // Arriving from an alert email (/discover?job=<id>): scroll to that job
+  // and mark it briefly. The ?job= form survives the sign-in redirect,
+  // which drops a #hash.
+  useEffect(() => {
+    let id: string | null = null;
+    try {
+      id = new URLSearchParams(window.location.search).get("job") ?? (window.location.hash.match(/^#job-(.+)$/)?.[1] ?? null);
+    } catch {
+      id = null;
+    }
+    if (!id) return;
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById(`job-${id}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.add("ring-2", "ring-primary");
+      window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 4000);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const searchResult = useMemo(
     () => searchJobs({ jobs, query, context, limit: 200, mode, matchValues }),
     [jobs, query, context, mode, matchValues],

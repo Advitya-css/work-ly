@@ -38,7 +38,7 @@ async function inBatches<T>(items: T[], size: number, fn: (item: T) => Promise<v
 
 async function exceptionalMatches(userId: string, since: Date, minFit: number): Promise<AlertMatch[]> {
   const { rows } = await pool.query(
-    `SELECT title, company, "fitScore", "fitCoverage", "matchReasons"
+    `SELECT id, title, company, "fitScore", "fitCoverage", "matchReasons"
        FROM discovered_jobs
       WHERE "userId" = $1
         AND "discoveredAt" >= $2
@@ -55,7 +55,7 @@ async function exceptionalMatches(userId: string, since: Date, minFit: number): 
     .map((r) => {
       const reasons = Array.isArray(r.matchReasons) ? (r.matchReasons as { kind?: string; text?: string }[]) : [];
       const reason = reasons.find((m) => m.kind === "screen") ?? reasons.find((m) => m.kind === "skill");
-      return { title: String(r.title), company: r.company ?? null, fitScore: Number(r.fitScore), reason: reason?.text ?? null };
+      return { id: String(r.id), title: String(r.title), company: r.company ?? null, fitScore: Number(r.fitScore), reason: reason?.text ?? null };
     });
 }
 
