@@ -79,14 +79,16 @@ export default async function AdminDashboard({
   const offset = (page - 1) * limit;
 
   const { rows: users } = await pool.query(`
-    SELECT 
+    SELECT
       u.id, u.email, u.name, u."createdAt", u."isPro",
-      MAX(g."primaryTargetRole") as target_role,
-      COUNT(p.id) as pathways_count
+      (SELECT MAX(g."primaryTargetRole") FROM career_goals g WHERE g."userId" = u.id) AS target_role,
+      (SELECT COUNT(*) FROM career_pathways p WHERE p."userId" = u.id) AS pathways_count,
+      -- What each person actually did, for personal follow-up: did they add
+      -- a resume, and how many jobs did they check?
+      (SELECT COUNT(*) FROM documents d WHERE d."userId" = u.id) AS resumes,
+      (SELECT COUNT(*) FROM jobs j WHERE j."userId" = u.id) AS jobs_checked,
+      (SELECT MAX(j."createdAt") FROM jobs j WHERE j."userId" = u.id) AS last_check
     FROM users u
-    LEFT JOIN career_goals g ON g."userId" = u.id
-    LEFT JOIN career_pathways p ON p."userId" = u.id
-    GROUP BY u.id
     ORDER BY u."createdAt" DESC
     LIMIT $1 OFFSET $2
   `, [limit, offset]);
@@ -271,6 +273,8 @@ export default async function AdminDashboard({
                   <th className="px-6 py-4 font-medium">User</th>
                   <th className="px-6 py-4 font-medium">Joined</th>
                   <th className="px-6 py-4 font-medium">Target Role</th>
+                  <th className="px-6 py-4 font-medium">Resume</th>
+                  <th className="px-6 py-4 font-medium">Jobs checked</th>
                   <th className="px-6 py-4 font-medium">Pathways</th>
                   <th className="px-6 py-4 font-medium">Tier</th>
                 </tr>
@@ -290,6 +294,13 @@ export default async function AdminDashboard({
                         <span className="text-zinc-300">{u.target_role}</span>
                       ) : (
                         <span className="text-zinc-600 italic">None set</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-zinc-300">{Number(u.resumes) > 0 ? "Yes" : <span className="text-zinc-600">No</span>}</td>
+                    <td className="px-6 py-4 text-zinc-300 whitespace-nowrap">
+                      {Number(u.jobs_checked)}
+                      {u.last_check && (
+                        <span className="text-zinc-500 text-xs"> · last {new Date(u.last_check).toLocaleDateString("en-GB")}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
