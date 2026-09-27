@@ -9,6 +9,7 @@ import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 import { getFoundingOffer } from "@/lib/payments/founding";
 import { currentAttribution, recordFunnelStep } from "@/lib/attribution";
+import { markCheckoutOpened } from "@/lib/lifecycle";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -82,6 +83,8 @@ export async function createPolarCheckout(
     }
 
     await recordFunnelStep("checkout");
+    // For the "your upgrade is still open" email if they don't finish.
+    await markCheckoutOpened(user.id, plan);
     return { url: result.url };
   } catch (error: any) {
     console.error("Polar checkout error:", error);

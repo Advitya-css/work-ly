@@ -157,7 +157,7 @@ export default async function DashboardPage({
   });
   const briefing = buildBriefing({ moves, jobs: discovered, latestRun, applications });
   const isPro = user?.isPro ?? false;
-  const planName = PAID_PLANS.find((p) => p.interval === user?.proPlan)?.name ?? null;
+  const planName = user?.proPlan === "trial" ? "1-day trial" : (PAID_PLANS.find((p) => p.interval === user?.proPlan)?.name ?? null);
 
   return (
     <div className="flex flex-col gap-10">

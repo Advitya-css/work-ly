@@ -1,4 +1,5 @@
 import "server-only";
+import { BUSINESS } from "@/lib/business";
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 2) {
   for (let i = 0; i <= retries; i++) {
@@ -288,4 +289,68 @@ export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFi
     const body = await res.text();
     console.error(`[workly:email] Resend API error (${res.status}):`, body);
   }
+}
+
+export interface LifecycleEmail {
+  subject: string;
+  heading: string;
+  paragraphs: string[];
+  cta: { label: string; path: string };
+  /** A signed /api/email/unsubscribe link for this person. */
+  unsubscribePath: string;
+}
+
+/**
+ * A plain, personal follow-up from the founder (lib/lifecycle.ts decides
+ * who gets which). Replies go to the support inbox, because a reply is the
+ * best outcome these emails can have. Carries List-Unsubscribe so mail apps
+ * show their own unsubscribe button. Returns whether Resend accepted it.
+ */
+export async function sendLifecycleEmail(to: string, email: LifecycleEmail): Promise<boolean> {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    console.log(`[workly:email] No RESEND_API_KEY set. Lifecycle "${email.subject}" for ${to}`);
+    return false;
+  }
+  const appUrl = appBaseUrl();
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const unsubscribeUrl = `${appUrl}${email.unsubscribePath}`;
+  const paragraphs = email.paragraphs
+    .map((p) => `<p style="font-size: 15px; color: #3d3935; line-height: 1.55; margin: 0 0 14px;">${escapeHtml(p)}</p>`)
+    .join("");
+
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: `Advitya at Work-ly <noreply@${fromDomain}>`,
+      to,
+      reply_to: BUSINESS.supportEmail,
+      subject: email.subject,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 36px 20px;">
+          <h1 style="font-size: 20px; color: #1c1a19; margin: 0 0 16px;">${escapeHtml(email.heading)}</h1>
+          ${paragraphs}
+          <a href="${appUrl}${email.cta.path}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 26px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; margin: 8px 0 20px;">
+            ${escapeHtml(email.cta.label)}
+          </a>
+          <p style="font-size: 15px; color: #3d3935; line-height: 1.55; margin: 0;">Advitya<br/><span style="color: #8a817b; font-size: 13px;">Founder, Work-ly</span></p>
+          <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
+            You're getting this because you signed up for Work-ly. Just reply if you have a question.
+            <a href="${unsubscribeUrl}" style="color: #a89f99;">Unsubscribe from these emails</a>.
+          </p>
+        </div>
+      `,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[workly:email] Resend API error (${res.status}):`, body);
+    return false;
+  }
+  return true;
 }

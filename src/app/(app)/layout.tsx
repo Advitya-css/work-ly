@@ -10,6 +10,7 @@ import { SampleDataBanner } from "@/components/shared/sample-data-banner";
 import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { TrialBanner } from "@/components/paywall/trial-banner";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
@@ -37,6 +38,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <TourProvider>
       {profile?.isSampleData && <SampleDataBanner />}
       <AppShell user={user} student={profile?.isStudent ?? false}>
+        {user.isPro && user.proPlan === "trial" && user.proUntil && <TrialBanner endsAt={user.proUntil} />}
         {children}
         {user.isPro ? (
           <FeedbackButton />

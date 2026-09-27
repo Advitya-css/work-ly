@@ -30,7 +30,7 @@ export default async function AdminDashboard({
   const { rows: stats } = await pool.query(`
     SELECT 
       COUNT(*) as total_users,
-      COUNT(*) FILTER (WHERE "isPro" = true) as pro_users,
+      COUNT(*) FILTER (WHERE "isPro" = true AND COALESCE("proPlan", '') <> 'trial') as pro_users,
       (SELECT COUNT(*) FROM career_pathways) as total_pathways
     FROM users
   `);
@@ -162,6 +162,7 @@ export default async function AdminDashboard({
                     <th className="py-2 pr-4 font-medium">Channel</th>
                     <th className="py-2 pr-4 text-right font-medium">Free checks</th>
                     <th className="py-2 pr-4 text-right font-medium">Signups</th>
+                    <th className="py-2 pr-4 text-right font-medium">Saw offer</th>
                     <th className="py-2 pr-4 text-right font-medium">Checkouts</th>
                     <th className="py-2 pr-4 text-right font-medium">Paid</th>
                     <th className="py-2 pr-4 text-right font-medium">Revenue</th>
@@ -174,6 +175,7 @@ export default async function AdminDashboard({
                       <td className="py-2 pr-4 text-white">{r.channel}</td>
                       <td className="py-2 pr-4 text-right">{r.checks}</td>
                       <td className="py-2 pr-4 text-right">{r.signups}</td>
+                      <td className="py-2 pr-4 text-right">{r.offers}</td>
                       <td className="py-2 pr-4 text-right">{r.checkouts}</td>
                       <td className="py-2 pr-4 text-right font-semibold text-white">{r.paid}</td>
                       <td className="py-2 pr-4 text-right font-semibold text-white">{usd(r.revenueCents)}</td>
@@ -184,6 +186,7 @@ export default async function AdminDashboard({
                     <td className="py-2 pr-4">Total</td>
                     <td className="py-2 pr-4 text-right">{funnel.totals.checks}</td>
                     <td className="py-2 pr-4 text-right">{funnel.totals.signups}</td>
+                    <td className="py-2 pr-4 text-right">{funnel.totals.offers}</td>
                     <td className="py-2 pr-4 text-right">{funnel.totals.checkouts}</td>
                     <td className="py-2 pr-4 text-right">{funnel.totals.paid}</td>
                     <td className="py-2 pr-4 text-right">{usd(funnel.totals.revenueCents)}</td>

@@ -54,13 +54,14 @@ describe("buildFunnelReport", () => {
       { key: "funnel:signup:2026-09-20:reddit:none:u1", count: 1 },
       { key: "funnel:signup:2026-09-21:reddit:none:u2", count: 1 },
       { key: "funnel:checkout:2026-09-21:reddit:none", count: 2 },
+      { key: "funnel:paywall:2026-09-21:reddit:none", count: 5 },
       { key: "funnel:paid:2026-09-25:reddit:none:o1", count: 4999 },
       { key: "funnel:grader:2026-09-22:producthunt:launch", count: 300 },
       { key: "funnel:signup:2026-09-22:producthunt:launch:u3", count: 1 },
       { key: "funnel:paid:2026-08-01:reddit:none:old", count: 1999 },
     ];
     const r = buildFunnelReport(rows, 30, NOW);
-    expect(r.rows[0]).toMatchObject({ channel: "reddit", checks: 40, signups: 2, checkouts: 2, paid: 1, revenueCents: 4999 });
+    expect(r.rows[0]).toMatchObject({ channel: "reddit", checks: 40, signups: 2, offers: 5, checkouts: 2, paid: 1, revenueCents: 4999 });
     expect(r.rows[1]).toMatchObject({ channel: "producthunt / launch", checks: 300, paid: 0 });
     expect(r.paidLast7).toBe(1);
     expect(r.totals.revenueCents).toBe(4999);

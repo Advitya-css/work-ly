@@ -19,6 +19,8 @@ import {
 
 import { PageHeader } from "@/components/shared/page-header";
 import { OpportunityToolsCard } from "@/components/guidance/opportunity-tools-card";
+import { TailorUpsellCard } from "@/components/paywall/tailor-upsell-card";
+import { recordFunnelStep } from "@/lib/attribution";
 import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 
@@ -81,6 +83,10 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   // gaps/strengths list means "nothing to go on," not "clean bill of
   // health," and the copy below must say so rather than implying the latter.
   const lowCoverage = coverageOf(fitBreakdown) < MIN_COVERAGE_FOR_SCORE;
+
+  // Free reports carry the "tailor my resume" offer: count the view against
+  // the visitor's channel (lib/attribution.ts).
+  if (!user.isPro) await recordFunnelStep("paywall");
 
   // Real inputs for the locked Pro tools' previews - nothing generated.
   const toolPreview = user.isPro
@@ -179,6 +185,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </CardContent>
         </Card>
       </div>
+
+      {!user.isPro && <TailorUpsellCard preview={toolPreview} resumeHref={`/opportunities/${opportunity.id}/resume`} />}
 
       <OpportunityToolsCard opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} />
 

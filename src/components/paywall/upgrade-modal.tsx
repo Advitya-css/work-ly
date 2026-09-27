@@ -36,11 +36,24 @@ export function UpgradeModal({
   const [agreed, setAgreed] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [founding, setFounding] = useState<PublicFoundingOffer | null>(null);
+  // A code box beside the pay button sends buyers off to hunt for codes,
+  // so it only appears for someone who arrived on a code link (?code=).
+  // Everyone else redeems at /redeem.
+  const [codeFromLink, setCodeFromLink] = useState<string | null>(null);
 
   // The founding offer is read when the dialog opens, so its spots-left
   // count is current and closed dialogs cost nothing.
   useEffect(() => {
     if (!open) return;
+    try {
+      const fromLink = new URLSearchParams(window.location.search).get("code");
+      if (fromLink) {
+        setCodeFromLink(fromLink);
+        setBetaCode(fromLink);
+      }
+    } catch {
+      // no URL access: no code box
+    }
     let cancelled = false;
     getFoundingOfferAction()
       .then((offer) => {
@@ -211,6 +224,7 @@ export function UpgradeModal({
           </Button>
           <LegalLinks />
 
+          {codeFromLink && (
           <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-border">
             <p className="text-sm font-medium text-foreground text-center">
               Got a code?
@@ -227,8 +241,8 @@ export function UpgradeModal({
               </Button>
             </div>
             {betaError && <p className="text-xs text-center text-destructive">{betaError}</p>}
-            
           </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

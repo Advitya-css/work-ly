@@ -49,6 +49,7 @@ export async function GET(req: Request) {
          LEFT JOIN discovery_runs r ON r."userId" = u.id
         WHERE u."isPro" = true
           AND (u."proUntil" IS NULL OR u."proUntil" > now())
+          AND COALESCE(u."proPlan", '') <> 'trial'
         GROUP BY u.id
        HAVING MAX(r."startedAt") IS NULL OR MAX(r."startedAt") < now() - interval '20 hours'
         ORDER BY MAX(r."startedAt") ASC NULLS FIRST

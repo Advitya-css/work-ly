@@ -29,6 +29,9 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { getJobById } from "@/lib/db/jobs";
 import { getJobAnalysisByJobId } from "@/lib/db/job-analyses";
+import { TailorUpsellCard } from "@/components/paywall/tailor-upsell-card";
+import { recordFunnelStep } from "@/lib/attribution";
+import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { formatSalaryRange } from "@/lib/format";
 import {
   RECOMMENDATION_LABEL,
@@ -124,6 +127,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
   }
 
   const breakdown = analysis.scoreBreakdown as ScoreBreakdown;
+  if (!user.isPro) await recordFunnelStep("paywall");
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
   // Below this, Work-ly couldn't reliably assess the role at all - an empty
   // gaps/strengths list here means "nothing to go on," not "clean bill of
@@ -176,6 +180,18 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
           </CardContent>
         </Card>
       </div>
+
+      {!user.isPro && (
+        <TailorUpsellCard
+          preview={buildPreviewData({
+            requiredSkills: job.requiredSkills,
+            preferredSkills: job.preferredSkills,
+            strengths: analysis.strengths,
+            gaps: analysis.gaps,
+            weaknesses: analysis.weaknesses,
+          })}
+        />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">

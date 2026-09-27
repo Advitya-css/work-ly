@@ -93,6 +93,11 @@ export async function withinProAiBudget(
   userId: string,
   options: { countsTowardRefund?: boolean } = {},
 ): Promise<boolean> {
+  // A one-day trial gets a small, fixed number of Pro tools (lib/payments/trial.ts).
+  const { onTrial, TRIAL_TOOL_LIMIT } = await import("@/lib/payments/trial");
+  if ((await onTrial(userId)) && !(await checkRateLimit(`trial_ai_${userId}`, TRIAL_TOOL_LIMIT, 2 * 24 * 60 * 60))) {
+    return false;
+  }
   const allowed = await checkRateLimit(`pro_ai_${userId}`, PRO_AI_LIMIT, PRO_AI_WINDOW_SECONDS);
   // Every Pro AI tool use counts toward the light-use money-back guarantee
   // (free tools such as the follow-up and counter-offer emails pass false).

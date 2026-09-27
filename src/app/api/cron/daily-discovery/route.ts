@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     // reached this week.
     const { rows } = await pool.query(`
       SELECT u.id, u.email, cg."primaryTargetRole",
-             (u."isPro" = true AND (u."proUntil" IS NULL OR u."proUntil" > now())) AS "isPro"
+             (u."isPro" = true AND (u."proUntil" IS NULL OR u."proUntil" > now()) AND COALESCE(u."proPlan", '') <> 'trial') AS "isPro"
       FROM users u
       JOIN career_goals cg ON cg."userId" = u.id
       WHERE cg.status = 'ACTIVE'

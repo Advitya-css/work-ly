@@ -15,6 +15,7 @@ import { ATTR_COOKIE, buildFunnelReport, clean, decodeAttribution, type Attribut
  * migration:
  *
  *   funnel:grader:<day>:<source>:<campaign>            count = checks that day
+ *   funnel:paywall:<day>:<source>:<campaign>           count = views of the "tailor my resume" offer
  *   funnel:checkout:<day>:<source>:<campaign>          count = checkouts opened
  *   funnel:signup:<day>:<source>:<campaign>:<userId>   one row per account
  *   funnel:paid:<day>:<source>:<campaign>:<orderId>    count = amount in cents
@@ -36,7 +37,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const part = (v: string | null | undefined) => clean(v) || "none";
 
 /** A step counted per day (free checks, checkouts opened). */
-export async function recordFunnelStep(step: "grader" | "checkout"): Promise<void> {
+export async function recordFunnelStep(step: "grader" | "paywall" | "checkout"): Promise<void> {
   try {
     const a = await currentAttribution();
     const key = `funnel:${step}:${today()}:${part(a?.s ?? "unknown")}:${part(a?.c)}`;

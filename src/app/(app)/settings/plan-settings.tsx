@@ -131,7 +131,7 @@ export async function PlanSettings({
           <div className="flex items-center justify-between p-5 bg-muted/30 rounded-xl border">
             <div className="flex flex-col gap-2">
               <span className="font-semibold text-lg flex items-center gap-2">
-                Current Plan: {isPro ? <Badge className="bg-primary text-primary-foreground text-sm px-2 py-0.5"><Crown className="size-3 mr-1" /> Pro{paidPlan ? ` · ${paidPlan.name}` : ""}</Badge> : <Badge variant="secondary" className="text-sm px-2 py-0.5">Free</Badge>}
+                Current Plan: {isPro ? <Badge className="bg-primary text-primary-foreground text-sm px-2 py-0.5"><Crown className="size-3 mr-1" /> {user.proPlan === "trial" ? "Pro trial" : `Pro${paidPlan ? ` · ${paidPlan.name}` : ""}`}</Badge> : <Badge variant="secondary" className="text-sm px-2 py-0.5">Free</Badge>}
               </span>
               {hasYearlyPerks(user) && (
                 <span className="text-sm text-muted-foreground">
@@ -159,7 +159,15 @@ export async function PlanSettings({
                   </Link>
                 </span>
               )}
-              {isPro && proUntil ? (
+              {isPro && proUntil && user.proPlan === "trial" ? (
+                <span className="text-sm text-muted-foreground">
+                  Your free one-day Pro trial ends{" "}
+                  <strong className="text-foreground">
+                    {new Date(proUntil).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </strong>
+                  . Pick a plan below to keep Pro.
+                </span>
+              ) : isPro && proUntil ? (
                 <span className="text-sm text-muted-foreground">
                   Your Pro access is valid until <strong className="text-foreground">{new Date(proUntil).toLocaleDateString()}</strong>.
                 </span>

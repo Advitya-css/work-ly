@@ -367,5 +367,9 @@ export async function buildProfileFromResumeText(
     })),
   );
 
+  // A first resume starts the one-day Pro trial (once per account).
+  const { grantTrialIfEligible } = await import("@/lib/payments/trial");
+  await grantTrialIfEligible(userId);
+
   return { extraction };
 }

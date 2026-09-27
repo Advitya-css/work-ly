@@ -4,6 +4,7 @@ import { pool } from "@/lib/db/pool";
 import { PLAN_INTERVAL, planForProduct, type PolarPlan } from "@/lib/payments/polar-plans";
 import { openRefundWindow } from "@/lib/payments/refund-window";
 import { recordPaidOrder } from "@/lib/attribution";
+import { clearCheckoutMarker } from "@/lib/lifecycle";
 
 /**
  * TURNING A POLAR ORDER INTO PRO ACCESS - the one place it happens.
@@ -133,6 +134,7 @@ export async function grantForOrder(order: PaidOrder, userId: string): Promise<P
     return null;
   }
   await openRefundWindow(userId, order.createdAt).catch((e) => console.error("[workly:polar] refund window", e));
+  await clearCheckoutMarker(userId);
   await recordPaidOrder({
     orderId: order.id,
     createdAt: order.createdAt,

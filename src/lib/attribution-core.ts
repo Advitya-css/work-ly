@@ -122,6 +122,8 @@ export interface ChannelRow {
   source: string;
   checks: number;
   signups: number;
+  /** Free reports shown with the "tailor my resume" offer. */
+  offers: number;
   checkouts: number;
   paid: number;
   revenueCents: number;
@@ -152,9 +154,10 @@ export function buildFunnelReport(rows: { key: string; count: number }[], days: 
     const id = channelLabel(source, camp);
     const row =
       byChannel.get(id) ??
-      ({ channel: id, source, checks: 0, signups: 0, checkouts: 0, paid: 0, revenueCents: 0 } satisfies ChannelRow);
+      ({ channel: id, source, checks: 0, signups: 0, offers: 0, checkouts: 0, paid: 0, revenueCents: 0 } satisfies ChannelRow);
     if (step === "grader") row.checks += count;
     else if (step === "signup") row.signups += 1;
+    else if (step === "paywall") row.offers += count;
     else if (step === "checkout") row.checkouts += count;
     else if (step === "paid") {
       row.paid += 1;
@@ -175,11 +178,12 @@ export function buildFunnelReport(rows: { key: string; count: number }[], days: 
     (t, r) => ({
       checks: t.checks + r.checks,
       signups: t.signups + r.signups,
+      offers: t.offers + r.offers,
       checkouts: t.checkouts + r.checkouts,
       paid: t.paid + r.paid,
       revenueCents: t.revenueCents + r.revenueCents,
     }),
-    { checks: 0, signups: 0, checkouts: 0, paid: 0, revenueCents: 0 },
+    { checks: 0, signups: 0, offers: 0, checkouts: 0, paid: 0, revenueCents: 0 },
   );
   return { sinceDay: since, rows: sorted, totals, paidLast7, revenueLast7Cents };
 }

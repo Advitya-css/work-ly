@@ -39,6 +39,7 @@ export async function GET(req: Request) {
         AND cg."primaryTargetRole" IS NOT NULL
         AND u."isPro" = true
         AND (u."proUntil" IS NULL OR u."proUntil" > NOW())
+        AND COALESCE(u."proPlan", '') <> 'trial'
         AND (u."lastAlertSentAt" IS NULL OR u."lastAlertSentAt" < NOW() - INTERVAL '7 days')
       LIMIT 50
     `);
