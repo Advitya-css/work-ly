@@ -76,6 +76,12 @@ export async function signUpAction(
     };
   }
 
+  // Counted against the channel that first brought them (see lib/attribution.ts).
+  if (result.user?.id) {
+    const { recordSignup } = await import("@/lib/attribution");
+    await recordSignup(result.user.id);
+  }
+
   const refCode = formData.get("refCode");
   if (refCode && typeof refCode === "string" && result.user?.id) {
     // Recorded only - rewards are granted when this account activates

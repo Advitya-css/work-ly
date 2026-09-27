@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BUSINESS } from "@/lib/business";
 import { getRefundStatus } from "@/lib/payments/refund-window";
+import { getFunnelReport } from "@/lib/attribution";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,11 @@ export default async function AdminDashboard({
   `);
 
   const { total_users, pro_users, total_pathways } = stats[0];
+
+  // Revenue by channel - the growth scoreboard. Ranked by revenue, not traffic.
+  const funnel = await getFunnelReport(30).catch(() => null);
+  const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  const pct = (a: number, b: number) => (b > 0 ? `${Math.round((a / b) * 100)}%` : "-");
 
   // Refunds: everyone whose money-back window is open or closed in the last
   // 30 days, with how many Pro AI tools they've used - and a lookup by email.
@@ -126,6 +132,66 @@ export default async function AdminDashboard({
             </CardContent>
           </Card>
         </div>
+
+        <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Paying customers by channel (last 30 days)</h2>
+              <p className="text-sm text-zinc-400">
+                Credited to the first link or site that brought each visitor. Ranked by revenue, not traffic.
+              </p>
+            </div>
+            {funnel && (
+              <p className="text-sm text-zinc-300">
+                Last 7 days: <span className="font-semibold text-white">{funnel.paidLast7} paid</span> ·{" "}
+                <span className="font-semibold text-white">{usd(funnel.revenueLast7Cents)}</span>
+              </p>
+            )}
+          </div>
+          {!funnel ? (
+            <p className="text-sm text-zinc-400">Couldn&apos;t load the channel report.</p>
+          ) : funnel.rows.length === 0 ? (
+            <p className="text-sm text-zinc-400">No tracked visits yet. Share links with ?utm_source=... to start.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Channel</th>
+                    <th className="py-2 pr-4 text-right font-medium">Free checks</th>
+                    <th className="py-2 pr-4 text-right font-medium">Signups</th>
+                    <th className="py-2 pr-4 text-right font-medium">Checkouts</th>
+                    <th className="py-2 pr-4 text-right font-medium">Paid</th>
+                    <th className="py-2 pr-4 text-right font-medium">Revenue</th>
+                    <th className="py-2 text-right font-medium">Signup → paid</th>
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  {funnel.rows.map((r) => (
+                    <tr key={r.channel} className="border-t border-zinc-800">
+                      <td className="py-2 pr-4 text-white">{r.channel}</td>
+                      <td className="py-2 pr-4 text-right">{r.checks}</td>
+                      <td className="py-2 pr-4 text-right">{r.signups}</td>
+                      <td className="py-2 pr-4 text-right">{r.checkouts}</td>
+                      <td className="py-2 pr-4 text-right font-semibold text-white">{r.paid}</td>
+                      <td className="py-2 pr-4 text-right font-semibold text-white">{usd(r.revenueCents)}</td>
+                      <td className="py-2 text-right">{pct(r.paid, r.signups)}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t border-zinc-700 font-semibold text-white">
+                    <td className="py-2 pr-4">Total</td>
+                    <td className="py-2 pr-4 text-right">{funnel.totals.checks}</td>
+                    <td className="py-2 pr-4 text-right">{funnel.totals.signups}</td>
+                    <td className="py-2 pr-4 text-right">{funnel.totals.checkouts}</td>
+                    <td className="py-2 pr-4 text-right">{funnel.totals.paid}</td>
+                    <td className="py-2 pr-4 text-right">{usd(funnel.totals.revenueCents)}</td>
+                    <td className="py-2 text-right">{pct(funnel.totals.paid, funnel.totals.signups)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
           <div>

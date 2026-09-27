@@ -8,6 +8,7 @@ import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
 import { FREE_AI_LIMIT_MESSAGE, spendAnonymousAi, spendFreeAi } from "@/lib/ai/allowance";
+import { recordFunnelStep } from "@/lib/attribution";
 
 /**
  * One free scan per device, enforced with a long-lived cookie rather than an
@@ -93,6 +94,9 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
       path: "/",
       maxAge: FREE_GRADER_COOKIE_MAX_AGE,
     });
+
+    // A free check run, counted against the visitor's channel.
+    await recordFunnelStep("grader");
 
     return {
       data: {

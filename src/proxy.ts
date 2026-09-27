@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { ATTR_COOKIE, ATTR_MAX_AGE_S, attributionFromRequest, decodeAttribution, encodeAttribution, shouldStore } from "@/lib/attribution-core";
 
 /**
  * Security headers, applied to every response (see `config.matcher` below -
@@ -112,8 +113,30 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
+  // First-touch attribution: which channel brought this browser here, kept
+  // so a later payment can be credited to it (see lib/attribution-core.ts).
+  // Page navigations only - not API calls, prefetches or RSC fetches.
+  const attribution = (() => {
+    if (request.method !== "GET" || pathname.startsWith("/api")) return null;
+    const dest = request.headers.get("sec-fetch-dest");
+    if (dest && dest !== "document") return null;
+    if (request.headers.get("rsc") || request.headers.get("next-router-prefetch")) return null;
+    const incoming = attributionFromRequest(request.nextUrl, request.headers.get("referer"));
+    const existing = decodeAttribution(request.cookies.get(ATTR_COOKIE)?.value);
+    return shouldStore(existing, incoming) ? encodeAttribution(incoming) : null;
+  })();
+
   const withSecurityHeaders = (response: NextResponse): NextResponse => {
     response.headers.set("Content-Security-Policy", csp);
+    if (attribution) {
+      response.cookies.set(ATTR_COOKIE, attribution, {
+        maxAge: ATTR_MAX_AGE_S,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+    }
     return applySecurityHeaders(response);
   };
   const next = () => withSecurityHeaders(NextResponse.next({ request: { headers: requestHeaders } }));

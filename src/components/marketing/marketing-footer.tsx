@@ -14,6 +14,14 @@ const GROUPS = [
     ],
   },
   {
+    title: "Guides",
+    links: [
+      { href: "/why-am-i-not-getting-interviews", label: "Why am I not getting interviews?" },
+      { href: "/should-i-apply", label: "Should I apply for this job?" },
+      { href: "/resume-job-match", label: "Resume vs job description" },
+    ],
+  },
+  {
     title: "Legal",
     links: [
       { href: "/legal/terms", label: "Terms of Service" },
@@ -33,7 +41,7 @@ const GROUPS = [
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border px-4 py-12 sm:px-6">
-      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">

@@ -35,6 +35,12 @@ export default function CookiePolicy() {
           collect personally identifiable information.
         </li>
         <li>
+          <strong className="text-foreground">Where you came from:</strong> a first-party cookie (wl_src) remembers the
+          site or link that first brought you to Work-ly (for example &ldquo;reddit&rdquo; or a campaign name) and the page
+          you landed on, for 90 days. It holds no name, email or ID, is never shared with anyone, and only tells us which
+          channels bring people who find Work-ly useful.
+        </li>
+        <li>
           <strong className="text-foreground">Free resume check:</strong> when you use the free checker, the job and
           resume you pasted are kept in your own browser&apos;s local storage for up to 7 days, so a free account can
           pick up where you left off. They stay on your device and are only sent to Work-ly if you choose &ldquo;Use

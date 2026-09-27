@@ -8,6 +8,7 @@ import { POLAR_PRODUCT_IDS } from "@/lib/payments/polar-plans";
 import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 import { getFoundingOffer } from "@/lib/payments/founding";
+import { currentAttribution, recordFunnelStep } from "@/lib/attribution";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -40,6 +41,9 @@ export async function createPolarCheckout(
 
     // The founding-member discount, while Polar says it's still open.
     const founding = await getFoundingOffer();
+    // The channel that first brought this buyer, carried onto the order so
+    // revenue can be credited to it (see lib/attribution.ts).
+    const attribution = await currentAttribution();
     const checkout = {
       products: [productId],
       customerEmail: user.email,
@@ -53,6 +57,10 @@ export async function createPolarCheckout(
         terms_accepted_at: acceptedAt,
         terms_version: BUSINESS.legalUpdated,
         refund_rule: `${BUSINESS.refundDays} days, under ${BUSINESS.refundUsageLimit} Pro AI tools`,
+        source: attribution?.s ?? "unknown",
+        campaign: attribution?.c ?? "",
+        landing: attribution?.l ?? "",
+        first_touch: attribution?.t ?? "",
       },
       customerMetadata: { user_id: user.id },
       customFieldData: { user_id: user.id },
@@ -73,6 +81,7 @@ export async function createPolarCheckout(
       result = await polar.checkouts.create(checkout);
     }
 
+    await recordFunnelStep("checkout");
     return { url: result.url };
   } catch (error: any) {
     console.error("Polar checkout error:", error);

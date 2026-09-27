@@ -3,6 +3,7 @@ import "server-only";
 import { pool } from "@/lib/db/pool";
 import { PLAN_INTERVAL, planForProduct, type PolarPlan } from "@/lib/payments/polar-plans";
 import { openRefundWindow } from "@/lib/payments/refund-window";
+import { recordPaidOrder } from "@/lib/attribution";
 
 /**
  * TURNING A POLAR ORDER INTO PRO ACCESS - the one place it happens.
@@ -27,6 +28,11 @@ export interface PaidOrder {
   customerEmail: string | null;
   /** Work-ly user ids the order carries (checkout metadata, external customer id, ...). */
   userIds: string[];
+  /** The channel stored on the checkout (lib/attribution.ts); null for older orders. */
+  source: string | null;
+  campaign: string | null;
+  /** What was paid, in cents, when the order says. */
+  amountCents: number | null;
 }
 
 function pick(obj: unknown, ...keys: string[]): unknown {
@@ -64,8 +70,16 @@ export function normalizeOrder(raw: unknown): PaidOrder | null {
     (pick(customer, "externalId", "external_id") as string | undefined) ?? null,
   ].filter((v): v is string => typeof v === "string" && v.length > 0);
 
+  const metadata = pick(raw, "metadata");
+  const source = pick(metadata, "source");
+  const campaign = pick(metadata, "campaign");
+  const amount = pick(raw, "netAmount", "net_amount", "totalAmount", "total_amount", "amount");
+
   return {
     id,
+    source: typeof source === "string" && source ? source : null,
+    campaign: typeof campaign === "string" && campaign ? campaign : null,
+    amountCents: typeof amount === "number" && Number.isFinite(amount) ? amount : null,
     status: typeof status === "string" ? status : null,
     paid: pick(raw, "paid") === true || status === "paid" || status === "partially_refunded",
     productId: typeof productId === "string" ? productId : null,
@@ -119,6 +133,13 @@ export async function grantForOrder(order: PaidOrder, userId: string): Promise<P
     return null;
   }
   await openRefundWindow(userId, order.createdAt).catch((e) => console.error("[workly:polar] refund window", e));
+  await recordPaidOrder({
+    orderId: order.id,
+    createdAt: order.createdAt,
+    source: order.source,
+    campaign: order.campaign,
+    amountCents: order.amountCents,
+  });
   console.log(`[workly:polar] order ${order.id} paid: ${plan} for user ${userId}`);
   return plan;
 }

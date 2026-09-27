@@ -63,6 +63,8 @@ export async function GET(request: Request) {
       // New Google accounts go through onboarding (resume upload, first
       // matches) like email signups; returning users go to the dashboard.
       if (result.user && !result.user.onboardedAt) {
+        const { recordSignup } = await import("@/lib/attribution");
+        await recordSignup(result.user.id);
         const ref = cookieStore.get("workly_ref")?.value;
         if (ref) {
           const { recordReferral } = await import("@/lib/db/users");
