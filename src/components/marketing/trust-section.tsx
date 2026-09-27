@@ -24,7 +24,7 @@ const POINTS = [
   {
     icon: Cpu,
     title: "Pro runs on Google's stronger model",
-    body: "Fit checks, tailored resumes, cover letters and interview feedback use Google's flagship Gemini Flash model for Pro members.",
+    body: "For Pro members, Fit checks, tailored resumes, cover letters and interview feedback run on Google's flagship Gemini Flash model, with the previous Flash model stepping in when it's busy.",
   },
   {
     icon: ShieldCheck,

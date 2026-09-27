@@ -20,6 +20,12 @@ const MIN_FALLBACK_WINDOW_MS = 20_000;
 
 /** The stronger model for the most important Pro features. */
 export const DEFAULT_QUALITY_MODEL = "gemini-3.8-flash";
+/**
+ * Tried next when the stronger model is overloaded (Google answers 503
+ * "high demand" at busy times): an older full Flash model, still stronger
+ * than the standard Flash-Lite, on separate capacity.
+ */
+export const DEFAULT_QUALITY_FALLBACK_MODEL = "gemini-3.5-flash";
 /** The standard model for everything else. */
 export const DEFAULT_STANDARD_MODEL = "gemini-3.5-flash-lite";
 
@@ -36,6 +42,7 @@ export function modelChain(quality: "standard" | "high" | undefined, env: Record
     new Set(
       [
         quality === "high" ? strong : null,
+        quality === "high" ? env.AI_QUALITY_FALLBACK_MODEL?.trim() || DEFAULT_QUALITY_FALLBACK_MODEL : null,
         standard,
         env.AI_FALLBACK_MODEL?.trim(),
         "gemini-flash-lite-latest",
@@ -189,15 +196,18 @@ export const googleGenAIProvider: AIProvider = {
 
       if (!response.ok) {
         const responseBody = await response.text();
-        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${chain[modelIndex]}, attempt ${attempt}/${maxAttempts}): ${responseBody.slice(0, 500)}`);
         const modelProblem =
           response.status === 429 || response.status >= 500 || response.status === 404 || (response.status === 400 && /model/i.test(responseBody));
         if (modelProblem && modelIndex < chain.length - 1 && canRetry(attempt)) {
+          // Routine: a busy or retired model, handled by moving down the
+          // chain. One short line, not a full error dump.
+          const from = chain[modelIndex];
           modelIndex++;
-          console.warn(`[workly:ai] switching to ${chain[modelIndex]} after ${response.status}`);
+          console.warn(`[workly:ai] ${from} unavailable (${response.status}), using ${chain[modelIndex]} instead`);
           lastError = new Error(`AI provider request failed (${response.status})`);
           continue;
         }
+        console.error(`[workly:ai] request failed ${response.status} against Google API (model=${chain[modelIndex]}, attempt ${attempt}/${maxAttempts}): ${responseBody.slice(0, 500)}`);
         if (isRetryableStatus(response.status) && canRetry(attempt)) {
           lastError = new Error(`AI provider request failed (${response.status}): ${responseBody}`);
           await delay(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));

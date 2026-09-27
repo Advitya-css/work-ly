@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_QUALITY_MODEL, DEFAULT_STANDARD_MODEL, modelChain } from "@/lib/ai/providers/google-genai";
+import {
+  DEFAULT_QUALITY_FALLBACK_MODEL,
+  DEFAULT_QUALITY_MODEL,
+  DEFAULT_STANDARD_MODEL,
+  modelChain,
+} from "@/lib/ai/providers/google-genai";
 import { fitQualityFor } from "@/lib/ai/quality-core";
 
 describe("modelChain", () => {
@@ -8,12 +13,13 @@ describe("modelChain", () => {
     const chain = modelChain("standard", { AI_MODEL: "gemini-3.5-flash-lite" });
     expect(chain[0]).toBe("gemini-3.5-flash-lite");
     expect(chain).not.toContain(DEFAULT_QUALITY_MODEL);
+    expect(chain).not.toContain(DEFAULT_QUALITY_FALLBACK_MODEL);
     expect(modelChain(undefined, {})[0]).toBe(DEFAULT_STANDARD_MODEL);
   });
 
   it("leads high-quality calls with the stronger model, then falls back to the current one", () => {
     const chain = modelChain("high", { AI_MODEL: "gemini-3.5-flash-lite" });
-    expect(chain.slice(0, 2)).toEqual([DEFAULT_QUALITY_MODEL, "gemini-3.5-flash-lite"]);
+    expect(chain.slice(0, 3)).toEqual([DEFAULT_QUALITY_MODEL, DEFAULT_QUALITY_FALLBACK_MODEL, "gemini-3.5-flash-lite"]);
     expect(modelChain("high", { AI_MODEL: "x", AI_QUALITY_MODEL: "gemini-3.1-pro" })[0]).toBe("gemini-3.1-pro");
   });
 
