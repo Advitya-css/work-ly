@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { POLAR_PRODUCT_IDS } from "@/lib/payments/polar-plans";
 import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
+import { getFoundingOffer } from "@/lib/payments/founding";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -37,7 +38,9 @@ export async function createPolarCheckout(
       throw new Error("Invalid plan selected");
     }
 
-    const result = await polar.checkouts.create({
+    // The founding-member discount, while Polar says it's still open.
+    const founding = await getFoundingOffer();
+    const checkout = {
       products: [productId],
       customerEmail: user.email,
       // Ties the Polar customer to this account, so renewals and refunds
@@ -57,7 +60,18 @@ export async function createPolarCheckout(
       // with Polar directly, so Pro shows up at once instead of waiting on
       // the webhook.
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.work-ly.in"}/settings?checkout_id={CHECKOUT_ID}`,
-    });
+    };
+
+    let result;
+    try {
+      result = await polar.checkouts.create(founding ? { ...checkout, discountId: founding.discountId } : checkout);
+    } catch (error) {
+      // The last founding spot can go between the page loading and this
+      // click. Never block a purchase over it: check out at full price.
+      if (!founding) throw error;
+      console.warn("[workly:founding] checkout with the founding discount failed, retrying without it:", error);
+      result = await polar.checkouts.create(checkout);
+    }
 
     return { url: result.url };
   } catch (error: any) {

@@ -198,6 +198,10 @@ const PUBLIC_ACTIONS = new Set([
   // it works before signup. Guarded instead by a one-per-device cookie, a
   // per-IP rate limit, input length caps, and it never touches user data.
   "scoreResumeAction",
+  // The founding-member offer (percent off, spots left, end date) - the
+  // same public numbers the pricing page shows signed-out visitors. Reads
+  // no user data and returns no Polar ids.
+  "getFoundingOfferAction",
 ]);
 const GUARD = /getCurrentUser|requireUser|requireOwned|requireAuth/;
 

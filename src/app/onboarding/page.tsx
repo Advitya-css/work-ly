@@ -9,6 +9,7 @@ import { UploadStep } from "@/components/onboarding/upload-step";
 import { ReviewStep } from "@/app/onboarding/review-step";
 import { MatchesStep } from "@/app/onboarding/matches-step";
 import { StudentStep } from "@/components/onboarding/student-step";
+import { GraderImportCard } from "@/components/onboarding/grader-import-card";
 import { chooseOnboardingIntentAction, completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 import { parseOnboardingIntent } from "@/lib/onboarding/intent";
 import { getCurrentUser } from "@/lib/auth";
@@ -74,6 +75,8 @@ export default async function OnboardingPage({
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">What brings you here? This sets up your first search.</p>
           </div>
+
+          <GraderImportCard />
 
           <div className="grid w-full gap-3 sm:grid-cols-2">
             {INTENTS.map(({ intent: value, icon: Icon, title, body }) => (

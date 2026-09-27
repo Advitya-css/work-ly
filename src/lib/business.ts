@@ -36,3 +36,18 @@ export const BUSINESS = {
   /** Shown as "Last updated" on the Terms and Refund policy. */
   legalUpdated: "26 September 2026",
 } as const;
+
+/**
+ * How the guarantee is advertised. ALWAYS with its condition: a buyer who
+ * read "money-back guarantee" and is then refused after 30 tool uses is
+ * exactly the buyer who opens a payment dispute.
+ */
+export const GUARANTEE = {
+  /** "14-day money-back guarantee if you've used fewer than 10 Pro tools" */
+  sentence: `${BUSINESS.refundDays}-day money-back guarantee if you've used fewer than ${BUSINESS.refundUsageLimit} Pro tools`,
+  /** "14-day money-back guarantee (under 10 Pro tools used)" - for feature lists. */
+  feature: `${BUSINESS.refundDays}-day money-back guarantee (under ${BUSINESS.refundUsageLimit} Pro tools used)`,
+} as const;
+
+/** The badge on the plan we recommend. Not "Most popular" - that's a claim about sales. */
+export const RECOMMENDED_BADGE = "Best for a job search";

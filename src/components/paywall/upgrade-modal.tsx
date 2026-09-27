@@ -1,20 +1,22 @@
 "use client";
 
 import { WorklyLoader } from "@/components/shared/workly-loader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, CheckCircle2, ArrowRight, Star } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createPolarCheckout } from "@/lib/payments/polar";
+import { getFoundingOfferAction } from "@/lib/payments/founding-actions";
+import { foundingSummary, type PublicFoundingOffer } from "@/lib/payments/founding-core";
 import { redeemBetaCodeAction } from "@/lib/beta/actions";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, GUARANTEE, RECOMMENDED_BADGE } from "@/lib/business";
 import { LegalLinks } from "@/components/legal/legal-links";
 
 export function UpgradeModal({ 
   children,
   title = "Unlock Work-ly Pro",
-  description = `Every AI career tool, with a ${BUSINESS.refundDays}-day money-back guarantee.`,
+  description = `Every AI career tool, with a ${GUARANTEE.sentence}.`,
   defaultPlan,
   preview,
 }: { 
@@ -33,6 +35,22 @@ export function UpgradeModal({
   const [betaError, setBetaError] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [founding, setFounding] = useState<PublicFoundingOffer | null>(null);
+
+  // The founding offer is read when the dialog opens, so its spots-left
+  // count is current and closed dialogs cost nothing.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    getFoundingOfferAction()
+      .then((offer) => {
+        if (!cancelled) setFounding(offer);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   const handleRedeemBeta = async () => {
     if (!betaCode.trim()) return;
@@ -96,6 +114,12 @@ export function UpgradeModal({
 
         <div className="flex flex-col gap-4 py-4 relative z-10">
           {preview}
+          {founding && (
+            <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+              <span className="font-semibold">Founding members:</span> {foundingSummary(founding, { forWhom: false })}.
+              Applied automatically at checkout.
+            </p>
+          )}
           <ul className="space-y-3 text-sm font-medium pb-2">
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Unlimited AI job analyses</span></li>
             <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>AI resume tailoring</span></li>
@@ -122,7 +146,7 @@ export function UpgradeModal({
               className={`relative flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${selectedPlan === "quarterly" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
             >
               <div className="absolute -top-2.5 left-3 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Star className="size-3 fill-current" /> Most popular
+                <Star className="size-3 fill-current" /> {RECOMMENDED_BADGE}
               </div>
               <div className="flex flex-col mt-1">
                 <span className="font-semibold text-foreground">3-Month Pass</span>

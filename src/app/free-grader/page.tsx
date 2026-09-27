@@ -1,10 +1,11 @@
 "use client";
 
 import { WorklyLoader } from "@/components/shared/workly-loader";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader2, Lock, ArrowRight, ShieldCheck, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, Lock, ArrowRight, ShieldCheck, FileText, CheckCircle2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AnimatedNumber } from "@/components/shared/animated-number";
@@ -12,13 +13,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { scoreResumeAction } from "./actions";
+import { importFromGraderAction } from "@/lib/onboarding/grader-import";
+import { clearGraderDraft, saveGraderDraft } from "@/lib/grader-draft";
+import { getFoundingOfferAction } from "@/lib/payments/founding-actions";
+import { discountedPrice, foundingSummary, type PublicFoundingOffer } from "@/lib/payments/founding-core";
+import { GUARANTEE } from "@/lib/business";
+import { PAID_PLANS } from "@/lib/pricing";
+
+const PASS = PAID_PLANS.find((p) => p.interval === "quarterly")!;
 
 export default function FreeGraderPage() {
   const [jobText, setJobText] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const [importing, startImport] = useTransition();
+  const [importError, setImportError] = useState<string | null>(null);
+  const [founding, setFounding] = useState<PublicFoundingOffer | null>(null);
   const [result, setResult] = useState<{
+    signedIn: boolean;
     score: number | null;
     summary: string;
     strengths: { requirement: string; evidence: string }[];
@@ -38,9 +52,46 @@ export default function FreeGraderPage() {
         setError(res.error);
       } else if ("data" in res && res.data) {
         setResult(res.data);
+        // Kept in this browser so signing up picks up this resume and job.
+        saveGraderDraft({ resumeText, jobText });
       }
     });
   }
+
+  // The founding offer, for the "next step" card once there is a result.
+  useEffect(() => {
+    if (!result) return;
+    getFoundingOfferAction()
+      .then(setFounding)
+      .catch(() => undefined);
+  }, [result]);
+
+  /** Signed in: turn this check into a tracked job with the full report. */
+  function openInAccount() {
+    setImportError(null);
+    startImport(async () => {
+      const res = await importFromGraderAction({ resumeText, jobText });
+      if (res.opportunityId) {
+        clearGraderDraft();
+        router.push(`/opportunities/${res.opportunityId}`);
+      } else {
+        setImportError(res.error ?? "That didn't work. Please try again.");
+      }
+    });
+  }
+
+  const fullReportCta = (label: string) =>
+    result?.signedIn ? (
+      <Button size="sm" className="w-full font-bold" onClick={openInAccount} disabled={importing}>
+        {importing ? <WorklyLoader className="size-4 animate-spin mr-1" /> : null}
+        {importing ? "Opening your full report..." : label}
+        {!importing && <ArrowRight className="size-4 ml-1" />}
+      </Button>
+    ) : (
+      <Button asChild size="sm" className="w-full font-bold">
+        <Link href="/signup">{label} <ArrowRight className="size-4 ml-1" /></Link>
+      </Button>
+    );
 
   return (
     <div className="min-h-screen bg-background">
@@ -211,17 +262,52 @@ export default function FreeGraderPage() {
                       <div className="mt-5 flex flex-col items-center gap-2 rounded-lg border border-border bg-background/80 p-4 text-center">
                         <Lock className="size-5 text-muted-foreground" />
                         <p className="text-xs text-muted-foreground">
-                          Create a free account to see how to close each gap, get a week-by-week plan, and find jobs you already fit.
+                          {result.signedIn
+                            ? "Open the full report in your account to see how to close each gap."
+                            : "Create a free account to see how to close each gap. Your resume and this job come with you - no pasting again."}
                         </p>
-                        <Button asChild size="sm" className="w-full font-bold">
-                          <Link href="/signup">See how to close these <ArrowRight className="size-4 ml-1" /></Link>
-                        </Button>
+                        {fullReportCta(result.signedIn ? "Open the full report" : "See how to close these")}
                       </div>
                     </>
                   )}
                 </CardContent>
               </Card>
             </div>
+
+            <Card className="border-primary/30">
+              <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <p className="flex items-center gap-2 font-semibold text-foreground">
+                    <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
+                    Next: a resume tailored to this job
+                  </p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Work-ly Pro rewrites your resume and writes the cover letter for this exact job, using only what&apos;s
+                    already on your resume. It never adds skills you don&apos;t have.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {founding ? (
+                      <>
+                        <span className="font-semibold text-primary">Founding members: {foundingSummary(founding, { forWhom: false })}.</span>{" "}
+                        3-Month Pass {discountedPrice(PASS.priceUsd, founding.percentOff)} instead of {PASS.price}.{" "}
+                      </>
+                    ) : (
+                      <>{PASS.price} for 3 months with the 3-Month Pass. </>
+                    )}
+                    {GUARANTEE.sentence}.
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col gap-2 sm:w-56">
+                  {fullReportCta("Tailor my resume for this job")}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/pricing">See Pro plans</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            {importError && (
+              <p role="alert" className="text-center text-sm text-destructive">{importError}</p>
+            )}
 
             <div className="flex justify-center pt-4">
               <Button variant="ghost" onClick={() => setResult(null)}>Scan another resume</Button>

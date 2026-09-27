@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { UpgradeButton } from "./upgrade-button";
 import { LegalLinks } from "@/components/legal/legal-links";
 import { PAID_PLANS, type PaidPlan } from "@/lib/pricing";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, GUARANTEE, RECOMMENDED_BADGE } from "@/lib/business";
 
 type Plan = PaidPlan;
 const PLANS = PAID_PLANS;
@@ -31,7 +31,7 @@ export function PricingCard() {
           Work-ly Pro
         </h2>
         <p className="mx-auto mt-2 max-w-prose text-sm text-muted-foreground text-balance @md:text-base">
-          Every AI career tool, with a {BUSINESS.refundDays}-day money-back guarantee.
+          Every AI career tool, with a {GUARANTEE.sentence}.
         </p>
       </div>
 
@@ -52,7 +52,7 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div
       className={cn(
-        // No overflow-hidden: the "Most popular" badge sits on the border.
+        // No overflow-hidden: the recommended-plan badge sits on the border.
         "relative flex min-w-0 flex-col rounded-xl border bg-card text-card-foreground",
         plan.featured
           ? "order-first border-primary bg-gradient-to-b from-primary/10 to-card shadow-md @3xl:order-none @3xl:-my-2"
@@ -62,7 +62,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       {plan.featured && (
         <div className="absolute top-0 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-sm">
           <Star className="size-3 fill-current" aria-hidden />
-          Most popular
+          {RECOMMENDED_BADGE}
         </div>
       )}
 

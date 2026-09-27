@@ -4,13 +4,19 @@ import { CheckCircle2, ShieldCheck, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, GUARANTEE, RECOMMENDED_BADGE } from "@/lib/business";
 import { FREE_FEATURES, PAID_PLANS, PRO_FEATURES, YEARLY_ONLY_FEATURES } from "@/lib/pricing";
+import { getFoundingOffer } from "@/lib/payments/founding";
+import { foundingPriceLine } from "@/lib/payments/founding-core";
+import { FoundingBanner } from "@/components/marketing/founding-banner";
+
+// The founding offer's spots-left count comes from Polar; refresh it every 5 minutes.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    `Work-ly pricing: free to start, $19.99/month, a $49.99 3-month pass or a $149.99 yearly pass. Every paid plan has a ${BUSINESS.refundDays}-day money-back guarantee.`,
+    `Work-ly pricing: free to start, $19.99/month, a $49.99 3-month pass or a $149.99 yearly pass. Every paid plan has a ${GUARANTEE.sentence}.`,
 };
 
 const FAQ = [
@@ -48,7 +54,8 @@ const FAQ = [
  * The public pricing page. Every figure comes from lib/pricing.ts - the same
  * data the in-app pricing cards use - so the two can never disagree.
  */
-export default function PricingPage() {
+export default async function PricingPage() {
+  const offer = await getFoundingOffer();
   const cards = [
     {
       key: "free",
@@ -61,6 +68,7 @@ export default function PricingPage() {
       terms: "Free forever. No card needed.",
       features: FREE_FEATURES,
       featured: false,
+      founding: null as string | null,
       cta: { label: "Start free", href: "/signup" },
     },
     ...PAID_PLANS.map((plan) => ({
@@ -74,6 +82,7 @@ export default function PricingPage() {
       terms: plan.terms,
       features: plan.features,
       featured: Boolean(plan.featured),
+      founding: offer ? foundingPriceLine(plan, offer) : null,
       // Checkout needs an account: signed-in visitors land on the plans in
       // Settings; everyone else signs in (or signs up from there) first.
       cta: { label: `Get ${plan.name}`, href: `/upgrade?plan=${plan.interval}` },
@@ -85,9 +94,9 @@ export default function PricingPage() {
       <header className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground">Simple, honest pricing</h1>
         <p className="text-balance text-muted-foreground">
-          Start free. Upgrade when you&apos;re applying seriously. Every paid plan comes with a {BUSINESS.refundDays}-day
-          money-back guarantee.
+          Start free. Upgrade when you&apos;re applying seriously. Every paid plan comes with a {GUARANTEE.sentence}.
         </p>
+        <FoundingBanner offer={offer} href={null} className="mt-2" />
       </header>
 
       <section aria-label="Plans" className="@container">
@@ -103,7 +112,7 @@ export default function PricingPage() {
               {card.featured && (
                 <span className="absolute top-0 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
                   <Star className="size-3 fill-current" aria-hidden />
-                  Most popular
+                  {RECOMMENDED_BADGE}
                 </span>
               )}
               <div className="flex flex-col gap-1 px-5 pt-6">
@@ -122,6 +131,11 @@ export default function PricingPage() {
                 {card.note && (
                   <p className={cn("text-sm font-medium", card.note.tone === "primary" ? "text-primary" : "text-success")}>
                     {card.note.text}
+                  </p>
+                )}
+                {card.founding && (
+                  <p className="mt-1 w-fit rounded-md bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
+                    {card.founding}
                   </p>
                 )}
                 <p className="mt-2 text-xs text-muted-foreground">{card.terms}</p>
@@ -144,7 +158,7 @@ export default function PricingPage() {
         </ul>
         <p className="mt-6 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
           <ShieldCheck className="size-4 shrink-0 text-primary" aria-hidden />
-          {BUSINESS.refundDays}-day money-back guarantee on your first purchase ·{" "}
+          {GUARANTEE.sentence}, on your first purchase ·{" "}
           <Link href="/legal/refunds" className="underline underline-offset-4 hover:text-foreground">
             Refund policy
           </Link>

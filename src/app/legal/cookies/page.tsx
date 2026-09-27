@@ -35,6 +35,12 @@ export default function CookiePolicy() {
           collect personally identifiable information.
         </li>
         <li>
+          <strong className="text-foreground">Free resume check:</strong> when you use the free checker, the job and
+          resume you pasted are kept in your own browser&apos;s local storage for up to 7 days, so a free account can
+          pick up where you left off. They stay on your device and are only sent to Work-ly if you choose &ldquo;Use
+          my resume and this job&rdquo;. They are removed once used, or when you choose &ldquo;Start fresh&rdquo;.
+        </li>
+        <li>
           <strong className="text-foreground">Payments:</strong> our payment provider may set its own cookies on its
           checkout pages to process your purchase and prevent fraud. We don&apos;t control these &mdash; see the
           provider&apos;s own privacy and cookie policy, linked from its checkout.

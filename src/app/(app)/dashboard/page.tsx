@@ -41,8 +41,12 @@ import { buildBriefing } from "@/lib/guidance/briefing";
 import { PAID_PLANS } from "@/lib/pricing";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { CommandCenter } from "@/components/dashboard/command-center";
+import { GraderImportCard } from "@/components/onboarding/grader-import-card";
 
 export const metadata: Metadata = { title: "Dashboard" };
+// "Pick up where you left off" builds a profile and a Fit report in one
+// server action (two AI parses and a screen) - allow it the time.
+export const maxDuration = 180;
 
 export default async function DashboardPage({
   searchParams,
@@ -162,6 +166,8 @@ export default async function DashboardPage({
         description="Here's where things stand across your career profile, goals, and pipeline."
         action={<EnterStudentModeButton />}
       />
+
+      <GraderImportCard />
 
       <CommandCenter
         briefing={briefing}

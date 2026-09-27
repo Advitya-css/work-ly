@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, GUARANTEE } from "@/lib/business";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -16,7 +16,7 @@ const TOPICS = [
   },
   {
     title: "Billing and refunds",
-    body: `Charges, cancellations and refunds. Every first purchase has a ${BUSINESS.refundDays}-day money-back guarantee.`,
+    body: `Charges, cancellations and refunds. Every first purchase has a ${GUARANTEE.sentence}.`,
     link: { href: "/legal/refunds", label: "Refund policy" },
   },
   {

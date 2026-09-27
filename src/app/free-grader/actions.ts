@@ -96,6 +96,8 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
 
     return {
       data: {
+        /** Signed-in visitors can open the full report in their account straight away. */
+        signedIn: Boolean(user),
         score: reliable ? analysis.fitScore : null,
         summary: analysis.screen.summary,
         strengths: met.slice(0, 4).map((r) => ({ requirement: r.requirement, evidence: r.evidenceQuote ?? "" })),

@@ -8,7 +8,7 @@ import { PricingCard } from "@/components/paywall/pricing-card";
 import Link from "next/link";
 import { hasYearlyPerks } from "@/lib/plans";
 import { PAID_PLANS } from "@/lib/pricing";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, GUARANTEE } from "@/lib/business";
 import { restorePurchaseAction } from "@/lib/payments/polar";
 import { getRefundStatus } from "@/lib/payments/refund-window";
 import { UpgradeButton } from "@/components/paywall/upgrade-button";
@@ -115,7 +115,7 @@ export async function PlanSettings({
               <strong className="text-foreground">You picked the {chosen.name}</strong>{" "}
               <span className="text-muted-foreground">
                 ({chosen.price}
-                {chosen.priceSuffix ?? ""}). Checkout takes about a minute, with a {BUSINESS.refundDays}-day money-back guarantee.
+                {chosen.priceSuffix ?? ""}). Checkout takes about a minute, with a {GUARANTEE.sentence}.
               </span>
             </p>
             <UpgradeButton interval={chosenPlan} label={`Continue with ${chosen.name}`} className="shrink-0" />

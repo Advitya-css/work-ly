@@ -143,188 +143,7 @@ export async function parseDocumentAndBuildProfile(
       );
     }
 
-    // GATE ONE: is this actually a CV?
-    //
-    // Without this, uploading a shopping list produced a career profile,
-    // and every score computed against it was then presented as a fact
-    // about the person. Refusing is the honest outcome: a profile built
-    // from the wrong document is worse than no profile, because it looks
-    // exactly as authoritative as a real one.
-    const authenticity = checkAuthenticity(text, "resume");
-    if (authenticity.verdict === "reject") {
-      throw new UserFacingError(authenticity.message);
-    }
-
-    const rawExtraction = await resumeParsingProvider.extractCareerProfile(text);
-
-    // GATE TWO: did the model invent anything?
-    //
-    // An AI extraction can hallucinate an employer, a degree or a skill
-    // that appears nowhere in the document. Those would enter the profile
-    // indistinguishable from real facts and then be scored. Every claim is
-    // checked back against the source text and anything unfindable is
-    // dropped rather than stored.
-    const groundingReport = groundResumeExtraction(rawExtraction, text);
-    const extraction = groundingReport.grounded;
-
-    if (groundingReport.dropped.length > 0) {
-      // Field name and length only, never the value itself: `d.value` here
-      // is the user's own resume content (a name, an employer, an email) -
-      // logging it verbatim would put PII into server logs for every CV
-      // that trips this gate.
-      console.warn(
-        `[workly:grounding] dropped ${groundingReport.dropped.length} unverifiable claim(s) from a CV extraction ` +
-          `(grounded ${Math.round(groundingReport.groundedRatio * 100)}%): ` +
-          groundingReport.dropped
-            .slice(0, 8)
-            .map((d) => `${d.field}(len=${String(d.value ?? "").length})`)
-            .join(", "),
-      );
-    }
-    const profile = await getOrCreateCareerProfile(userId);
-
-    // Fill headline/summary only if the user hasn't already set their own -
-    // CV-derived text never overwrites a fact the user entered themselves.
-    // Same rule for years of experience: leaving it unset made every fit
-    // score report "You have 0 years of experience" straight after a CV
-    // listing seven years of work had been read successfully.
-    //
-    // Both merge into ONE upsertCareerProfile call carrying every field's
-    // current value. upsertCareerProfile is a documented whole-row
-    // overwrite (a field a caller omits is treated as a deliberate clear),
-    // so two separate partial calls here used to clobber each other -
-    // whichever ran second wiped location/currentRole/currentCompany/skills
-    // back to null, and if both conditions below were true in the same
-    // parse, the second call also erased the headline/summary the first
-    // call had just written.
-    const nextHeadline = !profile.headline && !profile.summary && extraction.headline ? extraction.headline : profile.headline;
-    const nextSummary = !profile.headline && !profile.summary && extraction.summary ? extraction.summary : profile.summary;
-    const nextYearsExperience =
-      profile.yearsExperience == null && extraction.yearsExperience != null
-        ? extraction.yearsExperience
-        : profile.yearsExperience;
-
-    // Same fill-only-blanks rule for where they live and what they do now:
-    // a CV that says "Bengaluru" and lists a current role used to leave
-    // Home location, Current role and Current company empty, so location
-    // matching and every "your current role" prompt started from nothing.
-    const currentExperience = extraction.experience.find((e) => e.isCurrent && e.title && e.company);
-    const nextLocation = profile.location || extraction.location?.trim() || null;
-    const nextCurrentRole = profile.currentRole || currentExperience?.title || null;
-    const nextCurrentCompany = profile.currentCompany || currentExperience?.company || null;
-
-    if (
-      nextHeadline !== profile.headline ||
-      nextSummary !== profile.summary ||
-      nextYearsExperience !== profile.yearsExperience ||
-      nextLocation !== profile.location ||
-      nextCurrentRole !== profile.currentRole ||
-      nextCurrentCompany !== profile.currentCompany
-    ) {
-      await upsertCareerProfile(userId, {
-        headline: nextHeadline,
-        summary: nextSummary,
-        location: nextLocation,
-        currentRole: nextCurrentRole,
-        currentCompany: nextCurrentCompany,
-        yearsExperience: nextYearsExperience,
-        skills: profile.skills,
-      });
-    }
-
-    await Promise.all([
-      ...extraction.education.map((e) =>
-        createEducation(profile.id, {
-          institution: e.institution,
-          degree: e.degree,
-          fieldOfStudy: e.fieldOfStudy,
-          startDate: parseDate(e.startDate),
-          endDate: parseDate(e.endDate),
-          description: e.description,
-          source: "CV",
-          isUncertain: e.isUncertain,
-        }),
-      ),
-      ...extraction.experience.map((e) =>
-        createExperience(profile.id, {
-          company: e.company,
-          title: e.title,
-          location: e.location,
-          startDate: parseDate(e.startDate),
-          endDate: parseDate(e.endDate),
-          isCurrent: e.isCurrent ?? false,
-          description: e.description,
-          source: "CV",
-          isUncertain: e.isUncertain,
-        }),
-      ),
-      ...extraction.projects.map((p) =>
-        createProject(profile.id, {
-          name: p.name,
-          role: p.role,
-          description: p.description,
-          url: p.url,
-          startDate: parseDate(p.startDate),
-          endDate: parseDate(p.endDate),
-          source: "CV",
-          isUncertain: p.isUncertain,
-        }),
-      ),
-      ...extraction.skills.map((s) =>
-        createSkill(profile.id, {
-          name: s.name,
-          category: s.category,
-          evidenceLevel: evidenceFromText(s.name, extraction),
-          source: "CV",
-          recency: "UNKNOWN",
-        }),
-      ),
-      ...extraction.achievements.map((a) =>
-        createAchievement(profile.id, {
-          title: a.title,
-          description: a.description,
-          date: parseDate(a.date),
-          source: "CV",
-          isUncertain: a.isUncertain,
-        }),
-      ),
-      ...extraction.certifications.map((c) =>
-        createCertification(profile.id, {
-          name: c.name,
-          issuer: c.issuer,
-          issueDate: parseDate(c.issueDate),
-          expiryDate: parseDate(c.expiryDate),
-          source: "CV",
-          isUncertain: c.isUncertain,
-        }),
-      ),
-      // Transferable skills are never stated facts - always AI_INFERENCE,
-      // always isTransferable: true, always carrying the rationale so the
-      // UI can show *why* it was suggested.
-      ...extraction.transferableSkills.map((t) =>
-        createSkill(profile.id, {
-          name: t.name,
-          category: t.category,
-          evidenceLevel: "INFERRED",
-          source: "AI_INFERENCE",
-          recency: "UNKNOWN",
-          isTransferable: true,
-          transferableRationale: t.rationale,
-        }),
-      ),
-    ]);
-
-    // Replaces rather than adds - see replaceCandidateValues for why a
-    // fresh parse supersedes the previous inference instead of piling on.
-    await replaceCandidateValues(
-      profile.id,
-      extraction.workValues.map((v) => ({
-        value: v.value,
-        confidence: v.confidence,
-        evidence: v.evidence,
-        source: "AI_INFERENCE" as const,
-      })),
-    );
+    const { extraction } = await buildProfileFromResumeText(userId, text);
 
     await updateDocumentStatus(documentId, "PARSED");
 
@@ -354,4 +173,199 @@ export async function parseDocumentAndBuildProfile(
     await updateDocumentStatus(documentId, "FAILED", message);
     throw error;
   }
+}
+
+/**
+ * Everything after text extraction: the CV gate, the AI parse, grounding,
+ * and saving every entry to the profile. Shared by uploaded files and by
+ * resume text pasted into the free grader.
+ */
+export async function buildProfileFromResumeText(
+  userId: string,
+  text: string,
+): Promise<{ extraction: ExtractedCareerProfile }> {
+  // GATE ONE: is this actually a CV?
+  //
+  // Without this, uploading a shopping list produced a career profile,
+  // and every score computed against it was then presented as a fact
+  // about the person. Refusing is the honest outcome: a profile built
+  // from the wrong document is worse than no profile, because it looks
+  // exactly as authoritative as a real one.
+  const authenticity = checkAuthenticity(text, "resume");
+  if (authenticity.verdict === "reject") {
+    throw new UserFacingError(authenticity.message);
+  }
+
+  const rawExtraction = await resumeParsingProvider.extractCareerProfile(text);
+
+  // GATE TWO: did the model invent anything?
+  //
+  // An AI extraction can hallucinate an employer, a degree or a skill
+  // that appears nowhere in the document. Those would enter the profile
+  // indistinguishable from real facts and then be scored. Every claim is
+  // checked back against the source text and anything unfindable is
+  // dropped rather than stored.
+  const groundingReport = groundResumeExtraction(rawExtraction, text);
+  const extraction = groundingReport.grounded;
+
+  if (groundingReport.dropped.length > 0) {
+    // Field name and length only, never the value itself: `d.value` here
+    // is the user's own resume content (a name, an employer, an email) -
+    // logging it verbatim would put PII into server logs for every CV
+    // that trips this gate.
+    console.warn(
+      `[workly:grounding] dropped ${groundingReport.dropped.length} unverifiable claim(s) from a CV extraction ` +
+        `(grounded ${Math.round(groundingReport.groundedRatio * 100)}%): ` +
+        groundingReport.dropped
+          .slice(0, 8)
+          .map((d) => `${d.field}(len=${String(d.value ?? "").length})`)
+          .join(", "),
+    );
+  }
+  const profile = await getOrCreateCareerProfile(userId);
+
+  // Fill headline/summary only if the user hasn't already set their own -
+  // CV-derived text never overwrites a fact the user entered themselves.
+  // Same rule for years of experience: leaving it unset made every fit
+  // score report "You have 0 years of experience" straight after a CV
+  // listing seven years of work had been read successfully.
+  //
+  // Both merge into ONE upsertCareerProfile call carrying every field's
+  // current value. upsertCareerProfile is a documented whole-row
+  // overwrite (a field a caller omits is treated as a deliberate clear),
+  // so two separate partial calls here used to clobber each other -
+  // whichever ran second wiped location/currentRole/currentCompany/skills
+  // back to null, and if both conditions below were true in the same
+  // parse, the second call also erased the headline/summary the first
+  // call had just written.
+  const nextHeadline = !profile.headline && !profile.summary && extraction.headline ? extraction.headline : profile.headline;
+  const nextSummary = !profile.headline && !profile.summary && extraction.summary ? extraction.summary : profile.summary;
+  const nextYearsExperience =
+    profile.yearsExperience == null && extraction.yearsExperience != null
+      ? extraction.yearsExperience
+      : profile.yearsExperience;
+
+  // Same fill-only-blanks rule for where they live and what they do now:
+  // a CV that says "Bengaluru" and lists a current role used to leave
+  // Home location, Current role and Current company empty, so location
+  // matching and every "your current role" prompt started from nothing.
+  const currentExperience = extraction.experience.find((e) => e.isCurrent && e.title && e.company);
+  const nextLocation = profile.location || extraction.location?.trim() || null;
+  const nextCurrentRole = profile.currentRole || currentExperience?.title || null;
+  const nextCurrentCompany = profile.currentCompany || currentExperience?.company || null;
+
+  if (
+    nextHeadline !== profile.headline ||
+    nextSummary !== profile.summary ||
+    nextYearsExperience !== profile.yearsExperience ||
+    nextLocation !== profile.location ||
+    nextCurrentRole !== profile.currentRole ||
+    nextCurrentCompany !== profile.currentCompany
+  ) {
+    await upsertCareerProfile(userId, {
+      headline: nextHeadline,
+      summary: nextSummary,
+      location: nextLocation,
+      currentRole: nextCurrentRole,
+      currentCompany: nextCurrentCompany,
+      yearsExperience: nextYearsExperience,
+      skills: profile.skills,
+    });
+  }
+
+  await Promise.all([
+    ...extraction.education.map((e) =>
+      createEducation(profile.id, {
+        institution: e.institution,
+        degree: e.degree,
+        fieldOfStudy: e.fieldOfStudy,
+        startDate: parseDate(e.startDate),
+        endDate: parseDate(e.endDate),
+        description: e.description,
+        source: "CV",
+        isUncertain: e.isUncertain,
+      }),
+    ),
+    ...extraction.experience.map((e) =>
+      createExperience(profile.id, {
+        company: e.company,
+        title: e.title,
+        location: e.location,
+        startDate: parseDate(e.startDate),
+        endDate: parseDate(e.endDate),
+        isCurrent: e.isCurrent ?? false,
+        description: e.description,
+        source: "CV",
+        isUncertain: e.isUncertain,
+      }),
+    ),
+    ...extraction.projects.map((p) =>
+      createProject(profile.id, {
+        name: p.name,
+        role: p.role,
+        description: p.description,
+        url: p.url,
+        startDate: parseDate(p.startDate),
+        endDate: parseDate(p.endDate),
+        source: "CV",
+        isUncertain: p.isUncertain,
+      }),
+    ),
+    ...extraction.skills.map((s) =>
+      createSkill(profile.id, {
+        name: s.name,
+        category: s.category,
+        evidenceLevel: evidenceFromText(s.name, extraction),
+        source: "CV",
+        recency: "UNKNOWN",
+      }),
+    ),
+    ...extraction.achievements.map((a) =>
+      createAchievement(profile.id, {
+        title: a.title,
+        description: a.description,
+        date: parseDate(a.date),
+        source: "CV",
+        isUncertain: a.isUncertain,
+      }),
+    ),
+    ...extraction.certifications.map((c) =>
+      createCertification(profile.id, {
+        name: c.name,
+        issuer: c.issuer,
+        issueDate: parseDate(c.issueDate),
+        expiryDate: parseDate(c.expiryDate),
+        source: "CV",
+        isUncertain: c.isUncertain,
+      }),
+    ),
+    // Transferable skills are never stated facts - always AI_INFERENCE,
+    // always isTransferable: true, always carrying the rationale so the
+    // UI can show *why* it was suggested.
+    ...extraction.transferableSkills.map((t) =>
+      createSkill(profile.id, {
+        name: t.name,
+        category: t.category,
+        evidenceLevel: "INFERRED",
+        source: "AI_INFERENCE",
+        recency: "UNKNOWN",
+        isTransferable: true,
+        transferableRationale: t.rationale,
+      }),
+    ),
+  ]);
+
+  // Replaces rather than adds - see replaceCandidateValues for why a
+  // fresh parse supersedes the previous inference instead of piling on.
+  await replaceCandidateValues(
+    profile.id,
+    extraction.workValues.map((v) => ({
+      value: v.value,
+      confidence: v.confidence,
+      evidence: v.evidence,
+      source: "AI_INFERENCE" as const,
+    })),
+  );
+
+  return { extraction };
 }
