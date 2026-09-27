@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  const fromDomain = process.env.RESEND_FROM_DOMAIN || "workly.app";
+  const fromDomain = process.env.RESEND_FROM_DOMAIN || "work-ly.in";
   const testEmail = searchParams.get("testEmail");
   
   if (!apiKey) {

@@ -20,16 +20,20 @@ export const MAX_VERIFICATION_ATTEMPTS = 5;
 /**
  * Generates a fresh 6-digit verification code, stores its bcrypt hash
  * (never the code itself - same reasoning as password storage), and emails
- * it. The email send is fire-and-forget: a Resend outage shouldn't fail
- * signup or a resend request outright, since the code is still valid and a
- * transient send failure is retryable via "resend code".
+ * it. The send is AWAITED: on Vercel a promise left running after the
+ * response is often frozen before it finishes, which is how "Resend code"
+ * came to send nothing. A failed send never throws - it returns false so
+ * the caller can say so - since the code itself is still valid.
  */
-export async function issueVerificationCode(userId: string, email: string): Promise<void> {
+export async function issueVerificationCode(userId: string, email: string): Promise<boolean> {
   const code = randomInt(100000, 1000000).toString();
   const codeHash = await bcrypt.hash(code, 10);
   const expiresAt = new Date(Date.now() + VERIFICATION_CODE_TTL_MS);
   await setVerificationCode(userId, codeHash, expiresAt);
-  sendVerificationCodeEmail(email, code).catch((err) => {
+  try {
+    return await sendVerificationCodeEmail(email, code);
+  } catch (err) {
     console.error("[workly:email] Failed to send verification code:", err);
-  });
+    return false;
+  }
 }

@@ -41,7 +41,6 @@ export function SignInForm() {
                 >
                   Verify it now
                 </Link>
-                .
               </>
             )}
           </AlertDescription>

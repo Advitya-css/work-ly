@@ -15,9 +15,9 @@ const initialState: AuthActionState = {};
 export default function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; sent?: string }>;
 }) {
-  const { email } = use(searchParams);
+  const { email, sent } = use(searchParams);
   const [verifyState, verifyAction, verifying] = useActionState(verifyEmailCodeAction, initialState);
   // resendState.success only flips once the server action actually returns
   // - no local "optimistic" flag here, so a failed resend (rate limited, a
@@ -48,8 +48,11 @@ export default function VerifyEmailPage({
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Check your email</h1>
         <p className="text-sm text-muted-foreground">
-          We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>. Enter it below to
-          finish creating your account.
+          {sent === "1" ? "We just sent a 6-digit code to " : "Enter the 6-digit code we emailed to "}
+          <span className="font-medium text-foreground">{email}</span>.{" "}
+          {sent === "1"
+            ? "It can take a minute to arrive - check spam too."
+            : "No code, or it's more than 10 minutes old? Send a new one below."}
         </p>
       </div>
 

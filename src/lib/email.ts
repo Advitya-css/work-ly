@@ -17,14 +17,14 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 2) {
  * Sends a 6-digit email verification code using the Resend API.
  * Falls back to console.log in dev if RESEND_API_KEY is not set.
  */
-export async function sendVerificationCodeEmail(to: string, code: string): Promise<void> {
+export async function sendVerificationCodeEmail(to: string, code: string): Promise<boolean> {
   const apiKey = (process.env.RESEND_API_KEY || "").trim();
   if (!apiKey) {
     console.log(`[workly:email] No RESEND_API_KEY set. Verification code for ${to}: ${code}`);
-    return;
+    return false;
   }
 
-  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
@@ -57,7 +57,9 @@ export async function sendVerificationCodeEmail(to: string, code: string): Promi
   if (!res.ok) {
     const body = await res.text();
     console.error(`[workly:email] Resend API error (${res.status}):`, body);
+    return false;
   }
+  return true;
 }
 
 /**
@@ -74,7 +76,7 @@ export async function sendPasswordResetEmail(to: string, token: string): Promise
     return;
   }
 
-  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   const res = await fetchWithRetry("https://api.resend.com/emails", {
     method: "POST",
@@ -142,7 +144,7 @@ export async function sendJobAlertEmail(
     return;
   }
 
-  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
   const role = escapeHtml(targetRole);
 
   const matchRows = matches
@@ -210,7 +212,7 @@ export async function sendJobWatchEmail(to: string, matches: AlertMatch[], minFi
     console.log(`[workly:email] No RESEND_API_KEY set. Job watch for ${to} (${matches.length} matches)`);
     return;
   }
-  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "workly.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   const rows = matches
     .slice(0, 3)

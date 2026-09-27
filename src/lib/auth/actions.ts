@@ -102,7 +102,10 @@ export async function signInAction(
 ): Promise<AuthActionState> {
   const ip = (await headers()).get("x-forwarded-for") || "unknown";
   if (!(await checkRateLimit(`auth_login_${ip}`, 5, 60))) {
-    return { error: "Too many attempts. Please try again later." };
+    return {
+      error: "Too many attempts. Please try again later.",
+      values: { email: formData.get("email"), rememberMe: formData.get("rememberMe") === "on" },
+    };
   }
   const parsed = signInSchema.safeParse({
     email: formData.get("email"),
@@ -124,15 +127,26 @@ export async function signInAction(
   }
 
   const rememberMe = formData.get("rememberMe") === "on";
+  const values = { email: formData.get("email"), rememberMe };
   const result = await authProvider.signIn({ ...parsed.data, rememberMe });
-  if (result.needsVerification) {
-    return {
-      error: "Please verify your email before signing in.",
-      unverifiedEmail: result.verificationEmail,
-    };
+  if (result.needsVerification && result.verificationEmail) {
+    // The password was right; only the email is unconfirmed. Send a fresh
+    // code now and go straight to the code screen - the old "Verify it
+    // now" link opened that screen without sending anything, and an old
+    // code has usually expired (10 minutes). Capped per email so repeated
+    // sign-in attempts can't flood someone's inbox.
+    const email = result.verificationEmail;
+    let sent = false;
+    if (await checkRateLimit(`auth_signin_code_${email.toLowerCase()}`, 3, 600)) {
+      const { getUserByEmail } = await import("@/lib/db/users");
+      const { issueVerificationCode } = await import("@/lib/auth/verification");
+      const user = await getUserByEmail(email);
+      if (user && !user.emailVerified) sent = await issueVerificationCode(user.id, user.email);
+    }
+    redirect(`/verify-email?email=${encodeURIComponent(email)}${sent ? "&sent=1" : ""}`);
   }
   if (result.error) {
-    return { error: result.error };
+    return { error: result.error, values };
   }
 
   if (result.user && !result.user.onboardedAt) {
@@ -257,7 +271,10 @@ export async function resendVerificationAction(
 
   // Issuing a fresh code also resets the attempt counter, so someone who
   // used up their 5 guesses on the old code gets a clean slate here.
-  await issueVerificationCode(user.id, user.email);
+  const sent = await issueVerificationCode(user.id, user.email);
+  if (!sent) {
+    return { error: "We couldn't send the email just now. Please try again in a minute." };
+  }
 
   return { success: true };
 }
