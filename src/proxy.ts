@@ -74,6 +74,7 @@ const PROTECTED_PATHS = [
   "/settings",
   "/onboarding",
   "/redeem",
+  "/sprint-intake",
   // Both pages already check auth + resource ownership themselves - this is
   // defense in depth, not the only thing standing between them and an
   // unauthenticated request, but it means a future page added under either

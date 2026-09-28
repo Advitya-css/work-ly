@@ -6,12 +6,14 @@ import { CtaSection } from "@/components/marketing/cta-section";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { TrustSection } from "@/components/marketing/trust-section";
 import { getFoundingOffer } from "@/lib/payments/founding";
+import { getSale } from "@/lib/payments/sale";
 
 // The founding offer's spots-left count comes from Polar; refresh it every 5 minutes.
 export const revalidate = 300;
 
 export default async function LandingPage() {
-  const offer = await getFoundingOffer();
+  const [offer, liveSale] = await Promise.all([getFoundingOffer(), getSale()]);
+  const sale = liveSale ? (({ discountId: _omit, ...rest }) => rest)(liveSale) : null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -29,7 +31,7 @@ export default async function LandingPage() {
       <div className="flex flex-1 flex-col">
         <MarketingNavbar />
         <main className="flex-1">
-          <Hero offer={offer} />
+          <Hero offer={offer} sale={sale} />
           <TrustSection />
           <HowItWorks />
           <ComparisonSection />

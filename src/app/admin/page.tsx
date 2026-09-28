@@ -7,7 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BUSINESS } from "@/lib/business";
 import { getRefundStatus } from "@/lib/payments/refund-window";
-import { getFunnelReport } from "@/lib/attribution";
+import { getFunnelReport, getRevenueSince } from "@/lib/attribution";
+import { offerSales } from "@/lib/payments/offer-orders";
+import { OFFERS, OFFER_KEYS } from "@/lib/payments/offers";
+import { listSeatGroups } from "@/lib/payments/seat-codes";
+import { PLAN_CHECKPOINT, PLAN_GOAL_USD, PLAN_START, planStatus } from "@/lib/revenue-plan";
+import { getSprintSpots, listSprints } from "@/lib/sprint";
+import { SPRINT_STATUS_LABEL } from "@/lib/sprint-core";
+import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +43,26 @@ export default async function AdminDashboard({
   `);
 
   const { total_users, pro_users, total_pathways } = stats[0];
+
+  // The $10,000 plan: money kept since 28 Sep, sales by offer, Sprints,
+  // seat codes and partner payouts.
+  const [revenue, sales, sprints, spots, seatGroups] = await Promise.all([
+    getRevenueSince(PLAN_START).catch(() => null),
+    offerSales(PLAN_START).catch(() => null),
+    listSprints().catch(() => []),
+    getSprintSpots(),
+    listSeatGroups().catch(() => []),
+  ]);
+  const plan = planStatus((revenue?.paidCents ?? 0) - (revenue?.refundedCents ?? 0));
+  const offerOrders = sales ? OFFER_KEYS.reduce((n, k) => n + sales[k].orders, 0) : 0;
+  const offerCents = sales ? OFFER_KEYS.reduce((n, k) => n + sales[k].cents, 0) : 0;
+  const partners = revenue
+    ? Object.entries(revenue.bySource)
+        .filter(([source]) => source.startsWith("partner-"))
+        .sort((a, b) => b[1].cents - a[1].cents)
+    : [];
+  const newCode = typeof searchParams.newcode === "string" ? searchParams.newcode : null;
+  const dollars = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
   // Revenue by channel - the growth scoreboard. Ranked by revenue, not traffic.
   const funnel = await getFunnelReport(30).catch(() => null);
@@ -134,6 +161,214 @@ export default async function AdminDashboard({
             </CardContent>
           </Card>
         </div>
+
+        <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Revenue vs {dollars(PLAN_GOAL_USD)} by 31 Dec</h2>
+              <p className="text-sm text-zinc-400">
+                Paid orders since 28 Sep minus refunds, before {BUSINESS.paymentProvider}&apos;s fees.
+                {plan.week ? ` Week ${plan.week.week}: ${plan.week.job}.` : ""} {plan.daysLeft} days left.
+              </p>
+            </div>
+            <p className="text-3xl font-bold tabular-nums text-white">{usd(Math.round(plan.bankedUsd * 100))}</p>
+          </div>
+          <div className="h-3 w-full overflow-hidden rounded-full bg-zinc-800" role="img" aria-label={`${plan.goalPct}% of the goal`}>
+            <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(1, plan.goalPct)}%` }} />
+          </div>
+          <div className="grid gap-3 text-sm sm:grid-cols-3">
+            <p className="rounded-md border border-zinc-800 bg-zinc-950 p-3 text-zinc-300">
+              Plan says today: <span className="font-semibold text-white">{dollars(plan.targetTodayUsd)}</span>
+            </p>
+            <p className="rounded-md border border-zinc-800 bg-zinc-950 p-3 text-zinc-300">
+              {plan.aheadUsd >= 0 ? "Ahead by " : "Behind by "}
+              <span className={plan.aheadUsd >= 0 ? "font-semibold text-green-400" : "font-semibold text-amber-400"}>
+                {dollars(Math.abs(plan.aheadUsd))}
+              </span>
+            </p>
+            <p className="rounded-md border border-zinc-800 bg-zinc-950 p-3 text-zinc-300">
+              Checkpoint 30 Nov: <span className="font-semibold text-white">{dollars(PLAN_CHECKPOINT.usd)}</span>
+              {revenue && revenue.refundedCents > 0 ? ` · refunds ${usd(revenue.refundedCents)}` : ""}
+            </p>
+          </div>
+          {sales && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Sold since 28 Sep</th>
+                    <th className="py-2 pr-4 text-right font-medium">Orders</th>
+                    <th className="py-2 text-right font-medium">Revenue</th>
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  <tr className="border-t border-zinc-800">
+                    <td className="py-2 pr-4 text-white">Pro plans (Monthly, 3-Month, Yearly)</td>
+                    <td className="py-2 pr-4 text-right">{Math.max(0, (revenue?.orders ?? 0) - offerOrders)}</td>
+                    <td className="py-2 text-right">{usd(Math.max(0, (revenue?.paidCents ?? 0) - offerCents))}</td>
+                  </tr>
+                  {OFFER_KEYS.map((k) => (
+                    <tr key={k} className="border-t border-zinc-800">
+                      <td className="py-2 pr-4 text-white">
+                        {OFFERS[k].name} <span className="text-zinc-500">({OFFERS[k].price})</span>
+                      </td>
+                      <td className="py-2 pr-4 text-right">{sales[k].orders}</td>
+                      <td className="py-2 text-right">{usd(sales[k].cents)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section id="sprints" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Application Sprints</h2>
+              <p className="text-sm text-zinc-400">
+                {spots.open} of {spots.capacity} spots open. /sprint shows this number; mark a Sprint delivered to free its spot.
+              </p>
+            </div>
+            <form action={setSprintCapacityAction} className="flex items-center gap-2">
+              <input type="hidden" name="key" value={key as string} />
+              <label className="text-sm text-zinc-400" htmlFor="capacity">Spots at once</label>
+              <input id="capacity" name="capacity" type="number" min={0} max={20} defaultValue={spots.capacity} className="w-20 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-white" />
+              <button type="submit" className="rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-white hover:bg-zinc-700">Save</button>
+            </form>
+          </div>
+          {sprints.length === 0 ? (
+            <p className="text-sm text-zinc-400">No Sprints yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Paid</th>
+                    <th className="py-2 pr-4 font-medium">Buyer</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 font-medium"><span className="sr-only">Action</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800">
+                  {sprints.map((sp) => (
+                    <tr key={sp.key}>
+                      <td className="py-2 pr-4 text-zinc-400 whitespace-nowrap">{sp.day}</td>
+                      <td className="py-2 pr-4 text-white">{sp.email ?? sp.userId}{sp.name ? <span className="text-zinc-500"> · {sp.name}</span> : null}</td>
+                      <td className="py-2 pr-4 text-zinc-300">{SPRINT_STATUS_LABEL[sp.status]}</td>
+                      <td className="py-2 text-right">
+                        {sp.status !== "delivered" && (
+                          <form action={markSprintDeliveredAction}>
+                            <input type="hidden" name="key" value={key as string} />
+                            <input type="hidden" name="sprint" value={sp.key} />
+                            <button type="submit" className="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-200 hover:bg-zinc-800">Mark delivered</button>
+                          </form>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="text-xs text-zinc-500">Intake forms arrive by email and are saved as SPRINT_INTAKE feedback on the buyer&apos;s account.</p>
+        </section>
+
+        <section id="seat-codes" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Seat codes</h2>
+            <p className="text-sm text-zinc-400">
+              One code, many people: each redeems at work-ly.in/redeem?code=… for Pro on their own account. Paid packs make their
+              own code; make one here for a free trial pass or a deal closed by email.
+            </p>
+          </div>
+          {newCode && (
+            <p className="rounded-md border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-300">
+              New code: <span className="font-mono font-semibold text-white select-all">{newCode}</span> · link:{" "}
+              <span className="select-all">{`${BUSINESS.url}/redeem?code=${newCode}`}</span>
+            </p>
+          )}
+          <form action={createSeatCodeAction} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <input type="hidden" name="key" value={key as string} />
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              Seats
+              <input name="seats" type="number" min={1} max={500} defaultValue={1} className="w-24 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-white" />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              Months each
+              <input name="months" type="number" min={1} max={12} defaultValue={3} className="w-24 rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-white" />
+            </label>
+            <label className="flex flex-1 flex-col gap-1 text-xs text-zinc-400">
+              Label (who it&apos;s for)
+              <input name="label" required maxLength={40} placeholder="e.g. coach-trial-jane" className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-sm text-white placeholder:text-zinc-600" />
+            </label>
+            <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Make code</button>
+          </form>
+          {seatGroups.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Code</th>
+                    <th className="py-2 pr-4 font-medium">Label</th>
+                    <th className="py-2 pr-4 text-right font-medium">Used</th>
+                    <th className="py-2 pr-4 text-right font-medium">Months</th>
+                    <th className="py-2 font-medium">Made</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800 tabular-nums">
+                  {seatGroups.map((g) => (
+                    <tr key={g.group}>
+                      <td className="py-2 pr-4 font-mono text-white select-all">{g.group}</td>
+                      <td className="py-2 pr-4 text-zinc-400">{g.label}</td>
+                      <td className="py-2 pr-4 text-right text-zinc-200">
+                        {g.used} / {g.seats}
+                        {g.disabled > 0 ? <span className="text-zinc-500"> ({g.disabled} off)</span> : null}
+                      </td>
+                      <td className="py-2 pr-4 text-right text-zinc-400">{g.months}</td>
+                      <td className="py-2 text-zinc-400 whitespace-nowrap">{g.createdAt ? g.createdAt.toLocaleDateString("en-GB") : "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Partner payouts (30%)</h2>
+            <p className="text-sm text-zinc-400">
+              A partner&apos;s link is work-ly.in/?ref=partner-<em>name</em>. Orders from visitors who first arrived through it, since 28 Sep.
+            </p>
+          </div>
+          {partners.length === 0 ? (
+            <p className="text-sm text-zinc-400">No partner sales yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-zinc-400">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Partner</th>
+                    <th className="py-2 pr-4 text-right font-medium">Orders</th>
+                    <th className="py-2 pr-4 text-right font-medium">Revenue</th>
+                    <th className="py-2 text-right font-medium">Owed (30%)</th>
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  {partners.map(([source, p]) => (
+                    <tr key={source} className="border-t border-zinc-800">
+                      <td className="py-2 pr-4 text-white">{source.replace(/^partner-/, "")}</td>
+                      <td className="py-2 pr-4 text-right">{p.orders}</td>
+                      <td className="py-2 pr-4 text-right">{usd(p.cents)}</td>
+                      <td className="py-2 text-right font-semibold text-white">{usd(Math.round(p.cents * 0.3))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">

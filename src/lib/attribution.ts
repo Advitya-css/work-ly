@@ -97,3 +97,56 @@ export async function getFunnelReport(days = 30): Promise<FunnelReport> {
     days,
   );
 }
+
+/**
+ * Money banked since a day: paid orders minus refunds, all channels, plus
+ * paid orders and revenue by first-touch source (for partner payouts).
+ */
+export async function getRevenueSince(sinceDay: string): Promise<{
+  paidCents: number;
+  refundedCents: number;
+  orders: number;
+  bySource: Record<string, { orders: number; cents: number }>;
+}> {
+  const { rows } = await pool.query<{ key: string; count: number }>(
+    `SELECT key, count FROM rate_limits WHERE key LIKE 'funnel:paid:%' OR key LIKE 'funnel:refund:%'`,
+  );
+  let paidCents = 0;
+  let refundedCents = 0;
+  let orders = 0;
+  const bySource: Record<string, { orders: number; cents: number }> = {};
+  for (const r of rows) {
+    const [, step, day, source] = r.key.split(":");
+    if (!day || day < sinceDay) continue;
+    const cents = Number(r.count) || 0;
+    if (step === "refund") {
+      refundedCents += cents;
+      continue;
+    }
+    paidCents += cents;
+    orders += 1;
+    const s = source || "unknown";
+    bySource[s] ??= { orders: 0, cents: 0 };
+    bySource[s].orders += 1;
+    bySource[s].cents += cents;
+  }
+  return { paidCents, refundedCents, orders, bySource };
+}
+
+/**
+ * A refund (full or partial), once per order, dated by the ORDER's day so a
+ * repeated webhook never counts it twice: funnel:refund:<day>:<orderId> =
+ * the largest amount refunded so far, in cents.
+ */
+export async function recordRefund(orderId: string, cents: number, orderCreatedAt: string): Promise<void> {
+  try {
+    const key = `funnel:refund:${(orderCreatedAt || new Date().toISOString()).slice(0, 10)}:${orderId}`;
+    await pool.query(
+      `INSERT INTO rate_limits (key, count, expires_at) VALUES ($1, $2, $3)
+       ON CONFLICT (key) DO UPDATE SET count = GREATEST(rate_limits.count, EXCLUDED.count)`,
+      [key, Math.max(0, Math.round(cents)), FOREVER],
+    );
+  } catch (error) {
+    console.warn("[workly:funnel] could not record refund:", error instanceof Error ? error.message : error);
+  }
+}

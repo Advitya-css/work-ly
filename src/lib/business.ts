@@ -34,7 +34,7 @@ export const BUSINESS = {
   paymentProvider: "Polar",
   providerIsMerchantOfRecord: true,
   /** Shown as "Last updated" on the Terms and Refund policy. */
-  legalUpdated: "26 September 2026",
+  legalUpdated: "28 September 2026",
 } as const;
 
 /**

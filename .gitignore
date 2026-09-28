@@ -44,3 +44,6 @@ next-env.d.ts
 # locally-stored private uploads (resumes) — never committed
 /storage/private/
 _to_delete/
+
+# prospect lists and other private growth notes - never committed
+growth-private/

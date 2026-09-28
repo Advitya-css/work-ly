@@ -138,6 +138,8 @@ export interface FunnelReport {
   revenueLast7Cents: number;
 }
 
+const FUNNEL_STEPS = new Set(["grader", "signup", "paywall", "checkout", "paid"]);
+
 /** Pure: aggregates stored funnel rows into a per-channel report. Exported for tests. */
 export function buildFunnelReport(rows: { key: string; count: number }[], days: number, now = new Date()): FunnelReport {
   const since = new Date(now.getTime() - days * 86_400_000).toISOString().slice(0, 10);
@@ -149,6 +151,7 @@ export function buildFunnelReport(rows: { key: string; count: number }[], days: 
   for (const { key, count } of rows) {
     const [prefix, step, day, source, campaign] = key.split(":");
     if (prefix !== "funnel" || !day || !source) continue;
+    if (!FUNNEL_STEPS.has(step)) continue; // e.g. refunds, counted elsewhere
     if (day < since) continue;
     const camp = campaign === "none" ? "" : campaign ?? "";
     const id = channelLabel(source, camp);

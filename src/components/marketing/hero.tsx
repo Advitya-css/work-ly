@@ -3,15 +3,17 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FoundingBanner } from "@/components/marketing/founding-banner";
+import { SaleBanner } from "@/components/marketing/sale-banner";
 import { SampleReport } from "@/components/marketing/sample-report";
 import type { PublicFoundingOffer } from "@/lib/payments/founding-core";
+import type { PublicSale } from "@/lib/payments/sale-core";
 
 /**
  * The homepage leads with the one thing a visitor can do in 30 seconds
  * without an account: check their resume against a job. That promise used
  * to live only on /free-grader, linked from the footer.
  */
-export function Hero({ offer }: { offer: PublicFoundingOffer | null }) {
+export function Hero({ offer, sale = null }: { offer: PublicFoundingOffer | null; sale?: PublicSale | null }) {
   return (
     <section className="relative overflow-hidden px-4 pt-16 pb-20 sm:px-6 sm:pt-24">
       <div
@@ -19,7 +21,7 @@ export function Hero({ offer }: { offer: PublicFoundingOffer | null }) {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,var(--accent),transparent)] opacity-70"
       />
       <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-        <FoundingBanner offer={offer} className="mb-6" />
+        {sale ? <SaleBanner sale={sale} className="mb-6" /> : <FoundingBanner offer={offer} className="mb-6" />}
         <span className="mb-5 inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
           Free check · no signup needed
         </span>

@@ -4,6 +4,7 @@ import { Polar } from "@polar-sh/sdk";
 
 import type { PolarPlan } from "@/lib/payments/polar-plans";
 import { grantForOrder, normalizeOrder, orderBelongsTo, type PaidOrder } from "@/lib/payments/polar-grant";
+import { offerForProduct } from "@/lib/payments/offers";
 
 /**
  * ASKING POLAR WHAT THIS USER HAS PAID FOR.
@@ -77,6 +78,9 @@ export async function syncPolarPurchases(user: SyncUser, checkoutId?: string | n
   let granted: PolarPlan | null = null;
   for (const order of orders) {
     try {
+      // Offers (the Sprint, seat packs) are delivered by their own pages
+      // and the webhook - not a Pro plan to grant here.
+      if (offerForProduct(order.productId)) continue;
       const plan = await grantForOrder(order, user.id);
       if (plan) granted = plan;
     } catch (error) {

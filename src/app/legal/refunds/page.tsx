@@ -51,6 +51,7 @@ export default function RefundsPage() {
       <p>
         This policy is part of our <Link href="/legal/terms" className="text-foreground underline underline-offset-2">Terms of Service</Link>{" "}
         and applies to every paid plan: {PAID_PLANS.map((p) => `${p.name} (${p.price}${p.priceSuffix ?? ""})`).join(", ")}.
+        The Application Sprint, seat packs and gift passes have their own terms in section 5.
       </p>
 
       <Section title={`1. The ${days}-day guarantee`}>
@@ -113,7 +114,31 @@ export default function RefundsPage() {
         </ul>
       </Section>
 
-      <Section title="5. How refunds are paid">
+      <Section title="5. The Application Sprint, seat packs and gift passes">
+        <p>These have their own terms instead of the guarantee in section 1:</p>
+        <ul className="flex list-disc flex-col gap-2 pl-6">
+          <li>
+            <strong className="text-foreground">Application Sprint.</strong> If we don&apos;t deliver five finished
+            applications within 14 days of receiving your completed intake form, we refund the Sprint in full. You can
+            also cancel for a full refund any time before you send the intake form. A refunded Sprint ends the Pro access
+            that came with it.
+          </li>
+          <li>
+            <strong className="text-foreground">Coach packs, cohort licences and gift passes.</strong> A full refund within{" "}
+            {days} days of purchase, as long as no one has redeemed the code yet.
+          </li>
+          <li>
+            <strong className="text-foreground">Cohort pilot.</strong> Ask within 45 days of purchase: we refund it in full
+            if fewer than 10 of its 25 seats were redeemed in the first 30 days.
+          </li>
+          <li>
+            When a pack is refunded, its unused seats are switched off. People who already redeemed a seat keep their
+            access for the time they were given.
+          </li>
+        </ul>
+      </Section>
+
+      <Section title="6. How refunds are paid">
         <ul className="flex list-disc flex-col gap-2 pl-6">
           <li>We confirm your request within 2 business days and issue the refund within 5 business days of approving it.</li>
           <li>
@@ -131,28 +156,28 @@ export default function RefundsPage() {
         </ul>
       </Section>
 
-      <Section title="6. Chargebacks">
+      <Section title="7. Chargebacks">
         <p>
           Please contact us before disputing a charge with your bank - we&apos;re quick and you&apos;ll usually get your money
           back sooner. If a valid charge is disputed, paid access may be paused until the dispute is resolved.
         </p>
       </Section>
 
-      <Section title="7. Abuse">
+      <Section title="8. Abuse">
         <p>
           We may decline refunds where there&apos;s clear evidence of abuse, such as repeated buy-and-refund cycles or
-          multiple accounts opened to reuse the guarantee. This never affects the refunds in section 4 or your legal rights.
+          multiple accounts opened to reuse the guarantee. This never affects the refunds in sections 4 and 5 or your legal rights.
         </p>
       </Section>
 
-      <Section title="8. Your legal rights">
+      <Section title="9. Your legal rights">
         <p>
           This policy adds to, and never reduces, any mandatory consumer rights you have where you live - for example,
           statutory rights to cancel a digital service or to a remedy for a faulty one.
         </p>
       </Section>
 
-      <Section title="9. Contact">
+      <Section title="10. Contact">
         <p>
           Refund and billing questions: <Mail />. We reply {BUSINESS.responseTime}. See also our{" "}
           <Link href="/contact" className="text-foreground underline underline-offset-2">

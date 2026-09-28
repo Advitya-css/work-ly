@@ -354,3 +354,92 @@ export async function sendLifecycleEmail(to: string, email: LifecycleEmail): Pro
   }
   return true;
 }
+
+export interface ReceiptEmail {
+  subject: string;
+  heading: string;
+  paragraphs: string[];
+  /** A code shown large and easy to copy (a seat code). */
+  code?: string;
+  cta?: { label: string; path: string };
+}
+
+/**
+ * A transactional email about something the person bought (a Sprint, a
+ * seat code). No unsubscribe footer: it's a receipt, not marketing.
+ * Replies go to the support inbox. Returns whether Resend accepted it.
+ */
+export async function sendReceiptEmail(to: string, email: ReceiptEmail): Promise<boolean> {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    console.log(`[workly:email] No RESEND_API_KEY set. Receipt "${email.subject}" for ${to}${email.code ? ` (code ${email.code})` : ""}`);
+    return false;
+  }
+  const appUrl = appBaseUrl();
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const paragraphs = email.paragraphs
+    .map((p) => `<p style="font-size: 15px; color: #3d3935; line-height: 1.55; margin: 0 0 14px;">${escapeHtml(p)}</p>`)
+    .join("");
+  const code = email.code
+    ? `<p style="font-family: ui-monospace, Menlo, monospace; font-size: 24px; letter-spacing: 2px; font-weight: 700; color: #1c1a19; background: #f6f1ee; border-radius: 8px; padding: 14px 18px; margin: 4px 0 18px; text-align: center;">${escapeHtml(email.code)}</p>`
+    : "";
+  const cta = email.cta
+    ? `<a href="${appUrl}${email.cta.path}" style="display: inline-block; background: #7a2e55; color: #fff; padding: 12px 26px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; margin: 8px 0 20px;">${escapeHtml(email.cta.label)}</a>`
+    : "";
+
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: `Advitya at Work-ly <noreply@${fromDomain}>`,
+      to,
+      reply_to: BUSINESS.supportEmail,
+      subject: email.subject,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 36px 20px;">
+          <h1 style="font-size: 20px; color: #1c1a19; margin: 0 0 16px;">${escapeHtml(email.heading)}</h1>
+          ${paragraphs}
+          ${code}
+          ${cta}
+          <p style="font-size: 15px; color: #3d3935; line-height: 1.55; margin: 0;">Advitya<br/><span style="color: #8a817b; font-size: 13px;">Founder, Work-ly</span></p>
+          <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
+            You're getting this because of a purchase on Work-ly. Reply to this email with any question.
+          </p>
+        </div>
+      `,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[workly:email] Resend API error (${res.status}):`, body);
+    return false;
+  }
+  return true;
+}
+
+/** A short plain note to the founder's inbox: a new Sprint, a seat pack sold, an intake. */
+export async function notifyFounder(subject: string, lines: string[]): Promise<boolean> {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    console.log(`[workly:email] No RESEND_API_KEY set. Founder note "${subject}":\n${lines.join("\n")}`);
+    return false;
+  }
+  const fromDomain = (process.env.RESEND_FROM_DOMAIN || "work-ly.in").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const res = await fetchWithRetry("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: `Work-ly <noreply@${fromDomain}>`,
+      to: process.env.FOUNDER_NOTIFY_EMAIL || BUSINESS.supportEmail,
+      subject: `[Work-ly] ${subject}`,
+      text: lines.join("\n"),
+    }),
+  });
+  if (!res.ok) {
+    console.error(`[workly:email] founder note failed (${res.status}):`, await res.text());
+    return false;
+  }
+  return true;
+}
+
+export { appBaseUrl };

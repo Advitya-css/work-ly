@@ -3,10 +3,29 @@
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db/pool";
 import { revalidatePath } from "next/cache";
+import { isGroupCode, normalizeCode } from "@/lib/payments/seat-codes-core";
+import { redeemSeat } from "@/lib/payments/seat-codes";
 
 export async function redeemBetaCodeAction(code: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
+
+  // SEAT CODES (TEAM-..., COACH-..., GIFT-...): one code that several
+  // people redeem - a coach's clients, a cohort, a gifted pass. Works for
+  // anyone, Pro or not: the months are added on top of any Pro time left.
+  const seatCode = normalizeCode(code);
+  if (isGroupCode(seatCode)) {
+    try {
+      const result = await redeemSeat(user.id, seatCode);
+      if (!result.ok) return { error: result.error };
+      revalidatePath("/", "layout");
+      return { success: true };
+    } catch (error) {
+      console.error("[workly:seats] redeem failed:", error);
+      return { error: "Failed to redeem code. Please try again." };
+    }
+  }
+
   if (user.isPro && user.proPlan !== "trial") return { success: true };
 
   try {

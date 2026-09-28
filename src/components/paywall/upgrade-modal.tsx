@@ -7,7 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createPolarCheckout } from "@/lib/payments/polar";
-import { getFoundingOfferAction } from "@/lib/payments/founding-actions";
+import { getFoundingOfferAction, getSaleAction } from "@/lib/payments/founding-actions";
+import { formatCents, saleEndDay, salePriceCents, type PublicSale } from "@/lib/payments/sale-core";
+import { PAID_PLANS } from "@/lib/pricing";
+
+const planFor = (interval: string) => PAID_PLANS.find((p) => p.interval === interval);
 import { foundingSummary, type PublicFoundingOffer } from "@/lib/payments/founding-core";
 import { redeemBetaCodeAction } from "@/lib/beta/actions";
 import { BUSINESS, GUARANTEE, RECOMMENDED_BADGE } from "@/lib/business";
@@ -36,6 +40,7 @@ export function UpgradeModal({
   const [agreed, setAgreed] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [founding, setFounding] = useState<PublicFoundingOffer | null>(null);
+  const [sale, setSale] = useState<PublicSale | null>(null);
   // A code box beside the pay button sends buyers off to hunt for codes,
   // so it only appears for someone who arrived on a code link (?code=).
   // Everyone else redeems at /redeem.
@@ -58,6 +63,11 @@ export function UpgradeModal({
     getFoundingOfferAction()
       .then((offer) => {
         if (!cancelled) setFounding(offer);
+      })
+      .catch(() => undefined);
+    getSaleAction()
+      .then((live) => {
+        if (!cancelled) setSale(live);
       })
       .catch(() => undefined);
     return () => {
@@ -127,6 +137,13 @@ export function UpgradeModal({
 
         <div className="flex flex-col gap-4 py-4 relative z-10">
           {preview}
+          {sale && (
+            <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+              <span className="font-semibold">{sale.name}:</span> the {planFor(sale.plan)?.name ?? "plan"} is{" "}
+              {formatCents(salePriceCents(planFor(sale.plan)?.priceUsd ?? 0, sale))} until {saleEndDay(sale.endsAt)}. Applied
+              automatically at checkout.
+            </p>
+          )}
           {founding && (
             <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
               <span className="font-semibold">Founding members:</span> {foundingSummary(founding, { forWhom: false })}.
@@ -182,8 +199,10 @@ export function UpgradeModal({
               </div>
               <div className="flex flex-col items-end">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs text-muted-foreground line-through">$240</span>
-                  <span className="font-bold text-foreground">$149.99</span>
+                  <span className="text-xs text-muted-foreground line-through">{sale?.plan === "yearly" ? "$149.99" : "$240"}</span>
+                  <span className="font-bold text-foreground">
+                    {sale?.plan === "yearly" ? formatCents(salePriceCents(planFor("yearly")?.priceUsd ?? 149.99, sale)) : "$149.99"}
+                  </span>
                 </div>
                 <span className="text-xs font-medium text-green-600">Save 37%</span>
               </div>

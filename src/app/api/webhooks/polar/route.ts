@@ -4,6 +4,9 @@ import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks"
 import { pool } from "@/lib/db/pool";
 import { planForProduct } from "@/lib/payments/polar-plans";
 import { grantForOrder, normalizeOrder, userIdForOrder } from "@/lib/payments/polar-grant";
+import { offerForProduct } from "@/lib/payments/offers";
+import { recordRefund } from "@/lib/attribution";
+import { deliverOfferOrder, refundOfferOrder } from "@/lib/payments/offer-orders";
 
 /**
  * POLAR WEBHOOK.
@@ -31,6 +34,13 @@ interface WebhookEvent {
 async function handleOrderPaid(data: unknown): Promise<NextResponse | null> {
   const order = normalizeOrder(data);
   if (!order || !order.paid) return null; // pending: wait for the paid event
+  // The Sprint and the seat packs (lib/payments/offers.ts). A failure
+  // throws, which answers 500 so Polar retries.
+  const offer = offerForProduct(order.productId);
+  if (offer) {
+    await deliverOfferOrder(order, offer);
+    return null;
+  }
   if (!planForProduct(order.productId)) {
     console.error(`[workly:polar] order ${order.id} is for an unknown product ${order.productId}`);
     return NextResponse.json({ error: "Unknown product" }, { status: 400 });
@@ -83,8 +93,20 @@ export async function POST(req: Request) {
 
       case "order.refunded": {
         const order = normalizeOrder(event.data);
+        // Counted against revenue whatever the size (the $10,000 plan tracks money kept).
+        if (order) {
+          const raw = event.data as Record<string, unknown> | null;
+          const refunded = Number(raw?.refundedAmount ?? raw?.refunded_amount ?? 0);
+          if (refunded > 0) await recordRefund(order.id, refunded, order.createdAt);
+        }
         // Only a full refund ends access; a partial one is a goodwill credit.
         if (!order || order.status !== "refunded") break;
+        const refundedOffer = offerForProduct(order.productId);
+        if (refundedOffer) {
+          await refundOfferOrder(order, refundedOffer);
+          console.log(`[workly:polar] order ${order.id} refunded: ${refundedOffer} switched off`);
+          break;
+        }
         const plan = planForProduct(order.productId);
         const userId = await userIdForOrder(order);
         if (userId && plan) {

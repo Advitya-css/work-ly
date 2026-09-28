@@ -8,6 +8,7 @@ import { POLAR_PRODUCT_IDS } from "@/lib/payments/polar-plans";
 import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 import { getFoundingOffer } from "@/lib/payments/founding";
+import { getSale } from "@/lib/payments/sale";
 import { currentAttribution, recordFunnelStep } from "@/lib/attribution";
 import { markCheckoutOpened } from "@/lib/lifecycle";
 
@@ -40,8 +41,12 @@ export async function createPolarCheckout(
       throw new Error("Invalid plan selected");
     }
 
-    // The founding-member discount, while Polar says it's still open.
-    const founding = await getFoundingOffer();
+    // A sale on this plan (Black Friday) wins; otherwise the founding-member
+    // discount, while Polar says it's still open. Never both: Polar applies
+    // one discount per checkout, and the site never advertises them stacked.
+    const sale = await getSale();
+    const founding = sale && sale.plan === plan ? null : await getFoundingOffer();
+    const discountId = sale && sale.plan === plan ? sale.discountId : founding?.discountId ?? null;
     // The channel that first brought this buyer, carried onto the order so
     // revenue can be credited to it (see lib/attribution.ts).
     const attribution = await currentAttribution();
@@ -73,12 +78,13 @@ export async function createPolarCheckout(
 
     let result;
     try {
-      result = await polar.checkouts.create(founding ? { ...checkout, discountId: founding.discountId } : checkout);
+      result = await polar.checkouts.create(discountId ? { ...checkout, discountId } : checkout);
     } catch (error) {
-      // The last founding spot can go between the page loading and this
-      // click. Never block a purchase over it: check out at full price.
-      if (!founding) throw error;
-      console.warn("[workly:founding] checkout with the founding discount failed, retrying without it:", error);
+      // The last founding spot (or the sale's last minute) can go between
+      // the page loading and this click. Never block a purchase over it:
+      // check out at full price.
+      if (!discountId) throw error;
+      console.warn("[workly:founding] checkout with a discount failed, retrying without it:", error);
       result = await polar.checkouts.create(checkout);
     }
 

@@ -128,6 +128,7 @@ async function buildEmail(kind: LifecycleKind, user: Candidate, checkoutPlan: st
         hi,
         `You started upgrading to the ${plan.name} but didn't finish. If something got in the way - the price, a question, or the checkout itself - just reply and tell me. I read every email.`,
         `Every first purchase comes with a ${GUARANTEE.sentence}.`,
+        "If you'd rather have a person check your applications with you, the 14-day Application Sprint includes 3 months of Pro: work-ly.in/sprint",
       ],
       cta: { label: `Finish upgrading to the ${plan.name}`, path: `/settings?plan=${plan.interval}#plan` },
       unsubscribePath: unsub,

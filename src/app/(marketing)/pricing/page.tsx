@@ -9,6 +9,9 @@ import { FREE_FEATURES, PAID_PLANS, PRO_FEATURES, YEARLY_ONLY_FEATURES } from "@
 import { getFoundingOffer } from "@/lib/payments/founding";
 import { foundingPriceLine } from "@/lib/payments/founding-core";
 import { FoundingBanner } from "@/components/marketing/founding-banner";
+import { SaleBanner } from "@/components/marketing/sale-banner";
+import { getSale } from "@/lib/payments/sale";
+import { formatCents, saleEndDay, salePriceCents } from "@/lib/payments/sale-core";
 
 // The founding offer's spots-left count comes from Polar; refresh it every 5 minutes.
 export const revalidate = 300;
@@ -42,7 +45,7 @@ const FAQ = [
   },
   {
     q: "Is Work-ly a job board or a recruiter?",
-    a: "No. Work-ly is software you use for your own career. Our only customers are individuals. We don't charge employers, sell or post job listings, place candidates, or run ads.",
+    a: "No. Work-ly is software you use for your own career. Our customers are job seekers, and the coaches and training programs that buy passes for the people they support. We don't charge employers, sell or post job listings, place candidates, or run ads.",
   },
   {
     q: "Does Work-ly guarantee I'll get a job?",
@@ -55,7 +58,8 @@ const FAQ = [
  * data the in-app pricing cards use - so the two can never disagree.
  */
 export default async function PricingPage() {
-  const offer = await getFoundingOffer();
+  const [offer, liveSale] = await Promise.all([getFoundingOffer(), getSale()]);
+  const sale = liveSale ? (({ discountId: _omit, ...rest }) => rest)(liveSale) : null;
   const cards = [
     {
       key: "free",
@@ -82,7 +86,13 @@ export default async function PricingPage() {
       terms: plan.terms,
       features: plan.features,
       featured: Boolean(plan.featured),
-      founding: offer ? foundingPriceLine(plan, offer) : null,
+      // A sale on this plan replaces the founding price (they never stack).
+      founding:
+        sale && sale.plan === plan.interval
+          ? `${sale.name}: ${formatCents(salePriceCents(plan.priceUsd, sale))} until ${saleEndDay(sale.endsAt)}`
+          : offer
+            ? foundingPriceLine(plan, offer)
+            : null,
       // Checkout needs an account: signed-in visitors land on the plans in
       // Settings; everyone else signs in (or signs up from there) first.
       cta: { label: `Get ${plan.name}`, href: `/upgrade?plan=${plan.interval}` },
@@ -96,6 +106,7 @@ export default async function PricingPage() {
         <p className="text-balance text-muted-foreground">
           Start free. Upgrade when you&apos;re applying seriously. Every paid plan comes with a {GUARANTEE.sentence}.
         </p>
+        {sale && <SaleBanner sale={sale} href={null} className="mt-2" />}
         <FoundingBanner offer={offer} href={null} className="mt-2" />
       </header>
 
@@ -163,6 +174,21 @@ export default async function PricingPage() {
             Refund policy
           </Link>
         </p>
+      </section>
+
+      <section aria-label="Other ways to buy" className="mx-auto grid w-full max-w-4xl gap-4 sm:grid-cols-3">
+        <Link href="/sprint" className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50">
+          <p className="font-semibold text-foreground">Application Sprint</p>
+          <p className="mt-1 text-sm text-muted-foreground">Five applications checked with you by a person in 14 days, plus 3 months of Pro.</p>
+        </Link>
+        <Link href="/gift" className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50">
+          <p className="font-semibold text-foreground">Gift a 3-Month Pass</p>
+          <p className="mt-1 text-sm text-muted-foreground">For a friend who&apos;s job hunting. It starts when they redeem it.</p>
+        </Link>
+        <Link href="/for-coaches" className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50">
+          <p className="font-semibold text-foreground">For coaches and cohorts</p>
+          <p className="mt-1 text-sm text-muted-foreground">Seat packs for your clients or students, from $25 a seat.</p>
+        </Link>
       </section>
 
       <section aria-labelledby="included" className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2">

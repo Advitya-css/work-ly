@@ -20,7 +20,7 @@ const DOES = [
 ];
 
 const DOES_NOT = [
-  "Charge employers, recruiters or anyone else - you are the only customer",
+  "Charge employers or recruiters - we're paid only by job seekers and the coaches and programs that buy passes for them",
   "Post, sell or advertise job listings, or run ads of any kind",
   "Place candidates, act as a recruiter or take a fee when you're hired",
   "Promise interviews, offers or any hiring outcome",

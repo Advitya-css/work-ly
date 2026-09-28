@@ -66,6 +66,9 @@ export function TailorUpsellCard({ preview, resumeHref }: { preview?: PreviewDat
             <Link href={resumeHref}>See what you&apos;d get first</Link>
           </Button>
         )}
+        <Link href="/sprint" className="text-center text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+          Want a person to check it with you? The Application Sprint
+        </Link>
       </div>
     </section>
   );

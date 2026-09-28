@@ -11,6 +11,10 @@ const GROUPS = [
       { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
       { href: "/free-grader", label: "Free resume grader" },
+      { href: "/sprint", label: "Application Sprint" },
+      { href: "/gift", label: "Gift a pass" },
+      { href: "/for-coaches", label: "For coaches" },
+      { href: "/for-teams", label: "For bootcamps and career centres" },
     ],
   },
   {
@@ -45,7 +49,8 @@ export function MarketingFooter() {
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">
-            AI career software for individuals. Work-ly doesn&apos;t charge employers, sell job listings or run ads.
+            AI career software for job seekers, and for the coaches and programs that support them. Work-ly doesn&apos;t
+            charge employers, sell job listings or run ads.
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">
             Operated by {BUSINESS.operator}, sole proprietor, {BUSINESS.country}.

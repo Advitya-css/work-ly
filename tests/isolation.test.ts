@@ -202,6 +202,9 @@ const PUBLIC_ACTIONS = new Set([
   // same public numbers the pricing page shows signed-out visitors. Reads
   // no user data and returns no Polar ids.
   "getFoundingOfferAction",
+  // The live sale (e.g. Black Friday on the Yearly Pass) - the same public
+  // prices and end date the pricing page shows. No user data, no Polar ids.
+  "getSaleAction",
 ]);
 const GUARD = /getCurrentUser|requireUser|requireOwned|requireAuth/;
 

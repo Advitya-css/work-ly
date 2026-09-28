@@ -107,7 +107,8 @@ export default function TermsOfService() {
         <p>
           {BUSINESS.product} is software that helps individuals manage their own careers: building a career profile from
           a resume, scoring how a profile matches roles the user is considering, drafting tailored resumes, cover letters
-          and messages, interview practice, career planning, and tracking applications.
+          and messages, interview practice, career planning, and tracking applications. Career coaches, training programs
+          and others can also buy access for the people they support (section 4).
         </p>
         <p>
           {BUSINESS.product} is <strong className="text-foreground">not</strong> a recruiter, staffing or placement
@@ -148,6 +149,19 @@ export default function TermsOfService() {
             </li>
           ))}
         </ul>
+        <p>
+          <strong className="text-foreground">The Application Sprint.</strong> A one-time purchase of a 14-day service:
+          we review your resume and check five applications with you, using {BUSINESS.product}&apos;s tools and a
+          personal review, and you get 3 months of Pro. You send your applications yourself. It is not a placement or
+          recruiting service and carries no promise of interviews or offers.
+        </p>
+        <p>
+          <strong className="text-foreground">Seat packs and gift passes.</strong> A coach, a program or anyone else can
+          buy a code that gives a set number of people Pro for a stated time, starting when each person redeems it. Each
+          person who redeems a code uses {BUSINESS.product} under these Terms with their own private account; the buyer
+          gets no access to their data, only a count of seats used. Codes are for the buyer&apos;s own clients, students
+          or the person they&apos;re gifting, and may not be resold.
+        </p>
         <p>
           Some features are available only on particular plans (for example, the Yearly Pass perks). Plan contents are
           described on the Pricing page and in the app at the time you buy.
