@@ -205,6 +205,10 @@ const PUBLIC_ACTIONS = new Set([
   // The live sale (e.g. Black Friday on the Yearly Pass) - the same public
   // prices and end date the pricing page shows. No user data, no Polar ids.
   "getSaleAction",
+  // The partner sign-up on /partners: a coach needn't have an account to get
+  // a link. Guarded by a per-IP rate limit, a honeypot field, length caps and
+  // the terms box; stores only what the person typed; returns their own link.
+  "joinPartnerProgramAction",
 ]);
 const GUARD = /getCurrentUser|requireUser|requireOwned|requireAuth/;
 

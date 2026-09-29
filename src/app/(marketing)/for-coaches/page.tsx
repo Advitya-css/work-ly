@@ -121,11 +121,11 @@ export default async function ForCoachesPage({ searchParams }: { searchParams: P
         <div className="flex flex-col gap-1 text-sm">
           <p className="font-semibold text-foreground">Rather recommend it than buy seats?</p>
           <p className="text-muted-foreground">
-            Ask for a personal link and earn 30% of every purchase made by people who first come to Work-ly through it,
-            paid monthly. Email{" "}
-            <a className="text-foreground underline underline-offset-2" href={`mailto:${BUSINESS.supportEmail}?subject=Partner%20link`}>
-              {BUSINESS.supportEmail}
-            </a>
+            Get a personal link and earn 30% of every purchase made by people who first come to Work-ly through it, paid
+            monthly.{" "}
+            <Link href="/partners" className="text-foreground underline underline-offset-2">
+              Get your partner link
+            </Link>
             .
           </p>
         </div>

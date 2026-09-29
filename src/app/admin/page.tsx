@@ -10,9 +10,13 @@ import { getRefundStatus } from "@/lib/payments/refund-window";
 import { getFunnelReport, getRevenueSince } from "@/lib/attribution";
 import { offerSales } from "@/lib/payments/offer-orders";
 import { OFFERS, OFFER_KEYS } from "@/lib/payments/offers";
-import { listSeatGroups } from "@/lib/payments/seat-codes";
+import { listSeatGroups, seatUsageReport } from "@/lib/payments/seat-codes";
+import { seatReportText } from "@/lib/payments/seat-report-core";
+import { isGroupCode } from "@/lib/payments/seat-codes-core";
 import { PLAN_CHECKPOINT, PLAN_GOAL_USD, PLAN_START, planStatus } from "@/lib/revenue-plan";
 import { getSprintSpots, listSprints } from "@/lib/sprint";
+import { listPartners } from "@/lib/partners";
+import { PARTNER_PERCENT, partnerSource } from "@/lib/partners-core";
 import { SPRINT_STATUS_LABEL } from "@/lib/sprint-core";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 
@@ -56,12 +60,19 @@ export default async function AdminDashboard({
   const plan = planStatus((revenue?.paidCents ?? 0) - (revenue?.refundedCents ?? 0));
   const offerOrders = sales ? OFFER_KEYS.reduce((n, k) => n + sales[k].orders, 0) : 0;
   const offerCents = sales ? OFFER_KEYS.reduce((n, k) => n + sales[k].cents, 0) : 0;
-  const partners = revenue
-    ? Object.entries(revenue.bySource)
-        .filter(([source]) => source.startsWith("partner-"))
-        .sort((a, b) => b[1].cents - a[1].cents)
-    : [];
+  // Every partner who signed up on /partners, plus any partner-* source that
+  // brought a sale without signing up (a link you gave out by hand).
+  const joined = await listPartners().catch(() => []);
+  const partnerSources = new globalThis.Map<string, string | null>(joined.map((p) => [partnerSource(p.slug), p.email]));
+  for (const source of Object.keys(revenue?.bySource ?? {})) {
+    if (source.startsWith("partner-") && !partnerSources.has(source)) partnerSources.set(source, null);
+  }
+  const partners = [...partnerSources.entries()]
+    .map(([source, email]) => ({ source, email, ...(revenue?.bySource[source] ?? { orders: 0, cents: 0 }) }))
+    .sort((a, b) => b.cents - a.cents);
   const newCode = typeof searchParams.newcode === "string" ? searchParams.newcode : null;
+  const reportFor = typeof searchParams.report === "string" && isGroupCode(searchParams.report) ? searchParams.report : null;
+  const usage = reportFor ? await seatUsageReport(reportFor).catch(() => null) : null;
   const dollars = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
   // Revenue by channel - the growth scoreboard. Ranked by revenue, not traffic.
@@ -304,6 +315,22 @@ export default async function AdminDashboard({
             </label>
             <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Make code</button>
           </form>
+          {usage && (
+            <div className="space-y-2 rounded-md border border-zinc-700 bg-zinc-950 p-4">
+              <p className="text-sm font-medium text-white">
+                Usage report for <span className="font-mono">{usage.group}</span> ({usage.label}) - copy it into an email to the program:
+              </p>
+              <textarea
+                readOnly
+                rows={11}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-900 p-3 font-mono text-xs text-zinc-200"
+                defaultValue={seatReportText(usage, "", new Date())}
+              />
+              <p className="text-xs text-zinc-500">
+                Totals only. Tailored resumes and Pro tools are counted from 29 Sep 2026, when this tracking started.
+              </p>
+            </div>
+          )}
           {seatGroups.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -313,7 +340,8 @@ export default async function AdminDashboard({
                     <th className="py-2 pr-4 font-medium">Label</th>
                     <th className="py-2 pr-4 text-right font-medium">Used</th>
                     <th className="py-2 pr-4 text-right font-medium">Months</th>
-                    <th className="py-2 font-medium">Made</th>
+                    <th className="py-2 pr-4 font-medium">Made</th>
+                    <th className="py-2 font-medium"><span className="sr-only">Report</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800 tabular-nums">
@@ -326,7 +354,12 @@ export default async function AdminDashboard({
                         {g.disabled > 0 ? <span className="text-zinc-500"> ({g.disabled} off)</span> : null}
                       </td>
                       <td className="py-2 pr-4 text-right text-zinc-400">{g.months}</td>
-                      <td className="py-2 text-zinc-400 whitespace-nowrap">{g.createdAt ? g.createdAt.toLocaleDateString("en-GB") : "-"}</td>
+                      <td className="py-2 pr-4 text-zinc-400 whitespace-nowrap">{g.createdAt ? g.createdAt.toLocaleDateString("en-GB") : "-"}</td>
+                      <td className="py-2 text-right">
+                        <a href={`/admin?key=${encodeURIComponent(key as string)}&report=${encodeURIComponent(g.group)}#seat-codes`} className="text-xs text-primary hover:underline">
+                          Usage report
+                        </a>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -337,13 +370,14 @@ export default async function AdminDashboard({
 
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">Partner payouts (30%)</h2>
+            <h2 className="text-lg font-semibold text-white">Partner payouts ({PARTNER_PERCENT}%)</h2>
             <p className="text-sm text-zinc-400">
-              A partner&apos;s link is work-ly.in/?ref=partner-<em>name</em>. Orders from visitors who first arrived through it, since 28 Sep.
+              Partners sign up at /partners and get work-ly.in/?ref=partner-<em>name</em>. Orders from visitors who first arrived
+              through a link, since 28 Sep. Pay monthly once someone is owed $25 or more.
             </p>
           </div>
           {partners.length === 0 ? (
-            <p className="text-sm text-zinc-400">No partner sales yet.</p>
+            <p className="text-sm text-zinc-400">No partners yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -356,12 +390,15 @@ export default async function AdminDashboard({
                   </tr>
                 </thead>
                 <tbody className="tabular-nums">
-                  {partners.map(([source, p]) => (
-                    <tr key={source} className="border-t border-zinc-800">
-                      <td className="py-2 pr-4 text-white">{source.replace(/^partner-/, "")}</td>
+                  {partners.map((p) => (
+                    <tr key={p.source} className="border-t border-zinc-800">
+                      <td className="py-2 pr-4 text-white">
+                        {p.source.replace(/^partner-/, "")}
+                        {p.email ? <span className="text-zinc-500"> · {p.email}</span> : <span className="text-zinc-500"> · not signed up</span>}
+                      </td>
                       <td className="py-2 pr-4 text-right">{p.orders}</td>
                       <td className="py-2 pr-4 text-right">{usd(p.cents)}</td>
-                      <td className="py-2 text-right font-semibold text-white">{usd(Math.round(p.cents * 0.3))}</td>
+                      <td className="py-2 text-right font-semibold text-white">{usd(Math.round((p.cents * PARTNER_PERCENT) / 100))}</td>
                     </tr>
                   ))}
                 </tbody>

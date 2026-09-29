@@ -3,6 +3,8 @@
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db/pool";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { REDEEM_COOKIE } from "@/lib/redeem-cookie";
 import { isGroupCode, normalizeCode } from "@/lib/payments/seat-codes-core";
 import { redeemSeat } from "@/lib/payments/seat-codes";
 
@@ -17,6 +19,8 @@ export async function redeemBetaCodeAction(code: string) {
   if (isGroupCode(seatCode)) {
     try {
       const result = await redeemSeat(user.id, seatCode);
+      // Used or refused for good: stop showing "you have a code waiting".
+      await forgetPendingCode();
       if (!result.ok) return { error: result.error };
       revalidatePath("/", "layout");
       return { success: true };
@@ -61,6 +65,7 @@ export async function redeemBetaCodeAction(code: string) {
         return { error: "Failed to apply Pro status because the user record is missing in the database. Please reload and try again." };
       }
       await markBetaPlan(user.id);
+      await forgetPendingCode();
 
       revalidatePath("/", "layout");
       return { success: true };
@@ -119,12 +124,22 @@ export async function redeemBetaCodeAction(code: string) {
       client.release();
     }
     await markBetaPlan(user.id);
+    await forgetPendingCode();
 
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("[workly:beta] Failed to redeem beta code:", error);
     return { error: "Failed to redeem code. Please try again." };
+  }
+}
+
+/** Clears the code kept from a /redeem link (lib/redeem-cookie.ts). Never fails the redemption. */
+async function forgetPendingCode(): Promise<void> {
+  try {
+    (await cookies()).delete(REDEEM_COOKIE);
+  } catch {
+    // outside a request (tests): nothing to clear
   }
 }
 

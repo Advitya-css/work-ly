@@ -1,3 +1,4 @@
+import { recordUsage } from "@/lib/usage";
 import { normalizeForMatch } from "@/lib/scoring/screen-core";
 import { isCosmeticRewrite, safeRewrite } from "@/lib/resume/tense";
 import { NextResponse } from "next/server";
@@ -55,6 +56,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   if (!app.job) {
     return NextResponse.json({ error: "This application has no saved job description to tailor against." }, { status: 400 });
   }
+  await recordUsage(user!.id, "tailor");
   const candidate = candidateBrief(profile);
 
   const result = await completeStructured({

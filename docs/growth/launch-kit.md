@@ -155,4 +155,18 @@ Link: `https://work-ly.in/?utm_source={directory}&utm_campaign=listing`
 
 ## 7. Partner links
 
-A coach who'd rather recommend than buy gets `https://work-ly.in/?ref=partner-{name}`. Orders from people who first arrive through that link show up in admin under "Partner payouts (30%)". Pay them monthly by the method you agree with each partner.
+A coach who'd rather recommend than buy signs up at work-ly.in/partners and gets `https://work-ly.in/?ref=partner-{name}` on the spot, by email too. You get a note in your inbox. Orders from people who first arrive through a link show up in admin under "Partner payouts (30%)", with the partner's email. Pay monthly once someone is owed $25 or more.
+
+## 8. Test every product before sharing links
+
+Do this once, after the products and variables are set and the site is deployed. Use a second email address of your own for the buyer.
+
+1. In Polar, create a discount code `WL-TEST-100`: 100% off, limited to 5 uses, ending tomorrow, for the five new products.
+2. **Sprint:** signed in as the test account, open work-ly.in/sprint, tick the box, book, and enter the code at checkout. Check you land on the intake form, Pro shows in Settings, you got "Your Application Sprint is booked" and your own inbox got "New Sprint". Send the intake form and check the "Sprint intake" email. In admin, mark it delivered.
+3. **Coach pack:** signed out, in a private window, buy from work-ly.in/for-coaches with the code. Check the thank-you page shows a COACH-... code, the buyer email has the same code, and admin lists it with 0 / 10 used.
+4. **Redeem as someone new:** in another private window, open the redeem link from that email. You should land on sign-up with "Create your account to use your code". Sign up, verify, and check the "You have a Work-ly code waiting" card appears; redeem it and check Pro is on for 3 months and admin shows 1 / 10 used.
+5. **Pilot, licence and gift:** buy each once the same way and check the code and email (TEAM-... for pilot and licence, GIFT-... for the gift).
+6. **Refund one (if Polar allows refunding a $0 order):** refund the gift order and check its unused seat shows "(1 off)" in admin.
+7. Delete the test discount code in Polar.
+
+The test orders show as $0 in the admin revenue numbers, so they don't distort the plan.

@@ -2,6 +2,7 @@ import "server-only";
 
 import { pool } from "@/lib/db/pool";
 import { BUSINESS } from "@/lib/business";
+import { recordUsage } from "@/lib/usage";
 
 /**
  * THE LIGHT-USE MONEY-BACK GUARANTEE.
@@ -45,6 +46,8 @@ export async function recordProToolUse(userId: string): Promise<void> {
   await pool
     .query(`UPDATE rate_limits SET count = count + 1 WHERE key = $1 AND expires_at > now()`, [WINDOW_KEY(userId)])
     .catch(() => undefined);
+  // Also the lifetime count behind cohort usage reports (lib/usage.ts).
+  await recordUsage(userId, "pro");
 }
 
 export interface RefundStatus {

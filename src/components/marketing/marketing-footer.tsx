@@ -15,6 +15,7 @@ const GROUPS = [
       { href: "/gift", label: "Gift a pass" },
       { href: "/for-coaches", label: "For coaches" },
       { href: "/for-teams", label: "For bootcamps and career centres" },
+      { href: "/partners", label: "Partner programme" },
     ],
   },
   {

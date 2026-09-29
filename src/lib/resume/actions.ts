@@ -7,6 +7,7 @@ import { withinProAiBudget } from "@/lib/ai/career-context";
 import { buildTailoredResume, type TailoredResume } from "@/lib/resume/tailored-resume";
 import { getApplicationByOpportunityId, updateApplication } from "@/lib/db/applications";
 import { TAILORED_CV_LABEL } from "@/lib/applications/cv-version";
+import { recordUsage } from "@/lib/usage";
 
 export async function generateTailoredResumeDocAction(
   opportunityId: string,
@@ -26,6 +27,7 @@ export async function generateTailoredResumeDocAction(
   if (profile.experiences.length === 0 && profile.projects.length === 0) {
     return { error: "Add your experience (or upload your resume) first. There's nothing to tailor yet." };
   }
+  await recordUsage(user.id, "tailor");
 
   try {
     const resume = await buildTailoredResume(profile, opp.job);

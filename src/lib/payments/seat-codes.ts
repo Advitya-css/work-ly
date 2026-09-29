@@ -173,3 +173,58 @@ export async function disableUnusedSeats(group: string): Promise<number> {
   );
   return rowCount ?? 0;
 }
+
+export interface SeatUsageReport {
+  group: string;
+  label: string;
+  seats: number;
+  seatsUsed: number;
+  /** People who checked at least one job in the last 14 days. */
+  activeLast14Days: number;
+  /** Jobs checked since each person redeemed. */
+  checksRun: number;
+  resumesTailored: number;
+  proToolsUsed: number;
+  firstRedeemedAt: Date | null;
+}
+
+/**
+ * THE COHORT USAGE REPORT a pilot or licence buyer is promised: totals
+ * only, across everyone who redeemed this code - never a person's name,
+ * resume or results. Tailored resumes and Pro tools are counted from the
+ * day usage tracking started (lib/usage.ts).
+ */
+export async function seatUsageReport(group: string): Promise<SeatUsageReport | null> {
+  const info = await getSeatGroup(group);
+  if (!info) return null;
+  const { rows } = await pool.query(
+    `WITH seats AS (
+       SELECT "usedByUserId" AS uid, "usedAt" AS at
+         FROM beta_codes
+        WHERE code LIKE $1 AND "usedByUserId" IS NOT NULL
+     )
+     SELECT
+       COUNT(*)::int AS used,
+       MIN(s.at) AS first_at,
+       COALESCE(SUM((SELECT COUNT(*) FROM jobs j WHERE j."userId" = s.uid AND j."createdAt" >= s.at)), 0)::int AS checks,
+       COUNT(*) FILTER (WHERE EXISTS (
+         SELECT 1 FROM jobs j WHERE j."userId" = s.uid AND j."createdAt" > now() - interval '14 days'
+       ))::int AS active,
+       COALESCE(SUM((SELECT count FROM rate_limits r WHERE r.key = 'usage:tailor:' || s.uid)), 0)::int AS tailored,
+       COALESCE(SUM((SELECT count FROM rate_limits r WHERE r.key = 'usage:pro:' || s.uid)), 0)::int AS pro
+     FROM seats s`,
+    [seatRowPattern(group)],
+  );
+  const r = rows[0] ?? {};
+  return {
+    group,
+    label: info.label,
+    seats: info.seats - info.disabled,
+    seatsUsed: Number(r.used ?? 0),
+    activeLast14Days: Number(r.active ?? 0),
+    checksRun: Number(r.checks ?? 0),
+    resumesTailored: Number(r.tailored ?? 0),
+    proToolsUsed: Number(r.pro ?? 0),
+    firstRedeemedAt: r.first_at ? new Date(r.first_at) : null,
+  };
+}

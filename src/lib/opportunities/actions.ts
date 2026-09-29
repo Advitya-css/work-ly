@@ -53,6 +53,7 @@ import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
 import { withinProAiBudget } from "@/lib/ai/career-context";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
+import { recordUsage } from "@/lib/usage";
 
 export async function generateTailoredApplicationAction(opportunityId: string) {
   const user = await getCurrentUser();
@@ -72,6 +73,7 @@ export async function generateTailoredApplicationAction(opportunityId: string) {
 
     const profile = await getFullCareerProfile(user.id);
     if (!profile.profile) return { error: "Please complete your career profile first." };
+    await recordUsage(user.id, "tailor");
 
     const result = await generateTailoredApplication(profile, job);
     return { data: result };

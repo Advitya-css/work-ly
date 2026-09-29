@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 import { ATTR_COOKIE, ATTR_MAX_AGE_S, attributionFromRequest, decodeAttribution, encodeAttribution, shouldStore } from "@/lib/attribution-core";
+import { REDEEM_COOKIE, REDEEM_COOKIE_MAX_AGE_S, cleanRedeemCode } from "@/lib/redeem-cookie";
 
 /**
  * Security headers, applied to every response (see `config.matcher` below -
@@ -128,8 +129,20 @@ export async function proxy(request: NextRequest) {
     return shouldStore(existing, incoming) ? encodeAttribution(incoming) : null;
   })();
 
+  // A seat or gift code opened from a link: kept for after sign-up (lib/redeem-cookie.ts).
+  let redeemCode = pathname === "/redeem" ? cleanRedeemCode(request.nextUrl.searchParams.get("code")) : null;
+
   const withSecurityHeaders = (response: NextResponse): NextResponse => {
     response.headers.set("Content-Security-Policy", csp);
+    if (redeemCode) {
+      response.cookies.set(REDEEM_COOKIE, redeemCode, {
+        maxAge: REDEEM_COOKIE_MAX_AGE_S,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+    }
     if (attribution) {
       response.cookies.set(ATTR_COOKIE, attribution, {
         maxAge: ATTR_MAX_AGE_S,
@@ -156,6 +169,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const authenticated = await hasValidSession(request);
+  // Signed in already: the /redeem page itself takes the code, nothing to keep.
+  if (authenticated) redeemCode = null;
+
+  if (isProtected && !authenticated && redeemCode) {
+    // Most people with a code are new: send them to sign up, not sign in.
+    return redirect(new URL("/signup?redeem=1", request.url));
+  }
 
   if (isProtected && !authenticated) {
     const loginUrl = new URL("/login", request.url);

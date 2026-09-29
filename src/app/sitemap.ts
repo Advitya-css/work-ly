@@ -20,6 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/for-coaches", 0.7, "monthly"),
     page("/for-teams", 0.7, "monthly"),
     page("/gift", 0.6, "monthly"),
+    page("/partners", 0.5, "monthly"),
+    page("/new-year", 0.7, "weekly"),
     page("/why-am-i-not-getting-interviews", 0.8, "monthly"),
     page("/should-i-apply", 0.8, "monthly"),
     page("/resume-job-match", 0.8, "monthly"),
