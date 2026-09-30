@@ -37,7 +37,7 @@ export function textToHtml(text: string): string {
 /** The footer every email carries: how to stop them, and (cold emails) who is writing and from where. */
 export function outreachFooter(kind: OutreachKind, opts: { address: string; unsubscribeUrl?: string }): string {
   if (kind === "user") {
-    return `You're getting this because you signed up for Work-ly.${opts.unsubscribeUrl ? ` Unsubscribe: ${opts.unsubscribeUrl}` : ""}`;
+    return `You're getting this because you signed up for Work-ly. Work-ly, ${opts.address}.${opts.unsubscribeUrl ? `\nUnsubscribe: ${opts.unsubscribeUrl}` : ""}`;
   }
   return `Advitya Bansal, Work-ly · ${opts.address}\nNot interested? Reply "no" and I won't write again.`;
 }

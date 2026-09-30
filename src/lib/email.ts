@@ -340,7 +340,8 @@ export async function sendLifecycleEmail(to: string, email: LifecycleEmail): Pro
           </a>
           <p style="font-size: 15px; color: #3d3935; line-height: 1.55; margin: 0;">Advitya<br/><span style="color: #8a817b; font-size: 13px;">Founder, Work-ly</span></p>
           <p style="font-size: 12px; color: #a89f99; margin-top: 32px; line-height: 1.4;">
-            You're getting this because you signed up for Work-ly. Just reply if you have a question.
+            You're getting this because you signed up for Work-ly. Just reply if you have a question.<br/>
+            Work-ly, ${escapeHtml(BUSINESS.address)}.
             <a href="${unsubscribeUrl}" style="color: #a89f99;">Unsubscribe from these emails</a>.
           </p>
         </div>

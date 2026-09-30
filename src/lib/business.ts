@@ -16,7 +16,7 @@ export const BUSINESS = {
   /** The individual who operates Work-ly as a sole proprietor. */
   operator: "Advitya Bansal",
   /** Full postal address, e.g. "12 Example Road, Vaishali Nagar, Jaipur, Rajasthan 302021, India". */
-  address: "Jaipur, Rajasthan, India", // TODO: Add your full street address here for Paddle verification
+  address: "Nursery Circle, Block C, Vaishali Nagar, Jaipur, Rajasthan 302021, India",
   country: "India",
   supportEmail: "advitya@work-ly.in",
   responseTime: "within 2 business days",
