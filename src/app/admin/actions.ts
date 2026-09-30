@@ -8,6 +8,7 @@ import { BUSINESS } from "@/lib/business";
 import { createSeatCode } from "@/lib/payments/seat-codes";
 import { randomGroupCode } from "@/lib/payments/seat-codes-core";
 import { setSprintCapacity, setSprintStatus } from "@/lib/sprint";
+import { sendOutreachEmail } from "@/lib/outreach";
 
 /**
  * Admin-only actions for the /admin page: the same double check as the
@@ -51,4 +52,23 @@ export async function markSprintDeliveredAction(formData: FormData): Promise<voi
   if (sprintKey.startsWith("sprint:")) await setSprintStatus(sprintKey, "delivered");
   revalidatePath("/admin");
   redirect(`/admin?key=${encodeURIComponent(key)}#sprints`);
+}
+
+/** "Email someone" on the admin page: one personal email through Resend. */
+export async function sendOutreachAction(
+  _prev: { sent?: string; error?: string } | null,
+  formData: FormData,
+): Promise<{ sent?: string; error?: string }> {
+  await requireAuthAdmin(formData);
+  const to = String(formData.get("to") ?? "").trim();
+  const result = await sendOutreachEmail({
+    to,
+    subject: String(formData.get("subject") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    kind: formData.get("kind") === "cold" ? "cold" : "user",
+    allowRepeatToday: formData.get("repeat") === "on",
+  });
+  if (!result.ok) return { error: result.error };
+  revalidatePath("/admin");
+  return { sent: to };
 }

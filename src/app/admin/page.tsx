@@ -19,6 +19,9 @@ import { listPartners } from "@/lib/partners";
 import { PARTNER_PERCENT, partnerSource } from "@/lib/partners-core";
 import { SPRINT_STATUS_LABEL } from "@/lib/sprint-core";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
+import { OutboxForm } from "./outbox-form";
+import { recentOutreach } from "@/lib/outreach";
+import { OUTREACH_DAILY_CAP, addressLooksComplete } from "@/lib/outreach-core";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +76,9 @@ export default async function AdminDashboard({
   const newCode = typeof searchParams.newcode === "string" ? searchParams.newcode : null;
   const reportFor = typeof searchParams.report === "string" && isGroupCode(searchParams.report) ? searchParams.report : null;
   const usage = reportFor ? await seatUsageReport(reportFor).catch(() => null) : null;
+  const sentRecently = await recentOutreach(30).catch(() => []);
+  const sentToday = sentRecently.filter((r) => r.day === new Date().toISOString().slice(0, 10)).length;
+  const emailTo = typeof searchParams.to === "string" ? searchParams.to.slice(0, 200) : "";
   const dollars = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
   // Revenue by channel - the growth scoreboard. Ranked by revenue, not traffic.
@@ -230,6 +236,30 @@ export default async function AdminDashboard({
                 </tbody>
               </table>
             </div>
+          )}
+        </section>
+
+        <section id="outbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Email someone</h2>
+            <p className="text-sm text-zinc-400">
+              One personal email at a time, from advitya@work-ly.in through Resend. {sentToday} of {OUTREACH_DAILY_CAP} sent today.
+              Use &quot;Email&quot; next to anyone in the user list below to fill in their address.
+            </p>
+          </div>
+          <OutboxForm adminKey={key as string} initialTo={emailTo} addressOk={addressLooksComplete(BUSINESS.address)} />
+          {sentRecently.length > 0 && (
+            <details className="text-sm text-zinc-400">
+              <summary className="cursor-pointer text-zinc-300">Sent recently ({sentRecently.length})</summary>
+              <ul className="mt-2 space-y-1">
+                {sentRecently.map((r) => (
+                  <li key={`${r.day}-${r.email}`}>
+                    <span className="text-zinc-500">{r.day}</span> · {r.email}
+                    {r.times > 1 ? ` (${r.times}x)` : ""}
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
         </section>
 
@@ -558,7 +588,15 @@ export default async function AdminDashboard({
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-zinc-800/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="font-medium text-white">{u.email}</div>
+                      <div className="font-medium text-white">
+                        {u.email}{" "}
+                        <a
+                          href={`/admin?key=${encodeURIComponent(key as string)}&to=${encodeURIComponent(u.email)}#outbox`}
+                          className="ml-1 text-xs font-normal text-primary hover:underline"
+                        >
+                          Email
+                        </a>
+                      </div>
                       {u.name && <div className="text-zinc-500 text-xs mt-0.5">{u.name}</div>}
                     </td>
                     <td className="px-6 py-4 text-zinc-400 whitespace-nowrap">
