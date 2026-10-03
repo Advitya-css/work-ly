@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { localAuthProvider } from "@/lib/auth/providers/local";
 import { supabaseAuthProvider } from "@/lib/auth/providers/supabase";
 import type { AuthProvider } from "@/lib/auth/types";
@@ -17,7 +18,9 @@ function resolveProvider(): AuthProvider {
 
 export const authProvider = resolveProvider();
 
-/** Convenience helper for Server Components / layouts. */
-export async function getCurrentUser() {
-  return authProvider.getCurrentUser();
-}
+/**
+ * Convenience helper for Server Components / layouts. Wrapped in React's
+ * per-request cache: the layout, the page and its components all ask for
+ * the user, and that used to be one database round trip each.
+ */
+export const getCurrentUser = cache(async () => authProvider.getCurrentUser());

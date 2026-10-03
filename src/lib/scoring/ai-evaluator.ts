@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 
 import { aiProvider } from "@/lib/ai";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
+import { HONESTY_RULE } from "@/lib/ai/honesty";
 import { scoringProvider } from "@/lib/scoring";
 import type { JobFitAnalysis } from "@/lib/scoring/types";
 import type { CareerGoal, Job } from "@/lib/db/types";
@@ -52,7 +53,7 @@ RULES
    - "unclear": the dossier is too thin to say, or it is a soft trait nobody could verify from a CV.
    For years of experience, compute from the dates shown, counting only RELEVANT roles.
 5. Evidence: for "met" and "partial" you MUST give "evidenceRef" (the dossier label, e.g. "E2", "P1", "SK") and "evidenceQuote" copied VERBATIM from that entry (max 160 characters). If you cannot quote it, the verdict is not "met". Never infer a skill that is not written down.
-6. gapToClose (for partial/missing only): ONE concrete, specific action that would make this requirement provable within weeks where possible - name the tool, the artifact, the certification exam. Max 25 words. No generic advice like "gain experience".
+6. gapToClose (for partial/missing only): ONE concrete, specific action that would make this requirement provable within weeks where possible - name the tool, the artifact, the certification exam. Max 25 words. No generic advice like "gain experience". ${HONESTY_RULE}
 7. relevanceRationale: one sentence, second person ("Your background...", never "the candidate"). roleRelevance: "same_role" (they already do this job), "adjacent" (a common next step or sibling role), "transferable" (a real change of role reachable through transferable experience), "unrelated".
 8. candidateLevel: the candidate's actual level from the dossier. roleLevel: the level this posting is pitched at, or null.
 9. strengths: up to 4 points that would genuinely impress THIS hiring manager, each with a verbatim evidenceQuote from the dossier.

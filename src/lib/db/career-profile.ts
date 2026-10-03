@@ -1,3 +1,4 @@
+import { cache } from "react";
 import "server-only";
 import { randomUUID } from "crypto";
 import { pool } from "./pool";
@@ -36,15 +37,16 @@ function mapRow(row: Record<string, unknown>): CareerProfile {
   };
 }
 
-export async function getCareerProfileByUserId(
-  userId: string,
-): Promise<CareerProfile | null> {
+async function readCareerProfile(userId: string): Promise<CareerProfile | null> {
   const { rows } = await pool.query(
     `SELECT * FROM career_profiles WHERE "userId" = $1 LIMIT 1`,
     [userId],
   );
   return rows[0] ? mapRow(rows[0]) : null;
 }
+
+/** Cached per request: the app layout and most pages both read it. */
+export const getCareerProfileByUserId = cache(readCareerProfile);
 
 /**
  * Every user gets at most one CareerProfile row. CV upload can happen
@@ -54,7 +56,7 @@ export async function getCareerProfileByUserId(
  * careerProfileId to attach to.
  */
 export async function getOrCreateCareerProfile(userId: string): Promise<CareerProfile> {
-  const existing = await getCareerProfileByUserId(userId);
+  const existing = await readCareerProfile(userId);
   if (existing) return existing;
 
   const id = randomUUID();

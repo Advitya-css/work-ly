@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Loader2, Lock, ArrowRight, ShieldCheck, FileText, CheckCircle2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AccountButtons } from "@/components/marketing/account-buttons";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,13 +102,8 @@ export default function FreeGraderPage() {
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-foreground">
           Work-ly <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] uppercase text-primary">Fit Check</span>
         </Link>
-        <div className="ml-auto">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button asChild size="sm" className="ml-2">
-            <Link href="/signup">Sign up free</Link>
-          </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <AccountButtons startLabel="Sign up free" shortStartLabel="Sign up" />
         </div>
       </header>
 

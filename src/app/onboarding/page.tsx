@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Briefcase, Compass, GraduationCap, Laptop } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/shared/pending-submit-button";
 import { StepIndicator } from "@/components/onboarding/step-indicator";
 import { UploadStep } from "@/components/onboarding/upload-step";
 import { ReviewStep } from "@/app/onboarding/review-step";
 import { MatchesStep } from "@/app/onboarding/matches-step";
 import { StudentStep } from "@/components/onboarding/student-step";
 import { GraderImportCard } from "@/components/onboarding/grader-import-card";
-import { chooseOnboardingIntentAction, completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
+import { IntentChoices } from "@/components/onboarding/intent-choices";
+import { completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 import { parseOnboardingIntent } from "@/lib/onboarding/intent";
 import { getCurrentUser } from "@/lib/auth";
 import { listSupportedStudentCountries } from "@/lib/student/country-rules-db";
@@ -28,27 +28,6 @@ function resolveStep(raw: string | undefined): OnboardingStep {
   if (raw === "upload" || raw === "review" || raw === "matches" || raw === "student-setup") return raw;
   return "welcome";
 }
-
-const INTENTS = [
-  {
-    intent: "hunt",
-    icon: Briefcase,
-    title: "I'm looking for a job",
-    body: "Find roles that fit, tailor every application, and prepare for interviews.",
-  },
-  {
-    intent: "switch",
-    icon: Compass,
-    title: "I'm planning my next move",
-    body: "See how close you are to the role you want and get a step-by-step plan to close the gap.",
-  },
-  {
-    intent: "freelance",
-    icon: Laptop,
-    title: "I freelance or do contract work",
-    body: "Find contract and freelance gigs instead of full-time roles.",
-  },
-] as const;
 
 export default async function OnboardingPage({
   searchParams,
@@ -78,51 +57,19 @@ export default async function OnboardingPage({
 
           <GraderImportCard />
 
-          <div className="grid w-full gap-3 sm:grid-cols-2">
-            {INTENTS.map(({ intent: value, icon: Icon, title, body }) => (
-              <form key={value} action={chooseOnboardingIntentAction} className="flex">
-                <input type="hidden" name="intent" value={value} />
-                <button
-                  type="submit"
-                  className="group flex w-full items-start gap-4 rounded-xl border-2 border-border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="flex flex-col gap-1">
-                    <span className="text-base font-semibold text-foreground">{title}</span>
-                    <span className="text-sm text-muted-foreground">{body}</span>
-                  </span>
-                </button>
-              </form>
-            ))}
-            <Link
-              href="/onboarding?step=student-setup"
-              className="group flex items-start gap-4 rounded-xl border-2 border-border bg-card p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                <GraduationCap className="size-5" />
-              </span>
-              <span className="flex flex-col gap-1">
-                <span className="text-base font-semibold text-foreground">I&apos;m a student</span>
-                <span className="text-sm text-muted-foreground">
-                  Campus jobs, internships and grad roles, with work-hour limits checked for you.
-                </span>
-              </span>
-            </Link>
-          </div>
+          <IntentChoices />
 
           <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-3">
             <form action={loadSampleProfileAction}>
-              <Button type="submit" variant="ghost" className="text-muted-foreground">
+              <PendingSubmitButton variant="ghost" className="text-muted-foreground" pendingLabel="Loading the sample profile…">
                 Just looking? Explore with a sample profile
                 <ArrowRight />
-              </Button>
+              </PendingSubmitButton>
             </form>
             <form action={completeOnboardingAction}>
-              <Button type="submit" variant="link" className="text-muted-foreground">
+              <PendingSubmitButton variant="link" className="text-muted-foreground">
                 Skip setup
-              </Button>
+              </PendingSubmitButton>
             </form>
           </div>
         </>

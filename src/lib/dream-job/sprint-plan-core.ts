@@ -1,3 +1,4 @@
+import { stretchesClaims } from "@/lib/ai/honesty";
 import type { GapPriority, ImprovementPlanItem, SprintBlock } from "@/lib/db/types";
 import { normalizeForMatch } from "@/lib/scoring/screen-core";
 
@@ -67,10 +68,15 @@ export function sanitizeBlocks(rawBlocks: unknown, gapTitles: string[], hoursPer
     const focus = str(b.focus, 120);
     const deliverable = str(b.deliverable, 240);
     const doneWhen = str(b.doneWhen, 240);
+    // Advice to claim more than the profile shows is dropped (lib/ai/honesty.ts).
     const actions = Array.isArray(b.actions)
-      ? b.actions.map((a) => str(a, 220)).filter((a): a is string => Boolean(a)).slice(0, 4)
+      ? b.actions
+          .map((a) => str(a, 220))
+          .filter((a): a is string => Boolean(a) && !stretchesClaims(a))
+          .slice(0, 4)
       : [];
     if (!focus || !deliverable || !doneWhen || actions.length < 2) continue;
+    if (stretchesClaims(deliverable) || stretchesClaims(doneWhen) || stretchesClaims(focus)) continue;
 
     const claimed = (Array.isArray(b.closes) ? b.closes : []).filter((c): c is string => typeof c === "string" && c.trim() !== "");
     const closes = Array.from(
@@ -277,7 +283,8 @@ export function blocksToPlanItems(
       why: block.actions.join(" · "),
       impact:
         (block.closes.length > 0 ? `Makes provable: ${block.closes.join("; ")}.` : "Turns your readiness into interviews.") +
-        (block.readinessAfter != null ? ` Readiness after this block: about ${block.readinessAfter}/100.` : ""),
+        (block.readinessAfter != null ? ` Readiness after this block: about ${block.readinessAfter}/100.` : "") +
+        (block.heldBackBy?.length ? ` It stays capped until these must-haves are covered: ${block.heldBackBy.join("; ")}.` : ""),
       effort: `${weeks} week${weeks === 1 ? "" : "s"} at about ${block.hoursPerWeek} hours a week. Deliverable: ${block.deliverable}.${
         block.resource ? ` Suggested resource: ${block.resource}.` : ""
       }`,

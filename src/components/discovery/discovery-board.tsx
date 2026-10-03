@@ -5,6 +5,7 @@ import { WorklyLoader } from "@/components/shared/workly-loader";
 import { ScrambleText } from "@/components/shared/scramble-text";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Search,
@@ -15,6 +16,7 @@ import {
   Calendar,
   Radar,
   Info,
+  CheckCircle2,
 } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +26,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { runDiscoveryAction, dismissDiscoveredJobAction, trackDiscoveredJobAction, clearAllDiscoveredJobsAction } from "@/lib/discovery/actions";
+import {
+  runDiscoveryAction,
+  dismissDiscoveredJobAction,
+  trackDiscoveredJobAction,
+  clearAllDiscoveredJobsAction,
+  markDiscoveredJobAppliedAction,
+} from "@/lib/discovery/actions";
 import { Trash2 } from "lucide-react";
 import { BUCKETS, SOURCE_KIND_LABEL } from "@/lib/discovery/labels";
 import { searchJobs, type SearchContext } from "@/lib/search/engine";
@@ -491,14 +499,7 @@ export function DiscoveryBoard({
                 job={result.job}
                 reasons={result.reasons}
                 viaExpansion={result.viaExpansion}
-                onDismiss={() => startTransition(() => dismissDiscoveredJobAction(result.job.id))}
-                onTrack={() =>
-                  startTransition(async () => {
-                    const outcome = await trackDiscoveredJobAction(result.job.id);
-                    setMessage(outcome.error ?? "Added to your opportunities.");
-                  })
-                }
-                pending={pending}
+                onMessage={setMessage}
                 isTopPick={true}
               />
             ))}
@@ -530,14 +531,7 @@ export function DiscoveryBoard({
               job={result.job}
               reasons={result.reasons}
               viaExpansion={result.viaExpansion}
-              onDismiss={() => startTransition(() => dismissDiscoveredJobAction(result.job.id))}
-              onTrack={() =>
-                startTransition(async () => {
-                  const outcome = await trackDiscoveredJobAction(result.job.id);
-                  setMessage(outcome.error ?? "Added to your opportunities.");
-                })
-              }
-              pending={pending}
+              onMessage={setMessage}
               mode={mode}
             />
           ))}
@@ -560,21 +554,61 @@ function DiscoveryCard({
   job,
   reasons,
   viaExpansion,
-  onDismiss,
-  onTrack,
-  pending,
+  onMessage,
   mode,
   isTopPick,
 }: {
   job: DiscoveredJob;
   reasons: string[];
   viaExpansion: { role: string; rationale: string } | null;
-  onDismiss: () => void;
-  onTrack: () => void;
-  pending: boolean;
+  onMessage: (message: string | null) => void;
   mode?: string;
   isTopPick?: boolean;
 }) {
+  // Each card has its own busy state: one "Analyze" used to put a spinner
+  // on every card's button and lock the whole list.
+  const router = useRouter();
+  const [busy, setBusy] = useState<null | "track" | "applied">(null);
+  const [hidden, setHidden] = useState(false);
+  const [, startCardTransition] = useTransition();
+
+  /** Straight to the full analysis: no "added", then Opportunities, then find it. */
+  function analyze() {
+    setBusy("track");
+    onMessage(null);
+    startCardTransition(async () => {
+      const outcome = await trackDiscoveredJobAction(job.id);
+      if (outcome.opportunityId) {
+        router.push(`/opportunities/${outcome.opportunityId}`);
+        return;
+      }
+      onMessage(outcome.error ?? "That didn't work. Please try again.");
+      setBusy(null);
+    });
+  }
+
+  function alreadyApplied() {
+    setBusy("applied");
+    startCardTransition(async () => {
+      const outcome = await markDiscoveredJobAppliedAction(job.id);
+      if (outcome.error) {
+        onMessage(outcome.error);
+        setBusy(null);
+        return;
+      }
+      setHidden(true);
+      onMessage(`Logged "${job.title}" as applied in your Applications. It won't show up here again, from any job board.`);
+    });
+  }
+
+  function notForMe() {
+    setHidden(true);
+    startCardTransition(() => dismissDiscoveredJobAction(job.id));
+  }
+
+  const pending = busy !== null;
+  if (hidden) return null;
+
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
   const bucket = BUCKETS.find((b) =>
     b.key === "applyNow"
@@ -710,21 +744,33 @@ function DiscoveryCard({
               </a>
             </Button>
           ) : (
-            <Button type="button" size="sm" onClick={onTrack} disabled={pending}>
-              {pending ? <WorklyLoader className="animate-spin" /> : null}
-              Analyze &amp; track
+            <Button type="button" size="sm" onClick={analyze} disabled={pending}>
+              {busy === "track" ? <WorklyLoader className="animate-spin" /> : null}
+              {busy === "track" ? "Analyzing… about 30 seconds" : "Analyze &amp; track"}
             </Button>
           )}
           <Button
             type="button"
             size="sm"
+            variant="outline"
+            onClick={alreadyApplied}
+            disabled={pending}
+            title="Logs it in Applications and stops showing this role"
+          >
+            {busy === "applied" ? <WorklyLoader className="animate-spin" /> : <CheckCircle2 />}
+            Already applied
+          </Button>
+          <Button
+            type="button"
+            size="sm"
             variant="ghost"
             className="text-muted-foreground"
-            onClick={onDismiss}
+            onClick={notForMe}
             disabled={pending}
+            title="Hides this role, including copies from other job boards"
           >
             <EyeOff />
-            Not relevant
+            Not for me
           </Button>
         </div>
       </CardContent>

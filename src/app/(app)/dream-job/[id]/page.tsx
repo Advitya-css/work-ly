@@ -286,6 +286,14 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
             <ol className="flex flex-col gap-4">
               {planBlocks.map((item, i) => {
                 const block = item.block!;
+                const previous = i === 0 ? analysis.readinessScore : planBlocks[i - 1].block!.readinessAfter;
+                // Plans made before heldBackBy existed don't have it: for those, a
+                // block that closes gaps but doesn't move the number is the cap.
+                const unchanged =
+                  block.readinessAfter != null &&
+                  previous != null &&
+                  block.readinessAfter <= previous &&
+                  ((block.heldBackBy?.length ?? 0) > 0 || (block.heldBackBy === undefined && block.closes.length > 0));
                 const weeks =
                   block.startWeek === block.endWeek ? `Week ${block.startWeek}` : `Weeks ${block.startWeek}–${block.endWeek}`;
                 return (
@@ -316,6 +324,13 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
                     {block.closes.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">Closes:</span> {block.closes.join("; ")}
+                      </p>
+                    )}
+                    {unchanged && (
+                      <p className="rounded-md bg-muted/60 px-2.5 py-1.5 text-xs text-muted-foreground">
+                        {block.heldBackBy?.length
+                          ? `Readiness doesn't move yet: it stays capped until these must-haves are covered: ${block.heldBackBy.join("; ")}. This block still counts, and the number catches up when they are.`
+                          : "Readiness doesn't move yet: a must-have requirement is still open, and the score stays capped until it's covered. This block still counts, and the number catches up when it is."}
                       </p>
                     )}
                     {block.resource && (

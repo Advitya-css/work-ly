@@ -2,6 +2,8 @@ import "server-only";
 
 import { aiProvider } from "@/lib/ai";
 import { stripPromptInjectionMarkers } from "@/lib/ai/prompt-injection-guard";
+import { HONESTY_RULE } from "@/lib/ai/honesty";
+import { normalizeForMatch } from "@/lib/scoring/screen-core";
 import { aiScreeningAvailable } from "@/lib/scoring/ai-evaluator";
 import { buildDossier, projectWithClosed, renderDossier, type GroundedScreen } from "@/lib/scoring/screen-core";
 import type { JobFitAnalysis } from "@/lib/scoring/types";
@@ -25,7 +27,8 @@ const SYSTEM_PROMPT = `You are a pragmatic career coach who builds week-by-week 
 
 Build a sequenced plan:
 - 3 to 7 blocks, each 1 to 4 weeks, back to back, starting at week 1. Whole plan <= 20 weeks unless a credential genuinely needs longer.
-- Order for momentum and leverage: quick repositioning/evidence wins first, then the must-have gaps, then nice-to-haves. Put anything with a long lead time (an exam date, a certification) early enough that it finishes inside the plan.
+- Order: the gaps marked "critical" (must-haves) come FIRST - readiness is capped until they are covered, so a plan that starts elsewhere shows no progress for weeks. Then "important" gaps, then "nice". A short repositioning step (rewording what they really did) can share a block with a must-have. Put anything with a long lead time (an exam date, a certification) early enough that it finishes inside the plan.
+- Honesty: ${HONESTY_RULE}
 - Each block: "focus" (short), "closes" (gap names copied EXACTLY from the GAPS list), 2-4 "actions" (imperative, specific, doable in the stated hours - name tools, datasets, artifact types), one "deliverable" (a concrete artifact that proves the gap is closed to a hiring manager), "doneWhen" (a checkable finish line), and "resource" (a well-known specific course, certification or documentation by exact name, or null - never a URL, never invent a course).
 - Build on what the candidate ALREADY has: reuse their existing projects, employer and domain in the actions wherever possible, so the artifacts are credible.
 - Be realistic about hours: assume the given hours per week.
@@ -148,9 +151,15 @@ export async function buildSprintPlan(params: {
   let readinessAtEnd: number | null = null;
   if (internals) {
     const closed: string[] = [];
+    const mustHaves = internals.screen.requirements.filter((r) => r.importance === "critical" && r.verdict === "missing");
     for (const block of blocks) {
       closed.push(...block.closes);
       block.readinessAfter = projectWithClosed({ screen: internals.screen, rules: internals.rules, job, profile }, closed);
+      // Say WHY the number isn't moving: readiness stays capped while a
+      // must-have is open (screen-core.ts), which used to read as a bug.
+      const done = new Set(closed.map(normalizeForMatch));
+      const open = mustHaves.filter((r) => !done.has(normalizeForMatch(r.requirement))).map((r) => r.requirement);
+      block.heldBackBy = open.slice(0, 3);
     }
     readinessAtEnd = blocks[blocks.length - 1].readinessAfter;
   }

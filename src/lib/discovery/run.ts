@@ -1,5 +1,9 @@
 import "server-only";
 
+import { listHiddenRoleKeys } from "@/lib/discovery/hidden-roles";
+import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
+import { entryVariant, isCareerChange } from "@/lib/discovery/pivot-core";
+
 import { titleIsRelevant } from "@/lib/discovery/relevance";
 import { scoringProvider } from "@/lib/scoring";
 import { getFullCareerProfile, type FullCareerProfile } from "@/lib/career/get-full-profile";
@@ -229,14 +233,19 @@ export async function runDiscovery(
   let searchTermsUsed: string[] = [];
 
   try {
-    const [profile, careerGoal, sources, existingJobs] = await Promise.all([
+    const [profile, careerGoal, sources, existingJobs, hiddenRoles] = await Promise.all([
       getFullCareerProfile(userId),
       getPrimaryCareerGoal(userId),
       listSourcesByUserId(userId),
       listDiscoveredJobsByUserId(userId),
+      listHiddenRoleKeys(userId),
     ]);
 
     const profileText = profileSearchText(profile);
+    const changingCareer = isCareerChange(careerGoal?.primaryTargetRole || careerGoal?.targetRole, [
+      profile.profile?.currentRole,
+      ...profile.experiences.slice(0, 3).map((e) => e.title),
+    ]);
     const expansion = query ? expandQuery(query, profileText) : { literalTerms: [], expandedRoles: [], suppressed: [] };
 
     // Interest-Based Explore mode's second step: translate the query into
@@ -268,7 +277,12 @@ export async function runDiscovery(
       // where you're strongest ("Apply now"), while the target role alone
       // mostly finds stretch roles - the default feed used to show zero
       // Apply-now matches for a strong analyst targeting Analytics Engineer.
-      searchTerms = [targetRole, currentRole, ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 1), ...idealTitles]
+      // Unless they're changing careers: then their old title is exactly
+      // what they don't want, and the entry level of the new field is.
+      const ordered = changingCareer
+        ? [targetRole, entryVariant(targetRole ?? ""), ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 2), ...idealTitles]
+        : [targetRole, currentRole, ...(careerGoal?.secondaryTargetRoles ?? []).slice(0, 1), ...idealTitles];
+      searchTerms = ordered
         .filter((t): t is string => Boolean(t && t.trim()))
         .filter((t) => {
           const key = t.toLowerCase();
@@ -458,7 +472,8 @@ export async function runDiscovery(
       careerGoal?.primaryTargetRole,
       careerGoal?.targetRole,
       ...(careerGoal?.secondaryTargetRoles ?? []),
-      profile.profile?.currentRole,
+      // A career changer's current field isn't what they're looking for.
+      changingCareer ? null : profile.profile?.currentRole,
     ];
     const inField = collected.filter(
       (c) => c.sourceConfigId.startsWith("dynamic-") || titleIsRelevant(c.listing.title, relevanceTargets),
@@ -468,7 +483,14 @@ export async function runDiscovery(
 
     // --- Cross-source dedup, then against what's already stored ----------
     const accepted: typeof collected = [];
+    let hiddenSkipped = 0;
     for (const candidate of inField) {
+      // A role they marked "Already applied" or "Not for me", or have
+      // applied to: don't bring it back from another board or as a repost.
+      if (isHiddenRole(candidate.listing, hiddenRoles)) {
+        hiddenSkipped++;
+        continue;
+      }
       const clashesInBatch = accepted.find(
         (other) =>
           isDuplicate(candidate.listing, {
@@ -487,6 +509,8 @@ export async function runDiscovery(
       }
       accepted.push(candidate);
     }
+
+    if (hiddenSkipped > 0) console.info(`[workly:discovery] skipped ${hiddenSkipped} listing(s) of roles already applied to or turned down`);
 
     // --- Score -------------------------------------------------------------
     // Rules engine for every listing (instant, free). Then the grounded AI

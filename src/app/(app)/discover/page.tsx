@@ -13,6 +13,10 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
 import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, listSourcesByUserId, getLatestRun } from "@/lib/db/discovery";
+import { listHiddenRoleKeys } from "@/lib/discovery/hidden-roles";
+import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
+import { isCareerChange } from "@/lib/discovery/pivot-core";
+import { TargetRoleCard } from "@/components/discovery/target-role-card";
 import { profileSearchText } from "@/lib/discovery/profile-text";
 import { buildAlert } from "@/lib/discovery/alerts";
 import { isStale } from "@/lib/discovery/sort";
@@ -35,15 +39,18 @@ export default async function DiscoverPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [profile, careerGoal, rawJobs, sources, latestRun] = await Promise.all([
+  const [profile, careerGoal, rawJobs, sources, latestRun, hiddenRoles] = await Promise.all([
     getFullCareerProfile(user.id),
     getPrimaryCareerGoal(user.id),
     listDiscoveredJobsByUserId(user.id),
     listSourcesByUserId(user.id),
     getLatestRun(user.id),
+    listHiddenRoleKeys(user.id),
   ]);
 
   const jobs = rawJobs.filter(job => {
+    // Roles they've applied to or turned down, from any board.
+    if (isHiddenRole(job, hiddenRoles)) return false;
     // Old listings are almost always filled or zombie reposts. They stay in
     // the database (and come back if a source re-lists them with a fresh
     // date) but are not shown as opportunities.
@@ -101,7 +108,11 @@ export default async function DiscoverPage() {
   };
 
   const alert = buildAlert(latestRun, jobs);
-  const targetRole = careerGoal?.primaryTargetRole ?? careerGoal?.targetRole ?? null;
+  const targetRole = careerGoal?.primaryTargetRole || careerGoal?.targetRole || null;
+  const changingCareer = isCareerChange(targetRole, [
+    profile.profile?.currentRole,
+    ...profile.experiences.slice(0, 3).map((e) => e.title),
+  ]);
   const evidenceText = [
     ...profile.experiences.map((e) => `${e.title} ${e.description ?? ""}`),
     ...profile.projects.map((p) => `${p.name} ${p.description ?? ""}`),
@@ -134,6 +145,8 @@ export default async function DiscoverPage() {
           </AlertDescription>
         </Alert>
       )}
+
+      {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}
 
       <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={latestRun?.id ?? "none"} />
 

@@ -1,4 +1,8 @@
 import type { ReactNode } from "react";
+
+// Always rendered per request: proxy.ts gives these pages the nonce-based
+// script policy, which a cached page could not satisfy.
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 
 import { Logo } from "@/components/shared/logo";

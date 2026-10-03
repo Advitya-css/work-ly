@@ -532,6 +532,11 @@ export interface SprintBlock {
    * available to project from - never estimated.
    */
   readinessAfter: number | null;
+  /**
+   * Must-have requirements still open after this block. Readiness is capped
+   * while any are, so the plan says which ones are holding it back.
+   */
+  heldBackBy?: string[];
 }
 
 export interface ProjectRecommendation {

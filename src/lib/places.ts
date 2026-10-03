@@ -17,6 +17,17 @@ interface CityInfo {
   aliases?: string[];
   /** Cities in one commuting area match each other ("Delhi NCR" covers Gurugram and Noida). */
   metro?: string;
+  /**
+   * For metros too big to commute across (the Bay Area: San Jose to San
+   * Francisco is over an hour), the parts of it a city belongs to. Two
+   * cities in the same metro only match when they share a part; a place
+   * that names the whole metro ("Bay Area") matches all of it.
+   */
+  areas?: string[];
+  /** US state, for the location picker's label ("San Jose, CA, USA"). */
+  state?: string;
+  /** How the picker shows the city, when plain title case is wrong. */
+  label?: string;
 }
 
 const CITIES: Record<string, CityInfo> = {
@@ -47,27 +58,83 @@ const CITIES: Record<string, CityInfo> = {
   visakhapatnam: { country: "india", aliases: ["vizag"] },
   goa: { country: "india", aliases: ["panaji", "panjim"] },
   // United States
-  "new york": { country: "united states", aliases: ["nyc", "new york city", "manhattan", "brooklyn"] },
-  "san francisco": { country: "united states", aliases: ["sf", "san francisco bay area", "bay area"], metro: "bay area" },
-  "san jose": { country: "united states", metro: "bay area" },
-  "palo alto": { country: "united states", metro: "bay area" },
-  "mountain view": { country: "united states", metro: "bay area" },
-  sunnyvale: { country: "united states", metro: "bay area" },
-  "menlo park": { country: "united states", metro: "bay area" },
-  oakland: { country: "united states", metro: "bay area" },
-  seattle: { country: "united states", metro: "seattle area" },
-  redmond: { country: "united states", metro: "seattle area" },
-  bellevue: { country: "united states", metro: "seattle area" },
-  "los angeles": { country: "united states", aliases: ["la"] },
-  boston: { country: "united states" },
-  austin: { country: "united states" },
-  chicago: { country: "united states" },
-  "washington dc": { country: "united states", aliases: ["washington d c", "dc"] },
-  denver: { country: "united states" },
-  atlanta: { country: "united states" },
-  miami: { country: "united states" },
-  dallas: { country: "united states" },
-  houston: { country: "united states" },
+  "new york": { country: "united states", state: "NY", aliases: ["nyc", "new york city", "manhattan", "brooklyn", "queens"], metro: "new york area" },
+  "jersey city": { country: "united states", state: "NJ", metro: "new york area" },
+  hoboken: { country: "united states", state: "NJ", metro: "new york area" },
+  "bay area": { country: "united states", aliases: ["san francisco bay area", "sf bay area", "silicon valley"], metro: "bay area", label: "San Francisco Bay Area, CA, USA" },
+  "san francisco": { country: "united states", state: "CA", aliases: ["sf"], metro: "bay area", areas: ["sf", "peninsula"] },
+  "south san francisco": { country: "united states", state: "CA", metro: "bay area", areas: ["sf", "peninsula"] },
+  oakland: { country: "united states", state: "CA", metro: "bay area", areas: ["sf", "east bay"] },
+  berkeley: { country: "united states", state: "CA", metro: "bay area", areas: ["sf", "east bay"] },
+  emeryville: { country: "united states", state: "CA", metro: "bay area", areas: ["sf", "east bay"] },
+  "san mateo": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula"] },
+  "redwood city": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula"] },
+  "foster city": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula"] },
+  "menlo park": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula", "south bay"] },
+  "palo alto": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula", "south bay"] },
+  "mountain view": { country: "united states", state: "CA", metro: "bay area", areas: ["peninsula", "south bay"] },
+  sunnyvale: { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  "santa clara": { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  "san jose": { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  cupertino: { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  milpitas: { country: "united states", state: "CA", metro: "bay area", areas: ["south bay", "east bay"] },
+  campbell: { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  "los gatos": { country: "united states", state: "CA", metro: "bay area", areas: ["south bay"] },
+  fremont: { country: "united states", state: "CA", metro: "bay area", areas: ["south bay", "east bay"] },
+  pleasanton: { country: "united states", state: "CA", metro: "bay area", areas: ["east bay"] },
+  "walnut creek": { country: "united states", state: "CA", metro: "bay area", areas: ["east bay"] },
+  hayward: { country: "united states", state: "CA", metro: "bay area", areas: ["east bay"] },
+  seattle: { country: "united states", state: "WA", metro: "seattle area" },
+  redmond: { country: "united states", state: "WA", metro: "seattle area" },
+  bellevue: { country: "united states", state: "WA", metro: "seattle area" },
+  kirkland: { country: "united states", state: "WA", metro: "seattle area" },
+  "los angeles": { country: "united states", state: "CA", aliases: ["la"], metro: "los angeles area" },
+  "santa monica": { country: "united states", state: "CA", metro: "los angeles area" },
+  pasadena: { country: "united states", state: "CA", metro: "los angeles area" },
+  irvine: { country: "united states", state: "CA", metro: "los angeles area" },
+  "san diego": { country: "united states", state: "CA" },
+  sacramento: { country: "united states", state: "CA" },
+  boston: { country: "united states", state: "MA", metro: "boston area" },
+  somerville: { country: "united states", state: "MA", metro: "boston area" },
+  austin: { country: "united states", state: "TX" },
+  dallas: { country: "united states", state: "TX", metro: "dallas fort worth" },
+  "fort worth": { country: "united states", state: "TX", metro: "dallas fort worth" },
+  plano: { country: "united states", state: "TX", metro: "dallas fort worth" },
+  irving: { country: "united states", state: "TX", metro: "dallas fort worth" },
+  houston: { country: "united states", state: "TX" },
+  "san antonio": { country: "united states", state: "TX" },
+  chicago: { country: "united states", state: "IL" },
+  "washington dc": { country: "united states", state: "DC", aliases: ["washington d c", "dc"], label: "Washington", metro: "dc area" },
+  bethesda: { country: "united states", state: "MD", metro: "dc area" },
+  baltimore: { country: "united states", state: "MD" },
+  denver: { country: "united states", state: "CO", metro: "denver area" },
+  boulder: { country: "united states", state: "CO", metro: "denver area" },
+  atlanta: { country: "united states", state: "GA" },
+  miami: { country: "united states", state: "FL" },
+  tampa: { country: "united states", state: "FL" },
+  orlando: { country: "united states", state: "FL" },
+  phoenix: { country: "united states", state: "AZ", metro: "phoenix area" },
+  scottsdale: { country: "united states", state: "AZ", metro: "phoenix area" },
+  philadelphia: { country: "united states", state: "PA" },
+  pittsburgh: { country: "united states", state: "PA" },
+  portland: { country: "united states", state: "OR" },
+  "salt lake city": { country: "united states", state: "UT" },
+  minneapolis: { country: "united states", state: "MN", metro: "twin cities" },
+  "saint paul": { country: "united states", state: "MN", aliases: ["st paul"], label: "St Paul", metro: "twin cities" },
+  detroit: { country: "united states", state: "MI" },
+  "ann arbor": { country: "united states", state: "MI" },
+  nashville: { country: "united states", state: "TN" },
+  raleigh: { country: "united states", state: "NC", metro: "research triangle" },
+  "chapel hill": { country: "united states", state: "NC", metro: "research triangle" },
+  charlotte: { country: "united states", state: "NC" },
+  columbus: { country: "united states", state: "OH" },
+  cleveland: { country: "united states", state: "OH" },
+  cincinnati: { country: "united states", state: "OH" },
+  indianapolis: { country: "united states", state: "IN" },
+  "kansas city": { country: "united states", state: "MO" },
+  "st louis": { country: "united states", state: "MO", aliases: ["saint louis"] },
+  "las vegas": { country: "united states", state: "NV" },
+  madison: { country: "united states", state: "WI" },
   // United Kingdom & Ireland
   london: { country: "united kingdom" },
   manchester: { country: "united kingdom" },
@@ -76,18 +143,24 @@ const CITIES: Record<string, CityInfo> = {
   glasgow: { country: "united kingdom" },
   dublin: { country: "ireland" },
   // Canada
-  toronto: { country: "canada", aliases: ["gta"] },
+  toronto: { country: "canada", aliases: ["gta", "greater toronto area"], metro: "toronto area" },
+  mississauga: { country: "canada", metro: "toronto area" },
+  markham: { country: "canada", metro: "toronto area" },
+  edmonton: { country: "canada" },
   vancouver: { country: "canada" },
   montreal: { country: "canada" },
   calgary: { country: "canada" },
   ottawa: { country: "canada" },
-  waterloo: { country: "canada" },
+  waterloo: { country: "canada", metro: "waterloo region" },
+  kitchener: { country: "canada", metro: "waterloo region" },
   // Asia-Pacific & Middle East
   singapore: { country: "singapore" },
   sydney: { country: "australia" },
   melbourne: { country: "australia" },
   brisbane: { country: "australia" },
   perth: { country: "australia" },
+  adelaide: { country: "australia" },
+  canberra: { country: "australia" },
   auckland: { country: "new zealand" },
   wellington: { country: "new zealand" },
   dubai: { country: "united arab emirates" },
@@ -119,7 +192,18 @@ const CITIES: Record<string, CityInfo> = {
 /** Full country names and the multi-letter aliases safe to find inside free text. */
 const COUNTRIES: Record<string, string[]> = {
   india: ["bharat"],
-  "united states": ["usa", "united states of america"],
+  "united states": [
+    "usa",
+    "united states of america",
+    // State names say "US" just as clearly. ("New Mexico" is left out: it
+    // contains "Mexico".)
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware", "florida",
+    "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+    "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri", "montana", "nebraska",
+    "nevada", "new hampshire", "new jersey", "north carolina", "north dakota", "ohio", "oklahoma", "oregon",
+    "pennsylvania", "rhode island", "south carolina", "south dakota", "tennessee", "texas", "utah", "vermont",
+    "virginia", "washington", "west virginia", "wisconsin", "wyoming",
+  ],
   "united kingdom": ["uk", "great britain", "britain", "england", "scotland"],
   canada: [],
   australia: [],
@@ -161,6 +245,16 @@ const COUNTRY_CODES: Record<string, string> = {
   ae: "united arab emirates",
 };
 
+/**
+ * US state codes, read as "United States" when they stand alone as a part
+ * ("San Jose, CA"). Three collide with country codes - CA (Canada), IN
+ * (India), DE (Germany) - and those count as a state only when every city
+ * named alongside is in the US.
+ */
+const US_STATE_CODES = new Set(
+  "al ak az ar ca co ct de dc fl ga hi id il in ia ks ky la me md ma mi mn ms mo mt ne nv nh nj nm ny nc nd oh ok or pa ri sc sd tn tx ut vt va wa wv wi wy".split(" "),
+);
+
 export function normalizePlace(value: string): string {
   return value
     .normalize("NFD")
@@ -183,6 +277,8 @@ export interface ResolvedPlace {
   cities: Set<string>;
   metros: Set<string>;
   countries: Set<string>;
+  /** For each metro named: the parts of it named, or null for "the whole metro". */
+  metroAreas: Map<string, Set<string> | null>;
 }
 
 /** Cities, metro areas and countries named in a free-text location. */
@@ -190,7 +286,8 @@ export function resolvePlace(text: string | null | undefined): ResolvedPlace {
   const cities = new Set<string>();
   const metros = new Set<string>();
   const countries = new Set<string>();
-  if (!text) return { cities, metros, countries };
+  const metroAreas = new Map<string, Set<string> | null>();
+  if (!text) return { cities, metros, countries, metroAreas };
 
   let padded = ` ${normalizePlace(text)} `;
   for (const [term, city] of CITY_TERMS) {
@@ -198,18 +295,26 @@ export function resolvePlace(text: string | null | undefined): ResolvedPlace {
       cities.add(city);
       const info = CITIES[city];
       countries.add(info.country);
-      if (info.metro) metros.add(info.metro);
+      if (info.metro) {
+        metros.add(info.metro);
+        const prior = metroAreas.get(info.metro);
+        if (!info.areas || prior === null) metroAreas.set(info.metro, null);
+        else metroAreas.set(info.metro, new Set([...(prior ?? []), ...info.areas]));
+      }
       padded = padded.split(` ${term} `).join(" ");
     }
   }
   for (const [term, country] of COUNTRY_TERMS) {
     if (padded.includes(` ${term} `)) countries.add(country);
   }
+  const allCitiesInUs = cities.size > 0 && Array.from(cities).every((c) => CITIES[c].country === "united states");
   for (const part of text.split(/[,|/()]/)) {
     const code = normalizePlace(part);
-    if (COUNTRY_CODES[code]) countries.add(COUNTRY_CODES[code]);
+    const isState = US_STATE_CODES.has(code);
+    if (COUNTRY_CODES[code] && !(isState && allCitiesInUs)) countries.add(COUNTRY_CODES[code]);
+    else if (isState && (!COUNTRY_CODES[code] || allCitiesInUs)) countries.add("united states");
   }
-  return { cities, metros, countries };
+  return { cities, metros, countries, metroAreas };
 }
 
 /** Canonical display-independent key for a known city, or null. Used by the location picker to accept "Bengaluru" for "Bangalore". */
@@ -223,11 +328,22 @@ function intersects(a: Set<string>, b: Set<string>): boolean {
   return false;
 }
 
+/** Same commuting area: a shared metro, and a shared part of it when both sides name one. */
+function sameCommute(a: ResolvedPlace, b: ResolvedPlace): boolean {
+  for (const [metro, areasA] of a.metroAreas) {
+    if (!b.metroAreas.has(metro)) continue;
+    const areasB = b.metroAreas.get(metro)!;
+    if (areasA === null || areasB === null || intersects(areasA, areasB)) return true;
+  }
+  return false;
+}
+
 /**
  * Whether a job's location satisfies ONE place the user named.
  *
- * - A city preference matches the same city, anywhere in its metro area,
- *   or a job that only names the country (it might be there; nothing says
+ * - A city preference matches the same city, anywhere in its commuting
+ *   area (all of Delhi NCR; only the nearby part of the Bay Area), or a
+ *   job that only names the country (it might be there; nothing says
  *   it isn't).
  * - A country preference matches any job in that country.
  * - Places this module doesn't know fall back to careful text matching
@@ -246,7 +362,7 @@ export function placeMatches(
   const job = resolvePlace(jobText);
 
   if (want.cities.size > 0) {
-    if (intersects(want.cities, job.cities) || intersects(want.metros, job.metros)) return true;
+    if (intersects(want.cities, job.cities) || sameCommute(want, job)) return true;
     if (job.cities.size === 0 && intersects(want.countries, job.countries)) return true;
     if (job.cities.size > 0) return false;
   } else if (want.countries.size > 0) {
@@ -330,4 +446,28 @@ export function placeLine(location: string | null | undefined, country: string |
     normalizePlace(loc).includes(normalizePlace(ctry)) ||
     Array.from(ctryCountries).some((c) => locCountries.has(c));
   return same ? loc : `${loc}${separator}${ctry}`;
+}
+
+const COUNTRY_LABEL: Record<string, string> = {
+  "united states": "USA",
+  "united kingdom": "UK",
+  "united arab emirates": "UAE",
+};
+
+function titleCase(text: string): string {
+  return text.replace(/\b([a-z])/g, (m) => m.toUpperCase());
+}
+
+/**
+ * Every city this module understands, as the location picker shows it:
+ * "San Jose, CA, USA", "Pune, India". Anything typed that isn't here is
+ * still accepted as written.
+ */
+export function placeSuggestions(): string[] {
+  return Object.entries(CITIES).map(([city, info]) => {
+    const name = info.label ?? titleCase(city);
+    const country = COUNTRY_LABEL[info.country] ?? titleCase(info.country);
+    if (info.label?.includes(",")) return info.label;
+    return info.state ? `${name}, ${info.state}, ${country}` : name === country ? name : `${name}, ${country}`;
+  });
 }

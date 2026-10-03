@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink, MapPin, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/shared/pending-submit-button";
 import { Badge } from "@/components/ui/badge";
 import { TrackMatchButton } from "@/components/onboarding/track-match-button";
 import { PersonalizeMatches } from "@/components/discovery/personalize-matches";
@@ -9,6 +10,11 @@ import { unscreenedTopCount } from "@/lib/discovery/deep-screen";
 import { getLatestRun } from "@/lib/db/discovery";
 import { completeOnboardingAction } from "@/lib/onboarding/actions";
 import { listDiscoveredJobsByUserId } from "@/lib/db/discovery";
+import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
+import { listHiddenRoleKeys } from "@/lib/discovery/hidden-roles";
+import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
+import { isCareerChange } from "@/lib/discovery/pivot-core";
+import { TargetRoleCard } from "@/components/discovery/target-role-card";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { bucketJobs } from "@/lib/discovery/run";
@@ -47,14 +53,18 @@ const NEXT_STEPS = [
  * do the sorting themselves.
  */
 export async function MatchesStep({ userId, intent }: { userId: string; intent: OnboardingIntent }) {
-  const [jobs, profile, pendingScreens, latestRun] = await Promise.all([
+  const [jobs, profile, pendingScreens, latestRun, goal, hiddenRoles] = await Promise.all([
     listDiscoveredJobsByUserId(userId),
     getCareerProfileByUserId(userId),
     unscreenedTopCount(userId, 8),
     getLatestRun(userId),
+    getPrimaryCareerGoal(userId),
+    listHiddenRoleKeys(userId),
   ]);
+  const targetRole = goal?.primaryTargetRole || goal?.targetRole || null;
 
   const inScope = jobs.filter((job) => {
+    if (job.isDismissed || isHiddenRole(job, hiddenRoles)) return false;
     if (profile?.isFreelanceMode && job.employmentType !== "CONTRACT" && job.employmentType !== "FREELANCE") return false;
     return matchesLocationPreference(job.location, job.workMode, {
       homeLocation: profile?.location ?? null,
@@ -93,6 +103,10 @@ export async function MatchesStep({ userId, intent }: { userId: string; intent: 
             : "The first search didn't turn up roles that fit your profile well. Try a different search, or add more detail to your profile so matches can be scored properly."}
         </p>
       </div>
+
+      {intent === "switch" && (
+        <TargetRoleCard targetRole={targetRole} changingCareer={isCareerChange(targetRole, [profile?.currentRole])} />
+      )}
 
       {top.length > 0 && <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={`onboarding-${latestRun?.id ?? "none"}`} />}
 
@@ -207,10 +221,10 @@ export async function MatchesStep({ userId, intent }: { userId: string; intent: 
           <Link href="/discover">{buckets.total > 0 ? `See all ${buckets.total} listings` : "Search again in Discover"}</Link>
         </Button>
         <form action={completeOnboardingAction}>
-          <Button type="submit" size="lg" className="w-full sm:w-auto">
+          <PendingSubmitButton size="lg" className="w-full sm:w-auto" pendingLabel="Opening your dashboard…">
             Go to my dashboard
             <ArrowRight />
-          </Button>
+          </PendingSubmitButton>
         </form>
       </div>
     </div>

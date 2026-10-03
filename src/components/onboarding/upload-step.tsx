@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/shared/pending-submit-button";
 import { ResumeUploader } from "@/components/career/resume-uploader";
 import { completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 
@@ -28,14 +28,14 @@ export function UploadStep({ intent = "hunt" }: { intent?: string }) {
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm">
         <form action={loadSampleProfileAction}>
-          <Button type="submit" variant="outline" size="sm" className="text-muted-foreground font-medium">
+          <PendingSubmitButton variant="outline" size="sm" className="text-muted-foreground font-medium" pendingLabel="Loading the sample profile…">
             Just looking around? Try with a sample profile
-          </Button>
+          </PendingSubmitButton>
         </form>
         <form action={completeOnboardingAction}>
-          <Button type="submit" variant="link" size="sm" className="text-muted-foreground">
+          <PendingSubmitButton variant="link" size="sm" className="text-muted-foreground">
             Skip for now
-          </Button>
+          </PendingSubmitButton>
         </form>
       </div>
     </div>

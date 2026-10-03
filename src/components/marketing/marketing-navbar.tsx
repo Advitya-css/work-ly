@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { AccountButtons } from "@/components/marketing/account-buttons";
 
 const LINKS = [
   { href: "/#how-it-works", label: "How it works" },
@@ -28,15 +29,7 @@ export function MarketingNavbar() {
           <Button asChild variant="ghost" size="sm" className="md:hidden">
             <Link href="/pricing">Pricing</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">Sign in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/signup">
-              <span className="hidden sm:inline">Start free</span>
-              <span className="inline sm:hidden">Start</span>
-            </Link>
-          </Button>
+          <AccountButtons />
         </div>
       </div>
     </header>

@@ -18,6 +18,11 @@ import type {
   ScreenedRequirement,
 } from "@/lib/scoring/types";
 import { component, unavailable, totalFrom, seniorityIndex, SENIORITY_ORDER } from "@/lib/scoring/shared";
+import { stretchesClaims } from "@/lib/ai/honesty";
+
+function honestOrNull(text: string | null): string | null {
+  return text && stretchesClaims(text) ? null : text;
+}
 import { WEIGHTS, buildRecommendation } from "@/lib/scoring/providers/stub";
 
 /**
@@ -361,7 +366,8 @@ export function groundScreen(
       verdict,
       evidenceQuote,
       evidenceWhere,
-      gapToClose: verdict === "met" ? null : asString(r.gapToClose, 220),
+      // Advice to claim what the profile doesn't show is dropped, not shown.
+      gapToClose: verdict === "met" ? null : honestOrNull(asString(r.gapToClose, 220)),
     });
     evidenceKinds.push(evidenceKind);
   }

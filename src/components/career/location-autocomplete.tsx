@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { MapPin, AlertCircle } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { knownCity, normalizePlace } from "@/lib/places";
+import { knownCity, normalizePlace, placeSuggestions } from "@/lib/places";
 
-const VALID_LOCATIONS = [
-  "New York, USA", "San Francisco, USA", "Los Angeles, USA", "Chicago, USA", "Boston, USA", "Seattle, USA", "Austin, USA", "United States",
+const LISTED = [
+  "United States",
   "Toronto, Canada", "Vancouver, Canada", "Montreal, Canada", "Calgary, Canada", "Ottawa, Canada", "Canada",
   "London, UK", "Manchester, UK", "Edinburgh, UK", "Birmingham, UK", "United Kingdom",
   "Sydney, Australia", "Melbourne, Australia", "Brisbane, Australia", "Perth, Australia", "Australia",
@@ -27,7 +27,19 @@ const VALID_LOCATIONS = [
   "Vienna, Austria", "Austria",
   "Zurich, Switzerland", "Geneva, Switzerland", "Switzerland",
   "Brussels, Belgium", "Belgium"
-].sort();
+];
+
+// The listed places, plus every other city the matcher understands
+// ("San Jose, CA, USA", "Fremont, CA, USA", ...). Any other place can still
+// be typed in and is used as written.
+const VALID_LOCATIONS = (() => {
+  const covered = new Set(LISTED.map((l) => knownCity(l)).filter(Boolean));
+  const extra = placeSuggestions().filter((l) => {
+    const city = knownCity(l);
+    return city !== null && !covered.has(city);
+  });
+  return Array.from(new Set([...LISTED, ...extra])).sort();
+})();
 
 export function LocationAutocomplete({ defaultValue, name, id, onChange }: { defaultValue: string; name: string; id: string; onChange?: (val: string) => void }) {
   const [value, setValue] = useState(defaultValue);
@@ -49,7 +61,10 @@ export function LocationAutocomplete({ defaultValue, name, id, onChange }: { def
   const typedCity = value.trim().length >= 2 ? knownCity(value) : null;
   const filtered = VALID_LOCATIONS.filter(
     (l) => normalizePlace(l).includes(query) || (typedCity !== null && knownCity(l) === typedCity),
-  );
+  )
+    // Names that start with what was typed first ("San" -> San Jose before Pleasanton).
+    .sort((a, b) => Number(!normalizePlace(a).startsWith(query)) - Number(!normalizePlace(b).startsWith(query)))
+    .slice(0, 12);
   const exact = filtered.some((l) => normalizePlace(l) === query);
 
   return (
@@ -87,10 +102,10 @@ export function LocationAutocomplete({ defaultValue, name, id, onChange }: { def
             </ul>
           ) : (
             <div className="px-3 py-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2">
-              <AlertCircle className="size-5 text-amber-500" />
-              <p className="font-medium text-foreground">We&apos;ll use &ldquo;{value.trim()}&rdquo; as written.</p>
+              <MapPin className="size-5 text-primary" />
+              <p className="font-medium text-foreground">We&apos;ll search near &ldquo;{value.trim()}&rdquo;.</p>
               <p className="text-xs">
-                It isn&apos;t in our city list yet, so matching falls back to the exact text. Adding the country (e.g. &ldquo;Surat, India&rdquo;) helps.
+                Any city works. Adding the state or country (e.g. &ldquo;Surat, India&rdquo; or &ldquo;Reno, NV, USA&rdquo;) makes the matches more accurate.
               </p>
             </div>
           )}

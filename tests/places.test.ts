@@ -85,3 +85,47 @@ describe("remoteAllowsCountry", () => {
     expect(remoteAllowsCountry("USA", null, [])).toBeNull();
   });
 });
+
+describe("US cities, states and the Bay Area", () => {
+  it("reads a US state code as the US, not Canada or India", () => {
+    expect(resolvePlace("San Jose, CA").countries).toEqual(new Set(["united states"]));
+    expect(resolvePlace("Austin, TX").countries.has("united states")).toBe(true);
+    expect(resolvePlace("Indianapolis, IN").countries).toEqual(new Set(["united states"]));
+    expect(resolvePlace("Pune, IN").countries).toEqual(new Set(["india"]));
+    expect(resolvePlace("CA").countries).toEqual(new Set(["canada"]));
+    expect(resolvePlace("Reno, Nevada").countries.has("united states")).toBe(true);
+  });
+
+  it("matches nearby South Bay cities but not San Francisco for someone in San Jose", () => {
+    expect(placeMatches("San Jose, CA", "Santa Clara, CA")).toBe(true);
+    expect(placeMatches("San Jose, CA, USA", "Sunnyvale, California")).toBe(true);
+    expect(placeMatches("San Jose, CA", "Palo Alto, CA")).toBe(true);
+    expect(placeMatches("San Jose, CA", "San Francisco, CA")).toBe(false);
+    expect(placeMatches("San Francisco", "San Jose, CA")).toBe(false);
+    expect(placeMatches("San Francisco", "Oakland, CA")).toBe(true);
+  });
+
+  it("treats 'Bay Area' as the whole Bay Area", () => {
+    expect(placeMatches("San Jose, CA", "San Francisco Bay Area")).toBe(true);
+    expect(placeMatches("Bay Area", "San Francisco, CA")).toBe(true);
+    expect(placeMatches("Bay Area", "Fremont, CA")).toBe(true);
+  });
+
+  it("does not let a Canada-only listing through for a California city", () => {
+    expect(placeMatches("San Jose, CA", "Canada")).toBe(false);
+    expect(placeMatches("San Jose, CA", "United States")).toBe(true);
+  });
+});
+
+describe("placeSuggestions", () => {
+  it("offers San Jose and the other cities the matcher knows", async () => {
+    const { placeSuggestions } = await import("@/lib/places");
+    const all = placeSuggestions();
+    expect(all).toContain("San Jose, CA, USA");
+    expect(all).toContain("San Francisco Bay Area, CA, USA");
+    expect(all).toContain("Washington, DC, USA");
+    expect(all).toContain("Pune, India");
+    expect(all).toContain("Singapore");
+    for (const label of all) expect(resolvePlace(label).cities.size).toBeGreaterThan(0);
+  });
+});

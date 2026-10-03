@@ -18,7 +18,9 @@ function createPool(): Pool {
     ssl: (process.env.SUPABASE_POOLER_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '').includes('supabase') ? { rejectUnauthorized: false } : undefined,
 
     connectionTimeoutMillis: 5_000,
-    idleTimeoutMillis: 10_000,
+    // Kept open longer so a warm server reuses its connection instead of
+    // paying for a new TLS handshake to the database on most clicks.
+    idleTimeoutMillis: 30_000,
     query_timeout: 15_000,
     statement_timeout: 15_000,
     max: 3,

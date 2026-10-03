@@ -3,6 +3,8 @@ import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 import { ATTR_COOKIE, ATTR_MAX_AGE_S, attributionFromRequest, decodeAttribution, encodeAttribution, shouldStore } from "@/lib/attribution-core";
 import { REDEEM_COOKIE, REDEEM_COOKIE_MAX_AGE_S, cleanRedeemCode } from "@/lib/redeem-cookie";
+import { SIGNED_IN_HINT_COOKIE } from "@/lib/auth/constants";
+import { THEME_SCRIPT_HASH } from "@/lib/theme-script";
 
 /**
  * Security headers, applied to every response (see `config.matcher` below -
@@ -37,10 +39,10 @@ import { REDEEM_COOKIE, REDEEM_COOKIE_MAX_AGE_S, cleanRedeemCode } from "@/lib/r
  * them to CSS custom properties first - worth doing eventually, not part of
  * this pass.
  */
-function buildCsp(nonce: string): string {
+function buildCsp(nonce: string | null): string {
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    nonce ? `script-src 'self' 'nonce-${nonce}' '${THEME_SCRIPT_HASH}'` : "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data:",
     "font-src 'self'",
@@ -51,6 +53,23 @@ function buildCsp(nonce: string): string {
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
   ].join("; ");
+}
+
+/**
+ * TWO SCRIPT POLICIES. Pages that show someone's own data (the app, admin,
+ * sign-in) are always rendered per request, so they get the strict nonce
+ * policy above. Public pages (home, pricing, legal, the free check) carry no
+ * personal data and are now served from Vercel's cache: a cached page can't
+ * carry a fresh nonce, so for those `script-src` is same-origin plus inline.
+ * Every path listed here MUST render dynamically (their layouts set
+ * `dynamic = "force-dynamic"`), or its scripts would be blocked.
+ */
+const NONCE_PATHS = ["/admin", "/forgot-password", "/reset-password", "/verify-email", "/api"];
+
+function needsNonce(pathname: string): boolean {
+  return [...PROTECTED_PATHS, ...AUTH_ONLY_PATHS, ...NONCE_PATHS].some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
 }
 
 function applySecurityHeaders(response: NextResponse): NextResponse {
@@ -109,12 +128,14 @@ export async function proxy(request: NextRequest) {
   // btoa/crypto.randomUUID rather than Buffer: middleware runs in the Edge
   // runtime by default, which has the Web Crypto/encoding globals but not
   // Node's Buffer.
-  const nonce = btoa(crypto.randomUUID());
+  const nonce = needsNonce(pathname) ? btoa(crypto.randomUUID()) : null;
   const csp = buildCsp(nonce);
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
+  if (nonce) {
+    requestHeaders.set("x-nonce", nonce);
+    requestHeaders.set("Content-Security-Policy", csp);
+  }
 
   // First-touch attribution: which channel brought this browser here, kept
   // so a later payment can be credited to it (see lib/attribution-core.ts).
@@ -142,6 +163,21 @@ export async function proxy(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
+    }
+    // A readable "signed in" hint (no secret in it) so cached public pages
+    // can show "Dashboard" instead of "Sign in". It follows the session cookie.
+    const hasSession = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+    const hasHint = request.cookies.get(SIGNED_IN_HINT_COOKIE)?.value === "1";
+    if (hasSession && !hasHint) {
+      response.cookies.set(SIGNED_IN_HINT_COOKIE, "1", {
+        path: "/",
+        sameSite: "lax",
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 30,
+      });
+    } else if (!hasSession && hasHint) {
+      response.cookies.delete(SIGNED_IN_HINT_COOKIE);
     }
     if (attribution) {
       response.cookies.set(ATTR_COOKIE, attribution, {

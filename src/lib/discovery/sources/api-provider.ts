@@ -1,5 +1,13 @@
 import { fetchWithGuards, sourceDefaults, asString, asDate } from "@/lib/discovery/sources/base";
 import type { IngestContext, JobSourceAdapter, RawListing } from "@/lib/discovery/types";
+import { resolvePlace } from "@/lib/places";
+
+/** places.ts country names -> the country codes Adzuna's URL takes. */
+const ADZUNA_COUNTRY_CODES: Record<string, string> = {
+  "united states": "us", canada: "ca", "united kingdom": "gb", australia: "au", india: "in", singapore: "sg",
+  germany: "de", france: "fr", netherlands: "nl", "south africa": "za", "new zealand": "nz", italy: "it",
+  spain: "es", poland: "pl", brazil: "br", mexico: "mx", austria: "at", switzerland: "ch", belgium: "be",
+};
 
 /**
  * LICENSED API PROVIDER.
@@ -110,8 +118,14 @@ export const apiProviderSource: JobSourceAdapter = {
       ru: ["ru", "russia", "moscow", "st petersburg"]
     };
 
+    // A place we can resolve properly decides the country first: "San Jose,
+    // CA" is California, not Canada (the ", ca" ending below would say Canada).
+    const resolvedCountries = Array.from(resolvePlace(context.homeLocation).countries);
+    const resolvedCode = resolvedCountries.length === 1 ? ADZUNA_COUNTRY_CODES[resolvedCountries[0]] : undefined;
+
     // Detect country by checking exact matches and includes
-    for (const [code, terms] of Object.entries(geoMap)) {
+    if (resolvedCode) defaultCountry = resolvedCode;
+    else for (const [code, terms] of Object.entries(geoMap)) {
       if (terms.some(term => 
         loc === term || 
         loc.endsWith(`, ${term}`) || 

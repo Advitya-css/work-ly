@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/shared/pending-submit-button";
 import { Badge } from "@/components/ui/badge";
 import { ExperienceSection } from "@/components/career/sections/experience-section";
 import { EducationSection } from "@/components/career/sections/education-section";
@@ -44,10 +44,10 @@ export async function ReviewStep({ userId }: { userId: string }) {
       </div>
 
       <form action={completeOnboardingAction} className="flex justify-center">
-        <Button type="submit" size="lg">
+        <PendingSubmitButton size="lg" pendingLabel="Opening your dashboard…">
           <Check />
           Looks good: go to my dashboard
-        </Button>
+        </PendingSubmitButton>
       </form>
     </div>
   );

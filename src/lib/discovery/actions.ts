@@ -25,7 +25,16 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { calculateProfileCompleteness } from "@/lib/career/completeness";
-import { listCareerGoalsByUserId } from "@/lib/db/career-goals";
+import { createCareerGoal, getPrimaryCareerGoal, listCareerGoalsByUserId, updateCareerGoal } from "@/lib/db/career-goals";
+import {
+  createApplication,
+  getApplicationByOpportunityId,
+  listApplicationsByUserId,
+  setApplicationStatus,
+} from "@/lib/db/applications";
+import { hideRoleListings } from "@/lib/discovery/hidden-roles";
+import { roleKey } from "@/lib/discovery/hidden-roles-core";
+import { isCareerChange } from "@/lib/discovery/pivot-core";
 
 function revalidateDiscoveryViews() {
   revalidatePath("/discover");
@@ -265,7 +274,50 @@ export async function dismissDiscoveredJobAction(id: string, dismissed = true): 
   const job = await getDiscoveredJobById(id);
   if (!job || job.userId !== user.id) return;
   await setDiscoveredJobDismissed(id, dismissed);
+  // "Not for me" means the role, not this one posting: hide its copies from
+  // other job boards too. Future runs skip it (lib/discovery/run.ts).
+  if (dismissed) await hideRoleListings(user.id, job.company, job.title);
   revalidateDiscoveryViews();
+}
+
+/**
+ * "Already applied": the person applied to this role outside Work-ly (or
+ * before signing up). Logs it in their application tracker as applied
+ * today, so their stats stay true, and hides the role from Discover for
+ * good. One click, no AI call.
+ */
+export async function markDiscoveredJobAppliedAction(id: string): Promise<{ error?: string; applicationId?: string }> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const job = await getDiscoveredJobById(id);
+  if (!job || job.userId !== user.id) return { error: "Job not found." };
+
+  const key = roleKey(job.company, job.title);
+  const linked = job.convertedOpportunityId ? await getApplicationByOpportunityId(job.convertedOpportunityId) : null;
+  const existing =
+    linked ??
+    (await listApplicationsByUserId(user.id)).find((a) => key !== null && roleKey(a.company, a.roleTitle) === key);
+  if (existing && (existing.status === "SAVED" || existing.status === "PREPARING")) {
+    await setApplicationStatus(existing.id, "APPLIED");
+  }
+  const application =
+    existing ??
+    (await createApplication(user.id, {
+      opportunityId: job.convertedOpportunityId ?? null,
+      roleTitle: job.title,
+      company: job.company,
+      industry: job.industry,
+      location: job.location,
+      country: job.country,
+      fitScoreAtApply: job.fitScore,
+      status: "APPLIED",
+    }));
+
+  await setDiscoveredJobDismissed(id, true);
+  await hideRoleListings(user.id, job.company, job.title);
+  revalidateDiscoveryViews();
+  revalidatePath("/applications");
+  return { applicationId: application.id };
 }
 
 /**
@@ -336,4 +388,50 @@ export async function clearAllDiscoveredJobsAction(): Promise<void> {
     [user.id]
   );
   revalidatePath("/discover");
+}
+
+/**
+ * "The role I want next" from Discover (and onboarding, for people planning
+ * a move). Sets it as the target role on their main career goal, creating
+ * one if they have none, so the next search looks for it - and, for a
+ * career changer, stops searching their old title (lib/discovery/run.ts).
+ */
+export async function setTargetRoleAction(role: string): Promise<{ error?: string; changingCareer?: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const clean = role.replace(/\s+/g, " ").trim().slice(0, 100);
+  if (clean.length < 2) return { error: "Type the role you want, for example \"UX Designer\"." };
+
+  const goal = await getPrimaryCareerGoal(user.id);
+  if (goal && goal.userId === user.id) {
+    await updateCareerGoal(goal.id, {
+      title: goal.title,
+      targetRole: clean,
+      targetIndustry: goal.targetIndustry,
+      timeframe: goal.timeframe,
+      notes: goal.notes,
+      status: goal.status,
+      primaryTargetRole: clean,
+      secondaryTargetRoles: goal.secondaryTargetRoles.filter((r) => r.toLowerCase() !== clean.toLowerCase()),
+      industries: goal.industries,
+      preferredLocations: goal.preferredLocations,
+      countries: goal.countries,
+      workModes: goal.workModes,
+      employmentTypes: goal.employmentTypes,
+      seniority: goal.seniority,
+      salaryMin: goal.salaryMin,
+      salaryMax: goal.salaryMax,
+      salaryCurrency: goal.salaryCurrency,
+      isUncertain: false,
+    });
+  } else {
+    await createCareerGoal(user.id, { title: `Move into ${clean}`, targetRole: clean, primaryTargetRole: clean });
+  }
+
+  const profile = await getFullCareerProfile(user.id);
+  revalidateDiscoveryViews();
+  revalidatePath("/career-goals");
+  return {
+    changingCareer: isCareerChange(clean, [profile.profile?.currentRole, ...profile.experiences.slice(0, 3).map((e) => e.title)]),
+  };
 }
