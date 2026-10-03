@@ -18,6 +18,7 @@ import { getSprintSpots, listSprints } from "@/lib/sprint";
 import { listPartners } from "@/lib/partners";
 import { PARTNER_PERCENT, partnerSource } from "@/lib/partners-core";
 import { SPRINT_STATUS_LABEL } from "@/lib/sprint-core";
+import { PRO_SOURCE_ORDER, PRO_SOURCE_TITLE, proSource, type ProSourceKind } from "@/lib/pro-source";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 import { OutboxForm } from "./outbox-form";
 import { recentOutreach } from "@/lib/outreach";
@@ -117,6 +118,29 @@ export default async function AdminDashboard({
     }
   }
 
+  // How every Pro account got Pro (lib/pro-source.ts): a paid plan, the
+  // Sprint, a seat or gift code, a free code, the trial - counted across all
+  // users, not just this page.
+  const PRO_SOURCE_COLUMNS = `u."isPro", u."proPlan", u."proUntil",
+      (SELECT b.code FROM beta_codes b WHERE b."usedByUserId" = u.id ORDER BY b."usedAt" DESC NULLS LAST LIMIT 1) AS code_used,
+      EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'refund_first_' || u.id) AS has_paid`;
+  const toSource = (r: Record<string, unknown>) =>
+    proSource({
+      isPro: Boolean(r.isPro),
+      proPlan: (r.proPlan as string | null) ?? null,
+      proUntil: (r.proUntil as Date | null) ?? null,
+      codeUsed: (r.code_used as string | null) ?? null,
+      hasPaid: Boolean(r.has_paid),
+    });
+  const { rows: proRows } = await pool
+    .query(`SELECT u.email, ${PRO_SOURCE_COLUMNS} FROM users u WHERE u."isPro" = true OR EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'refund_first_' || u.id)`)
+    .catch(() => ({ rows: [] as Record<string, unknown>[] }));
+  const proCounts = new globalThis.Map<ProSourceKind, number>();
+  for (const r of proRows) {
+    const k = toSource(r).kind;
+    proCounts.set(k, (proCounts.get(k) ?? 0) + 1);
+  }
+
   // 3. Fetch Paginated Users (Safe for scaling)
   const page = Number(searchParams.page) || 1;
   const limit = 50;
@@ -124,14 +148,15 @@ export default async function AdminDashboard({
 
   const { rows: users } = await pool.query(`
     SELECT
-      u.id, u.email, u.name, u."createdAt", u."isPro",
+      u.id, u.email, u.name, u."createdAt",
       (SELECT MAX(g."primaryTargetRole") FROM career_goals g WHERE g."userId" = u.id) AS target_role,
       (SELECT COUNT(*) FROM career_pathways p WHERE p."userId" = u.id) AS pathways_count,
       -- What each person actually did, for personal follow-up: did they add
       -- a resume, and how many jobs did they check?
       (SELECT COUNT(*) FROM documents d WHERE d."userId" = u.id) AS resumes,
       (SELECT COUNT(*) FROM jobs j WHERE j."userId" = u.id) AS jobs_checked,
-      (SELECT MAX(j."createdAt") FROM jobs j WHERE j."userId" = u.id) AS last_check
+      (SELECT MAX(j."createdAt") FROM jobs j WHERE j."userId" = u.id) AS last_check,
+      ${PRO_SOURCE_COLUMNS}
     FROM users u
     ORDER BY u."createdAt" DESC
     LIMIT $1 OFFSET $2
@@ -570,6 +595,29 @@ export default async function AdminDashboard({
           )}
         </section>
 
+        <section id="how-pro" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-white">How people got Pro</h2>
+            <p className="text-sm text-zinc-400">
+              Every account with Pro now, or that paid before. The user list below shows each person&apos;s source and code.
+            </p>
+          </div>
+          {proRows.length === 0 ? (
+            <p className="text-sm text-zinc-400">No Pro accounts yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody className="tabular-nums">
+                {PRO_SOURCE_ORDER.filter((k) => proCounts.get(k)).map((k) => (
+                  <tr key={k} className="border-t border-zinc-800">
+                    <td className="py-2 pr-4 text-white">{PRO_SOURCE_TITLE[k]}</td>
+                    <td className="py-2 text-right font-semibold text-white">{proCounts.get(k)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -581,7 +629,7 @@ export default async function AdminDashboard({
                   <th className="px-6 py-4 font-medium">Resume</th>
                   <th className="px-6 py-4 font-medium">Jobs checked</th>
                   <th className="px-6 py-4 font-medium">Pathways</th>
-                  <th className="px-6 py-4 font-medium">Tier</th>
+                  <th className="px-6 py-4 font-medium">Pro, and how</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
@@ -623,11 +671,25 @@ export default async function AdminDashboard({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {u.isPro ? (
-                        <Badge variant="default" className="bg-primary/20 text-primary hover:bg-primary/30 border-0">Pro</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-zinc-500 border-zinc-700">Free</Badge>
-                      )}
+                      {(() => {
+                        const src = toSource(u);
+                        const active = src.kind !== "free" && src.kind !== "expired";
+                        return (
+                          <div className="flex flex-col gap-1">
+                            {active ? (
+                              <Badge variant="default" className="w-fit bg-primary/20 text-primary hover:bg-primary/30 border-0">Pro</Badge>
+                            ) : (
+                              <Badge variant="outline" className="w-fit text-zinc-500 border-zinc-700">Free</Badge>
+                            )}
+                            {src.kind !== "free" && (
+                              <span className="text-xs text-zinc-400 whitespace-nowrap">
+                                {src.label}
+                                {src.detail ? <span className="text-zinc-500"> · {src.detail}</span> : null}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}
