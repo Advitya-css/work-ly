@@ -11,6 +11,7 @@ import { getDocumentById, updateDocumentStatus } from "@/lib/db/documents";
 import { getOrCreateCareerProfile, upsertCareerProfile } from "@/lib/db/career-profile";
 import { createEducation } from "@/lib/db/education";
 import { createExperience } from "@/lib/db/experience";
+import { backfillRoleDates } from "@/lib/career/date-backfill";
 import { createProject } from "@/lib/db/projects";
 import { createSkill } from "@/lib/db/skills";
 import { createAchievement } from "@/lib/db/achievements";
@@ -206,7 +207,12 @@ export async function buildProfileFromResumeText(
   // checked back against the source text and anything unfindable is
   // dropped rather than stored.
   const groundingReport = groundResumeExtraction(rawExtraction, text);
-  const extraction = groundingReport.grounded;
+  // Role dates the parser dropped (an end date, "Present"), read back from
+  // the role's own line in the resume. Fills gaps only; see date-backfill.ts.
+  const extraction = {
+    ...groundingReport.grounded,
+    experience: backfillRoleDates(groundingReport.grounded.experience, text),
+  };
 
   if (groundingReport.dropped.length > 0) {
     // Field name and length only, never the value itself: `d.value` here
