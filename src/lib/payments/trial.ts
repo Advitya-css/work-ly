@@ -1,6 +1,7 @@
 import "server-only";
 
 import { pool } from "@/lib/db/pool";
+import { isDisposableEmail } from "@/lib/disposable-email";
 
 /**
  * THE ONE-DAY PRO TRIAL.
@@ -12,6 +13,7 @@ import { pool } from "@/lib/db/pool";
  * window, the nightly Pro check and the follow-up emails' "paying" filter,
  * and TRIAL_TOOL_LIMIT caps its AI cost. When proUntil passes, the account
  * is simply free again (auth providers treat an expired proUntil as free).
+ * Accounts on a temporary-inbox address don't get one.
  */
 
 export const TRIAL_HOURS = 24;
@@ -20,6 +22,14 @@ export const TRIAL_TOOL_LIMIT = 5;
 
 export async function grantTrialIfEligible(userId: string): Promise<boolean> {
   try {
+    // No trial for a throwaway inbox (lib/disposable-email.ts): free Work-ly
+    // still works for them, but a new temporary address shouldn't mean a
+    // new day of Pro every time.
+    const { rows } = await pool.query<{ email: string }>(`SELECT email FROM users WHERE id = $1`, [userId]);
+    if (rows[0] && isDisposableEmail(rows[0].email)) {
+      console.info(`[workly:trial] no trial for ${userId}: temporary email address`);
+      return false;
+    }
     const claim = await pool.query(
       `INSERT INTO rate_limits (key, count, expires_at) VALUES ($1, 1, '2100-01-01T00:00:00Z')
        ON CONFLICT (key) DO NOTHING RETURNING key`,

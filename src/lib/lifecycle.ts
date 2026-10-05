@@ -3,6 +3,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { pool } from "@/lib/db/pool";
+import { isDisposableEmail } from "@/lib/disposable-email";
 import { GUARANTEE } from "@/lib/business";
 import { PAID_PLANS } from "@/lib/pricing";
 import { sendLifecycleEmail, type LifecycleEmail } from "@/lib/email";
@@ -251,6 +252,9 @@ export async function runLifecycleEmails(now = new Date()): Promise<{ considered
   let failed = 0;
   for (const user of candidates) {
     if (sent >= MAX_SENDS_PER_RUN) break;
+    // A temporary inbox is gone within hours: mail to it only bounces,
+    // which hurts delivery to everyone else.
+    if (isDisposableEmail(user.email)) continue;
     const checkout = markers.get(`lifecycle:checkout:${user.id}`);
     const checkoutLive = checkout && new Date(checkout.expires_at).getTime() > now.getTime();
     const kind = dueLifecycleEmail({

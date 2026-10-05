@@ -19,6 +19,7 @@ import { listPartners } from "@/lib/partners";
 import { PARTNER_PERCENT, partnerSource } from "@/lib/partners-core";
 import { SPRINT_STATUS_LABEL } from "@/lib/sprint-core";
 import { PRO_SOURCE_ORDER, PRO_SOURCE_TITLE, proSource, type ProSourceKind } from "@/lib/pro-source";
+import { isDisposableEmail } from "@/lib/disposable-email";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 import { OutboxForm } from "./outbox-form";
 import { recentOutreach } from "@/lib/outreach";
@@ -638,6 +639,14 @@ export default async function AdminDashboard({
                     <td className="px-6 py-4">
                       <div className="font-medium text-white">
                         {u.email}{" "}
+                        {isDisposableEmail(u.email) && (
+                          <span
+                            className="ml-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-400"
+                            title="A temporary inbox: no Pro trial, and emails to it won't reach anyone."
+                          >
+                            Throwaway email
+                          </span>
+                        )}{" "}
                         <a
                           href={`/admin?key=${encodeURIComponent(key as string)}&to=${encodeURIComponent(u.email)}#outbox`}
                           className="ml-1 text-xs font-normal text-primary hover:underline"
