@@ -746,7 +746,7 @@ function DiscoveryCard({
           ) : (
             <Button type="button" size="sm" onClick={analyze} disabled={pending}>
               {busy === "track" ? <WorklyLoader className="animate-spin" /> : null}
-              {busy === "track" ? "Analyzing… about 30 seconds" : "Analyze &amp; track"}
+              {busy === "track" ? "Analyzing… about 30 seconds" : "Analyze & track"}
             </Button>
           )}
           <Button
@@ -785,35 +785,51 @@ export function DiscoverySourcesCard({
 }: {
   sources: { id: string; name: string; kind: string; status: string; legalBasis: string; lastRunFoundCount: number; errorHint?: string | null }[];
 }) {
+  // Dozens of company boards used to be listed one per row, which read as a
+  // broken page. Now: one summary line, the full list on request. A board
+  // that timed out once isn't an error the person can do anything about;
+  // it's simply tried again on the next search.
+  const found = sources.filter((s) => s.lastRunFoundCount > 0).length;
+  const timedOut = (s: { errorHint?: string | null }) => Boolean(s.errorHint && /too long/i.test(s.errorHint));
+  const unreachable = sources.filter(timedOut).length;
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Where these come from</CardTitle>
         <CardDescription>
-          Active data sources powering your discovery feed.
+          {sources.length === 0
+            ? "No sources configured yet."
+            : `Searching ${sources.length} job boards and company career sites. ${found} had matching jobs last time${
+                unreachable > 0 ? `; ${unreachable} didn't answer in time and will be tried again on your next search` : ""
+              }.`}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {sources.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No sources configured yet.</p>
-        ) : (
-          sources.map((source) => (
-            <div key={source.id} className="flex flex-col gap-1 rounded-lg border border-border px-3 py-2.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-foreground">{source.name}</span>
-                <Badge variant="outline">{source.kind}</Badge>
-                <Badge variant="secondary">{source.status}</Badge>
-                {source.lastRunFoundCount > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {source.lastRunFoundCount} last run
-                  </span>
-                )}
-              </div>
-              {source.errorHint && <p className="text-xs text-muted-foreground">{source.errorHint}</p>}
+      {sources.length > 0 && (
+        <CardContent>
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-primary underline-offset-4 hover:underline">
+              Show all {sources.length} sources
+            </summary>
+            <div className="mt-3 flex flex-col gap-2">
+              {[...sources]
+                .sort((a, b) => b.lastRunFoundCount - a.lastRunFoundCount)
+                .map((source) => (
+                  <div key={source.id} className="flex flex-col gap-1 rounded-lg border border-border px-3 py-2.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{source.name}</span>
+                      <Badge variant="outline">{source.kind}</Badge>
+                      <Badge variant="secondary">{timedOut(source) ? "Will retry" : source.status}</Badge>
+                      {source.lastRunFoundCount > 0 && (
+                        <span className="text-xs text-muted-foreground">{source.lastRunFoundCount} last run</span>
+                      )}
+                    </div>
+                    {source.errorHint && <p className="text-xs text-muted-foreground">{source.errorHint}</p>}
+                  </div>
+                ))}
             </div>
-          ))
-        )}
-      </CardContent>
+          </details>
+        </CardContent>
+      )}
     </Card>
   );
 }
