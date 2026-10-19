@@ -151,10 +151,17 @@ export function UpgradeModal({
             </p>
           )}
           <ul className="space-y-3 text-sm font-medium pb-2">
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Unlimited AI job analyses</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>AI resume tailoring</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>The Dream Pathway</span></li>
-            <li className="flex items-center gap-3"><CheckCircle2 className="size-5 text-primary shrink-0" /><span>Interview simulator</span></li>
+            {[
+              "A resume rewritten for every job, as PDF or Word",
+              "Cover letters and notes to the hiring manager",
+              "Likely interview questions and scored mock interviews",
+              "Unlimited job analyses and a plan to your dream job",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-3">
+                <CheckCircle2 className="size-5 shrink-0 text-primary" />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
 
           <div className="flex flex-col gap-2">

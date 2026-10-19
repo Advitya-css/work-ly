@@ -20,19 +20,22 @@ export function JobNextStep({
   isPro,
   preview,
   company,
+  resumeReady = false,
 }: {
   opportunityId: string;
   isPro: boolean;
   preview?: PreviewData;
   company?: string | null;
+  /** A tailored resume is already saved for this job. */
+  resumeReady?: boolean;
 }) {
   const resumeHref = `/opportunities/${opportunityId}/resume`;
 
   const primary = isPro ? (
     <Button asChild size="lg" className="gap-2">
-      <Link href={`${resumeHref}?build=1`}>
+      <Link href={resumeReady ? resumeHref : `${resumeHref}?build=1`}>
         <FileText className="size-4" />
-        Open my tailored resume
+        {resumeReady ? "Open my tailored resume" : "Build my tailored resume"}
       </Link>
     </Button>
   ) : (
@@ -66,10 +69,12 @@ export function JobNextStep({
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 id="next-step-title" className="text-base font-semibold text-foreground">
-            Apply with a resume written for this job
+            {resumeReady ? "Your resume for this job is ready" : "Apply with a resume written for this job"}
           </h2>
           <p className="max-w-prose text-sm text-muted-foreground">
-            Rewritten from what&apos;s already on your profile, in this posting&apos;s language. Nothing invented.
+            {resumeReady
+              ? "Saved for this job. Download it as PDF or Word, or keep refining it."
+              : "Rewritten from what's already on your profile, in this posting's language. Nothing invented."}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">

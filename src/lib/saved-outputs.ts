@@ -55,6 +55,17 @@ export async function getSavedOutput<T>(userId: string, kind: SavedKind, opportu
   return entry ? (entry as SavedEntry<T>) : null;
 }
 
+/**
+ * When an output was saved for this job, or null. Bounded: a slow storage
+ * call must not hold up the page it's shown on, so after `timeoutMs` the
+ * answer is simply "not known" (null).
+ */
+export async function savedAtWithin(userId: string, kind: SavedKind, opportunityId: string, timeoutMs = 700): Promise<string | null> {
+  const lookup = getSavedOutput<unknown>(userId, kind, opportunityId).then((entry) => entry?.savedAt ?? null);
+  const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+  return Promise.race([lookup, timeout]).catch(() => null);
+}
+
 /** Which jobs already have each kind of output saved, for "ready" badges. */
 export async function savedOutputKinds(userId: string, opportunityId: string): Promise<Set<SavedKind>> {
   const files = await Promise.all(SAVED_KINDS.map(async (kind) => [kind, await readFile(userId, kind)] as const));

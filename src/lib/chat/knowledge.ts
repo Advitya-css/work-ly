@@ -56,7 +56,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["what should i do", "where do i start", "what next", "getting started", "how do i use", "first step"],
     question: "What should I do first?",
     answer:
-      "In this order:\n\n1. Upload your CV on Career Profile. Everything else reads from it.\n2. Set a goal on Career Goals, even a rough one. Without it Work-ly can score how well you match a job, but not whether the job is worth pursuing.\n3. Analyze a job you are actually considering, or press Discover to pull some in.\n4. Once you have a few, open Career Path to see what is standing between you and the roles you want.",
+      "In this order:\n\n1. Upload your CV in **My career**. Everything else reads from it.\n2. Set a goal in **My career > Goals**, even a rough one. Without it Work-ly can score how well you match a job, but not whether the job is worth your time.\n3. Open **Jobs > Discover** to pull in matches, or paste a job you're considering into **Analyze a job**.\n4. On a job you like, open the tailored resume. It's rewritten for that posting from your own experience, and you can edit it and download it as PDF or Word.",
   },
   {
     id: "why-ranked",
@@ -68,9 +68,9 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "pathway",
     triggers: ["career path", "pathway", "steps", "30 60 90", "plan"],
-    question: "What is the Career Path for?",
+    question: "What is the Action plan for?",
     answer:
-      "It turns the gaps between where you are and where you said you want to be into an ordered list of things to do. The order is deliberate: positioning and evidence first, because they are quick and change how everything else reads, then portfolio, skills, credentials, and finally the slow structural things like seniority.\n\nThe 30, 60 and 90 day windows are assigned by how hard each action is, not by where it happens to sit in the list.",
+      "The Action plan (in My career) turns the gaps between where you are and where you said you want to be into an ordered list of things to do. The order is deliberate: positioning and evidence first, because they are quick and change how everything else reads, then portfolio, skills, credentials, and finally the slow structural things like seniority.\n\nThe 30, 60 and 90 day windows are assigned by how hard each action is, not by where it happens to sit in the list.",
   },
   {
     id: "gap",
@@ -84,7 +84,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["where do jobs come from", "sources", "scraping", "linkedin", "indeed", "glassdoor"],
     question: "Where do the discovered jobs come from?",
     answer:
-      "Company career pages that publish a public feed, employer and university feeds, government job boards, licensed API providers, and anything you paste in yourself.\n\nWorkly does not scrape LinkedIn, Indeed, Glassdoor or any service whose terms prohibit automated access. Every listing shows its source and a link, so you can always check it at the origin.",
+      "Company career pages that publish a public feed, employer and university feeds, government job boards, licensed API providers, and anything you paste in yourself.\n\nWork-ly does not scrape LinkedIn, Indeed, Glassdoor or any service whose terms prohibit automated access. Every listing shows its source and a link, so you can always check it at the origin.",
   },
   {
     id: "applications",
@@ -98,7 +98,7 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     triggers: ["privacy", "data", "delete", "who sees", "stored", "gdpr"],
     question: "What happens to my data?",
     answer:
-      "Your CV and profile live in your own database and are never shared with another user. Settings has controls to delete your CV, your career data, or your whole account, and deletions remove the stored files too.\n\nIf you have configured an AI provider, the text of a CV or job description you ask it to parse is sent to that provider. Everything else, including all scoring, runs locally with no network call.",
+      "Your CV, profile and everything Work-ly writes for you are private to your account and never shown to another user. To read your CV and the jobs you analyse, their text is sent to Work-ly's AI provider for processing.\n\nSettings has controls to delete your CV, your career data, or your whole account, and deletions remove the stored files too, including saved resumes and letters.",
   },
   {
     id: "how-to-location-salary",
@@ -113,11 +113,18 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     answer: "Open the specific job or application from the Opportunities or Applications board. On the detailed analysis page, look for the 'Delete' button near the top right of the page header."
   },
   {
+    id: "tailored-resume",
+    triggers: ["tailored resume", "tailor my resume", "resume for this job", "word file", "word document", "docx", "download resume", "saved resume", "edit my resume"],
+    question: "How does the tailored resume work?",
+    answer:
+      "Open a job and choose **Open my tailored resume**. Work-ly picks your most relevant real experience for that posting, rewrites each line in its language, keeps every number, and orders your skills by what it asks for. It never adds anything that isn't on your profile, and it marks any new wording so you can check it.\n\nIt's saved for that job: click any text to edit it, and download it as PDF or Word. Switch on **Show my original lines** to see exactly what changed.",
+  },
+  {
     id: "accuracy",
     triggers: ["wrong", "inaccurate", "mistake", "not right", "bad parse", "misread"],
     question: "The parsed information is wrong. What do I do?",
     answer:
-      "Edit it. Every section of your career profile is editable, and anything Work-ly extracted rather than you entering is flagged as unverified until you confirm it.\n\nIf a lot came out wrong, the likely cause is that no AI provider is configured, so a pattern-matching fallback read the document. It is deliberately cautious and will not guess. Your scores improve immediately once the profile is corrected.",
+      "Edit it. Every section in **My career** is editable, and anything Work-ly read from your CV rather than you entering is marked until you confirm it.\n\nIf a lot came out wrong, the CV may be a scanned image or an unusual layout. Try uploading a text-based PDF or a Word file. Your scores update as soon as the profile is corrected.",
   },
 ];
 

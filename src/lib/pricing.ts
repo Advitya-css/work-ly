@@ -24,11 +24,11 @@ export interface PaidPlan {
 }
 
 export const PRO_FEATURES = [
+  "A resume rewritten for every job you apply to, as PDF or Word, saved and editable",
+  "Cover letters and notes to the hiring manager (email and LinkedIn), saved per job",
+  "Likely interview questions, and mock interviews scored answer by answer",
   "Unlimited AI job analyses and fit scores (fair use)",
-  "Resumes and cover letters tailored to each job",
-  "Mock interviews and practice tasks",
-  "Unlimited dream-job analyses and step-by-step career plans",
-  "Messages to hiring managers and likely interview questions",
+  "Unlimited dream-job analyses and week-by-week career plans",
 ];
 
 export const FREE_FEATURES = [
@@ -57,10 +57,10 @@ export const PAID_PLANS: PaidPlan[] = [
     renews: true,
     term: "1 month, renewing until cancelled",
     features: [
-      "Unlimited AI job analyses",
-      "Tailored resumes & cover letters",
+      "Tailored resumes (PDF + Word) & cover letters",
+      "Hiring-manager notes & likely interview questions",
       "Mock interviews & practice tasks",
-      "Dream-job analyses & career plans",
+      "Unlimited job analyses & career plans",
     ],
   },
   {

@@ -10,6 +10,7 @@ import { findKnowledge, knowledgeById } from "@/lib/chat/knowledge";
 import { safeMessage } from "@/lib/errors";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
+import { HONESTY_RULE } from "@/lib/ai/honesty";
 
 /**
  * The "Ask Work-ly" helper.
@@ -139,7 +140,8 @@ export async function askWorklyAction(
     "- Do not promise outcomes. Give practical, concrete next steps instead.",
     "- Be brief. Two or three short paragraphs at most, and prefer a short list when the answer is a sequence of steps.",
     "- Write plainly, for someone who may be new to job hunting. No jargon without explaining it.",
-    "- If asked how to navigate the app: 'My career' contains Profile, Goals, Dream job, and Career path. 'Jobs' contains Opportunities, Discover, and Analyze. 'Settings' has account controls.",
+    "- " + HONESTY_RULE,
+    "- If asked how to navigate the app: 'Home' shows the next move. 'Jobs' contains Opportunities, Discover and Analyze a job; each job's page has the tailored resume, cover letter, note to the hiring manager and likely interview questions. 'My career' contains Profile, Goals, Dream job, Action plan, Career change and Insights. 'Applications' tracks what you've sent, with a mock interview once you reach the interview stage. 'Settings' has account controls.",
     "",
     "About the person you are helping:",
     context,
