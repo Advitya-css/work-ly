@@ -8,10 +8,12 @@ import { buildTailoredResume, type TailoredResume } from "@/lib/resume/tailored-
 import { getApplicationByOpportunityId, updateApplication } from "@/lib/db/applications";
 import { TAILORED_CV_LABEL } from "@/lib/applications/cv-version";
 import { recordUsage } from "@/lib/usage";
+import { saveOutput } from "@/lib/saved-outputs";
+import { cleanEditedResume } from "@/lib/resume/tailored-resume-core";
 
 export async function generateTailoredResumeDocAction(
   opportunityId: string,
-): Promise<{ data: TailoredResume } | { error: string }> {
+): Promise<{ data: TailoredResume; savedAt: string | null } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
   if (!user.isPro) return { error: "The tailored resume is a Pro feature." };
@@ -32,6 +34,8 @@ export async function generateTailoredResumeDocAction(
   try {
     const resume = await buildTailoredResume(profile, opp.job);
     if (!resume) return { error: "Couldn't build the resume right now. Please try again." };
+    // Kept, so opening it again is instant and doesn't spend another build.
+    const savedAt = await saveOutput(user.id, "resume", opportunityId, resume);
     // Record which CV went out, so outcomes can later be compared tailored
     // vs not. Only fills a blank - never overwrites what the user entered.
     try {
@@ -42,9 +46,25 @@ export async function generateTailoredResumeDocAction(
     } catch (error) {
       console.warn("[workly:resume] could not tag the application's CV version:", error);
     }
-    return { data: resume };
+    return { data: resume, savedAt };
   } catch (error) {
     console.error("[workly:resume] build failed:", error);
     return { error: "Couldn't build the resume right now. Please try again." };
   }
+}
+
+/** Saves the user's own edits to a tailored resume, so they survive a refresh. */
+export async function saveTailoredResumeEditsAction(
+  opportunityId: string,
+  edited: unknown,
+): Promise<{ savedAt: string } | { error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Please sign in again." };
+  if (!user.isPro) return { error: "The tailored resume is a Pro feature." };
+  const opp = await getOpportunityWithJobById(user.id, opportunityId);
+  if (!opp || opp.userId !== user.id) return { error: "Opportunity not found." };
+  const resume = cleanEditedResume(edited);
+  if (!resume) return { error: "Couldn't save that. Please try again." };
+  const savedAt = await saveOutput(user.id, "resume", opportunityId, resume, { edited: true });
+  return savedAt ? { savedAt } : { error: "Couldn't save your edits. Copy them somewhere safe and try again." };
 }

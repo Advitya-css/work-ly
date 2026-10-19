@@ -128,11 +128,22 @@ const IMPACT_ORDER: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 const WEEKS_FOR: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3 };
 
 function stripPrefix(text: string): string {
-  return (
-    text
-      .replace(/^(strong |proven |demonstrated |advanced |solid )?(experience (with|in|building|using)|proficiency (in|with)|knowledge of|familiarity with)\s+/i, "")
-      .trim() || text
-  );
+  const cleaned = text
+    // "Nice to have: Tableau", "Must-have - SQL", "Required: ..."
+    .replace(/^(nice[\s-]to[\s-]have|must[\s-]have|required|preferred|bonus|plus)\s*[:\-–]\s*/i, "")
+    // "3+ years of experience with dbt"
+    .replace(/^\d+\+?\s*(years?|yrs)\s+(of\s+)?/i, "")
+    .replace(/^(strong |proven |demonstrated |advanced |solid |hands-on )?(experience( (with|in|of|using))?|proficiency (in|with)|knowledge of|familiarity with|understanding of)\s+/i, "")
+    .replace(/[.;,\s]+$/, "")
+    .trim();
+  return cleaned || text;
+}
+
+/** "Tableau" stays; "Building dashboards" -> "building dashboards" so it reads inside a sentence. Acronyms keep their case. */
+function inSentence(subject: string): string {
+  return /^[A-Z][a-z]/.test(subject) && !/^[A-Z][a-z]+[A-Z]/.test(subject) && /^(Building|Designing|Running|Managing|Leading|Working|Writing|Using|Creating|Developing|Owning|Defining)\b/.test(subject)
+    ? subject[0].toLowerCase() + subject.slice(1)
+    : subject;
 }
 
 /**
@@ -188,7 +199,7 @@ export function fallbackBlocks(gaps: GapPriority[], targetRole: string, hoursPer
         break;
       case "CREDENTIAL_GAP":
         block = {
-          focus: `Start the credential: ${subject}`,
+          focus: `Start the ${subject.length <= 40 ? subject : "credential"}`,
           closes: [gap.title],
           actions: [
             `Confirm exactly which credential satisfies "${subject}" in 3 real postings`,
@@ -203,7 +214,7 @@ export function fallbackBlocks(gaps: GapPriority[], targetRole: string, hoursPer
       case "EXPERIENCE_GAP":
       case "SENIORITY_GAP":
         block = {
-          focus: `Build scope that counts: ${subject}`,
+          focus: subject.length <= 40 ? `Own real work in ${inSentence(subject)}` : "Own a piece of work that matches this requirement",
           closes: [gap.title],
           actions: [
             "Take ownership of one piece of work at your current job (or a volunteer/freelance project) that matches this requirement",
@@ -215,19 +226,32 @@ export function fallbackBlocks(gaps: GapPriority[], targetRole: string, hoursPer
           resource: null,
         };
         break;
-      default:
+      default: {
+        // Short subjects ("Tableau", "dbt") read inside a sentence; a whole
+        // requirement sentence doesn't, so long ones are referred to plainly.
+        const short = subject.length <= 40;
+        const named = inSentence(subject);
         block = {
-          focus: `Get provable in ${subject}`,
+          focus: short ? `Build real proof of ${named}` : `Build real proof for: ${subject}`,
           closes: [gap.title],
-          actions: [
-            `Finish one focused course or tutorial on ${subject} (skip anything over ~10 hours)`,
-            `Build a small project that uses ${subject} on a realistic ${targetRole} problem`,
-            "Publish it (GitHub, portfolio or a write-up) and add it to your profile with the outcome in one line",
-          ],
-          deliverable: `A public project that uses ${subject}`,
-          doneWhen: `You can link to working ${subject} work and explain one decision you made in it`,
+          actions: short
+            ? [
+                `Finish one focused course or tutorial on ${named} (skip anything over ~10 hours)`,
+                `Build a small project that uses ${named} on a realistic ${targetRole} problem`,
+                "Publish it (GitHub, portfolio or a write-up) and add it to your profile with the outcome in one line",
+              ]
+            : [
+                "Pick one focused course or tutorial that covers this (skip anything over ~10 hours)",
+                `Build a small project that shows it on a realistic ${targetRole} problem`,
+                "Publish it (GitHub, portfolio or a write-up) and add it to your profile with the outcome in one line",
+              ],
+          deliverable: short ? `A public project that uses ${named}` : "A public project that shows this requirement in use",
+          doneWhen: short
+            ? `You can link to working ${named} work and explain one decision you made in it`
+            : "You can link to the work and explain one decision you made in it",
           resource: null,
         };
+      }
     }
     blocks.push({ ...block, startWeek: week, endWeek: week + length - 1, hoursPerWeek, readinessAfter: null });
     week += length;

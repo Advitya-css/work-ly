@@ -37,6 +37,7 @@ export default function FreeGraderPage() {
     signedIn: boolean;
     isPro: boolean;
     score: number | null;
+    headline?: string;
     summary: string;
     strengths: { requirement: string; evidence: string }[];
     gaps: { requirement: string; mustHave: boolean; partly: boolean; fix: string }[];
@@ -202,7 +203,8 @@ export default function FreeGraderPage() {
                 ) : (
                   <div className="text-2xl font-semibold mb-4 text-foreground">Not enough to score</div>
                 )}
-                <p className="text-muted-foreground max-w-md">{result.summary}</p>
+                {result.headline && <p className="max-w-md text-base font-medium text-foreground">{result.headline}</p>}
+                {result.summary && <p className="mt-1 max-w-md text-muted-foreground">{result.summary}</p>}
                 <p className="mt-3 text-xs text-muted-foreground max-w-md">
                   How well your resume shows this job&apos;s requirements. Not a hiring probability.
                 </p>

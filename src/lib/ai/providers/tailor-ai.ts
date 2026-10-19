@@ -1,7 +1,6 @@
 import { aiProvider } from "@/lib/ai";
 import {
   NO_FABRICATION_RULES,
-  REWRITE_RULES,
   candidateBrief,
   completeStructured,
   jobBrief,
@@ -9,22 +8,28 @@ import {
   unsupportedNumbers,
 } from "@/lib/ai/career-context";
 import type { Application, Job } from "@/lib/db/types";
-import { safeRewrite } from "@/lib/resume/tense";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 
 export interface TailoredApplication {
   coverLetter: string;
+  /**
+   * Kept for older saved results. The cover-letter tool used to return
+   * bullet rewrites too; the tailored resume does that job properly now.
+   */
   resumeBullets: string[];
-  /** Each bullet with the profile line it came from, so the tool can show what changed. */
   bulletChanges?: { before: string; after: string }[];
-  /** Numbers in the output that don't appear anywhere in the candidate's profile - shown as "check before sending". */
+  /** Numbers in the letter that don't appear anywhere in the candidate's profile - shown as "check before sending". */
   unverifiedNumbers?: string[];
 }
 
-const TAILOR_SYSTEM = `You tailor ONE candidate's application to ONE job, for a human hiring manager first and keyword screening second.
-1. coverLetter: 3 short paragraphs, under 250 words. Open with why this company/role specifically (from the JOB text), then the 2 most relevant real proofs from the candidate's history, then a confident close. Sign as [Your Name].
-2. resumeBullets: 4-6 items. Each has "basedOn" (one real line copied exactly from the CANDIDATE section) and "rewrite" (that line tailored for this job: the tool/domain the job cares about, the real outcome).
-${REWRITE_RULES}
+const COVER_SYSTEM = `You write ONE cover letter from this candidate to this employer, for a busy human hiring manager.
+- Plain text, 3 short paragraphs, 150-230 words in total. Open with "Dear Hiring Team," unless the JOB names the hiring manager.
+- Paragraph 1: name what this team needs in the JOB's own terms (a product, problem or responsibility it actually mentions) and connect it to the candidate's real background in one or two sentences. Never open with "I am writing", "I am excited", "I was thrilled" or any line about applying.
+- Paragraph 2: the TWO strongest real proofs from the CANDIDATE section for this job's main requirements. Name the employer each happened at and keep every real number exactly. Never merge facts from different roles into one story.
+- Paragraph 3: one sentence on what they could take on first (from the JOB), then a plain request to talk.
+- End with "Best regards," and the candidate's name exactly as given in NAME on its own line.
+- Never use: passionate, results-driven, dynamic, fast-paced, synergy, leverage, thrilled, "perfect fit", "unique blend", "proven track record", "I believe".
+- If the candidate lacks something the job requires, leave it out. Never claim it, never apologise for it.
 ${NO_FABRICATION_RULES}`;
 
 /**
@@ -33,49 +38,42 @@ ${NO_FABRICATION_RULES}`;
  * model to "blend the candidate's experience with the exact keywords" the
  * job wanted, which in practice meant claiming skills the candidate lacked.
  */
-export async function generateTailoredApplication(profile: FullCareerProfile, job: Job): Promise<TailoredApplication> {
+export async function generateTailoredApplication(
+  profile: FullCareerProfile,
+  job: Job,
+  options: { name?: string | null } = {},
+): Promise<TailoredApplication> {
   const candidate = candidateBrief(profile);
+  const name = options.name?.trim() || "[Your Name]";
   const result = await completeStructured({
     quality: "high",
-    system: TAILOR_SYSTEM,
-    user: `JOB\n===\n${jobBrief(job, job.title ?? "this role", job.company)}\n\nCANDIDATE\n=========\n${candidate}`,
+    system: COVER_SYSTEM,
+    user: `NAME: ${name}\n\nJOB\n===\n${jobBrief(job, job.title ?? "this role", job.company)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: {
       type: "object",
-      properties: {
-        coverLetter: { type: "string" },
-        resumeBullets: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: { basedOn: { type: "string" }, rewrite: { type: "string" } },
-            required: ["basedOn", "rewrite"],
-          },
-        },
-      },
-      required: ["coverLetter", "resumeBullets"],
+      properties: { coverLetter: { type: "string" } },
+      required: ["coverLetter"],
     },
     temperature: 0.4,
     validate: (raw) => {
-      const r = raw as Record<string, unknown>;
-      const coverLetter = str(r.coverLetter, 3000);
-      const pairs = (Array.isArray(r.resumeBullets) ? r.resumeBullets : [])
-        .map((b) => {
-          if (typeof b === "string") return { before: "", after: str(b, 400) ?? "" };
-          const o = b as Record<string, unknown>;
-          return { before: str(o?.basedOn, 400) ?? "", after: str(o?.rewrite, 400) ?? "" };
-        })
-        .filter((p) => p.after)
-        // A rewrite that drops the original's numbers loses the proof - keep the real line.
-        .map((p) => (p.before && unsupportedNumbers(p.before, p.after).length > 0 ? { ...p, after: p.before } : p))
-        .map((p) => (p.before ? { ...p, after: safeRewrite(p.after, p.before) } : p))
-        .slice(0, 6);
-      return coverLetter && pairs.length > 0 ? { coverLetter, bulletChanges: pairs } : null;
+      const coverLetter = str((raw as Record<string, unknown>)?.coverLetter, 3000);
+      // A "letter" of one line is a failed generation, not a draft.
+      return coverLetter && coverLetter.split(/\s+/).length >= 40 ? tidyLetter(coverLetter) : null;
     },
   });
   if (!result) throw new Error("Failed to generate tailored application.");
-  const resumeBullets = result.bulletChanges.map((p) => p.after);
-  const unverifiedNumbers = unsupportedNumbers(`${result.coverLetter} ${resumeBullets.join(" ")}`, candidate);
-  return { coverLetter: result.coverLetter, resumeBullets, bulletChanges: result.bulletChanges, unverifiedNumbers };
+  return { coverLetter: result, resumeBullets: [], unverifiedNumbers: unsupportedNumbers(result, candidate) };
+}
+
+/** Normalises spacing: one blank line between paragraphs, no trailing spaces. */
+export function tidyLetter(text: string): string {
+  return text
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export async function generateFollowUpEmail(application: Application, job: Job): Promise<string> {

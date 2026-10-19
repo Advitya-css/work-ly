@@ -9,6 +9,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
 import { FREE_AI_LIMIT_MESSAGE, spendAnonymousAi, spendFreeAi } from "@/lib/ai/allowance";
 import { recordFunnelStep } from "@/lib/attribution";
+import { countsInWords, graderHeadline } from "@/lib/scoring/grader-headline";
 
 /**
  * One free scan per device, enforced with a long-lived cookie rather than an
@@ -105,7 +106,15 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
         /** Pro members aren't shown prices for what they already have. */
         isPro: Boolean(user?.isPro),
         score: reliable ? analysis.fitScore : null,
-        summary: analysis.screen.summary,
+        // Counted from the verdicts, so the line under the score can't
+        // contradict it the way a free-text summary could ("100/100" over
+        // "meets nearly every requirement").
+        headline: graderHeadline(
+          met.length,
+          analysis.screen.requirements.length,
+          open.filter((r) => r.importance === "critical" && r.verdict === "missing").length,
+        ),
+        summary: countsInWords(analysis.screen.summary) ? "" : analysis.screen.summary,
         strengths: met.slice(0, 4).map((r) => ({ requirement: r.requirement, evidence: r.evidenceQuote ?? "" })),
         gaps: open.slice(0, 5).map((r) => ({
           requirement: r.requirement,

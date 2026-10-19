@@ -71,19 +71,17 @@ describe("AI Tailoring & Reminders", () => {
     vi.clearAllMocks();
   });
 
-  it("should successfully generate and parse a tailored resume and cover letter", async () => {
+  it("should successfully generate and parse a cover letter", async () => {
+    const letter = `Dear Hiring Team,\\n\\n${"Vercel needs someone to build fast React apps for its dashboard. ".repeat(4)}\\n\\n\\n\\nAt Acme I built React apps.\\n\\nBest regards,\\nPriya Sharma`;
     vi.mocked(aiProvider.complete).mockResolvedValueOnce({
-      content: `{
-        "coverLetter": "Dear Vercel,\\n\\nI love Next.js.",
-        "resumeBullets": ["Built apps with React", "Scaled TypeScript codebases"]
-      }`,
+      content: JSON.stringify({ coverLetter: JSON.parse(`"${letter}"`) }),
     });
 
-    const result = await generateTailoredApplication(mockProfile as any, mockJob as any);
+    const result = await generateTailoredApplication(mockProfile as any, mockJob as any, { name: "Priya Sharma" });
 
-    expect(result.coverLetter).toContain("Dear Vercel");
-    expect(result.resumeBullets).toHaveLength(2);
-    expect(result.resumeBullets[0]).toBe("Built apps with React");
+    expect(result.coverLetter).toContain("Dear Hiring Team");
+    // Paragraph spacing is normalised to one blank line.
+    expect(result.coverLetter).not.toMatch(/\n{3,}/);
     expect(aiProvider.complete).toHaveBeenCalledTimes(1);
 
     // The prompt actually sent to the AI must contain the candidate's real
@@ -92,6 +90,12 @@ describe("AI Tailoring & Reminders", () => {
     expect(prompt).toContain("Frontend Engineer");
     expect(prompt).toContain("State University");
     expect(prompt).not.toContain("${");
+    expect(prompt).toContain("NAME: Priya Sharma");
+  });
+
+  it("rejects a letter that is too short to be a real draft", async () => {
+    vi.mocked(aiProvider.complete).mockResolvedValueOnce({ content: JSON.stringify({ coverLetter: "Dear Vercel, I love Next.js." }) });
+    await expect(generateTailoredApplication(mockProfile as any, mockJob as any)).rejects.toThrow();
   });
 
   it("should successfully generate a follow-up email", async () => {

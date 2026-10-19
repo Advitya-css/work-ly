@@ -1,5 +1,6 @@
 import "server-only";
-import { safeRewrite } from "@/lib/resume/tense";
+import { isCosmeticRewrite, safeRewrite } from "@/lib/resume/tense";
+import { addedWords, resumeDateRange, type TailoredResume, type TailoredResumeRole } from "@/lib/resume/tailored-resume-core";
 
 import {
   NO_FABRICATION_RULES,
@@ -27,41 +28,9 @@ import type { Job } from "@/lib/db/types";
  *     original didn't contain is flagged, not shipped silently.
  */
 
-export interface TailoredResumeRole {
-  title: string;
-  company: string;
-  location: string | null;
-  dates: string;
-  bullets: string[];
-}
+export type { TailoredResume, TailoredResumeRole, TailoredResumeProject } from "@/lib/resume/tailored-resume-core";
 
-export interface TailoredResume {
-  summary: string;
-  roles: TailoredResumeRole[];
-  projects: { name: string; bullets: string[] }[];
-  skills: string[];
-  education: { line: string; dates: string }[];
-  certifications: string[];
-  /** Keywords from the job the candidate can honestly claim, for the user to double-check coverage. */
-  keywordsCovered: string[];
-  /** Job keywords that are NOT supported by the profile - never inserted, shown so the user knows. */
-  keywordsMissing: string[];
-  /** Numbers that appeared in rewritten text but not in the source line. */
-  unverifiedNumbers: string[];
-}
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-function fmt(d: Date | null | undefined): string | null {
-  if (!d) return null;
-  const date = new Date(d);
-  if (Number.isNaN(date.getTime())) return null;
-  return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-}
-function dateRange(start: Date | null, end: Date | null, current: boolean): string {
-  const s = fmt(start);
-  const e = current ? "Present" : fmt(end);
-  return [s, e].filter(Boolean).join(" – ");
-}
+const dateRange = resumeDateRange;
 
 /** The candidate's own lines for one role: description split into bullets/sentences. */
 function sourceLines(text: string | null | undefined): string[] {
@@ -130,22 +99,43 @@ const SCHEMA = {
 
 type RawBullets = { id?: unknown; bullets?: unknown };
 
-function groundedBullets(raw: RawBullets | undefined, lines: string[], flagged: Set<string>, max: number): string[] {
-  if (!raw || !Array.isArray(raw.bullets)) return [];
+type Grounded = { bullets: string[]; from: (string | null)[]; added: string[][]; used: Set<string> };
+
+function groundedBullets(raw: RawBullets | undefined, lines: string[], flagged: Set<string>, max: number, profileText: string): Grounded {
+  const out: Grounded = { bullets: [], from: [], added: [], used: new Set() };
+  if (!raw || !Array.isArray(raw.bullets)) return out;
   const source = lines.join("\n");
-  const out: string[] = [];
   for (const b of raw.bullets) {
     const r = b as Record<string, unknown>;
     const basedOn = str(r?.basedOn, 500);
     const text = str(r?.text, 400);
     if (!basedOn || !text || !quoteFound(basedOn, source)) continue;
+    // The same source line used twice reads as padding.
+    const sourceKey = normalizeForMatch(basedOn);
+    if (out.used.has(sourceKey)) continue;
+    out.used.add(sourceKey);
     for (const n of unsupportedNumbers(text, basedOn)) flagged.add(n);
     // A rewrite that loses the original's numbers ("Built 40+ dbt models ...
     // used by 120 city managers" -> "Built dbt models") throws away the
     // proof. Keep the candidate's own line instead.
     const lostNumbers = unsupportedNumbers(basedOn, text).length > 0;
-    out.push((lostNumbers ? basedOn : safeRewrite(text, basedOn)).replace(/^[\s•\-*]+/, ""));
-    if (out.length >= max) break;
+    const original = basedOn.replace(/^[\s•\-*]+/, "");
+    const final = (lostNumbers ? basedOn : safeRewrite(text, basedOn)).replace(/^[\s•\-*]+/, "");
+    const cosmetic = isCosmeticRewrite(original, final);
+    const added = cosmetic ? [] : addedWords(final, original, profileText);
+    // Four or more new words is no longer a rewrite of this line; it's a
+    // different claim ("... driving lead acquisition across revenue
+    // operations"). Use the candidate's own line instead.
+    if (added.length >= 4) {
+      out.bullets.push(original);
+      out.from.push(null);
+      out.added.push([]);
+    } else {
+      out.bullets.push(final);
+      out.from.push(cosmetic ? null : original);
+      out.added.push(added);
+    }
+    if (out.bullets.length >= max) break;
   }
   return out;
 }
@@ -195,20 +185,32 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
           ? (list as RawBullets[]).find((x) => typeof x?.id === "string" && x.id.replace(/[[\]\s]/g, "").toUpperCase() === `${prefix}${i + 1}`)
           : undefined;
 
-      const tailoredRoles: TailoredResumeRole[] = roles.map((role, i) => ({
-        title: role.title,
-        company: role.company,
-        location: role.location,
-        dates: dateRange(role.startDate, role.endDate, role.isCurrent),
-        bullets: groundedBullets(byId(r.roles, "R", i), roleLines[i], flagged, 5),
-      }));
-      // A role the model skipped keeps its original lines rather than vanishing.
-      for (let i = 0; i < tailoredRoles.length; i++) {
-        if (tailoredRoles[i].bullets.length === 0 && roleLines[i].length > 0) tailoredRoles[i].bullets = roleLines[i].slice(0, 3);
-      }
+      let leftOut = 0;
+      const tailoredRoles: TailoredResumeRole[] = roles.map((role, i) => {
+        const g = groundedBullets(byId(r.roles, "R", i), roleLines[i], flagged, 5, candidate);
+        // A role the model skipped keeps its original lines rather than vanishing.
+        if (g.bullets.length === 0 && roleLines[i].length > 0) {
+          const kept = roleLines[i].slice(0, 3);
+          leftOut += roleLines[i].length - kept.length;
+          return { title: role.title, company: role.company, location: role.location, dates: dateRange(role.startDate, role.endDate, role.isCurrent), bullets: kept, from: kept.map(() => null), added: kept.map(() => []) };
+        }
+        leftOut += Math.max(0, roleLines[i].length - g.used.size);
+        return {
+          title: role.title,
+          company: role.company,
+          location: role.location,
+          dates: dateRange(role.startDate, role.endDate, role.isCurrent),
+          bullets: g.bullets,
+          from: g.from,
+          added: g.added,
+        };
+      });
 
       const tailoredProjects = profile.projects
-        .map((p, i) => ({ name: p.name, bullets: groundedBullets(byId(r.projects, "P", i), projectLines[i], flagged, 2) }))
+        .map((p, i) => {
+          const g = groundedBullets(byId(r.projects, "P", i), projectLines[i], flagged, 2, candidate);
+          return { name: p.name, bullets: g.bullets, from: g.from, added: g.added };
+        })
         .filter((p) => p.bullets.length > 0)
         .slice(0, 3);
 
@@ -260,6 +262,7 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
         // Looker, or similar tools" listed as missing next to Tableau and Looker).
         keywordsMissing: list(r.keywordsMissing, 12).filter((k) => !supported(k) && !mentionsKnownSkill(k)).slice(0, 8),
         unverifiedNumbers: [],
+        leftOut,
       } satisfies TailoredResume;
     },
   });

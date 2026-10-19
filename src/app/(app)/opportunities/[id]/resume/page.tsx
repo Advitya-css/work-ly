@@ -13,6 +13,8 @@ import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
+import { getSavedOutput } from "@/lib/saved-outputs";
+import type { TailoredResume } from "@/lib/resume/tailored-resume-core";
 
 export const metadata: Metadata = { title: "Tailored Resume" };
 // Building the resume is one model call; give it room.
@@ -87,7 +89,10 @@ export default async function TailoredResumePage({
     );
   }
 
-  const profile = await getFullCareerProfile(user.id);
+  const [profile, saved] = await Promise.all([
+    getFullCareerProfile(user.id),
+    getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,6 +113,9 @@ export default async function TailoredResumePage({
         }}
         jobLabel={`${job.title ? displayJobTitle(job.title) : "Role"}${job.company ? ` - ${job.company}` : ""}`}
         autoStart={build === "1"}
+        initial={saved?.data ?? null}
+        initialSavedAt={saved?.savedAt ?? null}
+        initialEdited={Boolean(saved?.edited)}
       />
     </div>
   );

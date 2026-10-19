@@ -322,31 +322,37 @@ function Breakdown<K extends string>({
   labels: Record<K, string>;
   data: Partial<Record<K, ScoreComponent>>;
 }) {
+  // Parts the posting gave nothing to score on are listed once at the end,
+  // not as a row of "Not scored" each with its own explanation.
+  const unscored = order.filter((key) => data[key]?.confidence === "unavailable");
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
       {order.map((key) => {
         const c = data[key];
-        if (!c) return null;
-        const unscored = c.confidence === "unavailable";
+        if (!c || c.confidence === "unavailable") return null;
         const pct = c.maxScore > 0 ? Math.round((c.score / c.maxScore) * 100) : 0;
         return (
           <div key={key} className="flex flex-col gap-1">
             <div className="flex items-baseline justify-between gap-3 text-sm">
               <span className="text-foreground">{labels[key]}</span>
               <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                {unscored ? "Not scored" : `${roundForDisplay(c.score)} / ${c.maxScore}`}
+                {`${roundForDisplay(c.score)} / ${c.maxScore}`}
               </span>
             </div>
-            {!unscored && (
-              <div className="h-1.5 overflow-hidden rounded-full bg-muted" role="presentation">
-                <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-              </div>
-            )}
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted" role="presentation">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            </div>
             <p className="text-xs leading-relaxed text-muted-foreground">{c.reasoning}</p>
           </div>
         );
       })}
+      {unscored.length > 0 && (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Not scored, because the posting doesn&apos;t say enough: {unscored.map((key) => labels[key].toLowerCase()).join(", ")}.
+          They don&apos;t count for or against you.
+        </p>
+      )}
     </div>
   );
 }

@@ -19,10 +19,12 @@ export function JobNextStep({
   opportunityId,
   isPro,
   preview,
+  company,
 }: {
   opportunityId: string;
   isPro: boolean;
   preview?: PreviewData;
+  company?: string | null;
 }) {
   const resumeHref = `/opportunities/${opportunityId}/resume`;
 
@@ -82,7 +84,7 @@ export function JobNextStep({
       <div className="flex flex-col gap-2 border-t border-border/70 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <span className="mr-1 text-xs font-medium text-muted-foreground">Also for this job</span>
         <TailorApplicationButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Cover letter" lockedLabel="Cover letter" />
-        <InsiderAccessButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Note to the hiring manager" lockedLabel="Note to the hiring manager" />
+        <InsiderAccessButton opportunityId={opportunityId} isPro={isPro} preview={preview} company={company} label="Note to the hiring manager" lockedLabel="Note to the hiring manager" />
         <InterviewIntelButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Likely interview questions" lockedLabel="Likely interview questions" />
       </div>
     </section>

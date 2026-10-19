@@ -78,7 +78,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]}>{OPPORTUNITY_STATUS_LABEL[opportunity.status]}</Badge>
         ) : undefined
       }
-      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} />}
+      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} />}
     />
   );
 }

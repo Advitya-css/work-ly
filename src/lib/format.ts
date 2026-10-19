@@ -1,10 +1,17 @@
 /** Shared, dependency-free date/text formatting helpers for the career profile UI. */
 
-export function formatMonthYear(date: Date | null): string | null {
+/**
+ * "Mar 2023". Dates are stored as UTC midnight, so they're read in UTC: in
+ * a browser west of London, local time turned 1 March into "Feb 2023".
+ * A date on 1 January is how a year-only date ("2019") is stored, so it
+ * shows as just the year rather than an invented "Jan".
+ */
+export function formatMonthYear(date: Date | string | null): string | null {
   if (!date) return null;
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  if (d.getUTCMonth() === 0 && d.getUTCDate() === 1) return String(d.getUTCFullYear());
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 export function formatDateRange(
@@ -14,6 +21,7 @@ export function formatDateRange(
 ): string | null {
   const startLabel = formatMonthYear(start);
   const endLabel = isCurrent ? "Present" : formatMonthYear(end);
+  if (startLabel && endLabel && startLabel === endLabel) return startLabel;
   if (startLabel && endLabel) return `${startLabel} – ${endLabel}`;
   if (startLabel) return startLabel;
   if (endLabel) return endLabel;

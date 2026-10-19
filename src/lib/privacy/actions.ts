@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { signOutAction } from "@/lib/auth/actions";
 import { pool } from "@/lib/db/pool";
 import { storageProvider } from "@/lib/storage";
+import { deleteSavedOutputs } from "@/lib/saved-outputs";
 import { listDocumentsByUserId } from "@/lib/db/documents";
 import { safeMessage } from "@/lib/errors";
 
@@ -108,6 +109,7 @@ export async function deleteCareerDataAction(): Promise<PrivacyActionState> {
   const user = await requireUser();
   try {
     await deleteStoredFiles(user.id);
+    await deleteSavedOutputs(user.id);
 
     const client = await pool.connect();
     try {
@@ -164,6 +166,8 @@ export async function deleteAccountAction(): Promise<PrivacyActionState> {
   const user = await requireUser();
   try {
     await deleteStoredFiles(user.id);
+    // Generated resumes, letters and notes live beside the CVs.
+    await deleteSavedOutputs(user.id);
     // Per-user rate-limit counters (upload_<id>, resume_parse_<id>,
     // job_submit_<id>) key off the user's id directly, so they'd otherwise
     // sit around until their own expiry even after the account is gone.
