@@ -10,6 +10,7 @@ import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { Button } from "@/components/ui/button";
 import { displayJobTitle } from "@/lib/format";
 import { ResumeBuilder } from "@/components/resume/resume-builder";
+import { SavedResumeLocked } from "@/components/resume/saved-resume-locked";
 import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
@@ -47,7 +48,26 @@ export default async function TailoredResumePage({
   );
 
   if (!user.isPro) {
-    const full = await getFullCareerProfile(user.id);
+    const [full, saved] = await Promise.all([
+      getFullCareerProfile(user.id),
+      getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id),
+    ]);
+    const jobName = `${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}`;
+    if (saved) {
+      return (
+        <div className="flex flex-col gap-6">
+          {back}
+          <PageHeader title="Tailored resume" description={`For ${jobName}. Built only from facts on your profile.`} />
+          <SavedResumeLocked
+            resume={saved.data}
+            name={user.name ?? ""}
+            headline={full.profile?.headline ?? full.profile?.currentRole ?? null}
+            contact={[user.email, full.profile?.location].filter(Boolean).join(" · ")}
+            jobLabel={job.company ?? (job.title ? displayJobTitle(job.title) : "this job")}
+          />
+        </div>
+      );
+    }
     const preview = buildPreviewData({
       requiredSkills: job.requiredSkills,
       preferredSkills: job.preferredSkills,

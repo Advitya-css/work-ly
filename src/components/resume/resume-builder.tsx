@@ -234,6 +234,32 @@ export function ResumeBuilder({
     });
   }
 
+  const [wordBusy, setWordBusy] = useState(false);
+  async function downloadWord() {
+    if (!draft.current) return;
+    setWordBusy(true);
+    try {
+      const { buildResumeDocx } = await import("@/lib/resume/docx");
+      const blob = await buildResumeDocx(draft.current, {
+        name: candidate.name || "Your Name",
+        headline: candidate.headline,
+        contact: fallbackContact,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const name = draft.current.header?.name ?? candidate.name;
+      a.href = url;
+      a.download = `${name || "Resume"} - ${jobLabel}.docx`.replace(/[\\/:*?"<>|]/g, "");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch {
+      setError("Couldn't make the Word file. Try Download PDF instead.");
+    }
+    setWordBusy(false);
+  }
+
   function download() {
     const previous = document.title;
     const name = draft.current?.header?.name ?? candidate.name;
@@ -458,10 +484,16 @@ export function ResumeBuilder({
             <Download className="size-4" />
             Download PDF
           </Button>
-          <Button variant="outline" onClick={copyText} className="gap-2">
-            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-            {copied ? "Copied" : "Copy as text"}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => void downloadWord()} disabled={wordBusy} className="gap-2">
+              {wordBusy ? <WorklyLoader className="size-4 animate-spin" /> : <FileText className="size-4" />}
+              Word
+            </Button>
+            <Button variant="outline" onClick={copyText} className="gap-2">
+              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+              {copied ? "Copied" : "Copy text"}
+            </Button>
+          </div>
           <p className="text-xs leading-relaxed text-muted-foreground" aria-live="polite">
             {saveState === "saving"
               ? "Saving your edits…"

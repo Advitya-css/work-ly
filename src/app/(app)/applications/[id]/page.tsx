@@ -4,15 +4,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
-  Building2,
-  MapPin,
-  Calendar,
   ExternalLink,
   CheckCircle2,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -30,17 +27,14 @@ import { ResumeTailorCard } from "@/components/applications/resume-tailor-card";
 import { ApplicationStrategyCard } from "@/components/applications/application-strategy-card";
 import { FollowUpTemplateCard } from "@/components/applications/follow-up-template-card";
 import { AcceptOfferCard } from "@/components/applications/accept-offer-card";
-import { StageRoadmap } from "@/components/guidance/stage-roadmap";
+import { ApplicationNextStep, applicationStep } from "@/components/applications/application-next-step";
+import { Fold } from "@/components/shared/fold";
 import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
 import { formatSalaryRange } from "@/lib/format";
-import {
-  APPLICATION_STATUS_LABEL,
-  APPLICATION_STATUS_VARIANT,
-  APPLICATION_OUTCOME_LABEL,
-} from "@/lib/applications/labels";
+import { APPLICATION_OUTCOME_LABEL } from "@/lib/applications/labels";
 
 export const metadata: Metadata = { title: "Application" };
 
@@ -98,6 +92,8 @@ export default async function ApplicationDetailPage({
     lastMilestone != null &&
     Date.now() - new Date(lastMilestone).getTime() >= 7 * 24 * 60 * 60 * 1000;
 
+  const prepStage = application.status === "SAVED" || application.status === "PREPARING";
+
   const offeredSalary = formatSalaryRange(
     application.salaryOffered,
     null,
@@ -119,47 +115,29 @@ export default async function ApplicationDetailPage({
         </div>
       </div>
 
-      <PageHeader
-        title={application.roleTitle}
-        description={detailLine || undefined}
-        action={
-          <Badge variant={APPLICATION_STATUS_VARIANT[application.status]} className="text-sm">
-            {APPLICATION_STATUS_LABEL[application.status]}
-          </Badge>
-        }
-      />
+      <PageHeader title={application.roleTitle} description={detailLine || undefined} />
 
-      <StageRoadmap application={application} isPro={user.isPro ?? false} followUpShown={followUpShown} />
+      <ApplicationNextStep
+        status={application.status}
+        step={applicationStep({
+          id: application.id,
+          status: application.status,
+          opportunityId: application.opportunityId,
+          dateApplied: application.dateApplied,
+          followUpShown,
+          lastMilestone,
+          isPro: user.isPro ?? false,
+        })}
+        milestones={{
+          applied: Boolean(application.dateApplied),
+          assessment: Boolean(application.reachedAssessmentAt),
+          interview: Boolean(application.reachedInterviewAt),
+          offer: Boolean(application.reachedOfferAt),
+        }}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Application details
-              </CardTitle>
-              <CardDescription>
-                What you sent and when. Recording the CV version is what lets Work-ly eventually tell
-                you which positioning actually works.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ApplicationEditor application={application} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Interviews
-              </CardTitle>
-              <CardDescription>Each round, when it happened, and how it went.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <InterviewsEditor application={application} />
-            </CardContent>
-          </Card>
-
           {application.status === "OFFER" && (
             <>
               <div id="tool-counter-offer" className="scroll-mt-24">
@@ -175,7 +153,8 @@ export default async function ApplicationDetailPage({
             </>
           )}
 
-          {application.reachedInterviewAt && (
+          {/* In the interview stage the top of the page already starts it. */}
+          {application.reachedInterviewAt && application.status !== "INTERVIEW" && application.status !== "FINAL_INTERVIEW" && (
             <div id="tool-mock-interview" className="scroll-mt-24">
               <InterviewPrepCard applicationId={application.id} isPro={user.isPro} preview={preview} />
             </div>
@@ -198,20 +177,49 @@ export default async function ApplicationDetailPage({
             </div>
           )}
 
-          <div id="tool-resume-bullets" className="scroll-mt-24">
-            <ResumeTailorCard applicationId={application.id} isPro={user.isPro} preview={preview} />
-          </div>
-
-          <div id="tool-application-strategy" className="scroll-mt-24">
-            <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} preview={preview} />
-          </div>
+          {prepStage ? (
+            <>
+              <div id="tool-resume-bullets" className="scroll-mt-24">
+                <ResumeTailorCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+              </div>
+              <div id="tool-application-strategy" className="scroll-mt-24">
+                <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+              </div>
+            </>
+          ) : (
+            <Fold title="Resume bullets and cover letter">
+              <div className="flex flex-col gap-4">
+                <div id="tool-resume-bullets" className="scroll-mt-24">
+                  <ResumeTailorCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+                </div>
+                <div id="tool-application-strategy" className="scroll-mt-24">
+                  <ApplicationStrategyCard applicationId={application.id} isPro={user.isPro} preview={preview} />
+                </div>
+              </div>
+            </Fold>
+          )}
 
           <Card>
             <CardHeader>
-              <CardTitle>
-                Contacts
-              </CardTitle>
-              <CardDescription>Recruiters, hiring managers, referrals.</CardDescription>
+              <CardTitle>What you sent</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ApplicationEditor application={application} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Interviews</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InterviewsEditor application={application} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Contacts</CardTitle>
             </CardHeader>
             <CardContent>
               <ContactsEditor application={application} />
@@ -223,10 +231,6 @@ export default async function ApplicationDetailPage({
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Progress</CardTitle>
-              <CardDescription>
-                Milestones are recorded permanently. A rejection later doesn&apos;t erase an
-                interview you had.
-              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-2.5">
               <Milestone label="Applied" at={application.dateApplied} />
@@ -248,18 +252,24 @@ export default async function ApplicationDetailPage({
               {offeredSalary && (
                 <p className="text-sm text-foreground">Offered: {offeredSalary}</p>
               )}
+              {job?.url && (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="mt-1 flex w-fit items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Original posting
+                  <ExternalLink className="size-3.5" />
+                </a>
+              )}
             </CardContent>
           </Card>
 
+          {(application.fitScoreAtApply != null || opportunity) && (
           <Card>
             <CardHeader>
-              <CardTitle>
-                Scores when you applied
-              </CardTitle>
-              <CardDescription>
-                Snapshotted at the time, not recalculated. That&apos;s what makes them comparable
-                against the outcome.
-              </CardDescription>
+              <CardTitle className="text-base">Scores when you applied</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
@@ -282,7 +292,7 @@ export default async function ApplicationDetailPage({
               </div>
               {application.fitScoreAtApply == null && (
                 <p className="text-xs text-muted-foreground">
-                  Logged manually, so there are no Work-ly scores for this one.
+                  Added by hand, so there are no scores for this one.
                 </p>
               )}
               {opportunity && (
@@ -295,48 +305,9 @@ export default async function ApplicationDetailPage({
               )}
             </CardContent>
           </Card>
+          )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Role</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2.5 text-sm">
-              {application.company && (
-                <p className="flex items-center gap-2 text-foreground">
-                  <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
-                  {application.company}
-                </p>
-              )}
-              {(application.location || application.country) && (
-                <p className="flex items-center gap-2 text-foreground">
-                  <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
-                  {placeLine(application.location, application.country)}
-                </p>
-              )}
-              {application.dateApplied && (
-                <p className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="size-3.5 shrink-0" />
-                  Applied {new Date(application.dateApplied).toLocaleDateString()}
-                </p>
-              )}
-              {application.industry && (
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="secondary">{application.industry}</Badge>
-                </div>
-              )}
-              {job?.url && (
-                <a
-                  href={job.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="flex items-center gap-1.5 text-primary underline underline-offset-2"
-                >
-                  <ExternalLink className="size-3.5" />
-                  Original posting
-                </a>
-              )}
-            </CardContent>
-          </Card>
+
         </div>
       </div>
     </div>

@@ -87,6 +87,11 @@ export function ProPreview({
 }
 
 /** The old product name under a tool's plain-language title. */
-export function ToolBrand({ children }: { children: ReactNode }) {
-  return <span className="text-xs font-normal text-muted-foreground">{children}</span>;
+/**
+ * Internal product names ("Interview War Room") next to plain tool names
+ * read as jargon to someone who's never heard them. Kept as a component so
+ * callers don't change, but it no longer renders anything.
+ */
+export function ToolBrand(_props: { children: ReactNode }) {
+  return null;
 }
