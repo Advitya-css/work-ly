@@ -3,7 +3,7 @@ import { MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { CompanyMonogram } from "@/components/shared/company-monogram";
-import { formatSalaryRange } from "@/lib/format";
+import { formatSalaryRange, displayJobTitle } from "@/lib/format";
 import type { OpportunityWithJob } from "@/lib/db/types";
 
 /**
@@ -30,7 +30,7 @@ export function StudentJobRow({ opportunity }: { opportunity: OpportunityWithJob
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-foreground">
-            {job.title ?? "Untitled role"}
+            {displayJobTitle(job.title)}
           </span>
           <span className="mt-0.5 flex items-center gap-1 truncate text-sm text-muted-foreground">
             {job.company ?? "Unknown company"}

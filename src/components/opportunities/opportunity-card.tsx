@@ -18,7 +18,7 @@ import {
   RECOMMENDATION_VARIANT,
   WORK_MODE_LABEL,
 } from "@/lib/jobs/labels";
-import { formatSalaryRange } from "@/lib/format";
+import { formatSalaryRange, displayJobTitle } from "@/lib/format";
 import { classifyStudentJob } from "@/lib/student/legal-limits";
 import { IconStudent } from "@/components/icons";
 import type { OpportunityWithJob } from "@/lib/db/types";
@@ -82,7 +82,7 @@ export function OpportunityCard({ opportunity, university }: { opportunity: Oppo
               href={`/opportunities/${opportunity.id}`}
               className="line-clamp-2 text-[15px] leading-snug font-semibold text-foreground transition-colors hover:text-primary break-words"
             >
-              {job.title ?? "Untitled role"}
+              {displayJobTitle(job.title)}
             </Link>
             <p className="mt-0.5 truncate text-sm text-muted-foreground">
               {job.company ?? "Unknown company"}

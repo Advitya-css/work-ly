@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Bookmark, Radar } from "lucide-react";
+import { Bookmark } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { IconDiscover } from "@/components/icons";
 import { DiscoveryBoard, DiscoverySourcesCard } from "@/components/discovery/discovery-board";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/auth";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
@@ -18,7 +17,6 @@ import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
 import { isCareerChange } from "@/lib/discovery/pivot-core";
 import { TargetRoleCard } from "@/components/discovery/target-role-card";
 import { profileSearchText } from "@/lib/discovery/profile-text";
-import { buildAlert } from "@/lib/discovery/alerts";
 import { isStale } from "@/lib/discovery/sort";
 import { buildMarketRadar } from "@/lib/discovery/market-radar";
 import { MarketRadarCard } from "@/components/discovery/market-radar-card";
@@ -107,7 +105,6 @@ export default async function DiscoverPage() {
     profileValues: profile.workValues.map((v) => ({ value: v.value, confidence: v.confidence })),
   };
 
-  const alert = buildAlert(latestRun, jobs);
   const targetRole = careerGoal?.primaryTargetRole || careerGoal?.targetRole || null;
   const changingCareer = isCareerChange(targetRole, [
     profile.profile?.currentRole,
@@ -132,19 +129,10 @@ export default async function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Discover"
-        description="Opportunities curated from across the web, automatically scored against your profile."
+        description="Jobs from across the web, each scored against your profile."
       />
 
       <SectionTabs section="jobs" />
-
-      {alert.shouldNotify && (
-        <Alert>
-          <Radar className="size-4" />
-          <AlertDescription>
-            <span className="font-medium text-foreground">{alert.headline}</span> {alert.body}
-          </AlertDescription>
-        </Alert>
-      )}
 
       {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}
 

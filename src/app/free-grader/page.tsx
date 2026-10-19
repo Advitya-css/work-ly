@@ -119,7 +119,7 @@ export default function FreeGraderPage() {
               
               {/* The Bot */}
               <div className="relative w-full h-full animate-float">
-                <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
+                <Image src="/workly-bot.png" alt="Thinking Bot" fill sizes="160px" className="object-contain drop-shadow-2xl" />
               </div>
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Reading the job against your resume...</h3>
@@ -130,7 +130,7 @@ export default function FreeGraderPage() {
 
         <div className="text-center mb-12 flex flex-col items-center">
           <div className={`relative w-24 h-24 mb-4 drop-shadow-xl transition-all duration-300 hover:rotate-12 hover:scale-110 cursor-pointer ${pending ? "animate-pulse scale-105" : "animate-float"}`}>
-            <Image src="/workly-bot.png" alt="Work-ly Bot" fill className="object-contain" />
+            <Image src="/workly-bot.png" alt="Work-ly Bot" fill sizes="160px" className="object-contain" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
             Would a recruiter shortlist you for this job?

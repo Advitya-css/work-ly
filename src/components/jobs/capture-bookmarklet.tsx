@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, Check, Copy } from "lucide-react";
+import { Bookmark, Check, ChevronDown, Copy } from "lucide-react";
 
 import { bookmarkletSource } from "@/lib/capture/capture";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * The "Save to Work-ly" button for LinkedIn, Naukri and any other job page.
@@ -26,18 +25,18 @@ export function CaptureBookmarklet() {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Bookmark className="size-4" />
+    <details className="group rounded-xl border border-border bg-card shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Bookmark className="size-4 text-muted-foreground" />
           Analyze jobs straight from LinkedIn or Naukri
-        </CardTitle>
-        <CardDescription>
-          Drag the button below to your browser&apos;s bookmarks bar. On any job page, click it and the posting opens here,
-          ready to analyze. It only reads the page you&apos;re looking at, and nothing is sent until you press Analyze.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+        </span>
+        <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="flex flex-col gap-3 border-t border-border px-5 py-4">
+        <p className="text-sm text-muted-foreground">
+          Drag the button to your bookmarks bar. On any job page, click it and the posting opens here, ready to analyze.
+        </p>
         <div className="flex flex-wrap items-center gap-3">
           <a
             ref={linkRef}
@@ -78,7 +77,7 @@ export function CaptureBookmarklet() {
           {copied ? <Check /> : <Copy />}
           {copied ? "Copied" : "Can't drag? Copy the bookmark code instead"}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </details>
   );
 }

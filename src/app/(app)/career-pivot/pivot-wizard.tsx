@@ -75,7 +75,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
 
               {/* The Bot */}
               <div className="relative w-full h-full animate-float">
-                <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
+                <Image src="/workly-bot.png" alt="Thinking Bot" fill sizes="160px" className="object-contain drop-shadow-2xl" />
               </div>
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
@@ -120,7 +120,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="flex flex-col items-center gap-4">
             <div className="relative w-32 h-32 animate-pulse">
-              <Image src="/workly-bot.png" alt="Thinking Bot" fill className="object-contain drop-shadow-2xl" />
+              <Image src="/workly-bot.png" alt="Thinking Bot" fill sizes="160px" className="object-contain drop-shadow-2xl" />
             </div>
             <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
             <p className="text-sm text-muted-foreground">This usually takes 20-40 seconds.</p>

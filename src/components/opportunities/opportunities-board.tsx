@@ -28,11 +28,11 @@ type TabKey = "all" | "apply-now" | "high-priority" | "stretch" | "saved" | "ana
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "apply-now", label: "Apply Now" },
-  { key: "high-priority", label: "High Priority" },
+  { key: "apply-now", label: "Apply now" },
+  { key: "high-priority", label: "High priority" },
   { key: "stretch", label: "Stretch" },
   { key: "saved", label: "Saved" },
-  { key: "analyzed", label: "Analyzed" },
+  { key: "analyzed", label: "Not started" },
   { key: "applied", label: "Applied" },
 ];
 

@@ -47,10 +47,10 @@ export const SOURCE_STATUS_VARIANT: Record<
  * still works when colour is unavailable.
  */
 export const BUCKETS = [
-  { key: "applyNow", icon: IconApplyNow, label: "Apply Now", tone: "text-destructive" },
+  { key: "applyNow", icon: IconApplyNow, label: "Apply now", tone: "text-primary" },
   { key: "strong", icon: IconStrong, label: "Strong", tone: "text-success" },
   { key: "stretch", icon: IconStretch, label: "Stretch", tone: "text-warning" },
-  { key: "lowPriority", icon: IconLowPriority, label: "Low Priority", tone: "text-muted-foreground" },
+  { key: "lowPriority", icon: IconLowPriority, label: "Low priority", tone: "text-muted-foreground" },
 ] as const;
 
 export type BucketKey = (typeof BUCKETS)[number]["key"];

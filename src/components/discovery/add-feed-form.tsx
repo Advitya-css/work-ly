@@ -37,11 +37,12 @@ export function AddFeedForm() {
   return (
     <div className="relative">
       {!isOpen ? (
-        <Button type="button" variant="ghost" size="icon" onClick={() => setIsOpen(true)} className="text-muted-foreground" title="Add RSS Feed">
+        <Button type="button" variant="ghost" size="sm" onClick={() => setIsOpen(true)} className="text-muted-foreground">
           <Plus className="size-4" />
+          Add a job feed
         </Button>
       ) : (
-        <form onSubmit={handleSubmit} className="absolute top-10 right-0 z-50 w-[300px] flex flex-col gap-2 rounded-lg border bg-popover shadow-md p-3">
+        <form onSubmit={handleSubmit} className="absolute bottom-10 left-0 z-50 w-[300px] flex flex-col gap-2 rounded-lg border bg-popover shadow-md p-3">
           <h4 className="text-sm font-medium">Add Public RSS Feed</h4>
           <Input
             placeholder="https://example.com/jobs/rss"

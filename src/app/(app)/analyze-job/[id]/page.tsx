@@ -29,10 +29,11 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { getJobById } from "@/lib/db/jobs";
 import { getJobAnalysisByJobId } from "@/lib/db/job-analyses";
+import { getOpportunityByJobId } from "@/lib/db/opportunities";
 import { TailorUpsellCard } from "@/components/paywall/tailor-upsell-card";
 import { recordFunnelStep } from "@/lib/attribution";
 import { buildPreviewData } from "@/lib/guidance/preview-data";
-import { formatSalaryRange } from "@/lib/format";
+import { formatSalaryRange, displayJobTitle } from "@/lib/format";
 import {
   RECOMMENDATION_LABEL,
   RECOMMENDATION_VARIANT,
@@ -126,6 +127,11 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
     );
   }
 
+  // Every analysis is tracked as an opportunity: show it there, with the
+  // tools for the job, rather than in this older stripped-down layout.
+  const tracked = await getOpportunityByJobId(job.id);
+  if (tracked && tracked.userId === user.id) redirect(`/opportunities/${tracked.id}`);
+
   const breakdown = analysis.scoreBreakdown as ScoreBreakdown;
   if (!user.isPro) await recordFunnelStep("paywall");
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
@@ -146,7 +152,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
         <DeleteJobButton id={job.id} label={job.title ?? "this analysis"} />
       </div>
 
-      <PageHeader title={job.title ?? "Untitled role"} description={jobDetailLine || undefined} />
+      <PageHeader title={displayJobTitle(job.title)} description={jobDetailLine || undefined} />
 
       {/* Headline: Candidate Fit, Competitiveness, Recommendation */}
       <div className="grid gap-3 sm:grid-cols-3">

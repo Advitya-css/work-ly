@@ -16,6 +16,7 @@ import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { listOpportunitiesWithJobByUserId } from "@/lib/opportunities/get-with-job";
 import { classifyStudentJob, limitsFor } from "@/lib/student/legal-limits";
 import { matchInternships, dreamGaps } from "@/lib/student/internship-match";
+import { displayJobTitle } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Internships" };
 
@@ -140,7 +141,7 @@ export default async function InternshipsPage() {
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-foreground">
-                      {o.job.title ?? "Untitled role"}
+                      {displayJobTitle(o.job.title)}
                     </span>
                     <span className="mt-0.5 block truncate text-sm text-muted-foreground">
                       {[o.job.company, o.job.location].filter(Boolean).join(" · ")}
@@ -161,7 +162,7 @@ export default async function InternshipsPage() {
                   <span className="flex items-start justify-between gap-3">
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium text-foreground">
-                        {match.opportunity.job.title ?? "Untitled role"}
+                        {displayJobTitle(match.opportunity.job.title)}
                       </span>
                       <span className="mt-0.5 block truncate text-sm text-muted-foreground">
                         {[match.opportunity.job.company, match.opportunity.job.location]

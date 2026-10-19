@@ -62,3 +62,12 @@ export function formatSalaryRange(min: number | null, max: number | null, curren
   }
   return fmt((min ?? max)!);
 }
+
+/**
+ * A job title as people should see it. Jobs analyzed from the form used to
+ * be saved with the form's "Title:" label in front ("Title: Data Analyst").
+ */
+export function displayJobTitle(title: string | null | undefined): string {
+  const t = (title ?? "").replace(/^\s*(job\s+)?title\s*:\s*/i, "").trim();
+  return t || "Untitled role";
+}

@@ -129,9 +129,17 @@ export async function parseJob(jobId: string, userId: string): Promise<Job> {
       );
     }
 
+    // The analyze form puts what the person typed as the title and company
+    // on the first lines ("Title: ...", "Company: ..."). Those win over the
+    // extractor, which sometimes kept the "Title:" label in the title.
+    const head = job.rawInput.split("\n").slice(0, 4).join("\n");
+    const typedTitle = /^Title:\s*(.+)$/m.exec(head)?.[1]?.trim() || null;
+    const typedCompany = /^Company:\s*(.+)$/m.exec(head)?.[1]?.trim() || null;
+    const stripLabel = (v: string | null | undefined) => (v ? v.replace(/^(title|company)\s*:\s*/i, "").trim() || null : null);
+
     return await saveJobParseResult(jobId, {
-      title: extracted.title,
-      company: extracted.company,
+      title: typedTitle ?? stripLabel(extracted.title),
+      company: typedCompany ?? stripLabel(extracted.company),
       location: extracted.location,
       country: extracted.country,
       salaryMin: extracted.salaryMin,

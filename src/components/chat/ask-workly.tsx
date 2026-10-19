@@ -116,7 +116,7 @@ export function AskWorkly() {
       >
         <div className="relative animate-float -ml-2 -mt-2">
           <div className="relative w-10 h-10 overflow-visible">
-            <Image src="/workly-bot.png" alt="Bot" fill className="object-contain" />
+            <Image src="/workly-bot.png" alt="Bot" fill sizes="160px" className="object-contain" />
           </div>
           <span className="absolute top-0 right-0 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>

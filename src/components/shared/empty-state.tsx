@@ -79,7 +79,7 @@ export function EmptyState({
     >
             {botImage ? (
         <div className="relative mb-5 h-[120px] w-[120px] opacity-80 mix-blend-screen drop-shadow-md transition-opacity hover:opacity-100 animate-float">
-          <Image src="/workly-bot.png" alt="Bot" fill className="object-contain" />
+          <Image src="/workly-bot.png" alt="Bot" fill sizes="160px" className="object-contain" />
         </div>
       ) : Scene ? (
         <Scene className="mb-5 h-[104px] w-[140px] text-[var(--area-color,var(--primary))]/70" />

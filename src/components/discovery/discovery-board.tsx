@@ -2,7 +2,6 @@
 
 import { placeLine } from "@/lib/places";
 import { WorklyLoader } from "@/components/shared/workly-loader";
-import { ScrambleText } from "@/components/shared/scramble-text";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,6 @@ import {
   ExternalLink,
   EyeOff,
   Sparkles,
-  Calendar,
   Radar,
   Info,
   CheckCircle2,
@@ -240,55 +238,31 @@ export function DiscoveryBoard({
     });
   }
 
+  const placeholder =
+    searchMode === "explore"
+      ? "Describe what interests you, e.g. climate tech data roles"
+      : searchMode === "company"
+        ? "A company or a role there, e.g. Analytics at Stripe"
+        : searchMode === "major"
+          ? "Your degree, e.g. Statistics"
+          : "Filter your matches by title, company or skill";
+  const actionLabel =
+    searchMode === "explore" ? "Explore" : searchMode === "company" ? "Search company" : searchMode === "major" ? "Find roles" : "Find new jobs";
+  const totalShown = seniorityFilteredResults.length;
+
   return (
     <div className="flex flex-col gap-5">
       {/* Search */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-4 border-b border-border pb-1 overflow-x-auto whitespace-nowrap">
-          <button 
-            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${searchMode === "search" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setSearchMode("search"); setMode("BALANCED"); }}
-          >
-            Standard Search
-          </button>
-          <button 
-            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "explore" ? "border-purple-500 text-purple-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setSearchMode("explore"); setMode("EXPLORE"); }}
-          >
-            <Sparkles className="size-3.5" /> Brainstorm / Explore
-          </button>
-          <button 
-            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "company" ? "border-blue-500 text-blue-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setSearchMode("company"); setMode("EXPLORE"); }}
-          >
-            Target Company
-          </button>
-          <button 
-            className={`text-sm font-medium pb-2 border-b-2 flex items-center gap-1.5 transition-colors ${searchMode === "major" ? "border-green-500 text-green-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setSearchMode("major"); setMode("EXPLORE"); }}
-          >
-            Search by Major
-          </button>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2 mt-1">
-          <div className="relative min-w-[260px] flex-1">
-            <Search className={`absolute left-3 top-1/2 size-4 -translate-y-1/2 ${searchMode === "explore" ? "text-purple-500" : "text-muted-foreground"}`} />
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={
-                searchMode === "explore" ? "Brainstorm roles, industries, or interests... (e.g., 'climate tech data')" : 
-                searchMode === "company" ? "Enter a company or specific role (e.g., 'Analytics at Apple')..." :
-                searchMode === "major" ? "Enter your college major (e.g., 'Computer Science', 'City Planning')..." :
-                "Filter by title, company, or keyword..."
-              }
-              className={`pl-9 ${
-                searchMode === "explore" ? "border-purple-500/30 focus-visible:ring-purple-500/30 shadow-sm" : 
-                searchMode === "company" ? "border-blue-500/30 focus-visible:ring-blue-500/30 shadow-sm" :
-                searchMode === "major" ? "border-green-500/30 focus-visible:ring-green-500/30 shadow-sm" :
-                ""
-              }`}
+              placeholder={placeholder}
+              aria-label="Search"
+              className="pl-9"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -297,247 +271,187 @@ export function DiscoveryBoard({
               }}
             />
           </div>
-          <select 
-            className="flex h-10 w-full sm:w-[160px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={seniorityFilter}
-            onChange={(e) => setSeniorityFilter(e.target.value)}
-          >
-            <option value="ALL">All Levels</option>
-            <option value="ENTRY_LEVEL">Entry Level</option>
-            <option value="MID_LEVEL">Mid Level</option>
-            <option value="SENIOR">Senior</option>
-            <option value="EXECUTIVE">Executive</option>
-          </select>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="text-muted-foreground"
-            onClick={async () => {
-              if (confirm("Are you sure you want to clear your discovery pipeline?")) {
-                await clearAllDiscoveredJobsAction();
-              }
-            }}
-          >
-            <Trash2 className="size-4" />
-            Clear
-          </Button>
-          <Button type="button" onClick={discover} disabled={pending} className={
-            searchMode === "explore" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
-            searchMode === "company" ? "bg-blue-600 hover:bg-blue-700 text-white" :
-            searchMode === "major" ? "bg-green-600 hover:bg-green-700 text-white" :
-            ""
-          }>
-            {pending ? <WorklyLoader className="animate-spin" /> : (searchMode === "explore" ? <Sparkles className="size-4" /> : searchMode === "company" || searchMode === "major" ? <Search className="size-4" /> : <Radar />)}
-            {pending ? "Discovering…" : (searchMode === "explore" ? "Explore" : searchMode === "company" ? "Search Company" : searchMode === "major" ? "Find Roles" : "Discover")}
-          </Button>
-          <div className="flex items-center gap-2 border rounded-md px-3 py-1.5 bg-background shadow-sm">
-            <input 
-              type="checkbox" 
-              id="matchValuesToggle"
-              checked={matchValues} 
-              onChange={(e) => setMatchValues(e.target.checked)} 
-              className="rounded text-primary focus:ring-primary h-4 w-4"
-            />
-            <label htmlFor="matchValuesToggle" className="text-sm font-medium cursor-pointer select-none">
-              Match my Values
-            </label>
-            <div className="group relative flex items-center justify-center">
-              <Info className="size-4 text-muted-foreground" />
-              <div className="absolute bottom-full mb-2 hidden w-64 rounded-md bg-popover p-2 text-xs text-popover-foreground shadow-md group-hover:block z-50">
-                Turn this on to cross-reference jobs with your extracted core values (e.g., sustainability, fast-paced). Aligned jobs get a +15% fit boost.
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Select
+              value={searchMode}
+              onValueChange={(v: "search" | "explore" | "company" | "major") => {
+                setSearchMode(v);
+                setMode(v === "search" ? "BALANCED" : "EXPLORE");
+              }}
+            >
+              <SelectTrigger className="h-10 w-[170px]" aria-label="Kind of search">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="search">My target role</SelectItem>
+                <SelectItem value="explore">Explore ideas</SelectItem>
+                <SelectItem value="company">A specific company</SelectItem>
+                <SelectItem value="major">By degree</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={seniorityFilter} onValueChange={setSeniorityFilter}>
+              <SelectTrigger className="h-10 w-[140px]" aria-label="Level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All levels</SelectItem>
+                <SelectItem value="ENTRY">Entry</SelectItem>
+                <SelectItem value="JUNIOR">Junior</SelectItem>
+                <SelectItem value="MID">Mid</SelectItem>
+                <SelectItem value="SENIOR">Senior</SelectItem>
+                <SelectItem value="LEAD">Lead and above</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button type="button" onClick={discover} disabled={pending} className="h-10 gap-2">
+              {pending ? <WorklyLoader className="animate-spin" /> : searchMode === "search" ? <Radar /> : <Sparkles className="size-4" />}
+              {pending ? "Searching… about a minute" : actionLabel}
+            </Button>
           </div>
-          <AddFeedForm />
         </div>
+        <label className="flex w-fit cursor-pointer select-none items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={matchValues}
+            onChange={(e) => setMatchValues(e.target.checked)}
+            className="size-4 rounded accent-[var(--primary)]"
+          />
+          Rank jobs that match my values higher
+          <span title="Uses the values Work-ly found in your profile (e.g. sustainability, fast pace). Aligned jobs rank higher.">
+            <Info className="size-3.5" aria-hidden />
+          </span>
+        </label>
       </div>
-      
-      {message && (
-        <p className="text-sm text-muted-foreground animate-in fade-in slide-in-from-top-2">
-          {message}
-        </p>
-      )}
 
-      {/* What Explore mode actually sent to live sources this run - a
-          direct report of real server-side behavior, not the separate
-          client-side expansion below (which explains why already-known
-          results match, and can legitimately list more titles than were
-          ever queried live). */}
+      {message && <p className="text-sm text-muted-foreground animate-in fade-in">{message}</p>}
+
       {lastSearchTermsUsed && (
-        <Alert>
-          <Sparkles className="size-4" />
-          <AlertDescription>
-            <span className="font-medium text-primary">Searched for: </span>
-            {lastSearchTermsUsed.join(", ")}.
-          </AlertDescription>
-        </Alert>
+        <p className="text-sm text-muted-foreground">
+          Searched for <span className="text-foreground">{lastSearchTermsUsed.join(", ")}</span>.
+        </p>
       )}
 
       {upgradeRequired && (
         <Alert>
           <Sparkles className="size-4" />
           <AlertDescription>
-            <span className="font-medium text-foreground">Daily discovery limit reached.</span>{" "}
-            You&apos;ve used your 3 free AI discoveries for today — it resets in 24 hours. Upgrading
-            removes the daily cap.
+            <span className="font-medium text-foreground">Daily search limit reached.</span> Free accounts get 5 searches a
+            day; it resets within 24 hours. Pro removes the cap.
           </AlertDescription>
         </Alert>
       )}
 
-
-      {/* Hidden role discovery: why already-known results below also count
-          as a match for this query. This is a LOCAL relevance signal over
-          jobs already in your feed, computed instantly in the browser - it
-          is not a report of what got searched live (see "Searched live
-          for" above, shown only after an Explore run). It can legitimately
-          list more titles than a live search ever used. */}
       {searchResult.expansion.expandedRoles.length > 0 && (
-        <Alert>
-          <Sparkles className="size-4" />
-          <AlertDescription>
-            <span className="font-medium text-foreground">
-              Also matching related roles:{" "}
-              {[...new Set(searchResult.expansion.expandedRoles.map((r) => r.role))].join(", ")}.
-            </span>{" "}
-            {searchResult.expansion.expandedRoles[0].rationale}
-          </AlertDescription>
-        </Alert>
+        <p className="flex items-start gap-2 text-sm text-muted-foreground">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+          <span>
+            Also showing related roles:{" "}
+            <span className="text-foreground">{[...new Set(searchResult.expansion.expandedRoles.map((r) => r.role))].join(", ")}</span>.
+          </span>
+        </p>
       )}
 
-      {/* Suppressed expansion: explains an absence, which is otherwise invisible */}
-      {searchResult.expansion.expandedRoles.length === 0 &&
-        searchResult.expansion.suppressed.length > 0 && (
-          <Alert>
-            <Info className="size-4" />
-            <AlertDescription>
-              {searchResult.expansion.suppressed[0].reason}
-            </AlertDescription>
-          </Alert>
-        )}
-
-      {/* Bucket summary: the whole point of the page */}
-      <div>
-        <p className="mb-2 text-sm text-muted-foreground">
-          <span className="text-lg font-bold text-foreground">{seniorityFilteredResults.length}</span>{" "}
-          {query ? "matching " : ""}opportunit
-          {seniorityFilteredResults.length === 1 ? "y" : "ies"} discovered. Organized so you don&apos;t
-          have to read them all.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {BUCKETS.map((bucket) => {
-            const count = counts[bucket.key];
-            const isActive = activeBucket === bucket.key;
-            return (
-              <button
-                key={bucket.key}
-                type="button"
-                onClick={() => setActiveBucket(isActive ? null : bucket.key)}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm transition-colors",
-                  isActive ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50",
-                  // An empty bucket is de-emphasised by draining the colour
-                  // from its count, not by fading the whole control: dimming
-                  // the label too pushed it below the readable contrast
-                  // threshold, so the buckets with nothing in them became the
-                  // hardest ones to read.
-                  count === 0 && "border-dashed",
-                )}
-                aria-pressed={isActive}
-              >
-                <bucket.icon
-                  className={cn("size-4", count === 0 ? "text-muted-foreground" : bucket.tone)}
-                />
-                <span
-                  className={cn(
-                    "text-lg font-bold tabular-nums",
-                    count === 0 ? "text-muted-foreground" : bucket.tone,
-                  )}
-                >
-                  {count}
-                </span>
-                <span className="font-medium text-foreground">{bucket.label}</span>
-              </button>
-            );
-          })}
+      {/* Bands, as filter chips, and sort */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by match">
+          <FilterChip active={activeBucket === null} onClick={() => setActiveBucket(null)} label="Best matches" />
+          {BUCKETS.map((bucket) => (
+            <FilterChip
+              key={bucket.key}
+              active={activeBucket === bucket.key}
+              onClick={() => setActiveBucket(activeBucket === bucket.key ? null : bucket.key)}
+              label={bucket.label}
+              count={counts[bucket.key]}
+              tone={bucket.tone}
+            />
+          ))}
         </div>
-        <div className="mt-2 flex items-center justify-between">
-          {activeBucket ? (
-            <button
-              type="button"
-              onClick={() => setActiveBucket(null)}
-              className="text-xs text-muted-foreground underline underline-offset-2"
-            >
-              Show all bands
-            </button>
-          ) : (
-            <div />
-          )}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Sort by</span>
-            <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-              <SelectTrigger className="h-7 w-[160px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="priority">Top Matches (For You)</SelectItem>
-                <SelectItem value="fit">Candidate Fit</SelectItem>
-                <SelectItem value="recent">Recently Found</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{totalShown} found · Sort</span>
+          <Select value={sort} onValueChange={(v: "priority" | "fit" | "recent") => setSort(v)}>
+            <SelectTrigger className="h-8 w-[150px] text-xs" aria-label="Sort">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="priority">Best for you</SelectItem>
+              <SelectItem value="fit">Highest fit</SelectItem>
+              <SelectItem value="recent">Newest</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Results */}
-      {topPicks.length > 0 && (
-        <div className="mb-6 flex flex-col gap-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2"><Sparkles className="size-4 text-primary" /> Top Picks For You</h3>
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+      {topPicks.length > 0 && activeBucket === null && (
+        <section className="flex flex-col gap-2" aria-labelledby="top-picks">
+          <h3 id="top-picks" className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <Sparkles className="size-3.5 text-primary" aria-hidden />
+            Top picks
+          </h3>
+          <div className="flex flex-col gap-2">
             {topPicks.map((result) => (
-              <DiscoveryCard
-                key={"top-" + result.job.id}
-                job={result.job}
-                reasons={result.reasons}
-                viaExpansion={result.viaExpansion}
-                onMessage={setMessage}
-                isTopPick={true}
-              />
+              <DiscoveryCard key={"top-" + result.job.id} job={result.job} reasons={result.reasons} viaExpansion={result.viaExpansion} onMessage={setMessage} isTopPick />
             ))}
           </div>
-          <div className="h-px bg-border my-2" />
-        </div>
+        </section>
       )}
-      
-      {visible.length === 0 ? (
-        <Card className="hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-          <CardContent className="px-6 py-16 text-center flex flex-col items-center justify-center gap-4">
-            <div className="relative w-32 h-32 opacity-70 hover:opacity-100 transition-opacity">
-              <Image src="/workly-bot.png" alt="Bot" fill className="object-contain" />
-            </div>
-            <p className="text-sm text-muted-foreground font-medium">
-              {jobs.length === 0
-                ? "Nothing discovered yet. I'm ready to find you jobs, just press Discover!"
-                : activeBucket == null && searchResult.results.length > 0
-                ? "No highly relevant listings found. Check the Low Priority bucket to review filtered jobs, or run a new search."
-                : "No listings match this search."}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {visible.map((result) => (
-            <DiscoveryCard
-              key={result.job.id}
-              job={result.job}
-              reasons={result.reasons}
-              viaExpansion={result.viaExpansion}
-              onMessage={setMessage}
-              mode={mode}
-            />
-          ))}
+
+      {visible.length === 0 && topPicks.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border px-6 py-14 text-center">
+          <div className="relative size-24 opacity-80">
+            <Image src="/workly-bot.png" alt="" fill sizes="96px" className="object-contain" />
+          </div>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            {jobs.length === 0
+              ? "No jobs yet. Press Find new jobs and Work-ly searches the boards for roles that fit you."
+              : activeBucket == null && searchResult.results.length > 0
+                ? "No strong matches in this search. Check Low priority, or search again."
+                : "Nothing matches this filter."}
+          </p>
         </div>
+      ) : (
+        visible.length > 0 && (
+          <section className="flex flex-col gap-2" aria-label="Jobs">
+            {topPicks.length > 0 && activeBucket === null && (
+              <h3 className="mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">More matches</h3>
+            )}
+            {visible.map((result) => (
+              <DiscoveryCard key={result.job.id} job={result.job} reasons={result.reasons} viaExpansion={result.viaExpansion} onMessage={setMessage} mode={mode} />
+            ))}
+          </section>
+        )
       )}
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  label,
+  count,
+  tone,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  count?: number;
+  tone?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors",
+        active ? "border-primary/60 bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+      )}
+    >
+      {label}
+      {count != null && (
+        <span className={cn("tabular-nums text-xs font-semibold", count > 0 ? tone : "text-muted-foreground/70")}>{count}</span>
+      )}
+    </button>
   );
 }
 
@@ -555,7 +469,6 @@ function DiscoveryCard({
   reasons,
   viaExpansion,
   onMessage,
-  mode,
   isTopPick,
 }: {
   job: DiscoveredJob;
@@ -610,6 +523,18 @@ function DiscoveryCard({
   if (hidden) return null;
 
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  const meta = [
+    job.company,
+    placeLine(job.location, job.country, ", "),
+    job.workMode ? WORK_MODE_SHORT[job.workMode] : null,
+    salary,
+  ].filter(Boolean) as string[];
+  // One sentence on why it fits (the AI screen's verdict when there is one),
+  // and the one thing missing. The card used to list four or five bullets,
+  // most of them the same on every card.
+  const verdict = job.matchReasons.find((r) => r.kind === "screen")?.text ?? reasons.find((r) => !GENERIC_REASON.test(r)) ?? null;
+  const missing = job.matchReasons.find((r) => r.kind === "gap")?.text ?? null;
+  const showFit = job.fitScore != null && (job.fitCoverage == null || job.fitCoverage >= MIN_COVERAGE_FOR_SCORE);
   const bucket = BUCKETS.find((b) =>
     b.key === "applyNow"
       ? job.recommendation === "APPLY_NOW"
@@ -619,127 +544,62 @@ function DiscoveryCard({
           ? job.recommendation === "STRETCH"
           : job.recommendation === "LOW_PRIORITY" || job.recommendation === "SKIP",
   );
+  const age = job.postedAt ? Math.max(0, Math.floor(listingAgeDays(job))) : null;
 
   return (
-    // The dashboard briefing links to /discover#job-<id>. On the default
-    // feed a job appears once (Top Picks are left out of the list below).
-    <Card id={`job-${job.id}`} className="scroll-mt-24">
-      <CardContent className="flex flex-col gap-2.5 px-5 py-4">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              {bucket && (
-                <bucket.icon className={cn("size-4 shrink-0", bucket.tone)} aria-label={bucket.label} />
-              )}
-              <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">
-                {bucket?.key === "applyNow" ? <ScrambleText text={job.title} active={true} /> : job.title}
-              </p>
-              {job.fitScore != null &&
-                // fitCoverage is null for rows scored before this field
-                // existed - fall back to showing the score rather than
-                // hiding every pre-existing listing's badge. A real
-                // coverage value below the threshold means Work-ly couldn't
-                // actually assess this listing, so don't show a number
-                // that looks like a measurement.
-                (job.fitCoverage == null || job.fitCoverage >= MIN_COVERAGE_FOR_SCORE) && (
-                  <Badge variant="outline">Fit {job.fitScore}/100</Badge>
-                )}
-              {isAiScreened(job) && (
-                <Badge variant="secondary" title="Read against your profile requirement by requirement, with every match checked against your own text.">
-                  Screened
-                </Badge>
-              )}
-              {isNewListing(job) && <Badge variant="success">New</Badge>}
-              {isSummaryOnly(job) && (
-                <Badge
-                  variant="outline"
-                  className="text-muted-foreground"
-                  title="This source only shares a short summary of the job. Open it and use Save to Work-ly for a full fit check."
-                >
-                  Summary only
-                </Badge>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground truncate">
-              {[job.company, placeLine(job.location, job.country, " · ")].filter(Boolean).join(" · ") || "-"}
+    // The dashboard briefing links to /discover#job-<id>.
+    <article
+      id={`job-${job.id}`}
+      className={cn(
+        "scroll-mt-24 rounded-xl border bg-card p-4 shadow-sm transition-colors sm:p-5",
+        isTopPick ? "border-primary/30" : "border-border hover:border-primary/25",
+      )}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="text-[15px] font-semibold leading-snug text-foreground">{job.title}</h4>
+            {isNewListing(job) && <Badge variant="success">New</Badge>}
+            {isSummaryOnly(job) && (
+              <Badge variant="outline" className="text-muted-foreground" title="This board only shares a short summary. Open the posting for a full check.">
+                Summary only
+              </Badge>
+            )}
+          </div>
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">{meta.join(" · ") || "-"}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end">
+          {showFit ? (
+            <span className={cn("text-2xl font-semibold leading-none tabular-nums", bucket?.tone ?? "text-foreground")}>{job.fitScore}</span>
+          ) : (
+            <span className="text-sm text-muted-foreground">–</span>
+          )}
+          <span className={cn("mt-1 text-xs font-medium", bucket?.tone ?? "text-muted-foreground")}>{bucket?.label ?? "Fit"}</span>
+        </div>
+      </div>
+
+      {(verdict || missing || viaExpansion) && (
+        <div className="mt-3 flex flex-col gap-1 text-sm">
+          {verdict && <p className="leading-relaxed text-foreground/85">{verdict}</p>}
+          {missing && <p className="text-xs text-muted-foreground">{missing}</p>}
+          {viaExpansion && (
+            <p className="flex items-center gap-1.5 text-xs text-primary">
+              <Sparkles className="size-3.5 shrink-0" aria-hidden />
+              Related to your search: {viaExpansion.role}
             </p>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {job.seniority && <Badge variant="outline">{job.seniority}</Badge>}
-            {job.workMode && <Badge variant="outline">{job.workMode}</Badge>}
-            {salary && <Badge variant="outline">{salary}</Badge>}
-          </div>
-        </div>
-
-        {/* Why we found it. Spec requirement #10 */}
-        {job.discoveryReason && (
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Why we found it:</span>{" "}
-            {job.discoveryReason}
-          </p>
-        )}
-
-        {viaExpansion && (
-          <p className="flex items-start gap-1.5 text-xs text-primary">
-            <Sparkles className="mt-0.5 size-3.5 shrink-0" />
-            Unusual find: surfaced as <span className="font-medium">{viaExpansion.role}</span>, which
-            you didn&apos;t search for directly.
-          </p>
-        )}
-
-        {reasons.length > 0 && (
-          <ul className="flex flex-col gap-0.5">
-            {reasons.map((reason, i) => (
-              <li key={i} className="text-xs text-muted-foreground">
-                · {reason}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* Trust: source, link, and both dates, always */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2 text-xs text-muted-foreground">
-          <span className="truncate max-w-[200px] sm:max-w-none">
-            Source: <span className="text-foreground">{job.sourceName}</span>{" "}
-            <Badge variant="secondary" className="whitespace-nowrap">{SOURCE_KIND_LABEL[job.sourceKind]}</Badge>
-          </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="size-3" />
-            Discovered {new Date(job.discoveredAt).toLocaleDateString()}
-          </span>
-          {job.postedAt && (
-            <span>
-              Posted {new Date(job.postedAt).toLocaleDateString()}
-              {(() => {
-                const days = Math.floor(listingAgeDays(job));
-                return days <= 0 ? " (today)" : ` (${days}d ago)`;
-              })()}
-            </span>
-          )}
-          {job.sourceUrl && (
-            <a
-              href={job.sourceUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="flex items-center gap-1 text-primary underline underline-offset-2"
-            >
-              <ExternalLink className="size-3" />
-              View original
-            </a>
           )}
         </div>
+      )}
 
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-2">
           {job.convertedOpportunityId ? (
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/opportunities/${job.convertedOpportunityId}`}>View opportunity</Link>
+            <Button asChild size="sm">
+              <Link href={`/opportunities/${job.convertedOpportunityId}`}>See my fit</Link>
             </Button>
           ) : isSummaryOnly(job) && job.sourceUrl ? (
-            // Analyzing three sentences would give a confident-looking but
-            // hollow score. Send the user to the full posting instead, where
-            // the Save to Work-ly button captures the whole description.
             <Button asChild size="sm">
-              <a href={job.sourceUrl} target="_blank" rel="noreferrer noopener" title="Open the full posting, then click Save to Work-ly">
+              <a href={job.sourceUrl} target="_blank" rel="noreferrer noopener" title="Open the full posting, then use Save to Work-ly">
                 Open full posting
               </a>
             </Button>
@@ -749,14 +609,7 @@ function DiscoveryCard({
               {busy === "track" ? "Analyzing… about 30 seconds" : "Analyze & track"}
             </Button>
           )}
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={alreadyApplied}
-            disabled={pending}
-            title="Logs it in Applications and stops showing this role"
-          >
+          <Button type="button" size="sm" variant="ghost" onClick={alreadyApplied} disabled={pending} title="Logs it in Applications and stops showing this role">
             {busy === "applied" ? <WorklyLoader className="animate-spin" /> : <CheckCircle2 />}
             Already applied
           </Button>
@@ -773,10 +626,30 @@ function DiscoveryCard({
             Not for me
           </Button>
         </div>
-      </CardContent>
-    </Card>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {age != null && <span>{age === 0 ? "Posted today" : `Posted ${age}d ago`}</span>}
+          {age != null && <span aria-hidden>·</span>}
+          <span title={SOURCE_KIND_LABEL[job.sourceKind]}>via {job.sourceName}</span>
+          {job.sourceUrl && (
+            <a
+              href={job.sourceUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-0.5 text-primary underline-offset-4 hover:underline"
+            >
+              Original
+              <ExternalLink className="size-3" aria-hidden />
+            </a>
+          )}
+        </p>
+      </div>
+    </article>
   );
 }
+
+const WORK_MODE_SHORT: Record<string, string> = { REMOTE: "Remote", HYBRID: "Hybrid", ONSITE: "On-site" };
+/** Reasons that read the same on every card, so they say nothing about this one. */
+const GENERIC_REASON = /^(pitched at your current level|remote, making it broadly|in [^,]+, where you want to work)/i;
 
 import { AddFeedForm } from "@/components/discovery/add-feed-form";
 
@@ -828,6 +701,23 @@ export function DiscoverySourcesCard({
                 ))}
             </div>
           </details>
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <AddFeedForm />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={async () => {
+                if (confirm("Remove every job Work-ly has found for you? Jobs you've tracked stay.")) {
+                  await clearAllDiscoveredJobsAction();
+                }
+              }}
+            >
+              <Trash2 className="size-4" />
+              Clear found jobs
+            </Button>
+          </div>
         </CardContent>
       )}
     </Card>

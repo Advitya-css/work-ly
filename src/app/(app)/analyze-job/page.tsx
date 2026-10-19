@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ScanSearch, ArrowRight, Clock, Compass } from "lucide-react";
+import { ScanSearch, ArrowRight, Clock } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
@@ -15,6 +15,7 @@ import { listJobsByUserId } from "@/lib/db/jobs";
 import { getOpportunityByJobId } from "@/lib/db/opportunities";
 import { RECOMMENDATION_LABEL, RECOMMENDATION_VARIANT } from "@/lib/jobs/labels";
 import { redirect } from "next/navigation";
+import { displayJobTitle } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Analyze a Job" };
 // Analysis runs the grounded AI screen.
@@ -34,28 +35,14 @@ export default async function AnalyzeJobPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Analyze a Job"
-        description="Paste a job description or its public URL. Work-ly compares it against your career profile and tells you how you stack up."
-        action={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/opportunities">
-              <Compass />
-              View all opportunities
-            </Link>
-          </Button>
-        }
-      />
+      <PageHeader title="Analyze a job" description="Paste any job posting to see how well you fit it, requirement by requirement." />
 
       <SectionTabs section="jobs" />
 
       <Card>
         <CardHeader>
-          <CardTitle>New analysis</CardTitle>
-          <CardDescription>
-            Never invented: every requirement and gap traces back to your profile or the posting text. Every job you
-            analyze here is automatically tracked as an opportunity.
-          </CardDescription>
+          <CardTitle className="text-base">New analysis</CardTitle>
+          <CardDescription>Every requirement is checked against your profile. Nothing is invented.</CardDescription>
         </CardHeader>
         <CardContent>
           <JobInputForm />
@@ -83,7 +70,7 @@ export default async function AnalyzeJobPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {job.title ?? "Untitled role"}
+                        {displayJobTitle(job.title)}
                         {job.company ? ` · ${job.company}` : ""}
                       </p>
                       <p className="flex items-center gap-1 text-xs text-muted-foreground">
