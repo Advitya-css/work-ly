@@ -19,6 +19,8 @@ import { summarize } from "@/lib/applications/analytics";
 import { matchesLocationPreference } from "@/lib/jobs/location-match";
 import { listDiscoveredJobsByUserId, getLatestRun } from "@/lib/db/discovery";
 import { bucketJobs } from "@/lib/discovery/run";
+import { listHiddenRoleKeys } from "@/lib/discovery/hidden-roles";
+import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
 import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getJobById } from "@/lib/db/jobs";
 import { nextUpFor } from "@/lib/pathway/get-full-pathway";
@@ -78,11 +80,13 @@ export default async function DashboardPage({
 
   const applicationSummary = summarize(applications);
 
-  const [rawDiscovered, latestRun] = user
-    ? await Promise.all([listDiscoveredJobsByUserId(user.id), getLatestRun(user.id)])
-    : [[], null];
-    
+  const [rawDiscovered, latestRun, hiddenRoles] = user
+    ? await Promise.all([listDiscoveredJobsByUserId(user.id), getLatestRun(user.id), listHiddenRoleKeys(user.id)])
+    : [[], null, new Set<string>()];
+
   const discovered = rawDiscovered.filter(job => {
+    // Roles already applied to or turned down never come back as "best matches".
+    if (isHiddenRole(job, hiddenRoles)) return false;
     // Mirrors the strict Part-Time / Gig & Musician (Freelance) filtering on
     // the Discover page, so the dashboard's counts and top find agree with
     // what actually shows up there instead of counting jobs the mode would
