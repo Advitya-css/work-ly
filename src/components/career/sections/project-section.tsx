@@ -1,6 +1,6 @@
 import { FolderGit2, ExternalLink } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { ProjectDialog } from "@/components/career/sections/project-dialog";
@@ -14,7 +14,6 @@ export function ProjectSection({ projects }: { projects: Project[] }) {
     <Card id="projects">
       <CardHeader>
         <CardTitle>Projects</CardTitle>
-        <CardDescription>Things you&apos;ve built, on the side or otherwise.</CardDescription>
         <CardAction>
           <ProjectDialog />
         </CardAction>
@@ -22,6 +21,7 @@ export function ProjectSection({ projects }: { projects: Project[] }) {
       <CardContent>
         {projects.length === 0 ? (
           <EmptyState
+            compact
             icon={FolderGit2}
             title="No projects added yet"
             description="Add a project, or upload a CV to extract them automatically."

@@ -8,6 +8,7 @@ import { ProPreview } from "@/components/guidance/pro-preview";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { Button } from "@/components/ui/button";
+import { displayJobTitle } from "@/lib/format";
 import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
@@ -18,7 +19,14 @@ export const metadata: Metadata = { title: "Tailored Resume" };
 // Several AI calls in a row (parse, then screen) can pass 60s when the model is busy.
 export const maxDuration = 180;
 
-export default async function TailoredResumePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TailoredResumePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ build?: string }>;
+}) {
+  const { build } = await searchParams;
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -51,7 +59,7 @@ export default async function TailoredResumePage({ params }: { params: Promise<{
         {back}
         <PageHeader
           title="Resume tailored to this job"
-          description={`For ${job.title ?? "this role"}${job.company ? ` at ${job.company}` : ""}. An apply-ready resume rewritten only from facts on your profile, in about a minute.`}
+          description={`For ${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}. An apply-ready resume rewritten only from facts on your profile, in about a minute.`}
         />
         <ProPreview
           intro={`Work-ly would reorder and rewrite ${
@@ -87,7 +95,7 @@ export default async function TailoredResumePage({ params }: { params: Promise<{
       <div className="print:hidden">
         <PageHeader
           title="Tailored resume"
-          description={`For ${job.title ?? "this role"}${job.company ? ` at ${job.company}` : ""}. Built only from facts on your profile.`}
+          description={`For ${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}. Built only from facts on your profile.`}
         />
       </div>
       <ResumeBuilder
@@ -98,7 +106,8 @@ export default async function TailoredResumePage({ params }: { params: Promise<{
           location: profile.profile?.location ?? null,
           headline: profile.profile?.headline ?? profile.profile?.currentRole ?? null,
         }}
-        jobLabel={`${job.title ?? "Role"}${job.company ? ` - ${job.company}` : ""}`}
+        jobLabel={`${job.title ? displayJobTitle(job.title) : "Role"}${job.company ? ` - ${job.company}` : ""}`}
+        autoStart={build === "1"}
       />
     </div>
   );

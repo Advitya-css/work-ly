@@ -1,6 +1,6 @@
 import { Lightbulb, Sparkles } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge, TransferableSkillBadge } from "@/components/career/source-badge";
@@ -15,6 +15,16 @@ const CATEGORY_LABEL: Record<SkillCategory, string> = {
   DOMAIN: "Domain",
   TOOL: "Tool",
   LANGUAGE: "Language",
+  OTHER: "Other",
+};
+
+const CATEGORY_ORDER: SkillCategory[] = ["TECHNICAL", "TOOL", "DOMAIN", "SOFT", "LANGUAGE", "OTHER"];
+const CATEGORY_GROUP: Record<SkillCategory, string> = {
+  TECHNICAL: "Technical",
+  TOOL: "Tools",
+  DOMAIN: "Domain knowledge",
+  SOFT: "Working with people",
+  LANGUAGE: "Languages",
   OTHER: "Other",
 };
 
@@ -33,7 +43,6 @@ export function SkillSection({ skills }: { skills: Skill[] }) {
     <Card id="skills">
       <CardHeader>
         <CardTitle>Skills</CardTitle>
-        <CardDescription>What you know, with how confident we are in each one.</CardDescription>
         <CardAction>
           <SkillDialog />
         </CardAction>
@@ -41,29 +50,39 @@ export function SkillSection({ skills }: { skills: Skill[] }) {
       <CardContent className="flex flex-col gap-6">
         {confirmed.length === 0 ? (
           <EmptyState
+            compact
             icon={Lightbulb}
             title="No skills added yet"
             description="Add a skill, or upload a CV to extract them automatically."
           />
         ) : (
-          <ul className="flex flex-col divide-y divide-border">
-            {confirmed.map((skill) => (
-              <li key={skill.id} className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-sm font-semibold text-foreground">{skill.name}</p>
-                    <Badge variant="secondary">{CATEGORY_LABEL[skill.category]}</Badge>
-                    {skill.proficiency && <Badge variant="outline">{PROFICIENCY_LABEL[skill.proficiency]}</Badge>}
-                  </div>
-                  <SourceBadge source={skill.source} />
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <SkillDialog skill={skill} />
-                  <DeleteSkillButton id={skill.id} label={skill.name} />
-                </div>
-              </li>
+          <div className="flex flex-col gap-4">
+            {CATEGORY_ORDER.filter((cat) => confirmed.some((s) => s.category === cat)).map((cat) => (
+              <div key={cat} className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{CATEGORY_GROUP[cat]}</p>
+                <ul className="flex flex-wrap gap-2">
+                  {confirmed
+                    .filter((s) => s.category === cat)
+                    .map((skill) => (
+                      <li
+                        key={skill.id}
+                        className="group inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 py-1 pl-3 pr-1 text-sm text-foreground"
+                      >
+                        <span>{skill.name}</span>
+                        {skill.proficiency && (
+                          <span className="text-xs text-muted-foreground">· {PROFICIENCY_LABEL[skill.proficiency]}</span>
+                        )}
+                        <SourceBadge source={skill.source} className="ml-1" />
+                        <span className="flex items-center opacity-60 transition-opacity group-hover:opacity-100 [&_button]:size-7">
+                          <SkillDialog skill={skill} />
+                          <DeleteSkillButton id={skill.id} label={skill.name} />
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
 
         {suggested.length > 0 && (

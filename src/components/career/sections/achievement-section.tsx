@@ -1,6 +1,6 @@
 import { Trophy } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { AchievementDialog } from "@/components/career/sections/achievement-dialog";
@@ -14,7 +14,6 @@ export function AchievementSection({ achievements }: { achievements: Achievement
     <Card id="achievements">
       <CardHeader>
         <CardTitle>Achievements</CardTitle>
-        <CardDescription>Awards, publications, and other notable results.</CardDescription>
         <CardAction>
           <AchievementDialog />
         </CardAction>
@@ -22,6 +21,7 @@ export function AchievementSection({ achievements }: { achievements: Achievement
       <CardContent>
         {achievements.length === 0 ? (
           <EmptyState
+            compact
             icon={Trophy}
             title="No achievements added yet"
             description="Add an award or notable result, or upload a CV to extract them automatically."

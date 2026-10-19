@@ -22,7 +22,15 @@ import { enterStudentModeAction, exitStudentModeAction } from "@/lib/student/act
  * you were on, with a sentence telling you what to do.
  */
 
-export function EnterStudentModeButton({ className }: { className?: string }) {
+export function EnterStudentModeButton({
+  className,
+  label = "Student? Click here",
+  variant = "default",
+}: {
+  className?: string;
+  label?: string;
+  variant?: "default" | "ghost" | "outline" | "link";
+}) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -37,9 +45,9 @@ export function EnterStudentModeButton({ className }: { className?: string }) {
 
   return (
     <div className={className}>
-      <Button type="button" disabled={pending} onClick={enter}>
+      <Button type="button" variant={variant} size={variant === "default" ? "default" : "sm"} disabled={pending} onClick={enter}>
         <IconStudent />
-        {pending ? "Switching…" : "Student? Click here"}
+        {pending ? "Switching…" : label}
       </Button>
       {error && <p className="mt-2 max-w-sm text-sm text-destructive">{error}</p>}
     </div>

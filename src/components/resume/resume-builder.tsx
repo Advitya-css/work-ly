@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertTriangle, Check, Copy, Download, FileText, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,13 @@ export function ResumeBuilder({
   opportunityId,
   candidate,
   jobLabel,
+  autoStart = false,
 }: {
   opportunityId: string;
   candidate: Candidate;
   jobLabel: string;
+  /** Start building straight away (arriving from "Open my tailored resume"). */
+  autoStart?: boolean;
 }) {
   const [resume, setResume] = useState<TailoredResume | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,6 +53,19 @@ export function ResumeBuilder({
     }
     setLoading(false);
   }
+
+  // One click from the job page to a resume: no second "Build" press.
+  const started = useRef(false);
+  useEffect(() => {
+    if (autoStart && !started.current) {
+      started.current = true;
+      // A refresh shouldn't build (and spend) it again.
+      window.history.replaceState(null, "", window.location.pathname);
+      void generate();
+    }
+    // generate is stable enough for a one-time start
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   function copyText() {
     const sheet = document.getElementById("resume-sheet");

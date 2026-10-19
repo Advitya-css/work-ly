@@ -28,6 +28,19 @@ export function SourceBadge({
   className?: string;
 }) {
   const isInference = source === "AI_INFERENCE";
+  // Facts the person typed or that came from their own CV need no label:
+  // that's nearly everything, and a badge on every row was noise. What the
+  // AI inferred, and what's unconfirmed, is still always marked.
+  if ((source === "USER" || source === "CV") && !isUncertain) return null;
+  if (source === "USER" || source === "CV") {
+    return (
+      <span className={cn("inline-flex items-center gap-1.5", className)}>
+        <Badge variant="warning" title="Extracted from your CV but not yet confirmed by you">
+          Unconfirmed
+        </Badge>
+      </span>
+    );
+  }
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
       <Badge variant={isInference ? "warning" : "outline"}>

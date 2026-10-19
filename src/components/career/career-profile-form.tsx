@@ -1,14 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronDown } from "lucide-react";
 
 import { saveCareerProfileAction, type CareerActionState } from "@/lib/career/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { CareerProfile } from "@/lib/db/types";
 import { LocationAutocomplete } from "@/components/career/location-autocomplete";
 
@@ -18,16 +17,14 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
   const [state, formAction, pending] = useActionState(saveCareerProfileAction, initialState);
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Facts about you</CardTitle>
-          <CardDescription>
-            Everything here is entered by you directly. Work-ly never invents experience,
-            skills, or achievements on your behalf.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5">
+    <form action={formAction}>
+      {/* Folded once the basics are filled in: the hero above shows them. */}
+      <details open={!profile?.headline && !profile?.currentRole} className="group rounded-xl border border-border bg-card shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <span className="text-base font-semibold text-foreground">Edit your basics</span>
+          <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <div className="grid gap-5 border-t border-border px-5 py-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="headline">Headline</Label>
@@ -45,10 +42,7 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
                 name="location"
                 defaultValue={profile?.location ?? ""}
               />
-              <p className="text-xs text-muted-foreground">
-                Anchors location matching on Opportunities and Discovery. Add other places you would also
-                work on Career Goals.
-              </p>
+              <p className="text-xs text-muted-foreground">Jobs are matched near here. Add other places in Goals.</p>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="currentRole">Current role</Label>
@@ -95,8 +89,6 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
           {/* Free-text skills are superseded by the structured Skills section below , 
               kept as a hidden empty field so the deprecated column is cleared, not left stale. */}
           <input type="hidden" name="skills" value="" />
-        </CardContent>
-      </Card>
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>
@@ -109,6 +101,8 @@ export function CareerProfileForm({ profile }: { profile: CareerProfile | null }
           </span>
         )}
       </div>
+        </div>
+      </details>
     </form>
   );
 }

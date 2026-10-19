@@ -1,6 +1,6 @@
 import { Briefcase } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
@@ -15,7 +15,6 @@ export function ExperienceSection({ experiences }: { experiences: Experience[] }
     <Card id="experience">
       <CardHeader>
         <CardTitle>Experience</CardTitle>
-        <CardDescription>Roles you&apos;ve held, in your own words.</CardDescription>
         <CardAction>
           <ExperienceDialog />
         </CardAction>
@@ -23,6 +22,7 @@ export function ExperienceSection({ experiences }: { experiences: Experience[] }
       <CardContent>
         {experiences.length === 0 ? (
           <EmptyState
+            compact
             icon={Briefcase}
             title="No experience added yet"
             description="Add a role you've held, or upload a CV to extract them automatically."
@@ -44,9 +44,7 @@ export function ExperienceSection({ experiences }: { experiences: Experience[] }
                       {formatDateRange(exp.startDate, exp.endDate, exp.isCurrent)}
                     </p>
                   )}
-                  {exp.description && (
-                    <p className="mt-1 whitespace-pre-line text-sm text-foreground/80">{exp.description}</p>
-                  )}
+                  {exp.description && <DescriptionLines text={exp.description} />}
                   <SourceBadge source={exp.source} isUncertain={exp.isUncertain} className="mt-1" />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
@@ -60,5 +58,24 @@ export function ExperienceSection({ experiences }: { experiences: Experience[] }
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/** A role's description as tidy bullet points (one per line of the CV). */
+function DescriptionLines({ text }: { text: string }) {
+  const lines = text
+    .split(/\n+/)
+    .map((l) => l.replace(/^\s*[-•*·]\s*/, "").trim())
+    .filter(Boolean);
+  if (lines.length <= 1) return <p className="mt-1 text-sm leading-relaxed text-foreground/80">{lines[0] ?? text}</p>;
+  return (
+    <ul className="mt-1.5 flex flex-col gap-1.5">
+      {lines.map((line, i) => (
+        <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-foreground/80">
+          <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/60" />
+          <span>{line}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

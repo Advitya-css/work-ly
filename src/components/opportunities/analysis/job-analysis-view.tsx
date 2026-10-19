@@ -109,15 +109,16 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
         <ScoreRing value={reliable ? analysis.fitScore : null} />
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={RECOMMENDATION_VARIANT[analysis.recommendation]} className="text-sm">
-              {RECOMMENDATION_LABEL[analysis.recommendation]}
-            </Badge>
+            <Badge variant={RECOMMENDATION_VARIANT[analysis.recommendation]}>{RECOMMENDATION_LABEL[analysis.recommendation]}</Badge>
             {reliable && coverage < 1 && (
               <span className="text-xs text-muted-foreground">Based on {Math.round(coverage * 100)}% of the criteria</span>
             )}
           </div>
           {reliable ? (
-            <p className="max-w-prose text-sm leading-relaxed text-foreground/90">{analysis.recommendationReasoning}</p>
+            <>
+              <p className="text-xl font-semibold tracking-tight text-balance text-foreground">{VERDICT_HEADLINE[analysis.recommendation]}</p>
+              <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{analysis.recommendationReasoning}</p>
+            </>
           ) : (
             <p className="max-w-prose text-sm leading-relaxed text-foreground/90">
               Not enough to score this fairly: Work-ly could check only {Math.round(coverage * 100)}% of what matters
@@ -230,6 +231,14 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
     </div>
   );
 }
+
+const VERDICT_HEADLINE: Record<string, string> = {
+  APPLY_NOW: "Apply now: you're a strong fit",
+  APPLY: "Worth applying",
+  STRETCH: "A stretch, but within reach",
+  LOW_PRIORITY: "Probably not the best use of your time",
+  SKIP: "Skip this one",
+};
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (

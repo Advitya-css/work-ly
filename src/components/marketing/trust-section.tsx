@@ -14,22 +14,22 @@ const POINTS = [
   {
     icon: FileSearch,
     title: "Every verdict quotes your resume",
-    body: "A requirement only counts as met when Work-ly can quote the line on your resume that proves it. No quote, no credit.",
+    body: "A requirement counts only when Work-ly can quote the line that proves it.",
   },
   {
     icon: UserRoundCheck,
     title: "It never adds skills you don't have",
-    body: "Tailored resumes and cover letters are rewritten only from your real experience. Missing skills are listed as gaps and left out.",
+    body: "Resumes are rewritten from your real experience. Gaps stay gaps.",
   },
   {
     icon: Cpu,
-    title: "Pro runs on Google's stronger model",
-    body: "For Pro members, Fit checks, tailored resumes, cover letters and interview feedback run on Google's flagship Gemini Flash model, with the previous Flash model stepping in when it's busy.",
+    title: "Built on Google Gemini",
+    body: "Pro runs every check and rewrite on Google's strongest fast model.",
   },
   {
     icon: ShieldCheck,
     title: "Your resume isn't used to train AI",
-    body: "Work-ly uses Google's paid Gemini API, which doesn't train on what you send. You can delete your data at any time.",
+    body: "The paid Gemini API doesn't train on what you send. Delete your data any time.",
   },
 ];
 
@@ -42,8 +42,7 @@ export function TrustSection() {
             How Work-ly scores you
           </h2>
           <p className="mt-3 text-balance text-muted-foreground">
-            Candidate Fit measures how well your resume shows a job&apos;s requirements. It is not a hiring guarantee,
-            and it never guesses.
+            Honest scores, built only from what your resume proves.
           </p>
         </div>
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">

@@ -178,7 +178,9 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
                   setDragging(null);
                 }}
                 className={cn(
-                  "flex w-[240px] shrink-0 flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-2.5 transition-colors",
+                  // Empty stages stay narrow so the stages with jobs in them fit on screen.
+                  "flex shrink-0 flex-col gap-2 rounded-xl border border-border bg-secondary/30 p-2.5 transition-colors",
+                  items.length === 0 ? "w-[150px]" : "w-[240px]",
                   dropTarget === column && "border-primary bg-primary/5",
                 )}
               >
@@ -190,7 +192,7 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
                 </div>
 
                 {items.length === 0 ? (
-                  <p className="px-1 py-4 text-center text-xs text-muted-foreground">Nothing here</p>
+                  <p className="px-1 py-4 text-center text-xs text-muted-foreground/70">Empty</p>
                 ) : (
                   items.map((application) => (
                     <div

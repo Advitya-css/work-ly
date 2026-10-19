@@ -1,6 +1,6 @@
 import { Compass } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
@@ -28,14 +28,11 @@ export function ValuesSection({ values }: { values: CandidateValueSignal[] }) {
     <Card id="values">
       <CardHeader>
         <CardTitle>Work Values</CardTitle>
-        <CardDescription>
-          What Work-ly has inferred you care about from your CV, and why - this feeds a Values Alignment
-          boost or penalty into every job's Fit score.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         {sorted.length === 0 ? (
           <EmptyState
+            compact
             icon={Compass}
             title="No work values inferred yet"
             description="Upload or re-parse your CV and Work-ly will look for signals like sustainability, mission-driven work, or startup pace - always with the evidence shown here, never invented."

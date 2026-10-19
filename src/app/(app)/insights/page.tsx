@@ -68,7 +68,7 @@ export default async function InsightsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Insights"
-        description="The long game: where you stand in the market, how you're progressing, and a watch that never stops."
+        description="Where you stand in the market and how your search is going."
         icon={IconInsight}
         area="career"
       />

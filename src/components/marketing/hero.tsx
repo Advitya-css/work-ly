@@ -25,12 +25,11 @@ export function Hero({ offer, sale = null }: { offer: PublicFoundingOffer | null
         <span className="mb-5 inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
           Free check · no signup needed
         </span>
-        <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+        <h1 className="text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
           Would a recruiter shortlist you for this job?
         </h1>
         <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
-          Paste a job and your resume. Work-ly checks every requirement, quotes the proof from your own resume, and
-          tells you what would get you screened out, before you apply.
+          Paste a job and your resume. See what you already prove, and what would get you screened out.
         </p>
         <div className="mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
           <Button asChild size="lg" className="w-full sm:w-auto">
@@ -43,7 +42,7 @@ export function Hero({ offer, sale = null }: { offer: PublicFoundingOffer | null
             <Link href="/signup">Create free account</Link>
           </Button>
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">First check needs no account. Free account after that, no card.</p>
+        <p className="mt-3 text-xs text-muted-foreground">No account or card needed.</p>
       </div>
 
       <div className="mt-14">

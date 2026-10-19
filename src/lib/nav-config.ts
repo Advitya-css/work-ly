@@ -76,7 +76,7 @@ export const studentNavGroups: NavGroup[] = [
       { label: "Student home", href: "/student", icon: IconStudent, area: "opportunity" },
       { label: "Campus jobs", href: "/student/jobs", icon: IconOpportunity, area: "opportunity" },
       { label: "Internships", href: "/student/internships", icon: IconDream, area: "dream" },
-      { label: "New Grad", href: "/student/new-grad", icon: IconPathway, area: "pathway" },
+      { label: "New grad", href: "/student/new-grad", icon: IconPathway, area: "pathway" },
       { label: "Applications", href: "/applications", icon: IconApplication, area: "application" },
       { label: "My profile", href: "/career-profile", icon: IconProfile, area: "career" },
     ],
@@ -111,8 +111,8 @@ export const CAREER_TABS: SectionTab[] = [
   { label: "Profile", href: "/career-profile", icon: IconProfile },
   { label: "Goals", href: "/career-goals", icon: IconGoal },
   { label: "Dream job", href: "/dream-job", icon: IconDream },
-  { label: "Action Plan", href: "/career-path", icon: IconPathway },
-  { label: "Pivot", href: "/career-pivot", icon: IconPathway },
+  { label: "Action plan", href: "/career-path", icon: IconPathway },
+  { label: "Career change", href: "/career-pivot", icon: IconPathway },
   { label: "Insights", href: "/insights", icon: IconInsight },
 ];
 
@@ -120,5 +120,5 @@ export const STUDENT_TABS: SectionTab[] = [
   { label: "Overview", href: "/student", icon: IconStudent },
   { label: "Campus jobs", href: "/student/jobs", icon: IconOpportunity },
   { label: "Internships", href: "/student/internships", icon: IconDream },
-  { label: "New Grad", href: "/student/new-grad", icon: IconPathway },
+  { label: "New grad", href: "/student/new-grad", icon: IconPathway },
 ];

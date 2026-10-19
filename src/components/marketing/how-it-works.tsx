@@ -6,35 +6,35 @@ const steps = [
     icon: UserRound,
     title: "Build your profile",
     description:
-      "Upload your resume once. Work-ly turns it into a career profile you can check and edit. It never invents qualifications you don't have.",
+      "Upload your resume once. Check it, edit it.",
   },
   {
     number: "02",
     icon: Compass,
     title: "Check your fit",
     description:
-      "Paste a role you're considering, or let Work-ly match you against public listings, and see your Candidate Fit with the reasons behind it.",
+      "Paste a job, or let Work-ly find them. See your fit and why.",
   },
   {
     number: "03",
     icon: ListFilter,
     title: "Tailor every application",
     description:
-      "Get a resume and cover letter written for that role from your real experience, plus a short note to the hiring manager.",
+      "A resume, cover letter and note written for each job.",
   },
   {
     number: "04",
     icon: TrendingUp,
     title: "Practise and grow",
     description:
-      "Rehearse with mock interviews, see what separates you from the role you want, and follow a step-by-step plan to close the gap.",
+      "Mock interviews and a plan to close your gaps.",
   },
   {
     number: "05",
     icon: LineChart,
     title: "Track what works",
     description:
-      "Log your applications and outcomes, so you can see which roles and resumes actually get you interviews.",
+      "See which jobs and resumes get you interviews.",
   },
 ];
 
@@ -47,7 +47,7 @@ export function HowItWorks() {
             One coach, from resume to offer
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Work-ly is software you use for your own career. Each step builds on the last.
+            Five steps, each building on the last.
           </p>
         </div>
 

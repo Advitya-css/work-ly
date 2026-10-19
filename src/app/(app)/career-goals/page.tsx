@@ -38,8 +38,8 @@ export default async function CareerGoalsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Career Goals"
-        description="What you're working toward. This steers job analysis and, later, opportunity prioritization."
+        title="Goals"
+        description="The roles and places you're aiming for. Matches and priorities follow these."
         action={<NewCareerGoalDialog homeLocation={homeLocation} />}
       />
 
@@ -61,7 +61,7 @@ export default async function CareerGoalsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-semibold text-foreground">{goal.title}</p>
                     <div className="flex shrink-0 items-center gap-1">
-                      <Badge variant={statusVariant[goal.status]}>{goal.status.toLowerCase()}</Badge>
+                      <Badge variant={statusVariant[goal.status]}>{goal.status.charAt(0) + goal.status.slice(1).toLowerCase()}</Badge>
                       <NewCareerGoalDialog goal={goal} homeLocation={homeLocation} />
                       <DeleteCareerGoalButton id={goal.id} label={goal.title} />
                     </div>

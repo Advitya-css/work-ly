@@ -50,11 +50,12 @@ export function FeedbackButton() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
+          variant="outline"
           size="icon"
           aria-label="Send feedback"
           title="Send feedback"
-          className="fixed bottom-5 left-4 md:left-[264px] h-10 w-10 md:h-12 md:w-12 rounded-full shadow-lg z-50 transition-transform hover:scale-110"
+          // Quiet on purpose: one loud floating button (Ask Work-ly) is enough.
+          className="fixed bottom-5 left-4 z-50 size-10 rounded-full bg-card text-muted-foreground shadow-md hover:text-foreground md:left-[264px]"
         >
           <MessageSquare className="size-5" />
         </Button>

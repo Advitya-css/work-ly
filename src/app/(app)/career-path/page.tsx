@@ -5,15 +5,11 @@ import {
   MapPin,
   Flag,
   CheckCircle2,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
-import { IconPathway } from "@/components/icons";
-import { EmptyState } from "@/components/shared/empty-state";
-import { IllustrationPathway } from "@/components/shared/empty-illustration";
 import { PathwayStepCard } from "@/components/pathway/pathway-step-card";
 import { ActionCard } from "@/components/pathway/action-card";
 import { GeneratePathwayButton } from "@/components/pathway/generate-pathway-button";
@@ -21,7 +17,8 @@ import { SharePathwayButton } from "@/components/pathway/share-pathway-button";
 import { PathwayCheckIn } from "@/components/pathway/pathway-check-in";
 import { WhatIfPanel } from "@/components/pathway/what-if-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { displayJobTitle } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
@@ -58,22 +55,23 @@ export default async function CareerPathPage() {
   if (!pathway) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader
-          title="Action Plan"
-          description="A specific, premium 30/60/90 day curriculum to close your skill gaps."
-        />
+        <PageHeader title="Action plan" description="A week-by-week plan from where you are to the role you want." />
 
         <SectionTabs section="career" />
-        <div className="flex flex-col items-center gap-4">
-          <EmptyState
-            illustration={IllustrationPathway}
-            title="No pathway yet"
-            description="Work-ly builds your pathway from the gaps between your profile and your target role. Analyze a dream job first, then generate a pathway here."
-            action={{ label: "Analyze your dream job", href: "/dream-job" }}
-            className="w-full"
-          />
-          <GeneratePathwayButton hasExisting={false} isPro={user.isPro} />
-        </div>
+        <section className="flex flex-col items-start gap-5 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.08] via-card to-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="flex max-w-xl flex-col gap-2">
+            <h2 className="text-2xl font-semibold tracking-tight text-balance text-foreground">Build your action plan</h2>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Work-ly turns the gaps between your profile and your target role into ordered steps. It works best after a dream-job check.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <GeneratePathwayButton hasExisting={false} isPro={user.isPro} />
+            <Button asChild variant="ghost">
+              <Link href="/dream-job">Check a dream job first</Link>
+            </Button>
+          </div>
+        </section>
 
         {adjacentCareers.length > 0 && <CareerExplorer careers={adjacentCareers} />}
       </div>
@@ -93,8 +91,8 @@ export default async function CareerPathPage() {
     <div className="flex flex-col gap-6">
       <PathwayCheckIn pendingActionTitle={firstPendingAction?.title} />
       <PageHeader
-        title="Career Path"
-        description="A practical, ordered pathway from where you are now to where you want to be."
+        title="Action plan"
+        description="Your steps from where you are to the role you want, in order."
         action={
           <div className="flex items-center gap-2">
             <SharePathwayButton pathwayId={pathway.id} />
@@ -225,67 +223,69 @@ function CareerExplorer({
   careers: ReturnType<typeof exploreCareers>;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          Career explorer
-        </CardTitle>
-        <CardDescription>
-          Adjacent roles worth a look. Where a fit is marked measured, it came from a real posting you
-          analyzed: otherwise it&apos;s indicative, based on skill overlap.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-2">
-        {careers.map((career) => (
-          <div key={career.role} className="flex flex-col gap-2 rounded-xl border border-border px-4 py-3.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-medium text-foreground">{career.role}</p>
-              <Badge variant={career.isMeasured ? "success" : "outline"}>
-                {career.currentFit}/100 {career.isMeasured ? "measured" : "indicative"}
-              </Badge>
-            </div>
-
-            <p className="text-sm text-muted-foreground">{career.whyItFits}</p>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Typical skills
-              </p>
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {career.requiredSkills.map((skill) => {
-                  const has = career.matchedSkills.includes(skill);
-                  return (
-                    <Badge key={skill} variant={has ? "success" : "outline"}>
-                      {has && <CheckCircle2 className="size-3" />}
-                      {skill}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Typical entry route:</span>{" "}
-              {career.typicalEntryRoute}
-            </p>
-
-            {career.relevantJobCount > 0 && (
-              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Sparkles className="size-3.5" />
-                {career.relevantJobCount} matching {career.relevantJobCount === 1 ? "opportunity" : "opportunities"} in your pipeline
-              </p>
-            )}
-          </div>
-        ))}
-      </CardContent>
-      <CardContent className="pt-0">
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Roles you could move into</h2>
+          <p className="text-sm text-muted-foreground">Based on your skills. Analyze a real posting to measure your fit.</p>
+        </div>
         <Button asChild variant="outline" size="sm">
           <Link href="/analyze-job">
-            Analyze a role to measure your fit properly
+            Measure a role properly
             <ArrowRight />
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {careers.map((career) => (
+          <article key={career.role} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h3 className="truncate text-base font-semibold text-foreground">{displayJobTitle(career.role)}</h3>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">{career.whyItFits}</p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end">
+                {career.isMeasured ? (
+                  <span
+                    className={cn(
+                      "text-2xl font-semibold leading-none tabular-nums",
+                      career.currentFit >= 75 ? "text-success" : career.currentFit >= 50 ? "text-warning" : "text-muted-foreground",
+                    )}
+                  >
+                    {career.currentFit}
+                  </span>
+                ) : (
+                  // Without a real posting, the honest number is skill overlap, not a fit score.
+                  <span className="text-2xl font-semibold leading-none tabular-nums text-foreground">
+                    {career.matchedSkills.length}/{career.requiredSkills.length}
+                  </span>
+                )}
+                <span className="mt-1 text-[11px] text-muted-foreground">{career.isMeasured ? "fit, measured" : "core skills"}</span>
+              </div>
+            </div>
+            <ul className="flex flex-wrap gap-1.5">
+              {career.requiredSkills.slice(0, 5).map((skill) => {
+                const has = career.matchedSkills.includes(skill);
+                return (
+                  <li
+                    key={skill}
+                    className={cn(
+                      "inline-flex max-w-full items-center gap-1 truncate rounded-full border px-2.5 py-0.5 text-xs",
+                      has ? "border-success/30 bg-success/10 text-success" : "border-border text-muted-foreground",
+                    )}
+                  >
+                    {has && <CheckCircle2 className="size-3 shrink-0" />}
+                    <span className="truncate">{skill}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">
+              <span className="font-medium text-foreground/80">Usual way in:</span> {career.typicalEntryRoute}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

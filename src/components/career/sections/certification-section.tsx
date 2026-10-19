@@ -1,6 +1,6 @@
 import { BadgeCheck, ExternalLink } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { CertificationDialog } from "@/components/career/sections/certification-dialog";
@@ -14,7 +14,6 @@ export function CertificationSection({ certifications }: { certifications: Certi
     <Card id="certifications">
       <CardHeader>
         <CardTitle>Certifications</CardTitle>
-        <CardDescription>Licenses and certifications you hold.</CardDescription>
         <CardAction>
           <CertificationDialog />
         </CardAction>
@@ -22,6 +21,7 @@ export function CertificationSection({ certifications }: { certifications: Certi
       <CardContent>
         {certifications.length === 0 ? (
           <EmptyState
+            compact
             icon={BadgeCheck}
             title="No certifications added yet"
             description="Add a certification, or upload a CV to extract them automatically."

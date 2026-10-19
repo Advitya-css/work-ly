@@ -9,6 +9,7 @@ import { Loader2, Lock, ArrowRight, ShieldCheck, FileText, CheckCircle2, Sparkle
 
 import { Button } from "@/components/ui/button";
 import { AccountButtons } from "@/components/marketing/account-buttons";
+import { Logo } from "@/components/shared/logo";
 import { AnimatedNumber } from "@/components/shared/animated-number";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,7 +101,8 @@ export default function FreeGraderPage() {
       {/* Navbar Minimal */}
       <header className="sticky top-0 z-50 flex h-14 w-full items-center border-b border-border/40 bg-background/95 px-6 backdrop-blur">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-foreground">
-          Work-ly <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] uppercase text-primary">Fit Check</span>
+          <Logo />
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">Free check</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <AccountButtons startLabel="Sign up free" shortStartLabel="Sign up" />
@@ -136,7 +138,7 @@ export default function FreeGraderPage() {
             Would a recruiter shortlist you for this job?
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Paste a job description and your resume. Work-ly checks every key requirement against your resume, quotes the evidence it finds, and tells you what would get you screened out.
+            Paste a job and your resume. See what you already prove, and what would get you screened out.
           </p>
         </div>
 
@@ -145,13 +147,13 @@ export default function FreeGraderPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><FileText className="size-5" /> Job Description</CardTitle>
-                <CardDescription>Paste the raw text of the role you want.</CardDescription>
+                <CardDescription>The full posting text.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative">
                 <Textarea 
                   placeholder="e.g. We are looking for a Senior Product Manager with 5+ years of experience in B2B SaaS..." 
-                  className="min-h-[300px] font-mono text-sm resize-y"
+                  className="min-h-[300px] text-sm leading-relaxed resize-y"
                   value={jobText}
                   onChange={(e) => setJobText(e.target.value)}
                 />
@@ -168,13 +170,13 @@ export default function FreeGraderPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5" /> Your Resume</CardTitle>
-                <CardDescription>Paste the raw text of your current resume.</CardDescription>
+                <CardDescription>Your resume as plain text.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative">
                 <Textarea 
                   placeholder="e.g. ACME Corp | Product Manager | Jan 2020 - Present..." 
-                  className="min-h-[300px] font-mono text-sm resize-y"
+                  className="min-h-[300px] text-sm leading-relaxed resize-y"
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                 />
@@ -336,7 +338,7 @@ export default function FreeGraderPage() {
             )}
             <Button size="lg" className="w-full max-w-sm font-semibold text-base" onClick={handleScore} disabled={pending}>
               {pending ? <WorklyLoader className="animate-spin mr-2" /> : null}
-              {pending ? "Checking every requirement..." : "Check My Fit"}
+              {pending ? "Checking every requirement..." : "Check my fit"}
             </Button>
           </div>
         )}

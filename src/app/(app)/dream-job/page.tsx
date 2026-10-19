@@ -37,20 +37,16 @@ export default async function DreamJobPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="How close are you to your dream job?"
-        description="Paste a posting for the role you're ultimately aiming for. Work-ly compares it against your career profile and shows exactly what's already there, what's missing, and the highest-impact next step to close the gap."
+        title="Dream job"
+        description="Paste the role you're aiming for. See how close you are and a plan to close the gap."
       />
 
       <SectionTabs section="career" />
 
       <Card>
         <CardHeader>
-          <CardTitle>New dream job analysis</CardTitle>
-          <CardDescription>
-            Your readiness score is the same trusted Candidate Fit calculation used everywhere else: never a hiring
-            probability. Every gap and suggestion traces back to your profile or the posting text; nothing is
-            invented.
-          </CardDescription>
+          <CardTitle className="text-base">Check a dream job</CardTitle>
+          <CardDescription>Every gap traces back to your profile or the posting. Nothing is invented.</CardDescription>
         </CardHeader>
         <CardContent>
           {/* The first analysis is free, so a free user can see what it does before paying. */}

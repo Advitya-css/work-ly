@@ -21,8 +21,8 @@ export default async function CareerPivotPage() {
     return (
       <div className="flex flex-col gap-8 max-w-5xl">
         <PageHeader
-          title="Career Pivot Copilot"
-          description="Translate your past experience into the vocabulary of a completely different industry."
+          title="Career change"
+          description="Describe your past work in the language of the field you're moving into."
           icon={IconPathway}
           area="pathway"
         />
@@ -41,8 +41,8 @@ export default async function CareerPivotPage() {
   return (
     <div className="flex flex-col gap-8 max-w-5xl">
       <PageHeader
-        title="Career Pivot Copilot"
-        description="Translate your past experience into the vocabulary of a completely different industry."
+        title="Career change"
+        description="Describe your past work in the language of the field you're moving into."
         icon={IconPathway}
         area="pathway"
       />

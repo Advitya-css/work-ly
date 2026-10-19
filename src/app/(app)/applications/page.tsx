@@ -30,7 +30,7 @@ export default async function ApplicationsPage() {
       <PageHeader
         icon={IconApplication}
         title="Applications"
-        description="Track what you've applied to, what happened, and what that tells you."
+        description="What you've applied to and what happened."
         action={<NewApplicationDialog />}
       />
 
@@ -38,7 +38,7 @@ export default async function ApplicationsPage() {
         <EmptyState
           botImage={true}
           title="No applications tracked yet"
-          description="Mark an opportunity as applied and it'll appear here automatically, or log a role you applied to elsewhere. Outcomes feed back into what Work-ly can tell you about your search."
+          description="Jobs you mark as applied show up here. You can also log ones you applied to elsewhere."
           action={{ label: "Browse opportunities", href: "/opportunities" }}
         />
       ) : (

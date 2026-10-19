@@ -28,7 +28,7 @@ export function JobNextStep({
 
   const primary = isPro ? (
     <Button asChild size="lg" className="gap-2">
-      <Link href={resumeHref}>
+      <Link href={`${resumeHref}?build=1`}>
         <FileText className="size-4" />
         Open my tailored resume
       </Link>

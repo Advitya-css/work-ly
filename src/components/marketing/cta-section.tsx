@@ -11,8 +11,7 @@ export function CtaSection() {
           Check the next job before you apply
         </h2>
         <p className="max-w-md text-balance text-muted-foreground">
-          Paste the job and your resume. See what you already prove and what would get you screened out. Free, no
-          signup for the first check.
+          Free, and no signup needed for your first check.
         </p>
         <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
           <Button asChild size="lg" className="w-full sm:w-auto">

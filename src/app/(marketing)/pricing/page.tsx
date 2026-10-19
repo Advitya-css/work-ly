@@ -104,7 +104,7 @@ export default async function PricingPage() {
       <header className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground">Simple, honest pricing</h1>
         <p className="text-balance text-muted-foreground">
-          Start free. Upgrade when you&apos;re applying seriously. Every paid plan comes with a {GUARANTEE.sentence}.
+          Start free. Upgrade when you&apos;re applying seriously.
         </p>
         {sale && <SaleBanner sale={sale} href={null} className="mt-2" />}
         <FoundingBanner offer={offer} href={null} className="mt-2" />

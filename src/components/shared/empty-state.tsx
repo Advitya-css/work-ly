@@ -37,6 +37,8 @@ interface EmptyStateProps {
   secondaryAction?: EmptyStateAction;
   area?: CardArea;
   className?: string;
+  /** One quiet line instead of the illustrated panel: for an empty section inside a card. */
+  compact?: boolean;
 }
 
 /**
@@ -58,7 +60,15 @@ export function EmptyState({
   area,
   className,
   botImage,
+  compact = false,
 }: EmptyStateProps) {
+  if (compact) {
+    return (
+      <p className={cn("rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground", className)}>
+        {description}
+      </p>
+    );
+  }
   const accent = area ? AREA_VAR[area] : null;
   const style = accent
     ? ({ "--area-tint": accent.tint, "--area-color": accent.color } as React.CSSProperties)

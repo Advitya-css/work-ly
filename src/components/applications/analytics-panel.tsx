@@ -1,6 +1,6 @@
 import { Info } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { AnalyticsSummary } from "@/lib/applications/analytics";
@@ -31,10 +31,6 @@ export function AnalyticsPanel({
           <CardTitle>
             Outcomes
           </CardTitle>
-          <CardDescription>
-            Rates count every application that ever reached a stage. An interview still counts if
-            the role was later rejected.
-          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -83,7 +79,6 @@ export function AnalyticsPanel({
           <CardTitle>
             What&apos;s working
           </CardTitle>
-          <CardDescription>Patterns Work-ly can see in your own outcomes.</CardDescription>
         </CardHeader>
         <CardContent>
           {insights.notEnoughData ? (
@@ -93,14 +88,7 @@ export function AnalyticsPanel({
                 Not enough data yet.
               </p>
               <p className="text-xs text-muted-foreground">
-                You&apos;ve sent {insights.sentCount} application
-                {insights.sentCount === 1 ? "" : "s"}. Work-ly waits until{" "}
-                {INSIGHT_THRESHOLDS.MIN_SENT} before drawing any conclusions:{" "}
-                {insights.needed} more to go.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Patterns from two or three applications are noise, and acting on them would be worse
-                than having no insight at all.
+                Patterns show after {INSIGHT_THRESHOLDS.MIN_SENT} applications. {insights.needed} more to go.
               </p>
             </div>
           ) : insights.insights.length === 0 ? (

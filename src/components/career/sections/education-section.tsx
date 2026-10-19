@@ -1,6 +1,6 @@
 import { GraduationCap } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SourceBadge } from "@/components/career/source-badge";
 import { EducationDialog } from "@/components/career/sections/education-dialog";
@@ -14,7 +14,6 @@ export function EducationSection({ educations }: { educations: Education[] }) {
     <Card id="education">
       <CardHeader>
         <CardTitle>Education</CardTitle>
-        <CardDescription>Schools, degrees, and programs.</CardDescription>
         <CardAction>
           <EducationDialog />
         </CardAction>
@@ -22,6 +21,7 @@ export function EducationSection({ educations }: { educations: Education[] }) {
       <CardContent>
         {educations.length === 0 ? (
           <EmptyState
+            compact
             icon={GraduationCap}
             title="No education added yet"
             description="Add your degrees and programs, or upload a CV to extract them automatically."

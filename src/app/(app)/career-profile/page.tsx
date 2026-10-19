@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { SectionTabs } from "@/components/shared/section-tabs";
-import { IconProfile } from "@/components/icons";
 import { CareerProfileForm } from "@/components/career/career-profile-form";
 import { ResumeCard } from "@/components/career/resume-card";
 import { CareerReadinessHeader } from "@/components/career/career-readiness-header";
@@ -43,22 +42,22 @@ export default async function CareerProfilePage() {
     <div className="flex flex-col gap-6">
       
       <PageHeader
-        title="Career Profile"
-        description="The single source of truth Work-ly uses to understand where you stand today."
+        title="My career"
+        description="Everything Work-ly knows about you. Matches and resumes are built from this."
         action={
           <div className="flex items-center gap-2">
             {!user.isPro ? (
               <UpgradeModal title="Unlock Career Pivot" description="Get a tailored AI strategy to transition your career, map your competencies, and generate a superpower pitch.">
-                <Button variant="outline" size="sm" className="border-purple-500/30 bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300">
-                  <Lock className="mr-2 size-3.5" />
-                  Pivot Career (Pro)
+                <Button variant="outline" size="sm">
+                  <Lock className="size-3.5" />
+                  Plan a career change
                 </Button>
               </UpgradeModal>
             ) : (
-              <Button asChild variant="outline" size="sm" className="border-purple-500/30 bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300">
+              <Button asChild variant="outline" size="sm">
                 <Link href="/career-pivot">
-                  <Sparkles className="mr-2 size-3.5" />
-                  Pivot Career
+                  <Sparkles className="size-3.5" />
+                  Plan a career change
                 </Link>
               </Button>
             )}
@@ -71,21 +70,34 @@ export default async function CareerProfilePage() {
 
       <SectionTabs section="career" />
 
-      <CareerReadinessHeader completeness={completeness} readiness={readiness} />
+      <CareerReadinessHeader
+        completeness={completeness}
+        readiness={readiness}
+        identity={{
+          name: user.name ?? null,
+          headline: full.profile?.headline ?? null,
+          role: full.profile?.currentRole ?? null,
+          company: full.profile?.currentCompany ?? null,
+          location: full.profile?.location ?? null,
+          years: full.profile?.yearsExperience ?? null,
+        }}
+      />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-6">
-          <CareerProfileForm profile={full.profile} />
+      <CareerProfileForm profile={full.profile} />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="flex min-w-0 flex-col gap-6">
           <ExperienceSection experiences={full.experiences} />
-          <EducationSection educations={full.educations} />
           <ProjectSection projects={full.projects} />
-          <SkillSection skills={full.skills} />
-          <ValuesSection values={full.workValues} />
           <AchievementSection achievements={full.achievements} />
-          <CertificationSection certifications={full.certifications} />
         </div>
-
-        <ResumeCard documents={full.documents} />
+        <div className="flex min-w-0 flex-col gap-6">
+          <ResumeCard documents={full.documents} />
+          <SkillSection skills={full.skills} />
+          <EducationSection educations={full.educations} />
+          <CertificationSection certifications={full.certifications} />
+          <ValuesSection values={full.workValues} />
+        </div>
       </div>
     </div>
   );
