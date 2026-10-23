@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/why-am-i-not-getting-interviews", 0.8, "monthly"),
     page("/should-i-apply", 0.8, "monthly"),
     page("/resume-job-match", 0.8, "monthly"),
+    page("/linkedin-headline-generator", 0.9, "monthly"),
     page("/signup", 0.8, "monthly"),
     page("/login", 0.5, "monthly"),
     page("/legal/terms", 0.4, "yearly"),

@@ -24,6 +24,7 @@ const GROUPS = [
       { href: "/why-am-i-not-getting-interviews", label: "Why am I not getting interviews?" },
       { href: "/should-i-apply", label: "Should I apply for this job?" },
       { href: "/resume-job-match", label: "Resume vs job description" },
+      { href: "/linkedin-headline-generator", label: "LinkedIn headline generator" },
     ],
   },
   {
