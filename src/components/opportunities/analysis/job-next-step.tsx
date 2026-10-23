@@ -21,6 +21,7 @@ export function JobNextStep({
   preview,
   company,
   resumeReady = false,
+  sender,
 }: {
   opportunityId: string;
   isPro: boolean;
@@ -28,6 +29,8 @@ export function JobNextStep({
   company?: string | null;
   /** A tailored resume is already saved for this job. */
   resumeReady?: boolean;
+  /** Name and contact line for downloaded letters. */
+  sender?: { name: string; contact: string };
 }) {
   const resumeHref = `/opportunities/${opportunityId}/resume`;
 
@@ -88,7 +91,7 @@ export function JobNextStep({
       </div>
       <div className="flex flex-col gap-2 border-t border-border/70 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <span className="mr-1 text-xs font-medium text-muted-foreground">Also for this job</span>
-        <TailorApplicationButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Cover letter" lockedLabel="Cover letter" />
+        <TailorApplicationButton opportunityId={opportunityId} isPro={isPro} preview={preview} sender={sender} company={company} label="Cover letter" lockedLabel="Cover letter" />
         <InsiderAccessButton opportunityId={opportunityId} isPro={isPro} preview={preview} company={company} label="Note to the hiring manager" lockedLabel="Note to the hiring manager" />
         <InterviewIntelButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Likely interview questions" lockedLabel="Likely interview questions" />
       </div>

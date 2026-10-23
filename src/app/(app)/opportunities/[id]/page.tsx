@@ -16,6 +16,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { OPPORTUNITY_STATUS_LABEL, OPPORTUNITY_STATUS_VARIANT } from "@/lib/jobs/labels";
 import { savedAtWithin } from "@/lib/saved-outputs";
+import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 
 export const metadata: Metadata = { title: "Opportunity" };
 // Re-analysis and the AI tools on this page call the model.
@@ -50,7 +51,11 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       });
 
   // A resume already built for this job opens instantly; say so on the button.
-  const resumeSavedAt = user.isPro ? await savedAtWithin(user.id, "resume", opportunity.id) : null;
+  const [resumeSavedAt, careerProfile] = await Promise.all([
+    user.isPro ? savedAtWithin(user.id, "resume", opportunity.id) : Promise.resolve(null),
+    user.isPro ? getCareerProfileByUserId(user.id) : Promise.resolve(null),
+  ]);
+  const sender = { name: user.name ?? "", contact: [user.email, careerProfile?.location].filter(Boolean).join(" · ") };
 
   return (
     <JobAnalysisView
@@ -82,7 +87,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]}>{OPPORTUNITY_STATUS_LABEL[opportunity.status]}</Badge>
         ) : undefined
       }
-      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean(resumeSavedAt)} />}
+      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean(resumeSavedAt)} sender={sender} />}
     />
   );
 }

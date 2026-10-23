@@ -155,6 +155,7 @@ export function UpgradeModal({
               "A resume rewritten for every job, as PDF or Word",
               "Cover letters and notes to the hiring manager",
               "Likely interview questions and scored mock interviews",
+              "Your LinkedIn headline and About, rewritten",
               "Unlimited job analyses and a plan to your dream job",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">

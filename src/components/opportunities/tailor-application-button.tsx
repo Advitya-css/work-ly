@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Lock, PenLine } from "lucide-react";
+import { AlertTriangle, Download, FileText, Lock, PenLine } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
 import { CopyButton, ToolDialog } from "@/components/opportunities/tool-dialog";
 import { savedLabel, useSavedTool } from "@/components/opportunities/use-saved-tool";
+import { letterElement, printElement, saveBlob, todayLong } from "@/lib/print-document";
 
 /** The cover letter for one job: written once from your profile, then yours to edit. */
 export function TailorApplicationButton({
@@ -20,6 +21,8 @@ export function TailorApplicationButton({
   preview,
   label,
   lockedLabel,
+  sender,
+  company,
 }: {
   opportunityId: string;
   isPro?: boolean;
@@ -27,6 +30,9 @@ export function TailorApplicationButton({
   /** Button text override, e.g. a shorter label inside a tool tile. */
   label?: string;
   lockedLabel?: string;
+  /** Name and contact line for the top of a downloaded letter. */
+  sender?: { name: string; contact: string };
+  company?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const tool = useSavedTool<TailoredApplication>("cover", opportunityId, async () => {
@@ -61,6 +67,7 @@ export function TailorApplicationButton({
   }
 
   const letter = tool.data?.coverLetter ?? "";
+  const who = sender ?? { name: "", contact: "" };
   const words = letter.trim() ? letter.trim().split(/\s+/).length : 0;
   const numbers = tool.data?.unverifiedNumbers ?? [];
 
@@ -89,7 +96,31 @@ export function TailorApplicationButton({
         edited={tool.edited}
         status={savedLabel(tool.saveState, tool.edited, tool.savedAt)}
         onRegenerate={() => void tool.regenerate()}
-        actions={<CopyButton text={letter} label="Copy letter" />}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={async () => {
+                const { buildLetterDocx } = await import("@/lib/resume/docx");
+                const blob = await buildLetterDocx(letter, who, todayLong());
+                saveBlob(blob, `${who.name || "Cover letter"} - cover letter${company ? ` - ${company}` : ""}.docx`);
+              }}
+            >
+              <FileText className="size-4" />
+              Word
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => printElement(letterElement(letter, who, todayLong()), `${who.name || "Cover letter"} - cover letter${company ? ` - ${company}` : ""}`)}
+            >
+              <Download className="size-4" />
+              PDF
+            </Button>
+            <CopyButton text={letter} label="Copy letter" />
+          </>
+        }
       >
         <div className="flex flex-col gap-3">
           {numbers.length > 0 && (

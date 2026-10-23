@@ -27,6 +27,7 @@ export const PRO_FEATURES = [
   "A resume rewritten for every job you apply to, as PDF or Word, saved and editable",
   "Cover letters and notes to the hiring manager (email and LinkedIn), saved per job",
   "Likely interview questions, and mock interviews scored answer by answer",
+  "Your LinkedIn headline and About section, rewritten for the role you want",
   "Unlimited AI job analyses and fit scores (fair use)",
   "Unlimited dream-job analyses and week-by-week career plans",
 ];

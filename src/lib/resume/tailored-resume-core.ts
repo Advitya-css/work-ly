@@ -26,7 +26,44 @@ export interface TailoredResumeProject {
   added?: string[][];
 }
 
+export type ResumeLayout = "clean" | "modern" | "traditional";
+export type ResumeDensity = "comfortable" | "compact";
+export interface ResumeStyle {
+  layout: ResumeLayout;
+  density: ResumeDensity;
+}
+export const DEFAULT_RESUME_STYLE: ResumeStyle = { layout: "clean", density: "comfortable" };
+export const RESUME_LAYOUTS: { key: ResumeLayout; label: string }[] = [
+  { key: "clean", label: "Clean" },
+  { key: "modern", label: "Modern" },
+  { key: "traditional", label: "Traditional" },
+];
+
+export function cleanStyle(raw: unknown): ResumeStyle {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const layout = RESUME_LAYOUTS.some((l) => l.key === r.layout) ? (r.layout as ResumeLayout) : DEFAULT_RESUME_STYLE.layout;
+  const density: ResumeDensity = r.density === "compact" ? "compact" : "comfortable";
+  return { layout, density };
+}
+
+/**
+ * Pages the resume will print on, from its measured height. Print matches
+ * the screen sheet's content width (7.5in, 0.5in margins on US Letter), so
+ * 10in of content is one page. When the sheet is narrower on screen (a
+ * phone), its text wraps more, so the height is scaled back to print width.
+ */
+export function estimatePages(contentHeightPx: number, contentWidthPx: number): number {
+  if (contentHeightPx <= 0 || contentWidthPx <= 0) return 1;
+  const PRINT_WIDTH = 720; // 7.5in at 96dpi
+  const PAGE_HEIGHT = 960; // 10in
+  const atPrintWidth = contentHeightPx * Math.min(1, contentWidthPx / PRINT_WIDTH);
+  // A few pixels over is rounding, not a second page.
+  return Math.max(1, Math.ceil((atPrintWidth - 12) / PAGE_HEIGHT));
+}
+
 export interface TailoredResume {
+  /** How it looks: layout and spacing, chosen in the editor. */
+  style?: ResumeStyle;
   /** Name, headline and contact line as the user last edited them (defaults come from the profile). */
   header?: { name?: string; headline?: string; contact?: string };
   summary: string;
@@ -169,6 +206,7 @@ export function cleanEditedResume(raw: unknown): TailoredResume | null {
     .filter((e) => e.line);
 
   return {
+    style: r.style ? cleanStyle(r.style) : undefined,
     header: header
       ? {
           name: text(header.name, 120) || undefined,

@@ -17,7 +17,7 @@ import { storageProvider } from "@/lib/storage";
  * is best-effort: a storage hiccup means "build it again", never an error.
  */
 
-export const SAVED_KINDS = ["resume", "cover", "note", "interview"] as const;
+export const SAVED_KINDS = ["resume", "cover", "note", "interview", "linkedin"] as const;
 export type SavedKind = (typeof SAVED_KINDS)[number];
 
 /** Enough for a busy search; the oldest drop off first. */

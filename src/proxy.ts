@@ -90,6 +90,7 @@ const PROTECTED_PATHS = [
   "/dream-job",
   "/career-path",
   "/insights",
+  "/linkedin",
   "/applications",
   "/settings",
   "/onboarding",

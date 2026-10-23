@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import {
+  CAREER_TABS,
+  JOBS_TABS,
   navGroups,
   secondaryNavItems,
   studentNavGroups,
@@ -47,10 +49,14 @@ export function SidebarNav({
           {group.items.map((item) => {
             // /student is a prefix of /student/jobs, so the overview link
             // would otherwise stay highlighted on every child page.
+            const under = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+            // A section stays highlighted on every one of its tabs (Goals,
+            // LinkedIn, Dream job... all live under "My career").
+            const sectionTabs = item.href === "/career-profile" ? CAREER_TABS : item.href === "/opportunities" ? JOBS_TABS : null;
             const isActive =
               item.href === "/student"
                 ? pathname === "/student"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : under(item.href) || Boolean(sectionTabs?.some((tab) => under(tab.href)));
             const Icon = item.icon;
             // The tour (tour-provider.tsx) targets these sidebar entries by
             // a `tour-{route}` className derived from the href - e.g.

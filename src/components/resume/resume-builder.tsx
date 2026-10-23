@@ -8,7 +8,16 @@ import { Switch } from "@/components/ui/switch";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { AiProgress } from "@/components/shared/ai-progress";
 import { generateTailoredResumeDocAction, saveTailoredResumeEditsAction } from "@/lib/resume/actions";
-import { resumeAsText, resumeChangeStats, type TailoredResume } from "@/lib/resume/tailored-resume-core";
+import {
+  RESUME_LAYOUTS,
+  cleanStyle,
+  estimatePages,
+  resumeAsText,
+  resumeChangeStats,
+  type ResumeLayout,
+  type ResumeStyle,
+  type TailoredResume,
+} from "@/lib/resume/tailored-resume-core";
 import { cn } from "@/lib/utils";
 
 interface Candidate {
@@ -89,8 +98,34 @@ function Editable({
   );
 }
 
-function SectionTitle({ children }: { children: string }) {
-  return <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">{children}</h2>;
+/**
+ * Three looks, all single-column and plain text underneath, so every one of
+ * them reads cleanly in an applicant-tracking system. They differ in type
+ * and in how sections are marked, not in structure.
+ */
+const LOOKS: Record<ResumeLayout, { font: string; title: string; header: string; name: string }> = {
+  clean: {
+    font: "'Helvetica Neue', Arial, sans-serif",
+    title: "text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500",
+    header: "border-b border-neutral-300 pb-3",
+    name: "text-2xl font-semibold tracking-tight",
+  },
+  modern: {
+    font: "Calibri, Carlito, 'Segoe UI', Arial, sans-serif",
+    title: "border-b border-[#1f3a5f]/25 pb-0.5 text-[12px] font-bold uppercase tracking-[0.08em] text-[#1f3a5f]",
+    header: "pb-1",
+    name: "text-[28px] font-bold tracking-tight text-[#1f3a5f]",
+  },
+  traditional: {
+    font: "Georgia, 'Times New Roman', serif",
+    title: "border-b border-neutral-800 pb-0.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-900",
+    header: "border-b-2 border-neutral-800 pb-3 text-center",
+    name: "text-[26px] font-normal tracking-wide",
+  },
+};
+
+function SectionTitle({ children, className }: { children: string; className: string }) {
+  return <h2 className={className}>{children}</h2>;
 }
 
 /** The line a bullet was rewritten from, shown under it when "Show changes" is on. Never printed. */
@@ -149,6 +184,9 @@ export function ResumeBuilder({
   const [savedAt, setSavedAt] = useState<string | null>(initialSavedAt);
   const [edited, setEdited] = useState(initialEdited);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [style, setStyle] = useState<ResumeStyle>(cleanStyle(initial?.style));
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const [pages, setPages] = useState(1);
 
   async function generate() {
     setConfirmRebuild(false);
@@ -158,7 +196,8 @@ export function ResumeBuilder({
       const res = await generateTailoredResumeDocAction(opportunityId);
       if ("error" in res) setError(res.error);
       else {
-        draft.current = structuredClone(res.data);
+        // A rebuild keeps the look the user picked.
+        draft.current = { ...structuredClone(res.data), style };
         setResume(res.data);
         setRev((r) => r + 1);
         setSavedAt(res.savedAt);
@@ -189,6 +228,48 @@ export function ResumeBuilder({
   useEffect(() => () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
   }, []);
+
+  // How many pages it will print on, kept current as text is edited. The
+  // sheet on screen is narrower than a printed page (the sidebar takes
+  // room), so a copy is measured off-screen at the printed width instead.
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const probe = document.createElement("div");
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText = "position:absolute;left:-10000px;top:0;width:720px;visibility:hidden;pointer-events:none;";
+    document.body.appendChild(probe);
+    let frame = 0;
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const copy = el.cloneNode(true) as HTMLElement;
+        copy.removeAttribute("id");
+        copy.style.padding = "0";
+        copy.style.border = "0";
+        copy.style.width = "720px";
+        copy.querySelectorAll(".print\\:hidden, [data-empty='true']").forEach((n) => n.remove());
+        probe.replaceChildren(copy);
+        setPages(estimatePages(copy.offsetHeight, 720));
+      });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      probe.remove();
+    };
+  }, [rev, resume, style]);
+
+  function changeStyle(next: ResumeStyle) {
+    setStyle(next);
+    if (draft.current) {
+      draft.current.style = next;
+      scheduleSave();
+    }
+  }
 
   function scheduleSave() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -260,6 +341,35 @@ export function ResumeBuilder({
     setWordBusy(false);
   }
 
+  // Printing copies the sheet to the top of the page and hides everything
+  // else, so the PDF is the sheet alone, at the page's left edge, on as many
+  // pages as it needs. (Hiding the rest with visibility left the sheet where
+  // it sat on screen, beside the app's sidebar.) Cmd/Ctrl+P gets the same.
+  useEffect(() => {
+    const before = () => {
+      const sheet = document.getElementById("resume-sheet");
+      if (!sheet || document.getElementById("resume-print-root")) return;
+      const root = document.createElement("div");
+      root.id = "resume-print-root";
+      root.appendChild(sheet.cloneNode(true));
+      root.querySelectorAll("[contenteditable]").forEach((n) => n.removeAttribute("contenteditable"));
+      root.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+      document.body.appendChild(root);
+      document.body.classList.add("printing-resume");
+    };
+    const after = () => {
+      document.getElementById("resume-print-root")?.remove();
+      document.body.classList.remove("printing-resume");
+    };
+    window.addEventListener("beforeprint", before);
+    window.addEventListener("afterprint", after);
+    return () => {
+      window.removeEventListener("beforeprint", before);
+      window.removeEventListener("afterprint", after);
+      after();
+    };
+  }, []);
+
   function download() {
     const previous = document.title;
     const name = draft.current?.header?.name ?? candidate.name;
@@ -303,18 +413,22 @@ export function ResumeBuilder({
 
   const stats = resumeChangeStats(draft.current ?? resume);
   const header = resume.header ?? {};
+  const look = LOOKS[style.layout];
+  const dense = style.density === "compact";
+  const gap = dense ? "mt-2.5" : "mt-4";
   const coverageTotal = resume.keywordsCovered.length + resume.keywordsMissing.length;
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       <style>{`
         @media print {
-          @page { size: auto; margin: 14mm; }
-          body * { visibility: hidden !important; }
-          #resume-sheet, #resume-sheet * { visibility: visible !important; }
-          #resume-sheet { position: absolute; inset: 0 auto auto 0; width: 100%; box-shadow: none !important; border: 0 !important; padding: 0 !important; }
-          #resume-sheet [data-empty="true"] { display: none !important; }
+          @page { size: auto; margin: 0.5in; }
+          body.printing-resume > *:not(#resume-print-root) { display: none !important; }
+          #resume-print-root { display: block !important; }
+          #resume-print-root > div { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; width: 100% !important; }
+          #resume-print-root [data-empty="true"] { display: none !important; }
         }
+        #resume-print-root { display: none; }
       `}</style>
 
       <div className="relative mx-auto w-full max-w-[816px] min-w-0">
@@ -330,16 +444,21 @@ export function ResumeBuilder({
         <div
           id="resume-sheet"
           key={rev}
-          className="w-full rounded-md border border-border bg-white px-6 py-8 text-[13px] leading-relaxed text-neutral-900 shadow-sm sm:px-10 sm:py-10"
-          style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+          ref={sheetRef}
+          data-layout={style.layout}
+          className={cn(
+            "w-full rounded-md border border-border bg-white px-6 py-8 text-neutral-900 shadow-sm sm:px-12 sm:py-12",
+            dense ? "text-[12px] leading-snug" : "text-[13px] leading-relaxed",
+          )}
+          style={{ fontFamily: look.font }}
         >
-          <header className="border-b border-neutral-300 pb-3">
+          <header className={look.header}>
             <Editable
               as="h1"
               label="Your name"
               value={header.name ?? (candidate.name || "Your Name")}
               onCommit={(t) => commit(["header", "name"], t)}
-              className="block text-2xl font-semibold tracking-tight"
+              className={cn("block", look.name)}
             />
             {(header.headline ?? candidate.headline) && (
               <Editable
@@ -360,16 +479,16 @@ export function ResumeBuilder({
           </header>
 
           {resume.summary && (
-            <section className="mt-4">
-              <SectionTitle>Summary</SectionTitle>
+            <section className={gap}>
+              <SectionTitle className={look.title}>Summary</SectionTitle>
               <Editable as="p" label="Summary" value={resume.summary} onCommit={(t) => commit(["summary"], t)} className="mt-1 block" />
             </section>
           )}
 
           {resume.roles.length > 0 && (
-            <section className="mt-4">
-              <SectionTitle>Experience</SectionTitle>
-              <div className="mt-1 flex flex-col gap-3">
+            <section className={gap}>
+              <SectionTitle className={look.title}>Experience</SectionTitle>
+              <div className={cn("mt-1 flex flex-col", dense ? "gap-2" : "gap-3")}>
                 {resume.roles.map((role, i) => (
                   <div key={i}>
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -410,8 +529,8 @@ export function ResumeBuilder({
           )}
 
           {resume.projects.length > 0 && (
-            <section className="mt-4">
-              <SectionTitle>Projects</SectionTitle>
+            <section className={gap}>
+              <SectionTitle className={look.title}>Projects</SectionTitle>
               <div className="mt-1 flex flex-col gap-2">
                 {resume.projects.map((p, i) => (
                   <div key={i}>
@@ -431,8 +550,8 @@ export function ResumeBuilder({
           )}
 
           {resume.skills.length > 0 && (
-            <section className="mt-4">
-              <SectionTitle>Skills</SectionTitle>
+            <section className={gap}>
+              <SectionTitle className={look.title}>Skills</SectionTitle>
               <Editable
                 as="p"
                 label="Skills"
@@ -444,8 +563,8 @@ export function ResumeBuilder({
           )}
 
           {resume.education.length > 0 && (
-            <section className="mt-4">
-              <SectionTitle>Education</SectionTitle>
+            <section className={gap}>
+              <SectionTitle className={look.title}>Education</SectionTitle>
               <div className="mt-1 flex flex-col gap-1">
                 {resume.education.map((e, i) => (
                   <div key={i} className="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -464,8 +583,8 @@ export function ResumeBuilder({
           )}
 
           {resume.certifications.length > 0 && (
-            <section className="mt-4">
-              <SectionTitle>Certifications</SectionTitle>
+            <section className={gap}>
+              <SectionTitle className={look.title}>Certifications</SectionTitle>
               <Editable
                 as="p"
                 label="Certifications"
@@ -503,6 +622,52 @@ export function ResumeBuilder({
                   ? `Your edits are saved${savedAt ? ` · ${ago(savedAt)}` : ""}.`
                   : `Click any text to edit it. Saved${savedAt ? ` · built ${ago(savedAt)}` : ""}.`}
           </p>
+        </section>
+
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-sm font-semibold text-foreground">Look</h3>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs font-medium",
+                pages === 1 ? "text-success" : "text-warning",
+              )}
+              aria-live="polite"
+            >
+              <span className={cn("size-1.5 rounded-full", pages === 1 ? "bg-success" : "bg-warning")} aria-hidden />
+              {pages === 1 ? "Fits on one page" : `About ${pages} pages`}
+            </span>
+          </div>
+          <div role="radiogroup" aria-label="Layout" className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1">
+            {RESUME_LAYOUTS.map((l) => {
+              const selected = style.layout === l.key;
+              return (
+                <button
+                  key={l.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => changeStyle({ ...style, layout: l.key })}
+                  className={cn(
+                    "rounded-md px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    selected ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {l.label}
+                </button>
+              );
+            })}
+          </div>
+          <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-foreground">
+            Compact spacing
+            <Switch checked={dense} onCheckedChange={(on) => changeStyle({ ...style, density: on ? "compact" : "comfortable" })} />
+          </label>
+          {pages > 1 && (
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {dense ? "Clear a line or two that doesn't help for this job." : "Try compact spacing, or clear a line you don't need."} Two
+              pages is fine with 10+ years of experience.
+            </p>
+          )}
         </section>
 
         <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">

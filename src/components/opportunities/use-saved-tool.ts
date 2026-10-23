@@ -99,7 +99,17 @@ export function savedLabel(state: EditSaveState, edited: boolean, savedAt: strin
   if (state === "error") return "Couldn't save your last edit.";
   if (!savedAt) return edited ? "Edited" : "";
   const minutes = Math.max(0, Math.round((Date.now() - new Date(savedAt).getTime()) / 60000));
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(minutes / 1440);
   const when =
-    minutes < 1 ? "just now" : minutes < 60 ? `${minutes} min ago` : minutes < 1440 ? `${Math.round(minutes / 60)} h ago` : `${Math.round(minutes / 1440)} d ago`;
+    minutes < 1
+      ? "just now"
+      : minutes < 60
+        ? `${minutes} min ago`
+        : minutes < 1440
+          ? `${hours} hour${hours === 1 ? "" : "s"} ago`
+          : days === 1
+            ? "yesterday"
+            : `${days} days ago`;
   return edited ? `Your edits are saved · ${when}` : `Saved · written ${when}`;
 }

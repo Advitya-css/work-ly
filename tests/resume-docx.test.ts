@@ -34,3 +34,28 @@ describe("Word resume", () => {
     if (process.env.DOCX_OUT) writeFileSync(process.env.DOCX_OUT, Buffer.from(await blob.arrayBuffer()));
   });
 });
+
+import { cleanStyle, estimatePages } from "../src/lib/resume/tailored-resume-core";
+
+describe("resume looks", () => {
+  it("carries the chosen layout into Word", () => {
+    const xml = resumeDocumentXml({ ...resume, style: { layout: "traditional", density: "compact" } }, who);
+    expect(xml).toContain('w:ascii="Georgia"');
+    expect(xml).toContain('<w:jc w:val="center"/>');
+    expect(xml).toContain('<w:sz w:val="20"/>');
+    const clean = resumeDocumentXml(resume, who);
+    expect(clean).toContain('w:ascii="Calibri"');
+    expect(clean).not.toContain('<w:jc w:val="center"/>');
+  });
+  it("only accepts known styles", () => {
+    expect(cleanStyle({ layout: "neon", density: "tiny" })).toEqual({ layout: "clean", density: "comfortable" });
+    expect(cleanStyle({ layout: "modern", density: "compact" })).toEqual({ layout: "modern", density: "compact" });
+  });
+  it("estimates pages from the printed height", () => {
+    expect(estimatePages(900, 720)).toBe(1);
+    expect(estimatePages(965, 720)).toBe(1); // rounding, not a second page
+    expect(estimatePages(1500, 720)).toBe(2);
+    // Narrow phone sheet wraps more, so it's scaled back to print width.
+    expect(estimatePages(1500, 342)).toBe(1);
+  });
+});
