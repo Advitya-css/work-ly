@@ -15,7 +15,8 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { OPPORTUNITY_STATUS_LABEL, OPPORTUNITY_STATUS_VARIANT } from "@/lib/jobs/labels";
-import { savedAtWithin } from "@/lib/saved-outputs";
+import { savedAtWithin, savedForJobWithin } from "@/lib/saved-outputs";
+import { previewOf } from "@/lib/saved-work-core";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 
 export const metadata: Metadata = { title: "Opportunity" };
@@ -55,6 +56,15 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
     user.isPro ? savedAtWithin(user.id, "resume", opportunity.id) : Promise.resolve(null),
     user.isPro ? getCareerProfileByUserId(user.id) : Promise.resolve(null),
   ]);
+  // Free accounts that built things during the trial see them, locked.
+  const savedFree = user.isPro ? {} : await savedForJobWithin(user.id, ["resume", "cover", "note", "interview"], opportunity.id);
+  const savedPreviews = user.isPro
+    ? undefined
+    : {
+        cover: previewOf((savedFree.cover?.data as { coverLetter?: string } | undefined)?.coverLetter),
+        note: previewOf((savedFree.note?.data as { email?: string } | undefined)?.email),
+        interview: previewOf((savedFree.interview?.data as { questions?: { question?: string }[] } | undefined)?.questions?.at(0)?.question),
+      };
   const sender = { name: user.name ?? "", contact: [user.email, careerProfile?.location].filter(Boolean).join(" · ") };
 
   return (
@@ -87,7 +97,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]}>{OPPORTUNITY_STATUS_LABEL[opportunity.status]}</Badge>
         ) : undefined
       }
-      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean(resumeSavedAt)} sender={sender} />}
+      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean(resumeSavedAt) || Boolean(savedFree.resume)} sender={sender} saved={savedPreviews} />}
     />
   );
 }

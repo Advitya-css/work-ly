@@ -85,6 +85,7 @@ interface Candidate {
   name: string | null;
   createdAt: Date;
   isPayingPro: boolean;
+  trialEndedAt: Date | null;
 }
 
 function firstName(name: string | null): string {
@@ -135,6 +136,8 @@ async function buildEmail(kind: LifecycleKind, user: Candidate, checkoutPlan: st
       unsubscribePath: unsub,
     };
   }
+
+  if (kind === "trial_ended") return trialEndedEmail(user, hi, unsub);
 
   const report = await latestReport(user.id);
 
@@ -213,6 +216,61 @@ async function buildEmail(kind: LifecycleKind, user: Candidate, checkoutPlan: st
   };
 }
 
+/**
+ * After the one-day trial: what they built is still there (and named), and
+ * the founding price if one is live. Nothing is lost by not paying; this is
+ * the reminder that it exists.
+ */
+export async function trialEndedEmail(user: Candidate, hi: string, unsub: string): Promise<LifecycleEmail> {
+  const { savedWorkSummary } = await import("@/lib/saved-outputs");
+  const { describeSavedWork, savedVerb, capitalise, totalSaved } = await import("@/lib/saved-work-core");
+  const { foundingOfferLine } = await import("@/lib/payments/founding");
+  const [summary, offerLine] = await Promise.all([
+    savedWorkSummary(user.id).catch(() => null),
+    foundingOfferLine().catch(() => null),
+  ]);
+  const counts = summary?.counts ?? { resume: 0, cover: 0, note: 0, interview: 0, linkedin: 0 };
+  const work = describeSavedWork(counts);
+  const built = totalSaved(counts) > 0;
+
+  let forJobs = "";
+  if (summary && summary.jobs.length > 0) {
+    const { rows } = await pool
+      .query<{ id: string; title: string | null; company: string | null }>(
+        `SELECT o.id, j.title, j.company FROM opportunities o JOIN jobs j ON j.id = o."jobId"
+          WHERE o."userId" = $1 AND o.id = ANY($2::text[])`,
+        [user.id, summary.jobs.slice(0, 3).map((j) => j.opportunityId)],
+      )
+      .catch(() => ({ rows: [] as { id: string; title: string | null; company: string | null }[] }));
+    const names = rows
+      .map((r) => [r.title?.replace(/^title:\s*/i, ""), r.company].filter(Boolean).join(" at "))
+      .filter(Boolean);
+    if (names.length) forJobs = ` For: ${names.join("; ")}.`;
+  }
+
+  const paragraphs = built
+    ? [
+        hi,
+        `Your one-day Pro trial has ended. ${capitalise(work)} ${savedVerb(counts)} still saved in your account.${forJobs}`,
+        "With Pro you can open, edit and download them again (PDF or Word), and build one for every job you apply to.",
+      ]
+    : [
+        hi,
+        "Your one-day Pro trial has ended before you got to try a tailored resume. Free Work-ly still checks your fit for any job, as often as you like.",
+        "When you're ready to apply, Pro rewrites your resume and cover letter for each job from your real experience.",
+      ];
+  if (offerLine) paragraphs.push(offerLine);
+  paragraphs.push(`${GUARANTEE.sentence}.`);
+
+  return {
+    subject: built ? "Your Work-ly trial has ended. Your work is saved" : "Your Work-ly trial has ended",
+    heading: built ? `${capitalise(work)} ${savedVerb(counts)} waiting for you` : "Your Pro trial has ended",
+    paragraphs,
+    cta: { label: built ? "Keep my work with Pro" : "See Pro plans", path: "/pricing" },
+    unsubscribePath: unsub,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // The daily run
 
@@ -222,6 +280,7 @@ export async function runLifecycleEmails(now = new Date()): Promise<{ considered
        FROM users u
       WHERE u."emailVerified" = true
         AND (u."createdAt" > now() - interval '8 days'
+             OR (u."proPlan" = 'trial' AND u."proUntil" > now() - interval '5 days')
              OR EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'lifecycle:checkout:' || u.id AND r.expires_at > now()))
       ORDER BY u."createdAt" ASC
       LIMIT 2000`,
@@ -235,6 +294,8 @@ export async function runLifecycleEmails(now = new Date()): Promise<{ considered
     createdAt: new Date(u.createdAt),
     isPayingPro:
       u.isPro === true && u.proPlan !== "trial" && (u.proUntil == null || new Date(u.proUntil).getTime() > now.getTime()),
+    trialEndedAt:
+      u.proPlan === "trial" && u.proUntil && new Date(u.proUntil).getTime() <= now.getTime() ? new Date(u.proUntil) : null,
   }));
 
   const keys = candidates.flatMap((c) => [
@@ -263,6 +324,7 @@ export async function runLifecycleEmails(now = new Date()): Promise<{ considered
       isPayingPro: user.isPayingPro,
       optedOut: markers.has(`email_optout:${user.id}`),
       sent: new Set(LIFECYCLE_KINDS.filter((k) => markers.has(`lifecycle:sent:${k}:${user.id}`))),
+      trialEndedAt: user.trialEndedAt,
       checkoutOpenedAt: checkoutLive
         ? new Date(new Date(checkout.expires_at).getTime() - CHECKOUT_WINDOW_DAYS * 86_400_000)
         : null,

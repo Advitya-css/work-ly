@@ -25,6 +25,7 @@ const GROUPS = [
       { href: "/should-i-apply", label: "Should I apply for this job?" },
       { href: "/resume-job-match", label: "Resume vs job description" },
       { href: "/linkedin-headline-generator", label: "LinkedIn headline generator" },
+      { href: "/resume-bullet-point-generator", label: "Resume bullet point generator" },
     ],
   },
   {

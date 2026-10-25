@@ -9,6 +9,8 @@ import { ProPreview } from "@/components/guidance/pro-preview";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { LinkedInMakeover } from "@/components/career/linkedin-makeover";
+import { SavedLockedPreview } from "@/components/paywall/saved-locked-preview";
+import { previewOf } from "@/lib/saved-work-core";
 import { getCurrentUser } from "@/lib/auth";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getPrimaryCareerGoal } from "@/lib/db/career-goals";
@@ -25,7 +27,7 @@ export default async function LinkedInPage() {
   const [profile, goal, saved] = await Promise.all([
     getFullCareerProfile(user.id),
     getPrimaryCareerGoal(user.id),
-    user.isPro ? getSavedOutput<Makeover>(user.id, "linkedin", "profile") : Promise.resolve(null),
+    getSavedOutput<Makeover>(user.id, "linkedin", "profile"),
   ]);
   const targetRole = goal?.primaryTargetRole?.trim() || null;
   const currentHeadline = profile.profile?.headline ?? profile.profile?.currentRole ?? null;
@@ -48,6 +50,25 @@ export default async function LinkedInPage() {
           currentHeadline={currentHeadline}
           targetRole={targetRole}
         />
+      ) : saved ? (
+        <div className="flex max-w-3xl flex-col gap-4">
+          <SavedLockedPreview
+            label="Saved for you: your new headline"
+            visible={saved.data.headlines.at(0)?.text ?? ""}
+            lines={1}
+          />
+          <SavedLockedPreview label="Your About section" visible={previewOf(saved.data.about, 140)} lines={4} />
+          <UpgradeModal
+            title="Your LinkedIn makeover is saved"
+            description="Pro opens all three headlines, your full About section and the skills to pin, ready to copy."
+            defaultPlan="quarterly"
+          >
+            <Button className="w-full gap-2 sm:w-fit">
+              <Lock className="size-4" />
+              Unlock my LinkedIn makeover
+            </Button>
+          </UpgradeModal>
+        </div>
       ) : (
         <ProPreview
           heading="What you'd get"

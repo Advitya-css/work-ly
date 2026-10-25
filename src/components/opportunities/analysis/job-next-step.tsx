@@ -22,6 +22,7 @@ export function JobNextStep({
   company,
   resumeReady = false,
   sender,
+  saved,
 }: {
   opportunityId: string;
   isPro: boolean;
@@ -31,10 +32,19 @@ export function JobNextStep({
   resumeReady?: boolean;
   /** Name and contact line for downloaded letters. */
   sender?: { name: string; contact: string };
+  /** Free accounts: first words of anything saved for this job during a trial. */
+  saved?: { cover?: string | null; note?: string | null; interview?: string | null };
 }) {
   const resumeHref = `/opportunities/${opportunityId}/resume`;
 
-  const primary = isPro ? (
+  const primary = !isPro && resumeReady ? (
+    <Button asChild size="lg" className="gap-2">
+      <Link href={resumeHref}>
+        <FileText className="size-4" />
+        See my saved resume
+      </Link>
+    </Button>
+  ) : isPro ? (
     <Button asChild size="lg" className="gap-2">
       <Link href={resumeReady ? resumeHref : `${resumeHref}?build=1`}>
         <FileText className="size-4" />
@@ -75,14 +85,16 @@ export function JobNextStep({
             {resumeReady ? "Your resume for this job is ready" : "Apply with a resume written for this job"}
           </h2>
           <p className="max-w-prose text-sm text-muted-foreground">
-            {resumeReady
+            {resumeReady && !isPro
+              ? "Still saved in your account. Pro opens it again for editing and download."
+              : resumeReady
               ? "Saved for this job. Download it as PDF or Word, or keep refining it."
               : "Rewritten from what's already on your profile, in this posting's language. Nothing invented."}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
           {primary}
-          {!isPro && (
+          {!isPro && !resumeReady && (
             <Link href={resumeHref} className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
               See what you&apos;d get first
             </Link>
@@ -91,9 +103,9 @@ export function JobNextStep({
       </div>
       <div className="flex flex-col gap-2 border-t border-border/70 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
         <span className="mr-1 text-xs font-medium text-muted-foreground">Also for this job</span>
-        <TailorApplicationButton opportunityId={opportunityId} isPro={isPro} preview={preview} sender={sender} company={company} label="Cover letter" lockedLabel="Cover letter" />
-        <InsiderAccessButton opportunityId={opportunityId} isPro={isPro} preview={preview} company={company} label="Note to the hiring manager" lockedLabel="Note to the hiring manager" />
-        <InterviewIntelButton opportunityId={opportunityId} isPro={isPro} preview={preview} label="Likely interview questions" lockedLabel="Likely interview questions" />
+        <TailorApplicationButton opportunityId={opportunityId} isPro={isPro} preview={preview} sender={sender} company={company} savedPreview={saved?.cover} label="Cover letter" lockedLabel="Cover letter" />
+        <InsiderAccessButton opportunityId={opportunityId} isPro={isPro} preview={preview} company={company} savedPreview={saved?.note} label="Note to the hiring manager" lockedLabel="Note to the hiring manager" />
+        <InterviewIntelButton opportunityId={opportunityId} isPro={isPro} preview={preview} savedPreview={saved?.interview} label="Likely interview questions" lockedLabel="Likely interview questions" />
       </div>
     </section>
   );

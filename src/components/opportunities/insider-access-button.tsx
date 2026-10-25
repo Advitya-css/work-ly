@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateOutreachEmailAction, type HiringManagerNote } from "@/lib/opportunities/pro-actions";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { SavedLockedPreview } from "@/components/paywall/saved-locked-preview";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
 import { CopyButton, ToolDialog } from "@/components/opportunities/tool-dialog";
@@ -38,6 +39,7 @@ export function InsiderAccessButton({
   preview,
   label,
   lockedLabel,
+  savedPreview,
   company,
 }: {
   opportunityId: string;
@@ -46,6 +48,8 @@ export function InsiderAccessButton({
   /** Button text override, e.g. a shorter label inside a tool tile. */
   label?: string;
   lockedLabel?: string;
+  /** First words of what was saved for this job before Pro ended, shown locked. */
+  savedPreview?: string | null;
   /** For the "find them on LinkedIn" search. */
   company?: string | null;
 }) {
@@ -57,6 +61,21 @@ export function InsiderAccessButton({
   });
 
   if (!isPro) {
+    if (savedPreview) {
+      return (
+        <UpgradeModal
+          title="Your note to the hiring manager is saved"
+          description="It's still in your account. Pro opens it again, lets you edit and download it, and writes one for every job you apply to."
+          defaultPlan="quarterly"
+          preview={<SavedLockedPreview label="Saved for this job: your note" visible={savedPreview} />}
+        >
+          <Button variant="outline" className="w-full gap-2 sm:w-auto">
+            <Lock className="size-4" />
+            {lockedLabel ?? "Saved"} · saved
+          </Button>
+        </UpgradeModal>
+      );
+    }
     return (
       <UpgradeModal
         title="Unlock hiring manager messages"

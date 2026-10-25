@@ -11,6 +11,9 @@ import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { TrialBanner } from "@/components/paywall/trial-banner";
+import { summaryWithin } from "@/lib/saved-outputs";
+import { foundingOfferLine } from "@/lib/payments/founding";
+import { EMPTY_COUNTS } from "@/lib/saved-work-core";
 import { PendingCodeCard } from "@/components/offers/pending-code-card";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -33,13 +36,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // Student mode swaps the entire navigation, so the shell has to know
   // before it renders. Read here rather than in each page so the sidebar
   // never disagrees with the page it is sitting next to.
-  const profile = await getCareerProfileByUserId(user.id);
+  const onTrial = Boolean(user.isPro && user.proPlan === "trial" && user.proUntil);
+  const [profile, trialSaved, offerLine] = await Promise.all([
+    getCareerProfileByUserId(user.id),
+    onTrial ? summaryWithin(user.id) : Promise.resolve(null),
+    onTrial ? foundingOfferLine().catch(() => null) : Promise.resolve(null),
+  ]);
 
   return (
     <TourProvider>
       {profile?.isSampleData && <SampleDataBanner />}
       <AppShell user={user} student={profile?.isStudent ?? false}>
-        {user.isPro && user.proPlan === "trial" && user.proUntil && <TrialBanner endsAt={user.proUntil} />}
+        {onTrial && user.proUntil && (
+          <TrialBanner endsAt={user.proUntil} saved={trialSaved?.counts ?? EMPTY_COUNTS} offerLine={offerLine} />
+        )}
         <PendingCodeCard />
         {children}
         {user.isPro ? (

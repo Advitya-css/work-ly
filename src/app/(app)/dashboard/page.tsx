@@ -30,6 +30,9 @@ import { PAID_PLANS } from "@/lib/pricing";
 import { displayJobTitle } from "@/lib/format";
 import { MIN_COVERAGE_FOR_SCORE } from "@/lib/scoring/coverage";
 import { CommandCenter, StatusLine } from "@/components/dashboard/command-center";
+import { SavedWorkPanel } from "@/components/dashboard/saved-work-panel";
+import { loadSavedWork } from "@/lib/saved-work";
+import { foundingOfferLine } from "@/lib/payments/founding";
 import { Progress } from "@/components/ui/progress";
 import { GraderImportCard } from "@/components/onboarding/grader-import-card";
 
@@ -148,6 +151,12 @@ export default async function DashboardPage({
   const isPro = user?.isPro ?? false;
   const planName = user?.proPlan === "trial" ? "1-day trial" : (PAID_PLANS.find((p) => p.interval === user?.proPlan)?.name ?? null);
 
+  // What Work-ly has already written for them (during a trial, for free accounts).
+  const [savedWork, savedOffer] = user
+    ? await Promise.all([loadSavedWork(user.id), isPro ? Promise.resolve(null) : foundingOfferLine().catch(() => null)])
+    : [null, null];
+  const hasSavedWork = Boolean(savedWork && (savedWork.items.length > 0 || savedWork.counts.linkedin > 0));
+
   const firstName = user?.name ? user.name.split(" ")[0] : null;
   const topMissing = profileCompleteness.missing[0] ?? null;
   const target = goals.find((g) => g.status === "ACTIVE") ?? goals[0] ?? null;
@@ -172,12 +181,21 @@ export default async function DashboardPage({
 
       <GraderImportCard hasProfile={hasProfile} />
 
+      {/* After a trial, the saved work is the first thing on Home; for Pro it sits below the day's moves. */}
+      {!isPro && savedWork && hasSavedWork && (
+        <SavedWorkPanel counts={savedWork.counts} items={savedWork.items} isPro={false} linkedin={savedWork.counts.linkedin > 0} offerLine={savedOffer} />
+      )}
+
       <CommandCenter
         briefing={briefing}
         isPro={isPro}
         matchCount={discoveryBuckets.applyNow.length + discoveryBuckets.strong.length}
         kpis={{ tracked: opportunities.length, applications: applicationSummary.applications, interviews: applicationSummary.interviews }}
       />
+
+      {isPro && savedWork && hasSavedWork && (
+        <SavedWorkPanel counts={savedWork.counts} items={savedWork.items} isPro linkedin={savedWork.counts.linkedin > 0} />
+      )}
 
       {/* What Work-ly works from: the profile and the target role, in one line each. */}
       <section className="grid gap-4 md:grid-cols-2">

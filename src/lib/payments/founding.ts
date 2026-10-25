@@ -33,3 +33,16 @@ export async function getFoundingOffer(): Promise<FoundingOffer | null> {
   cache = { at: Date.now(), value };
   return value;
 }
+
+/** One sentence for banners and emails, or null when no founding offer is live. */
+export async function foundingOfferLine(): Promise<string | null> {
+  const offer = await getFoundingOffer();
+  if (!offer) return null;
+  const { PAID_PLANS } = await import("@/lib/pricing");
+  const { discountedPrice, shortDeadline } = await import("@/lib/payments/founding-core");
+  const pass = PAID_PLANS.find((p) => p.interval === "quarterly");
+  if (!pass) return null;
+  const deadline = shortDeadline(offer.endsAt);
+  const spots = offer.spotsLeft != null ? `, ${offer.spotsLeft} spots left` : "";
+  return `Founding price: the 3-Month Pass is ${discountedPrice(pass.priceUsd, offer.percentOff)} instead of ${pass.price}${spots}${deadline ? `, until ${deadline}` : ""}.`;
+}

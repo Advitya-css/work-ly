@@ -114,3 +114,54 @@ export async function deleteSavedOutputs(userId: string): Promise<void> {
     }),
   );
 }
+
+/**
+ * Everything saved for this user, per kind and per job, newest first. Five
+ * small reads; callers that sit on a page bound it with `summaryWithin`.
+ */
+export interface SavedWorkSummary {
+  counts: import("@/lib/saved-work-core").SavedWorkCounts;
+  /** One row per job with anything saved for it ("profile" is the LinkedIn makeover). */
+  jobs: { opportunityId: string; kinds: SavedKind[]; savedAt: string }[];
+}
+
+export async function savedWorkSummary(userId: string): Promise<SavedWorkSummary> {
+  const files = await Promise.all(SAVED_KINDS.map(async (kind) => [kind, await readFile(userId, kind)] as const));
+  const counts = { resume: 0, cover: 0, note: 0, interview: 0, linkedin: 0 };
+  const byJob = new Map<string, { kinds: SavedKind[]; savedAt: string }>();
+  for (const [kind, file] of files) {
+    for (const [id, entry] of Object.entries(file.items)) {
+      counts[kind]++;
+      if (kind === "linkedin") continue;
+      const row = byJob.get(id) ?? { kinds: [], savedAt: entry.savedAt };
+      row.kinds.push(kind);
+      if (entry.savedAt > row.savedAt) row.savedAt = entry.savedAt;
+      byJob.set(id, row);
+    }
+  }
+  const jobs = Array.from(byJob, ([opportunityId, row]) => ({ opportunityId, ...row })).sort((a, b) =>
+    b.savedAt.localeCompare(a.savedAt),
+  );
+  return { counts, jobs };
+}
+
+/** The summary, or an empty one if storage is slow: a banner must never hold up a page. */
+export async function summaryWithin(userId: string, timeoutMs = 700): Promise<SavedWorkSummary> {
+  const empty: SavedWorkSummary = { counts: { resume: 0, cover: 0, note: 0, interview: 0, linkedin: 0 }, jobs: [] };
+  const timeout = new Promise<SavedWorkSummary>((resolve) => setTimeout(() => resolve(empty), timeoutMs));
+  return Promise.race([savedWorkSummary(userId), timeout]).catch(() => empty);
+}
+
+/** Saved entries for one job, several kinds at once, bounded like `savedAtWithin`. */
+export async function savedForJobWithin<T extends SavedKind>(
+  userId: string,
+  kinds: T[],
+  opportunityId: string,
+  timeoutMs = 700,
+): Promise<Partial<Record<T, SavedEntry<unknown>>>> {
+  const lookup = Promise.all(kinds.map(async (k) => [k, await getSavedOutput<unknown>(userId, k, opportunityId)] as const)).then(
+    (pairs) => Object.fromEntries(pairs.filter(([, v]) => v)) as Partial<Record<T, SavedEntry<unknown>>>,
+  );
+  const timeout = new Promise<Partial<Record<T, SavedEntry<unknown>>>>((resolve) => setTimeout(() => resolve({}), timeoutMs));
+  return Promise.race([lookup, timeout]).catch(() => ({}));
+}

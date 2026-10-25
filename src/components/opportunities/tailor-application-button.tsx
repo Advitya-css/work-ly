@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { generateTailoredApplicationAction } from "@/lib/opportunities/actions";
 import type { TailoredApplication } from "@/lib/ai/providers/tailor-ai";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { SavedLockedPreview } from "@/components/paywall/saved-locked-preview";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
 import { CopyButton, ToolDialog } from "@/components/opportunities/tool-dialog";
@@ -21,6 +22,7 @@ export function TailorApplicationButton({
   preview,
   label,
   lockedLabel,
+  savedPreview,
   sender,
   company,
 }: {
@@ -30,6 +32,8 @@ export function TailorApplicationButton({
   /** Button text override, e.g. a shorter label inside a tool tile. */
   label?: string;
   lockedLabel?: string;
+  /** First words of what was saved for this job before Pro ended, shown locked. */
+  savedPreview?: string | null;
   /** Name and contact line for the top of a downloaded letter. */
   sender?: { name: string; contact: string };
   company?: string | null;
@@ -41,6 +45,21 @@ export function TailorApplicationButton({
   });
 
   if (!isPro) {
+    if (savedPreview) {
+      return (
+        <UpgradeModal
+          title="Your cover letter for this job is saved"
+          description="It's still in your account. Pro opens it again, lets you edit and download it, and writes one for every job you apply to."
+          defaultPlan="quarterly"
+          preview={<SavedLockedPreview label="Saved for this job: your cover letter" visible={savedPreview} />}
+        >
+          <Button variant="outline" className="w-full gap-2 sm:w-auto">
+            <Lock className="size-4" />
+            {lockedLabel ?? "Saved"} · saved
+          </Button>
+        </UpgradeModal>
+      );
+    }
     return (
       <UpgradeModal
         title="Unlock cover letters"

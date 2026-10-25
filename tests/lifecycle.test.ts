@@ -35,3 +35,27 @@ describe("dueLifecycleEmail", () => {
     expect(checkoutPlanCode("nonsense")).toBe(0);
   });
 });
+
+describe("trial-ended email", () => {
+  it("goes out within 4 days of the trial ending, once", () => {
+    const ended = { ...base, createdAt: daysAgo(3), trialEndedAt: daysAgo(1) };
+    expect(dueLifecycleEmail(ended)).toBe("trial_ended");
+    // Once sent, the normal day-count emails carry on (day 3 = the gap email).
+    expect(dueLifecycleEmail({ ...ended, sent: new Set<LifecycleKind>(["trial_ended"]) })).toBe("gap");
+    expect(dueLifecycleEmail({ ...ended, trialEndedAt: daysAgo(5) })).toBe("gap");
+  });
+  it("comes before the day-count emails but after an open checkout", () => {
+    expect(dueLifecycleEmail({ ...base, createdAt: daysAgo(1), trialEndedAt: daysAgo(0.1) })).toBe("trial_ended");
+    expect(
+      dueLifecycleEmail({ ...base, createdAt: daysAgo(1), trialEndedAt: daysAgo(0.1), checkoutOpenedAt: daysAgo(0.5) }),
+    ).toBe("checkout");
+  });
+  it("replaces the founding email, which carries the same offer", () => {
+    expect(
+      dueLifecycleEmail({ ...base, createdAt: daysAgo(6), trialEndedAt: daysAgo(5), sent: new Set<LifecycleKind>(["trial_ended"]) }),
+    ).toBe(null);
+  });
+  it("never goes to someone who has since paid", () => {
+    expect(dueLifecycleEmail({ ...base, isPayingPro: true, createdAt: daysAgo(2), trialEndedAt: daysAgo(1) })).toBe(null);
+  });
+});

@@ -6,6 +6,7 @@ import { Lock, MessagesSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateInterviewPrepAction, type InterviewQuestion } from "@/lib/opportunities/pro-actions";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
+import { SavedLockedPreview } from "@/components/paywall/saved-locked-preview";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
 import { CopyButton, ToolDialog } from "@/components/opportunities/tool-dialog";
@@ -40,6 +41,7 @@ export function InterviewIntelButton({
   preview,
   label,
   lockedLabel,
+  savedPreview,
 }: {
   opportunityId: string;
   isPro?: boolean;
@@ -47,6 +49,8 @@ export function InterviewIntelButton({
   /** Button text override, e.g. a shorter label inside a tool tile. */
   label?: string;
   lockedLabel?: string;
+  /** First words of what was saved for this job before Pro ended, shown locked. */
+  savedPreview?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const tool = useSavedTool<Questions>("interview", opportunityId, async () => {
@@ -55,6 +59,21 @@ export function InterviewIntelButton({
   });
 
   if (!isPro) {
+    if (savedPreview) {
+      return (
+        <UpgradeModal
+          title="Your interview questions for this job are saved"
+          description="It's still in your account. Pro opens it again, lets you edit and download it, and writes one for every job you apply to."
+          defaultPlan="quarterly"
+          preview={<SavedLockedPreview label="Saved for this job: your questions" visible={savedPreview} />}
+        >
+          <Button variant="outline" className="w-full gap-2 sm:w-auto">
+            <Lock className="size-4" />
+            {lockedLabel ?? "Saved"} · saved
+          </Button>
+        </UpgradeModal>
+      );
+    }
     return (
       <UpgradeModal
         title="Unlock interview questions"
