@@ -7,6 +7,7 @@ import { TourProvider } from "@/components/tour/tour-provider";
 import { StageMomentHost } from "@/components/guidance/stage-moment-host";
 import { FeedbackButton } from "@/components/shared/feedback-button";
 import { SampleDataBanner } from "@/components/shared/sample-data-banner";
+import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { TrialBanner } from "@/components/paywall/trial-banner";
@@ -51,8 +52,16 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         )}
         <PendingCodeCard />
         {children}
-        {/* Feedback lives in the sidebar on desktop; this is the phone version. */}
-        <FeedbackButton />
+        {user.isPro ? (
+          <FeedbackButton />
+        ) : (
+          <div className="mt-8 flex w-full justify-center pt-8 border-t border-border/40">
+            <a href="mailto:advitya@work-ly.in" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-muted/50 px-4 py-2 rounded-full border border-border/50">
+              <Mail className="size-4" />
+              Contact us: advitya@work-ly.in
+            </a>
+          </div>
+        )}
       </AppShell>
       <StageMomentHost isPro={user.isPro ?? false} />
     </TourProvider>

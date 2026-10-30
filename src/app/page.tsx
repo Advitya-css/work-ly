@@ -1,6 +1,9 @@
 import { MarketingNavbar } from "@/components/marketing/marketing-navbar";
+import { Hero } from "@/components/marketing/hero";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { CtaSection } from "@/components/marketing/cta-section";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
-import { LandingFeatures, LandingFinalCta, LandingHero, LandingPricing, LandingPrinciples } from "@/components/landing/landing";
+import { TrustSection } from "@/components/marketing/trust-section";
 import { getFoundingOffer } from "@/lib/payments/founding";
 import { getSale } from "@/lib/payments/sale";
 
@@ -24,16 +27,13 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* The landing page is always dark, like Linear's: one stage, whatever
-          the visitor's system theme. Every other page follows their theme. */}
-      <div className="dark flex flex-1 flex-col bg-background text-foreground [color-scheme:dark]">
+      <div className="flex flex-1 flex-col">
         <MarketingNavbar />
         <main className="flex-1">
-          <LandingHero offer={offer} sale={sale} />
-          <LandingFeatures />
-          <LandingPrinciples />
-          <LandingPricing offer={offer} />
-          <LandingFinalCta />
+          <Hero offer={offer} sale={sale} />
+          <TrustSection />
+          <HowItWorks />
+          <CtaSection />
         </main>
         <MarketingFooter />
       </div>

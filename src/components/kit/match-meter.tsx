@@ -28,14 +28,14 @@ export function MatchMeter({
       <div className="flex items-baseline justify-between gap-3">
         {label}
         <span className="flex items-baseline gap-1">
-          <span className={cn("font-mono font-medium tabular-nums tracking-tight", size === "sm" ? "text-[22px]" : "text-[30px]", text)}>
+          <span className={cn("font-medium tabular-nums tracking-tight", size === "sm" ? "text-[22px]" : "text-[30px]", text)}>
             {score}
           </span>
           <span className="text-[13px] text-muted-foreground">/100</span>
         </span>
         {rose && !label && (
           <span className="text-[12.5px] text-muted-foreground">
-            up from <span className="font-mono tabular-nums text-foreground">{before}</span> untailored
+            up from <span className="tabular-nums text-foreground">{before}</span> untailored
           </span>
         )}
       </div>

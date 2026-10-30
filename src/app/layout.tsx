@@ -4,8 +4,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false, // Prevents zooming on input focus which ruins mobile fluidity
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfafb" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0a0c" },
+    { media: "(prefers-color-scheme: light)", color: "#fffdfb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a09" },
   ],
 };
 
@@ -18,9 +18,9 @@ import "./globals.css";
 /**
  * Two faces, each with one job.
  *
- * Geist carries every piece of interface text, from 11px labels to the
- * landing headline: one precise grotesque at a tight scale, the way Linear
- * and Vercel set their products. Geist Mono sets figures that line up.
+ * Inter carries every piece of interface text - labels, body copy, buttons,
+ * table content. It is a neutral grotesque, which is exactly what you want
+ * doing invisible work.
  *
  * Instrument Serif appears only at display sizes: page titles and large
  * figures such as a fit score. One weight is enough because it is never
@@ -36,22 +36,17 @@ import "./globals.css";
  *     app whose settings page explains exactly what leaves the machine,
  *     quietly pinging a third party for a typeface would undercut the claim.
  */
-const geist = localFont({
-  src: [{ path: "../../public/fonts/geist-variable.woff2", style: "normal" }],
-  variable: "--font-geist",
+const inter = localFont({
+  src: [
+    { path: "../../public/fonts/inter-latin-wght-normal.woff2", style: "normal" },
+    { path: "../../public/fonts/inter-latin-wght-italic.woff2", style: "italic" },
+  ],
+  variable: "--font-inter",
   display: "swap",
   // The variable font covers the whole range; naming it here lets the
   // browser synthesise nothing and pick real weights.
   weight: "100 900",
   fallback: ["ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
-});
-
-const geistMono = localFont({
-  src: [{ path: "../../public/fonts/geist-mono-variable.woff2", style: "normal" }],
-  variable: "--font-geist-mono",
-  display: "swap",
-  weight: "100 900",
-  fallback: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
 });
 
 const instrumentSerif = localFont({
@@ -98,7 +93,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // reported normally.
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

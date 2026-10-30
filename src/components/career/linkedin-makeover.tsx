@@ -207,7 +207,7 @@ export function LinkedInMakeover({
                       className="min-h-0 resize-none border-0 bg-transparent p-0 text-[15px] font-medium leading-snug shadow-none focus-visible:ring-0"
                     />
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                      <span className="text-[11.5px] tabular-nums text-muted-foreground">
                         {h.text.length}/{HEADLINE_MAX}
                       </span>
                       <CopyButton text={h.text} label="Copy" variant="ghost" size="sm" />
@@ -222,7 +222,7 @@ export function LinkedInMakeover({
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-[15px] font-semibold text-foreground">About</h2>
               <span className="flex items-center gap-2">
-                <span className={cn("font-mono text-[11.5px] tabular-nums", aboutLength > ABOUT_MAX - 100 ? "text-warning" : "text-muted-foreground")}>
+                <span className={cn("text-[11.5px] tabular-nums", aboutLength > ABOUT_MAX - 100 ? "text-warning" : "text-muted-foreground")}>
                   {aboutLength}/{ABOUT_MAX}
                 </span>
                 <CopyButton text={data.about} label="Copy" variant="ghost" size="sm" />

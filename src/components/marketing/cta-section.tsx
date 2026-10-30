@@ -8,15 +8,15 @@ export function CtaSection() {
     <section className="px-4 pb-24 sm:px-6">
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 rounded-2xl border border-border bg-secondary px-6 py-16 text-center">
         <h2 className="text-balance text-3xl font-semibold tracking-tight text-foreground">
-          Check the next job before you apply
+          Ask before you apply
         </h2>
         <p className="max-w-md text-balance text-muted-foreground">
-          Free, and no signup needed for your first check.
+          One honest answer, proven line by line. Free, and no signup needed for your first check.
         </p>
         <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
           <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/free-grader">
-              Check a job free
+            <Link href="#check">
+              Check a job now
               <ArrowRight />
             </Link>
           </Button>

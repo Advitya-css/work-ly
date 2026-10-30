@@ -81,7 +81,7 @@ function Ring({ value, tone }: { value: number; tone: string }) {
   return (
     <div className="relative size-[76px] shrink-0">
       <svg viewBox="0 0 72 72" className="size-full -rotate-90" aria-hidden>
-        <circle cx="36" cy="36" r={r} fill="none" strokeWidth="5" className="stroke-white/10" />
+        <circle cx="36" cy="36" r={r} fill="none" strokeWidth="5" className="stroke-muted" />
         <circle
           cx="36"
           cy="36"
@@ -98,7 +98,7 @@ function Ring({ value, tone }: { value: number; tone: string }) {
           style={{ ["--ring-from" as string]: c }}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center font-mono text-[22px] font-medium tabular-nums text-foreground">{value}</span>
+      <span className="absolute inset-0 flex items-center justify-center text-[22px] font-medium tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
@@ -165,37 +165,36 @@ export function LiveCheck() {
 
   return (
     <div className="relative mx-auto w-full max-w-4xl text-left">
-      <div aria-hidden className="absolute -inset-x-8 -bottom-12 top-8 -z-10 rounded-[40px] bg-[radial-gradient(closest-side,rgb(var(--glow)/0.32),transparent)] blur-3xl" />
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-card/95 shadow-[0_0_0_1px_rgb(255_255_255/0.02),0_30px_80px_-20px_rgb(0_0_0/0.7)] backdrop-blur">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(28_26_25/0.05),0_16px_40px_-16px_rgb(122_46_85/0.18)]">
         {!result && !pending && (
           <div className="flex flex-col">
             <div className="grid divide-y divide-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
               <label className="flex flex-col">
-                <span className="flex items-center justify-between px-5 pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="flex items-center justify-between px-5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
                   The job
-                  <span className="normal-case tracking-normal text-muted-foreground/70">{job.trim() ? `${job.trim().split(/\s+/).length} words` : ""}</span>
+                  <span className="font-normal normal-case tracking-normal text-muted-foreground">{job.trim() ? `${job.trim().split(/\s+/).length} words` : ""}</span>
                 </span>
                 <textarea
                   value={job}
                   onChange={(e) => setJob(e.target.value)}
                   placeholder="Paste the whole job posting…"
-                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/60 sm:h-52"
+                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70 sm:h-52"
                 />
               </label>
               <label className="flex flex-col">
-                <span className="flex items-center justify-between px-5 pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                <span className="flex items-center justify-between px-5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
                   Your resume
-                  <span className="normal-case tracking-normal text-muted-foreground/70">{resume.trim() ? `${resume.trim().split(/\s+/).length} words` : ""}</span>
+                  <span className="font-normal normal-case tracking-normal text-muted-foreground">{resume.trim() ? `${resume.trim().split(/\s+/).length} words` : ""}</span>
                 </span>
                 <textarea
                   value={resume}
                   onChange={(e) => setResume(e.target.value)}
                   placeholder="Paste your resume as text…"
-                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/60 sm:h-52"
+                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70 sm:h-52"
                 />
               </label>
             </div>
-            <div className="flex flex-col gap-3 border-t border-border bg-white/[0.02] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-border bg-secondary/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="button"
                 onClick={() => setResult(SAMPLE)}
@@ -234,7 +233,7 @@ export function LiveCheck() {
               {result.score != null && <Ring value={result.score} tone={verdict?.tone ?? "text-success"} />}
               <div className="flex min-w-0 flex-col gap-1">
                 {result.sample && (
-                  <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
                     Real example · public listing vs a sample resume
                   </span>
                 )}
@@ -279,7 +278,7 @@ export function LiveCheck() {
               })}
             </ul>
 
-            <div className="flex flex-col gap-3 border-t border-border bg-white/[0.02] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <div className="flex flex-col gap-3 border-t border-border bg-secondary/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
               <p className="text-[13px] text-muted-foreground">
                 {result.sample
                   ? "Every tick quotes the resume. Nothing counts without proof."

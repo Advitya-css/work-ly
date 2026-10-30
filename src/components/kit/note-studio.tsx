@@ -132,7 +132,7 @@ export function NoteStudio({ opportunityId, company }: { opportunityId: string; 
               label="LinkedIn connection request"
               meta={
                 <span className="flex items-center gap-2">
-                  <span className={cn("font-mono text-[11.5px] tabular-nums", noteLength > 280 ? "text-warning" : "text-muted-foreground")}>
+                  <span className={cn("text-[11.5px] tabular-nums", noteLength > 280 ? "text-warning" : "text-muted-foreground")}>
                     {noteLength}/300
                   </span>
                   <CopyButton text={note.connectionNote} label="Copy" variant="ghost" size="sm" />

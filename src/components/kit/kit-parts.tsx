@@ -40,10 +40,10 @@ export function InspectorSection({
   );
 }
 
-/** A small uppercase label in the mono face. */
+/** A small uppercase plum label, the app's eyebrow style. */
 export function KitLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span className={cn("font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground", className)}>
+    <span className={cn("text-[11px] font-semibold uppercase tracking-wider text-primary", className)}>
       {children}
     </span>
   );

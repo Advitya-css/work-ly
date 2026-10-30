@@ -48,10 +48,10 @@ const cardVariants = cva(
     variants: {
       variant: {
         /** Sits on the page. */
-        default: "shadow-xs",
+        default: "shadow-sm",
         /** For a card that is itself a link or button. */
         interactive:
-          "shadow-xs transition-colors duration-150 hover:border-foreground/15 hover:bg-muted/40",
+          "shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--area-color,var(--primary))]/35 hover:shadow-md active:scale-[0.98]",
         /** No lift, for cards nested inside another surface. */
         flat: "",
       },
@@ -88,7 +88,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1 px-5 py-4",
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 py-5",
         "has-[[data-slot=card-action]]:grid-cols-[1fr_auto]",
         "group-data-[area]/card:border-b",
         "[[data-area]>&]:border-b [[data-area]>&]:border-border [[data-area]>&]:bg-[var(--area-tint)]",
@@ -103,7 +103,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("flex items-center gap-2 text-[15px] leading-snug font-semibold tracking-[-0.015em]", className)}
+      className={cn("flex items-center gap-2 text-base leading-snug font-semibold tracking-tight", className)}
       {...props}
     />
   );
@@ -113,7 +113,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-[13px] leading-relaxed", className)}
+      className={cn("text-muted-foreground text-sm leading-relaxed", className)}
       {...props}
     />
   );
@@ -130,22 +130,14 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
-    // Straight after a header, the content picks up where the title left off
-  // instead of leaving a band of empty space (unless the header is tinted).
-  return (
-    <div
-      data-slot="card-content"
-      className={cn("px-5 py-4 [[data-slot=card-header]+&]:pt-0 [[data-area]>[data-slot=card-header]+&]:pt-4", className)}
-      {...props}
-    />
-  );
+  return <div data-slot="card-content" className={cn("px-6 py-5", className)} {...props} />;
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center px-5 pb-4", className)}
+      className={cn("flex items-center px-6 pb-5", className)}
       {...props}
     />
   );

@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
  * same component inside a Career Path card is teal, with no extra wiring.
  */
 const badgeVariants = cva(
-  "inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[11.5px] font-medium leading-4 [&_svg]:size-3 transition-colors",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium [&_svg]:size-3 transition-colors",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary-solid text-primary-solid-foreground",
+        default: "border-transparent bg-primary text-primary-foreground",
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         outline: "border-border text-foreground bg-transparent",
         destructive: "border-transparent bg-destructive/10 text-destructive",

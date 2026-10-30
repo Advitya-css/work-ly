@@ -46,7 +46,7 @@ export function WritingState({
         )}
       </div>
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs lg:sticky lg:top-6">
-        <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Writing</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">Writing</span>
         <AiProgress steps={steps} stepSeconds={stepSeconds} note="Usually 20-40 seconds. Saved the moment it's done." />
       </div>
     </div>

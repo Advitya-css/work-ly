@@ -62,7 +62,7 @@ function ScoreDial({ score }: { score: number }) {
         />
       </svg>
       <span className="flex items-baseline">
-        <span className={cn("font-mono text-2xl font-medium tabular-nums", scoreTone(score))}>{score}</span>
+        <span className={cn("text-2xl font-medium tabular-nums", scoreTone(score))}>{score}</span>
         <span className="text-xs text-muted-foreground">/10</span>
       </span>
     </div>
@@ -299,10 +299,10 @@ export function HotSeatClient({
         <ol className="flex flex-col divide-y divide-border border-y border-border">
           {questions.map((q, i) => (
             <li key={i} className="flex items-center gap-3 py-3">
-              <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">Q{i + 1}</span>
+              <span className="text-[11.5px] tabular-nums text-muted-foreground">Q{i + 1}</span>
               <span className="min-w-0 flex-1 truncate text-[13.5px] text-foreground">{q.question}</span>
               {scores[i] != null ? (
-                <span className={cn("font-mono text-[13px] tabular-nums", scoreTone(scores[i]!))}>{scores[i]}/10</span>
+                <span className={cn("text-[13px] tabular-nums", scoreTone(scores[i]!))}>{scores[i]}/10</span>
               ) : (
                 <span className="text-[12.5px] text-muted-foreground">Skipped</span>
               )}
@@ -347,7 +347,7 @@ export function HotSeatClient({
             </li>
           ))}
         </ol>
-        <span className="font-mono text-[12px] tabular-nums text-muted-foreground">
+        <span className="text-[12px] tabular-nums text-muted-foreground">
           {currentIndex + 1}/{questions.length}
         </span>
         <Button variant="ghost" size="sm" onClick={() => setFinished(true)}>
@@ -420,7 +420,7 @@ export function HotSeatClient({
               className="min-h-[150px] w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-[14.5px] leading-relaxed outline-none [field-sizing:content] focus-visible:ring-2 focus-visible:ring-ring"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">
+              <span className="text-[11.5px] tabular-nums text-muted-foreground">
                 {transcript.trim() ? transcript.trim().split(/\s+/).length : 0} words
               </span>
               <div className="flex gap-2">

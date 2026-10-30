@@ -35,6 +35,7 @@ import { loadSavedWork } from "@/lib/saved-work";
 import { foundingOfferLine } from "@/lib/payments/founding";
 import { Progress } from "@/components/ui/progress";
 import { GraderImportCard } from "@/components/onboarding/grader-import-card";
+import { FirstSteps } from "@/components/dashboard/first-steps";
 
 export const metadata: Metadata = { title: "Dashboard" };
 // "Pick up where you left off" builds a profile and a Fit report in one
@@ -161,15 +162,18 @@ export default async function DashboardPage({
   const topMissing = profileCompleteness.missing[0] ?? null;
   const target = goals.find((g) => g.status === "ACTIVE") ?? goals[0] ?? null;
   const targetRole = target?.primaryTargetRole || target?.targetRole || target?.title || null;
+  // Nothing tracked yet: show the three first steps instead of empty panels and zeros.
+  const isNew = opportunities.length === 0 && applicationSummary.applications === 0;
 
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Welcome back{firstName ? `, ${firstName}` : ""}
+            {isNew ? "Welcome" : "Welcome back"}
+            {firstName ? `, ${firstName}` : ""}
           </h1>
-          <StatusLine briefing={briefing} isPro={isPro} />
+          {!isNew && <StatusLine briefing={briefing} isPro={isPro} />}
         </div>
         {isPro && (
           <Badge variant="secondary" className="w-fit gap-1">
@@ -186,18 +190,23 @@ export default async function DashboardPage({
         <SavedWorkPanel counts={savedWork.counts} items={savedWork.items} isPro={false} linkedin={savedWork.counts.linkedin > 0} offerLine={savedOffer} />
       )}
 
+      {isNew ? (
+        <FirstSteps firstName={firstName} hasProfile={hasProfile} isPro={isPro} />
+      ) : (
       <CommandCenter
         briefing={briefing}
         isPro={isPro}
         matchCount={discoveryBuckets.applyNow.length + discoveryBuckets.strong.length}
         kpis={{ tracked: opportunities.length, applications: applicationSummary.applications, interviews: applicationSummary.interviews }}
       />
+      )}
 
       {isPro && savedWork && hasSavedWork && (
         <SavedWorkPanel counts={savedWork.counts} items={savedWork.items} isPro linkedin={savedWork.counts.linkedin > 0} />
       )}
 
       {/* What Work-ly works from: the profile and the target role, in one line each. */}
+      {!isNew && (
       <section className="grid gap-4 md:grid-cols-2">
         <Link
           href="/career-profile"
@@ -225,6 +234,7 @@ export default async function DashboardPage({
           </span>
         </Link>
       </section>
+      )}
 
       <div className="flex justify-center">
         <EnterStudentModeButton variant="ghost" label="I'm a student: switch to student mode" />

@@ -106,8 +106,11 @@ function LaterMove({ move, locked }: { move: NextMove; locked: boolean }) {
 
 function Kpi({ label, value, href, accent = false }: { label: string; value: number; href: string; accent?: boolean }) {
   return (
-    <Link href={href} className="group flex flex-col gap-1.5 bg-card px-5 py-4 transition-colors hover:bg-muted/60">
-      <span className={cn("font-mono text-[26px] font-medium tabular-nums leading-none tracking-tight", accent && value > 0 ? "text-primary" : "text-foreground")}>
+    <Link
+      href={href}
+      className="group flex flex-col gap-1 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm transition-colors hover:border-primary/30"
+    >
+      <span className={cn("text-3xl font-semibold tabular-nums leading-none", accent && value > 0 ? "text-primary" : "text-foreground")}>
         {value}
       </span>
       <span className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-foreground">
@@ -142,9 +145,9 @@ function MatchRow({ match }: { match: BriefingMatch }) {
 
 function Panel({ title, action, children }: { title: string; action?: { label: string; href: string }; children: React.ReactNode }) {
   return (
-    <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-xs">
+    <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
         {action && (
           <Link href={action.href} className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
             {action.label}
@@ -178,11 +181,11 @@ export function CommandCenter({
       {lead && (
         <section
           aria-label="Your next move"
-          className="grid overflow-hidden rounded-xl border border-border bg-card shadow-xs lg:grid-cols-[1fr_320px] [background-image:radial-gradient(80%_120%_at_0%_0%,rgb(var(--glow)/0.09),transparent_60%)]"
+          className="grid overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.09] via-card to-card shadow-sm lg:grid-cols-[1fr_320px]"
         >
           <NextMoveHero move={lead} />
           {later.length > 0 && (
-            <div className="border-t border-border p-6 lg:border-l lg:border-t-0">
+            <div className="border-t border-primary/15 bg-card/60 p-6 lg:border-l lg:border-t-0">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Then</p>
               <ul className="flex flex-col divide-y divide-border/60">
                 {later.slice(0, 3).map((move, i) => (
@@ -194,8 +197,7 @@ export function CommandCenter({
         </section>
       )}
 
-      {/* One strip with hairline dividers (the gap shows the border colour), not four boxes. */}
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border shadow-xs md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi label="Strong matches" value={matchCount} href="/discover" accent />
         <Kpi label="Jobs tracked" value={kpis.tracked} href="/opportunities" />
         <Kpi label="Applications" value={kpis.applications} href="/applications" />
@@ -251,7 +253,7 @@ export function CommandCenter({
       </div>
 
       {!isPro && (
-        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-dashed border-primary/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
             <span>

@@ -123,7 +123,7 @@ export function PrepStudio({ opportunityId, applicationId }: { opportunityId: st
                 <li key={index} className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
                   <div className="flex flex-col gap-2 px-5 pb-4 pt-5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">Q{index + 1}</span>
+                      <span className="text-[11.5px] tabular-nums text-muted-foreground">Q{index + 1}</span>
                       {q.kind && <span className={cn("rounded-md px-1.5 py-0.5 text-[11px] font-medium", KIND[q.kind].tone)}>{KIND[q.kind].label}</span>}
                     </div>
                     <p className="text-balance text-[16px] font-medium leading-snug tracking-[-0.01em] text-foreground">{q.question}</p>
@@ -196,11 +196,11 @@ export function PrepStudio({ opportunityId, applicationId }: { opportunityId: st
           <InspectorSection title="Where you stand">
             <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border text-center">
               <div className="bg-card px-2 py-2.5">
-                <dd className="font-mono text-xl tabular-nums text-foreground">{questions.length - thin}</dd>
+                <dd className="text-xl tabular-nums text-foreground">{questions.length - thin}</dd>
                 <dt className="text-[11px] text-muted-foreground">backed by your history</dt>
               </div>
               <div className="bg-card px-2 py-2.5">
-                <dd className={cn("font-mono text-xl tabular-nums", thin ? "text-warning" : "text-foreground")}>{thin}</dd>
+                <dd className={cn("text-xl tabular-nums", thin ? "text-warning" : "text-foreground")}>{thin}</dd>
                 <dt className="text-[11px] text-muted-foreground">to prepare an example</dt>
               </div>
             </dl>
