@@ -106,6 +106,8 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
         /** Pro members aren't shown prices for what they already have. */
         isPro: Boolean(user?.isPro),
         score: reliable ? analysis.fitScore : null,
+        /** The same five-step verdict the app gives: APPLY_NOW, APPLY, STRETCH, LOW_PRIORITY or SKIP. */
+        recommendation: reliable ? analysis.recommendation : null,
         // Counted from the verdicts, so the line under the score can't
         // contradict it the way a free-text summary could ("100/100" over
         // "meets nearly every requirement").

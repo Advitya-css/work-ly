@@ -18,6 +18,7 @@ import {
   estimatePages,
   resumeAsText,
   resumeChangeStats,
+  lacksResult,
   type ResumeLayout,
   type ResumeStyle,
   type TailoredResume,
@@ -149,6 +150,15 @@ function SectionTitle({ children, className }: { children: string; className: st
   return <h2 className={className}>{children}</h2>;
 }
 
+/** Under a line with no result, when "Mark them" is on. Never printed. */
+function NoResult() {
+  return (
+    <span className="mt-0.5 block text-[11.5px] leading-snug text-amber-700 print:hidden" contentEditable={false}>
+      No result yet. What changed because of this? Add it if it&apos;s true.
+    </span>
+  );
+}
+
 /** The line a bullet was rewritten from, shown under it when "Show changes" is on. Never printed. */
 function Was({ text, added }: { text: string | null | undefined; added?: string[] }) {
   if (!text) return null;
@@ -203,6 +213,7 @@ export function ResumeBuilder({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showChanges, setShowChanges] = useState(false);
+  const [coach, setCoach] = useState(false);
   const [confirmRebuild, setConfirmRebuild] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>(initialEdited ? "saved" : "idle");
   const [savedAt, setSavedAt] = useState<string | null>(initialSavedAt);
@@ -426,6 +437,10 @@ export function ResumeBuilder({
   }
 
   const stats = resumeChangeStats(draft.current ?? resume);
+  const noResult = [...(draft.current ?? resume).roles, ...(draft.current ?? resume).projects].reduce(
+    (n, block) => n + block.bullets.filter((b) => lacksResult(b)).length,
+    0,
+  );
   const header = resume.header ?? {};
   const look = LOOKS[style.layout];
   const dense = style.density === "compact";
@@ -546,6 +561,7 @@ export function ResumeBuilder({
                               onCommit={(t) => commit(["roles", i, "bullets", j], t)}
                             />
                             {showChanges && <Was text={role.from?.[j]} added={draft.current?.roles[i]?.added?.[j]} />}
+                            {coach && lacksResult(draft.current?.roles[i]?.bullets[j] ?? b) && <NoResult />}
                           </li>
                         ))}
                       </ul>
@@ -568,6 +584,7 @@ export function ResumeBuilder({
                         <li key={j} className={cn("data-[empty=true]:hidden", showChanges && p.from?.[j] && "marker:text-sky-500")}>
                           <Editable value={b} label="Project line" onCommit={(t) => commit(["projects", i, "bullets", j], t)} />
                           {showChanges && <Was text={p.from?.[j]} added={draft.current?.projects[i]?.added?.[j]} />}
+                          {coach && lacksResult(draft.current?.projects[i]?.bullets[j] ?? b) && <NoResult />}
                         </li>
                       ))}
                     </ul>
@@ -738,6 +755,20 @@ export function ResumeBuilder({
             </p>
           )}
         </section>
+
+        {noResult > 0 && (
+          <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
+            <h3 className="text-[13px] font-semibold text-foreground">Make it stronger</h3>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {noResult === 1 ? "1 line says" : `${noResult} lines say`} what you did but not what came of it. Recruiters
+              skim for results: a number, who used it, what it replaced. Work-ly won&apos;t make one up, so add yours.
+            </p>
+            <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-foreground">
+              Mark them on the page
+              <Switch checked={coach} onCheckedChange={setCoach} />
+            </label>
+          </section>
+        )}
 
         {resume.unverifiedNumbers.length > 0 && (
           <section className="flex gap-2 rounded-xl border border-warning/40 bg-warning/5 p-4 text-sm">

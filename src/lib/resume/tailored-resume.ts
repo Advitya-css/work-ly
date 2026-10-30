@@ -1,6 +1,6 @@
 import "server-only";
 import { isCosmeticRewrite, safeRewrite } from "@/lib/resume/tense";
-import { addedWords, resumeDateRange, type TailoredResume, type TailoredResumeRole } from "@/lib/resume/tailored-resume-core";
+import { addedWords, polishResume, resumeDateRange, type TailoredResume, type TailoredResumeRole } from "@/lib/resume/tailored-resume-core";
 
 import {
   NO_FABRICATION_RULES,
@@ -44,8 +44,12 @@ function sourceLines(text: string | null | undefined): string[] {
 const SYSTEM = `You tailor a candidate's EXISTING resume content to ONE job. You never add facts.
 For each ROLE (by its id), return bullets ordered by relevance to the JOB: 3-5 for R1 (the most recent role) and 2-4 for the others, fewer only when the role has fewer LINES. Each bullet has "basedOn" (one line copied exactly from that role's LINES) and "text" (the rewrite: keep the TENSE of the basedOn line - if it starts "Built", the rewrite starts with a past-tense verb too, never "Build" - then the tool/domain this job cares about and the real outcome). KEEP EVERY NUMBER, metric and scale from the basedOn line exactly as written (counts, percentages, team sizes, time saved) - they are the candidate's strongest proof, and a rewrite that drops them is worse than the original. Roles with no LINES get no bullets. You may skip weak or irrelevant lines, but never skip a line with a measurable result that is relevant to the JOB.
 For each PROJECT (by its id) that is relevant, return 1-2 bullets the same way; omit irrelevant projects.
-"skills": up to 14 names chosen ONLY from the SKILLS list, most relevant to the job first, copied exactly.
-"summary": 2-3 sentences positioning the candidate for this job using only real facts: their actual title, years of experience if given, the 2 most relevant tools, and their single strongest measurable result. No first person, no clichés ("results-driven", "passionate", "extensive experience").
+"skills": up to 12 names chosen ONLY from the SKILLS list, copied exactly: the tools and hard skills this JOB asks for first, then other relevant tools; at most 2 soft skills (communication, leadership and the like), because a skills line full of soft skills reads as padding.
+"summary": 2-3 sentences that make a recruiter for THIS job keep reading. Sentence 1 positions the candidate for this job: their real title or field and the kind of work this JOB centres on, then their single strongest relevant proof with its real number or scale. Sentence 2 names the 2 tools or methods from their history this JOB most needs. Write it like a sharp human wrote it, not a template:
+  - never open with "<Title> with X years of experience", "Results-driven", "Experienced", "Passionate" or "Highly motivated";
+  - never paste skill names from the SKILLS list as phrases ("specializing in data visualization & dashboards and multi-source spatial analysis"); say what they did instead;
+  - never make a fact bigger: one model stays one model (not "models"), one project stays one project, a team of 10 stays 10;
+  - no first person, no clichés ("results-driven", "passionate", "extensive experience", "proven track record", "dynamic").
 "keywordsCovered": up to 10 exact phrases from the JOB the candidate can honestly claim. "keywordsMissing": up to 8 phrases from the JOB the candidate cannot claim.
 ${REWRITE_RULES}
 ${NO_FABRICATION_RULES}`;
@@ -267,5 +271,5 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
     },
   });
   if (!result) return null;
-  return { ...result, unverifiedNumbers: Array.from(flagged) };
+  return polishResume({ ...result, unverifiedNumbers: Array.from(flagged) });
 }

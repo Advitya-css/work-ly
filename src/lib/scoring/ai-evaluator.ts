@@ -307,7 +307,9 @@ export async function screenPastedResume(resumeText: string, jobText: string): P
     updatedAt: now,
   };
   const dossier: DossierEntry[] = [{ label: "CV", where: "your resume", kind: "experience", text: resumeText }];
-  const screened = await runScreen({ dossier, posting: postingText(job), profile: EMPTY_PROFILE });
+  // The first check most people ever see: it runs on the stronger model.
+  // Rate limits in the free grader action keep the cost bounded.
+  const screened = await runScreen({ dossier, posting: postingText(job), profile: EMPTY_PROFILE, quality: "high", timeoutMs: 45_000 });
   if (!screened) return null;
   // Here the resume IS the whole dossier, so a hard requirement it doesn't
   // show is exactly what a recruiter would screen out on - not "can't

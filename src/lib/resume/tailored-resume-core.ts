@@ -319,3 +319,66 @@ export function addedWords(rewrite: string, source: string, profileText: string)
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// Finishing touches a recruiter notices in the first six seconds.
+// ---------------------------------------------------------------------------
+
+/**
+ * "Bachelor of Architecture, Architecture — University of Mumbai" reads as
+ * a typo: the field is already in the degree. Drop the repeat.
+ */
+export function tidyEducationLine(line: string): string {
+  const m = line.match(/^(.+?),\s*([^—,]+?)(\s+—\s+.*)?$/);
+  if (!m) return line;
+  const [, degree, field, rest = ""] = m;
+  return degree.toLowerCase().includes(field.trim().toLowerCase()) ? `${degree}${rest}` : line;
+}
+
+/** The last year in a dates string ("Jul 2017 – May 2021" -> 2021), or 0. */
+function lastYear(dates: string): number {
+  const years = dates.match(/\b(19|20)\d{2}\b/g);
+  return years ? Number(years[years.length - 1]) : /present/i.test(dates) ? 9999 : 0;
+}
+
+/**
+ * Skills in one consistent case. Multi-word phrases start with a capital
+ * ("data visualization & dashboards" -> "Data visualization & dashboards");
+ * single tool names keep their own spelling (dbt, pandas, SQL).
+ */
+export function tidySkill(skill: string): string {
+  const s = skill.trim();
+  if (!/\s/.test(s) || !/^[a-z]/.test(s)) return s;
+  return s[0].toUpperCase() + s.slice(1);
+}
+
+/** Applied when a resume is built and when an older saved one is opened. */
+export function polishResume<T extends Pick<TailoredResume, "education" | "skills">>(resume: T): T {
+  const education = resume.education
+    .map((e) => ({ ...e, line: tidyEducationLine(e.line) }))
+    // Most recent first, the way every recruiter expects to read it.
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => lastYear(b.e.dates) - lastYear(a.e.dates) || a.i - b.i)
+    .map(({ e }) => e);
+  const seen = new Set<string>();
+  const skills = resume.skills
+    .map(tidySkill)
+    .filter((s) => {
+      const k = s.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  return { ...resume, education, skills };
+}
+
+/**
+ * A line that says what you did but not what came of it. Never fixed for
+ * you (that would mean inventing a result); the editor asks you instead.
+ */
+export function lacksResult(bullet: string): boolean {
+  const b = bullet.trim();
+  if (!b) return false;
+  if (/\d/.test(b)) return false;
+  return !/\b(so that|resulting|which|cutting|saving|raising|lifting|reducing|increasing|improving|adopted|used by|now|replac|enabl|led to|won|launched|grew|doubled|halved)\w*/i.test(b);
+}

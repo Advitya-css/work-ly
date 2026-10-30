@@ -704,6 +704,13 @@
     animation: shimmer 1.6s infinite;
   }
 
+  /* A score ring filling up from empty when a verdict lands. */
+  @keyframes ring {
+    from {
+      stroke-dashoffset: var(--ring-from);
+    }
+  }
+
   @keyframes shimmer {
     100% {
       transform: translateX(100%);

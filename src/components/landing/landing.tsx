@@ -2,9 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  CheckCircle2,
-  CircleDashed,
-  CircleSlash,
   FileText,
   IdCard,
   MessagesSquare,
@@ -21,6 +18,7 @@ import { PAID_PLANS } from "@/lib/pricing";
 import { discountedPrice, type PublicFoundingOffer } from "@/lib/payments/founding-core";
 import type { PublicSale } from "@/lib/payments/sale-core";
 import { cn } from "@/lib/utils";
+import { LiveCheck } from "@/components/landing/live-check";
 
 /**
  * THE LANDING PAGE, in the Linear / Vercel school: a dark stage, one sharp
@@ -73,147 +71,23 @@ export function LandingHero({ offer, sale }: { offer: PublicFoundingOffer | null
         )}
 
         <h1 className="max-w-4xl text-balance bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-[44px] font-semibold leading-[1.02] tracking-[-0.045em] text-transparent sm:text-[72px]">
-          Every application, written for the job.
+          Apply to fewer jobs.
+          <br />
+          Get more yeses.
         </h1>
         <p className="mt-6 max-w-2xl text-balance text-[17px] leading-relaxed text-muted-foreground sm:text-lg">
-          Work-ly reads the job, tells you honestly where you stand, then rewrites your real experience in its language:
-          resume, cover letter, LinkedIn and interview prep. Nothing invented.
+          Paste a job and your resume. Work-ly tells you straight whether it&apos;s worth applying, and proves every point
+          with a line from your own resume. If it&apos;s a yes, it writes the application. If it&apos;s a no, it says so.
         </p>
-        <div className="mt-9 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-          <Button asChild size="lg" className="h-11 w-full px-6 sm:w-auto">
-            <Link href="/free-grader">
-              Check a job free
-              <ArrowRight />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="ghost" className="h-11 w-full px-5 text-muted-foreground sm:w-auto">
-            <Link href="/signup">Create a free account</Link>
-          </Button>
-        </div>
-        <p className="mt-4 font-mono text-[12px] text-muted-foreground/80">No card needed · first check without an account</p>
       </div>
 
-      <div className={cn(SECTION, "mt-16 pb-24 sm:mt-20")}>
-        <ProductWindow />
-        <p className="mx-auto mt-4 max-w-2xl text-balance text-center text-xs text-muted-foreground">
-          The fit rows are from a real report: a public listing checked against a sample resume, employer names withheld.
-          The tailored lines show the kind of rewrite Pro makes.
+      <div id="check" className={cn(SECTION, "mt-12 scroll-mt-24 pb-24 sm:mt-14")}>
+        <LiveCheck />
+        <p className="mt-4 text-center font-mono text-[12px] text-muted-foreground/80">
+          Free · no account needed · one check per device without signing up
         </p>
       </div>
     </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// The product, framed
-
-const FIT_ROWS: { text: string; verdict: "met" | "partial" | "missing"; note: string }[] = [
-  { text: "Proficiency in SQL, Python, data modeling and semantic layer", verdict: "met", note: "“Built 40+ dbt models on BigQuery…”" },
-  { text: "Customer analytics KPIs across marketing, sales and service", verdict: "met", note: "“Designed and analysed A/B tests…”" },
-  { text: "Expertise in Tableau, ideally certified", verdict: "partial", note: "Tableau dashboards for 3 clients; no certificate" },
-  { text: "AWS data services (Athena, Glue, Redshift)", verdict: "missing", note: "To close it: a small Redshift + Athena project" },
-];
-
-const VERDICT_ICON = {
-  met: { icon: CheckCircle2, tone: "text-success" },
-  partial: { icon: CircleDashed, tone: "text-warning" },
-  missing: { icon: CircleSlash, tone: "text-destructive" },
-} as const;
-
-function ScoreRing({ value }: { value: number }) {
-  const r = 30;
-  const c = 2 * Math.PI * r;
-  return (
-    <svg viewBox="0 0 72 72" className="size-[72px] -rotate-90" aria-hidden>
-      <circle cx="36" cy="36" r={r} fill="none" strokeWidth="5" className="stroke-muted" />
-      <circle cx="36" cy="36" r={r} fill="none" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(c * value) / 100} ${c}`} className="stroke-success" />
-    </svg>
-  );
-}
-
-function ProductWindow() {
-  return (
-    <div className="relative mx-auto max-w-5xl">
-      <div aria-hidden className="absolute -inset-x-10 -bottom-10 top-10 -z-10 rounded-[40px] bg-[radial-gradient(closest-side,rgb(var(--glow)/0.35),transparent)] blur-3xl" />
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[0_0_0_1px_rgb(255_255_255/0.02),0_30px_80px_-20px_rgb(0_0_0/0.6)]">
-        {/* Title bar */}
-        <div className="flex items-center gap-3 border-b border-border px-4 py-2.5">
-          <div className="flex gap-1.5" aria-hidden>
-            <span className="size-2.5 rounded-full bg-white/10" />
-            <span className="size-2.5 rounded-full bg-white/10" />
-            <span className="size-2.5 rounded-full bg-white/10" />
-          </div>
-          <p className="truncate font-mono text-[11.5px] text-muted-foreground">work-ly.in / jobs / data-analytics-engineer</p>
-        </div>
-
-        <div className="grid text-left lg:grid-cols-[1.25fr_1fr]">
-          {/* Fit */}
-          <div className="flex flex-col gap-5 p-5 sm:p-7">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <ScoreRing value={71} />
-                <span className="absolute inset-0 flex items-center justify-center font-mono text-xl font-medium text-foreground">71</span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] text-muted-foreground">Data &amp; Analytics Engineer · Bangalore</p>
-                <p className="text-lg font-semibold tracking-tight text-foreground">Worth applying</p>
-                <p className="text-[13px] text-muted-foreground">2 must-haves shown, 1 partly, 1 to close</p>
-              </div>
-            </div>
-            <ul className="flex flex-col divide-y divide-border rounded-xl border border-border">
-              {FIT_ROWS.map((row) => {
-                const v = VERDICT_ICON[row.verdict];
-                return (
-                  <li key={row.text} className="flex gap-3 px-4 py-3">
-                    <v.icon className={cn("mt-0.5 size-4 shrink-0", v.tone)} aria-hidden />
-                    <div className="min-w-0">
-                      <p className="text-[13.5px] leading-snug text-foreground">{row.text}</p>
-                      <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{row.note}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          {/* Tailored resume */}
-          <div className="border-t border-border bg-muted/30 p-5 sm:p-7 lg:border-l lg:border-t-0">
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-[13px] font-medium text-foreground">Tailored resume</p>
-              <span className="rounded-md border border-border px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">PDF · Word</span>
-            </div>
-            <div className="rounded-lg bg-white p-5 text-neutral-900 shadow-sm">
-              <p className="text-[15px] font-semibold tracking-tight">Priya Sharma</p>
-              <p className="text-[11px] text-neutral-500">Data Analyst · Bengaluru</p>
-              <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">Experience</p>
-              <ul className="mt-1.5 flex flex-col gap-2.5 text-[12px] leading-snug">
-                <li>
-                  Built 40+ dbt data models on BigQuery powering delivery-operations dashboards for 120 city managers.
-                  <span className="mt-0.5 block text-[10.5px] text-neutral-400">Was: Built 40+ dbt models on BigQuery that power…</span>
-                </li>
-                <li>
-                  Designed and analysed checkout A/B tests; one lifted order conversion by 3.2%.
-                  <span className="mt-0.5 block text-[10.5px] text-neutral-400">Was: Designed and analysed A/B tests for checkout changes, including one…</span>
-                </li>
-                <li className="text-neutral-400">Delivered Power BI and Tableau dashboards for 3 retail and banking clients.</li>
-              </ul>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-border bg-border text-center">
-              {[
-                ["2", "rewritten"],
-                ["1", "kept"],
-                ["0", "invented"],
-              ].map(([n, label]) => (
-                <div key={label} className="bg-card px-2 py-2.5">
-                  <p className="font-mono text-base text-foreground">{n}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -264,26 +138,27 @@ export function LandingFeatures() {
     <section id="how-it-works" className={cn(SECTION, "flex scroll-mt-20 flex-col gap-28 py-24 sm:gap-36 sm:py-32")}>
       <FeatureRow
         eyebrow="01 · The honest verdict"
-        title="Know if you're a fit before you spend an evening applying."
-        body="Paste any job. Work-ly checks it requirement by requirement against your resume, and only counts what it can quote."
-        points={["A verdict and a score that explains itself", "The exact line on your resume behind every tick", "What to do about each gap, in one sentence"]}
+        title="It will tell you not to apply."
+        body="Most job tools earn more when you send more applications. Work-ly is built the other way: it checks every requirement against your resume, only counts what it can quote, and when a job isn't worth your evening, it says so."
+        points={["Five verdicts, from apply now to skip", "The exact line on your resume behind every tick", "What to do about each gap, in one sentence"]}
         visual={
           <Surface>
-            <p className="text-[12px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Requirement check</p>
-            <ul className="mt-4 flex flex-col gap-4">
-              {FIT_ROWS.slice(0, 3).map((row) => {
-                const v = VERDICT_ICON[row.verdict];
-                return (
-                  <li key={row.text} className="flex gap-3">
-                    <v.icon className={cn("mt-0.5 size-4 shrink-0", v.tone)} aria-hidden />
-                    <div>
-                      <p className="text-[14px] text-foreground">{row.text}</p>
-                      <p className="mt-1 border-l-2 border-border pl-3 text-[13px] text-muted-foreground">{row.note}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Every job gets one of five</p>
+            <ol className="mt-4 flex flex-col gap-2">
+              {[
+                { word: "Apply now", line: "A strong fit. Don't sit on it.", tone: "bg-success", text: "text-success" },
+                { word: "Apply", line: "Worth your evening.", tone: "bg-success/60", text: "text-success" },
+                { word: "Stretch", line: "Within reach after one fix.", tone: "bg-warning", text: "text-warning" },
+                { word: "Probably not", line: "Your time is better spent elsewhere.", tone: "bg-warning/60", text: "text-warning" },
+                { word: "Skip", line: "It asks for what your resume can't show.", tone: "bg-destructive", text: "text-destructive" },
+              ].map((v) => (
+                <li key={v.word} className="flex items-center gap-3 rounded-lg border border-border bg-background/40 px-3.5 py-2.5">
+                  <span className={cn("h-6 w-1 rounded-full", v.tone)} aria-hidden />
+                  <span className={cn("w-28 shrink-0 text-[14px] font-medium", v.text)}>{v.word}</span>
+                  <span className="text-[13px] text-muted-foreground">{v.line}</span>
+                </li>
+              ))}
+            </ol>
           </Surface>
         }
       />
@@ -436,13 +311,13 @@ export function LandingFinalCta() {
       <div aria-hidden className="absolute left-1/2 top-full -z-10 h-[500px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(var(--glow)/0.5),transparent)] blur-2xl" />
       <div className={cn(SECTION, "flex flex-col items-center py-24 text-center sm:py-32")}>
         <h2 className="max-w-3xl text-balance bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-transparent sm:text-6xl">
-          Check the next job before you apply.
+          Ask before you apply.
         </h2>
-        <p className="mt-5 max-w-lg text-muted-foreground">Free, and your first check needs no account.</p>
+        <p className="mt-5 max-w-lg text-muted-foreground">One honest answer, proven line by line. Free, and your first check needs no account.</p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="h-11 px-6">
-            <Link href="/free-grader">
-              Check a job free
+            <Link href="#check">
+              Check a job now
               <ArrowRight />
             </Link>
           </Button>

@@ -56,3 +56,31 @@ describe("words a rewrite added", () => {
     ]);
   });
 });
+
+import { lacksResult, polishResume, tidyEducationLine, tidySkill } from "@/lib/resume/tailored-resume-core";
+
+describe("resume finishing touches", () => {
+  it("drops a field of study already in the degree", () => {
+    expect(tidyEducationLine("Bachelor of Architecture, Architecture — University of Mumbai")).toBe("Bachelor of Architecture — University of Mumbai");
+    expect(tidyEducationLine("B.Sc., Statistics — University of Pune")).toBe("B.Sc., Statistics — University of Pune");
+  });
+
+  it("puts the most recent degree first and evens out skill casing", () => {
+    const r = polishResume({
+      education: [
+        { line: "B.Arch — Mumbai", dates: "May 2021" },
+        { line: "Master of City Planning — Penn", dates: "May 2024" },
+      ],
+      skills: ["data visualization & dashboards", "dbt", "Public Speaking", "dbt"],
+    });
+    expect(r.education[0].line).toContain("Master");
+    expect(r.skills).toEqual(["Data visualization & dashboards", "dbt", "Public Speaking"]);
+    expect(tidySkill("pandas")).toBe("pandas");
+  });
+
+  it("spots a line with no result", () => {
+    expect(lacksResult("Shipped two client-facing web products from prototype to launch.")).toBe(true);
+    expect(lacksResult("Secured and administered a $200,000 grant for a heat-mitigation project.")).toBe(false);
+    expect(lacksResult("Automated weekly reporting in Python, saving the ops team 6 hours a week.")).toBe(false);
+  });
+});

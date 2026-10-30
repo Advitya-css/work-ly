@@ -11,7 +11,7 @@ import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { SavedResumeLocked } from "@/components/resume/saved-resume-locked";
 import { getCurrentUser } from "@/lib/auth";
 import { getSavedOutput } from "@/lib/saved-outputs";
-import type { TailoredResume } from "@/lib/resume/tailored-resume-core";
+import { polishResume, type TailoredResume } from "@/lib/resume/tailored-resume-core";
 import { loadKit, profilePlainText } from "@/lib/kit/kit-data";
 import { postingRequirements } from "@/lib/resume/match-score";
 
@@ -113,7 +113,7 @@ export default async function TailoredResumePage({
         }}
         jobLabel={`${job.title ? displayJobTitle(job.title) : "Role"}${job.company ? ` - ${job.company}` : ""}`}
         autoStart={build === "1"}
-        initial={saved?.data ?? null}
+        initial={saved ? polishResume(saved.data) : null}
         initialSavedAt={saved?.savedAt ?? null}
         initialEdited={Boolean(saved?.edited)}
       />

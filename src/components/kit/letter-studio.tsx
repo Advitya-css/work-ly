@@ -63,7 +63,7 @@ export function LetterStudio({
   if (tool.phase === "idle" || tool.phase === "checking" || tool.phase === "generating") {
     return (
       <WritingState
-        steps={["Reading the job", "Picking your two strongest proofs for it", "Writing the letter", "Checking every number against your profile"]}
+        steps={["Reading the job", "Picking your two strongest proofs for it", "Writing the first draft", "Reading it as the hiring manager would", "Rewriting what didn't land", "Checking every number against your profile"]}
       />
     );
   }
@@ -170,6 +170,22 @@ export function LetterStudio({
               ))}
             </ul>
           </InspectorSection>
+
+          {(tool.data.revisions?.length ?? 0) > 0 && (
+            <InspectorSection title="Fixed on a second read">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                The first draft was read as this hiring manager would, then rewritten to fix:
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                {tool.data.revisions!.map((r) => (
+                  <li key={r} className="flex gap-2 text-[12.5px] leading-snug text-foreground">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </InspectorSection>
+          )}
 
           {proofs.length > 0 && (
             <InspectorSection title="Built on these lines of yours">

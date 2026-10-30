@@ -67,11 +67,11 @@ const instrumentSerif = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Work-ly — AI career coach for your resume, interviews and next role",
+    default: "Work-ly — Apply to fewer jobs. Get more yeses.",
     template: "%s · Work-ly",
   },
   description:
-    "Work-ly is AI career software for individuals: tailor your resume and cover letter to each role, see your honest fit, practise with mock interviews, and follow a plan to reach the role you want.",
+    "Paste a job and your resume. Work-ly tells you honestly whether it's worth applying, proving every point with a line from your resume, then writes the resume, cover letter and interview prep for the jobs that are. Nothing invented.",
   metadataBase: new URL("https://work-ly.in"),
   alternates: {
     canonical: "/",

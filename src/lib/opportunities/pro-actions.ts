@@ -85,6 +85,8 @@ export async function generateOutreachEmailAction(opportunityId: string): Promis
   const candidate = candidateBrief(ctx.profile, 5000);
 
   const result = await completeStructured({
+    // A paying user judges Work-ly on what it writes: the stronger model.
+    quality: "high",
     system: OUTREACH_SYSTEM,
     user: `NAME: ${user?.name?.trim() || "[Your Name]"}\n\nJOB\n===\n${jobBrief(ctx.opp.job, ctx.opp.job.title ?? "this role", ctx.opp.job.company, 4000)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: {
@@ -147,6 +149,7 @@ export async function generateInterviewPrepAction(
   const candidate = candidateBrief(ctx.profile, 6000);
 
   const questions = await completeStructured({
+    quality: "high",
     system: INTEL_SYSTEM,
     user: `JOB\n===\n${jobBrief(ctx.opp.job, ctx.opp.job.title ?? "this role", ctx.opp.job.company, 5000)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: {

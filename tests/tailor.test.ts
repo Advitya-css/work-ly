@@ -82,7 +82,8 @@ describe("AI Tailoring & Reminders", () => {
     expect(result.coverLetter).toContain("Dear Hiring Team");
     // Paragraph spacing is normalised to one blank line.
     expect(result.coverLetter).not.toMatch(/\n{3,}/);
-    expect(aiProvider.complete).toHaveBeenCalledTimes(1);
+    // The draft, then the hiring-manager second read (which fails here, so the draft stands).
+    expect(aiProvider.complete).toHaveBeenCalledTimes(2);
 
     // The prompt actually sent to the AI must contain the candidate's real
     // data, not the literal, unrendered "${...}" template text.
@@ -91,6 +92,25 @@ describe("AI Tailoring & Reminders", () => {
     expect(prompt).toContain("State University");
     expect(prompt).not.toContain("${");
     expect(prompt).toContain("NAME: Priya Sharma");
+  });
+
+  it("uses the second read when it's safe, and drops it when it adds a number", async () => {
+    const draft = `Dear Hiring Team,\n\n${"Vercel needs someone to build fast React apps for its dashboard. ".repeat(4)}\n\nAt Acme I built React apps.\n\nBest regards,\nPriya Sharma`;
+    const better = `Dear Hiring Team,\n\n${"Your dashboard team needs React that stays fast as it grows. ".repeat(4)}\n\nAt Acme I built React apps.\n\nBest regards,\nPriya Sharma`;
+    vi.mocked(aiProvider.complete)
+      .mockResolvedValueOnce({ content: JSON.stringify({ coverLetter: draft }) })
+      .mockResolvedValueOnce({ content: JSON.stringify({ critique: ["Opened on the ad, not their problem."], coverLetter: better }) });
+    const kept = await generateTailoredApplication(mockProfile as any, mockJob as any, { name: "Priya Sharma" });
+    expect(kept.coverLetter).toContain("stays fast");
+    expect(kept.revisions).toEqual(["Opened on the ad, not their problem."]);
+
+    const inflated = better.replace("I built React apps", "I built React apps used by 4 million people");
+    vi.mocked(aiProvider.complete)
+      .mockResolvedValueOnce({ content: JSON.stringify({ coverLetter: draft }) })
+      .mockResolvedValueOnce({ content: JSON.stringify({ critique: ["Too vague."], coverLetter: inflated }) });
+    const safe = await generateTailoredApplication(mockProfile as any, mockJob as any, { name: "Priya Sharma" });
+    expect(safe.coverLetter).not.toContain("4 million");
+    expect(safe.revisions).toEqual([]);
   });
 
   it("rejects a letter that is too short to be a real draft", async () => {
