@@ -37,8 +37,8 @@ export function SectionTabs({ section }: { section: SectionName }) {
   const tabs = SECTIONS[section];
 
   return (
-    <nav aria-label="Section" className="-mx-1 overflow-x-auto">
-      <ul className="flex items-center gap-1 px-1">
+    <nav aria-label="Section" className="-mt-2 overflow-x-auto border-b border-border">
+      <ul className="flex items-center gap-5">
         {tabs.map((tab) => {
           // /student is a prefix of /student/jobs, so an exact check is
           // needed for the overview tab or it never turns off.
@@ -46,20 +46,18 @@ export function SectionTabs({ section }: { section: SectionName }) {
             tab.href === "/student"
               ? pathname === "/student"
               : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
-          const Icon = tab.icon;
           return (
             <li key={tab.href}>
               <Link
                 href={tab.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
+                  "-mb-px flex items-center border-b-2 py-2.5 text-[13.5px] whitespace-nowrap transition-colors",
                   isActive
-                    ? "bg-secondary font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                    ? "border-primary font-medium text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-4 shrink-0" />
                 {tab.label}
               </Link>
             </li>

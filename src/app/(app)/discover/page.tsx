@@ -134,9 +134,10 @@ export default async function DiscoverPage() {
 
       <SectionTabs section="jobs" />
 
-      {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}
-
-      <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={latestRun?.id ?? "none"} />
+      <div className="-mt-1 flex flex-col gap-1.5">
+        {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}
+        <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={latestRun?.id ?? "none"} />
+      </div>
 
       <DiscoveryBoard jobs={jobs} context={context} />
 

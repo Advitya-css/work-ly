@@ -55,7 +55,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         // No overflow-hidden: the recommended-plan badge sits on the border.
         "relative flex min-w-0 flex-col rounded-xl border bg-card text-card-foreground",
         plan.featured
-          ? "order-first border-primary bg-gradient-to-b from-primary/10 to-card shadow-md @3xl:order-none @3xl:-my-2"
+          ? "order-first border-primary/70 bg-card shadow-md ring-1 ring-primary/15 @3xl:order-none @3xl:-my-2"
           : "border-border shadow-sm transition-colors hover:border-primary/30",
       )}
     >

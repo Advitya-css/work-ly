@@ -4,11 +4,9 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
-import { X, Send, Loader2, Bot } from "lucide-react";
+import { X, Send, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { IconAsk } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { askWorklyAction, type ChatReply } from "@/lib/chat/actions";
 import { suggestionsForPath } from "@/lib/chat/knowledge";
@@ -44,15 +42,12 @@ export function AskWorkly() {
   const [pending, startTransition] = useTransition();
 
   const [isTyping, setIsTyping] = useState(false);
+  // The icon glows while someone types and settles two seconds after.
   useEffect(() => {
-    if (!input.trim()) {
-      setIsTyping(false);
-      return;
-    }
-    setIsTyping(true);
+    if (!isTyping) return;
     const timer = setTimeout(() => setIsTyping(false), 2000);
     return () => clearTimeout(timer);
-  }, [input]);
+  }, [input, isTyping]);
 
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -89,6 +84,7 @@ export function AskWorkly() {
       { id: nextId.current++, role: "user", text },
     ]);
     setInput("");
+    setIsTyping(false);
 
     startTransition(async () => {
       const reply = await askWorklyAction(text, pathname, knownId);
@@ -108,22 +104,16 @@ export function AskWorkly() {
         aria-expanded={open}
         aria-controls="ask-workly-panel"
         className={cn(
-          "fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full p-3 sm:py-3 sm:pr-5 sm:pl-4 shadow-lg transition-all",
-          "bg-primary text-primary-foreground hover:-translate-y-0.5 hover:shadow-xl",
+          "fixed right-5 bottom-5 z-40 flex h-10 items-center gap-2 rounded-full border border-border bg-card/90 px-3.5 text-sm font-medium text-foreground shadow-md backdrop-blur transition-colors",
+          "hover:border-foreground/15 hover:bg-card",
           "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
-          open && "opacity-0 pointer-events-none",
+          open && "pointer-events-none opacity-0",
         )}
       >
-        <div className="relative animate-float -ml-2 -mt-2">
-          <div className="relative w-10 h-10 overflow-visible">
-            <Image src="/workly-bot.png" alt="Bot" fill sizes="160px" className="object-contain" />
-          </div>
-          <span className="absolute top-0 right-0 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
-          </span>
-        </div>
-        <span className="hidden text-sm font-medium sm:inline-block">Ask Work-ly</span>
+        <span className="flex size-5 items-center justify-center rounded-md bg-primary-solid text-primary-solid-foreground">
+          <Sparkles className="size-3" aria-hidden />
+        </span>
+        <span className="hidden sm:inline">Ask Work-ly</span>
       </button>
 
       {/* --------------------------------------------------------- panel */}
@@ -133,30 +123,24 @@ export function AskWorkly() {
           role="dialog"
           aria-label="Ask Work-ly"
           className={cn(
-            "fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
+            "fixed z-50 flex flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-lg",
             // Full width on a phone, a panel on anything larger.
             "inset-x-3 bottom-3 top-16 sm:inset-x-auto sm:top-auto sm:right-5 sm:bottom-5 sm:h-[560px] sm:max-h-[calc(100dvh-3rem)] sm:w-[400px]",
           )}
         >
-          <header className="flex items-center justify-between gap-3 border-b border-border bg-[var(--area-career-tint)] px-4 py-3">
-            <span className="flex items-center gap-2">
-              <div className={cn(
-                "relative w-10 h-10 overflow-hidden rounded-full flex items-center justify-center transition-all duration-700",
-                isTyping ? "bg-primary/20 shadow-[0_0_20px_4px_rgba(var(--primary),0.4)] ring-2 ring-primary/50" : "bg-background/50"
-              )}>
-                <Image 
-                  src="/workly-bot.png" 
-                  alt="Bot" 
-                  width={32} 
-                  height={32} 
-                  className={cn("object-contain translate-y-1 transition-all duration-700", isTyping && "scale-110 drop-shadow-md brightness-110")} 
-                />
-              </div>
+          <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+            <span className="flex items-center gap-2.5">
+              <span
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-lg bg-primary-solid text-primary-solid-foreground transition-shadow duration-500",
+                  isTyping && "shadow-[0_0_0_4px_rgb(var(--glow)/0.18)]",
+                )}
+              >
+                <Sparkles className="size-3.5" aria-hidden />
+              </span>
               <span>
                 <span className="block text-sm font-semibold text-foreground">Ask Work-ly</span>
-                <span className="block text-xs text-muted-foreground">
-                  Your job search, explained
-                </span>
+                <span className="block text-xs text-muted-foreground">Your job search, explained</span>
               </span>
             </span>
             <Button
@@ -184,7 +168,7 @@ export function AskWorkly() {
                       key={entry.id}
                       type="button"
                       onClick={() => ask(entry.question, entry.id)}
-                      className="rounded-lg border border-border bg-background px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent"
+                      className="rounded-lg border border-border bg-background px-3 py-2 text-left text-[13px] text-foreground transition-colors hover:border-foreground/15 hover:bg-muted"
                     >
                       {entry.question}
                     </button>
@@ -205,18 +189,11 @@ export function AskWorkly() {
                       className={cn(
                         "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-sm",
                         message.role === "user"
-                          ? "rounded-br-md bg-primary text-primary-foreground"
+                          ? "rounded-br-md bg-primary-solid text-primary-solid-foreground"
                           : "rounded-bl-md bg-muted text-foreground",
                       )}
                     >
-                      <div className="flex gap-2 items-start">
-                    <div className="shrink-0 relative w-6 h-6 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center mt-1">
-                      <Image src="/workly-bot.png" alt="Bot" width={20} height={20} className="object-contain translate-y-0.5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
                       <MarkdownRenderer content={message.text} />
-                    </div>
-                  </div>
                     </div>
                     {message.role === "workly" && message.source && (
                       <span className="px-1 text-[11px] text-muted-foreground">
@@ -254,7 +231,10 @@ export function AskWorkly() {
               id="ask-workly-input"
               ref={inputRef}
               value={input}
-              onChange={(event) => setInput(event.target.value)}
+              onChange={(event) => {
+                setInput(event.target.value);
+                setIsTyping(event.target.value.trim().length > 0);
+              }}
               placeholder="Ask about a score, a gap, what to do next"
               className="h-9 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
             />

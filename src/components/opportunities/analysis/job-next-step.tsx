@@ -77,7 +77,7 @@ export function JobNextStep({
   return (
     <section
       aria-labelledby="next-step-title"
-      className="flex flex-col gap-4 rounded-xl border border-primary/25 bg-primary/[0.04] p-5 sm:p-6"
+      className="flex flex-col gap-4 feature-panel p-5 sm:p-6"
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 flex-col gap-1">

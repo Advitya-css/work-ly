@@ -12,7 +12,7 @@ export function StepIndicator({ current }: { current: number }) {
               className={cn(
                 "flex size-5 items-center justify-center rounded-full text-[11px] font-medium",
                 index === current
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary-solid text-primary-solid-foreground"
                   : index < current
                     ? "bg-success/15 text-success"
                     : "bg-secondary text-muted-foreground",

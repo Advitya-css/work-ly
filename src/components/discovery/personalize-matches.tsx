@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Sparkles } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { screenTopMatchesAction } from "@/lib/discovery/actions";
 
@@ -76,7 +75,7 @@ export function PersonalizeMatches({
 
   if (state === "running") {
     return (
-      <div role="status" className={`flex items-center gap-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-sm ${className ?? ""}`}>
+      <div role="status" className={`flex items-center gap-2 text-sm ${className ?? ""}`}>
         <WorklyLoader className="size-4 shrink-0 animate-spin text-primary" />
         <span className="text-foreground">
           Reading your top matches in full against your resume
@@ -88,7 +87,7 @@ export function PersonalizeMatches({
 
   if (state === "done") {
     return (
-      <div role="status" className={`flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm ${className ?? ""}`}>
+      <div role="status" className={`flex items-center gap-2 text-sm ${className ?? ""}`}>
         <CheckCircle2 className="size-4 shrink-0 text-success" />
         <span className="text-muted-foreground">
           {read} top match{read === 1 ? "" : "es"} read in full: each now says, in your own resume&apos;s words, why it fits and what&apos;s missing.
@@ -99,22 +98,21 @@ export function PersonalizeMatches({
 
   if (pending > 0) {
     return (
-      <div className={`flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${className ?? ""}`}>
+      <div className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm ${className ?? ""}`}>
+        <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
         <span className="text-muted-foreground">
           {pending} of your top matches only have a quick score so far.
         </span>
-        <Button
-          size="sm"
-          variant="outline"
-          className="shrink-0"
+        <button
+          type="button"
+          className="rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
           onClick={() => {
             started.current = false;
             void run();
           }}
         >
-          <Sparkles />
-          Read them in full
-        </Button>
+          Read them in full against my resume
+        </button>
       </div>
     );
   }

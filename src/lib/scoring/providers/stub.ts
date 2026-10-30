@@ -28,6 +28,7 @@ import {
 } from "@/lib/scoring/shared";
 import { classifyStudentJob } from "@/lib/student/legal-limits";
 import { countryMatches } from "@/lib/text-utils";
+import { stemmedPhraseIn } from "@/lib/scoring/stem-match";
 
 /**
  * THE FIT ENGINE.
@@ -574,18 +575,29 @@ function buildRequirementChecklist(
 
     if (item.category === "skill") {
       const nonTransferable = profileSkills.filter((s) => !s.isTransferable);
-      let match = findMatchingSkill(item.text, nonTransferable);
-      
-      if (!match) {
-        match = nonTransferable.find((s) => {
-          const escaped = s.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const pattern = new RegExp(`\\b${escaped}\\b`, "i");
-          return pattern.test(item.text);
-        });
-      }
+      // Every skill the requirement names, not just the first: "Expert SQL;
+      // strong Python" is met by SQL AND Python, and saying only "Python"
+      // reads as if Work-ly missed the SQL.
+      const matches = nonTransferable.filter(
+        (s) =>
+          findMatchingSkill(item.text, [s]) !== undefined ||
+          new RegExp(`\\b${s.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(item.text) ||
+          stemmedPhraseIn(s.name, item.text),
+      );
+      const lowered = item.text.toLowerCase();
+      const at = (name: string) => {
+        const i = lowered.indexOf(name.toLowerCase());
+        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+      };
+      // In the order the posting names them: "SQL and Python", not "Python and SQL".
+      const names = Array.from(new Set(matches.map((m) => m.name)))
+        .sort((a, b) => at(a) - at(b))
+        .slice(0, 3);
 
-      if (match) {
-        return { text: item.text, status: "met", detail: `Matched to "${match.name}" on your profile.` };
+      if (names.length > 0) {
+        const quoted = names.map((n) => `"${n}"`);
+        const list = quoted.length === 1 ? quoted[0] : `${quoted.slice(0, -1).join(", ")} and ${quoted.at(-1)}`;
+        return { text: item.text, status: "met", detail: `Matched to ${list} on your profile.` };
       }
       const experienceMatch = findSupportingExperience(item.text, experiences);
       if (experienceMatch) {

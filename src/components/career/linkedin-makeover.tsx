@@ -83,7 +83,7 @@ export function LinkedInMakeover({
 
   if (!data) {
     return (
-      <section className="flex flex-col items-start gap-5 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.07] via-card to-card p-6 shadow-sm sm:p-8">
+      <section className="flex flex-col items-start gap-5 feature-panel p-6 sm:p-8">
         <div className="flex max-w-xl flex-col gap-2">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
             A LinkedIn profile recruiters {targetRole ? `searching for ${targetRole} roles` : "searching for your next role"} will find

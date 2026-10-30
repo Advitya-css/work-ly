@@ -18,6 +18,8 @@ import { OPPORTUNITY_STATUS_LABEL, OPPORTUNITY_STATUS_VARIANT } from "@/lib/jobs
 import { savedAtWithin, savedForJobWithin } from "@/lib/saved-outputs";
 import { previewOf } from "@/lib/saved-work-core";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
+import { profileChangedAt } from "@/lib/career/profile-changed-at";
+import { RecheckFit } from "@/components/opportunities/analysis/recheck-fit";
 
 export const metadata: Metadata = { title: "Opportunity" };
 // Re-analysis and the AI tools on this page call the model.
@@ -52,10 +54,13 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       });
 
   // A resume already built for this job opens instantly; say so on the button.
-  const [resumeSavedAt, careerProfile] = await Promise.all([
+  const [resumeSavedAt, careerProfile, changedAt] = await Promise.all([
     user.isPro ? savedAtWithin(user.id, "resume", opportunity.id) : Promise.resolve(null),
     user.isPro ? getCareerProfileByUserId(user.id) : Promise.resolve(null),
+    profileChangedAt(user.id),
   ]);
+  // Checked before the latest profile edit: offer to read it again.
+  const outdated = Boolean(changedAt && changedAt.getTime() > new Date(analysis.updatedAt).getTime() + 1000);
   // Free accounts that built things during the trial see them, locked.
   const savedFree = user.isPro ? {} : await savedForJobWithin(user.id, ["resume", "cover", "note", "interview"], opportunity.id);
   const savedPreviews = user.isPro
@@ -71,6 +76,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
     <JobAnalysisView
       job={job}
       analysis={analysis}
+      recheck={outdated ? <RecheckFit opportunityId={opportunity.id} /> : undefined}
       priority={{ score: opportunity.priorityScore, breakdown: opportunity.priorityBreakdown ?? null }}
       backLink={
         <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">

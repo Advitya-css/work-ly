@@ -36,6 +36,7 @@ import {
 import type { Application, ApplicationStatus } from "@/lib/db/types";
 import { classifyStudentJob } from "@/lib/student/legal-limits";
 import { IconStudent } from "@/components/icons";
+import { formatDay } from "@/lib/format";
 
 const ALL = "__all__";
 
@@ -332,7 +333,7 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {application.dateApplied
-                            ? new Date(application.dateApplied).toLocaleDateString()
+                            ? formatDay(application.dateApplied)
                             : "-"}
                         </td>
                         <td className="px-4 py-3 tabular-nums text-muted-foreground">

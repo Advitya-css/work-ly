@@ -41,7 +41,12 @@ export function formatSalaryRange(min: number | null, max: number | null, curren
   const isInr = code === "INR";
   // Rupee figures are an order of magnitude larger: ₹40,000 is a monthly
   // salary, not an annual one, and ₹25,00,000 reads as "25 lakh" in India.
+  // Indian postings quote "28-38 LPA" (lakh per annum), and parsers often
+  // keep the bare 28 and 38. No senior role pays ₹28 an hour, so a rupee
+  // figure under 200 is read as lakhs a year.
+  const inLakhs = (val: number) => isInr && val > 0 && val < 200;
   const determineSuffix = (val: number) => {
+    if (inLakhs(val)) return "/yr";
     if (isInr) return val < 1000 ? "/hr" : val < 200000 ? "/mo" : "/yr";
     if (val < 200) return "/hr";
     if (val < 10000) return "/mo";
@@ -49,6 +54,7 @@ export function formatSalaryRange(min: number | null, max: number | null, curren
   };
   const amount = (n: number) => {
     if (isInr) {
+      if (inLakhs(n)) return `₹${n}L`;
       if (n >= 100000) {
         const lakh = n / 100000;
         return `₹${Number.isInteger(lakh) ? lakh : lakh.toFixed(1)}L`;
@@ -78,4 +84,16 @@ export function formatSalaryRange(min: number | null, max: number | null, curren
 export function displayJobTitle(title: string | null | undefined): string {
   const t = (title ?? "").replace(/^\s*(job\s+)?title\s*:\s*/i, "").trim();
   return t || "Untitled role";
+}
+
+/**
+ * A day as "7 Oct 2026": readable everywhere, unlike 10/7/2026, which an
+ * Indian or British reader takes as 10 July. Fixed locale and UTC so the
+ * server and the browser print the same thing.
+ */
+export function formatDay(date: Date | string | null | undefined): string {
+  if (!date) return "";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }

@@ -52,24 +52,26 @@ export function TargetRoleCard({
 
   if (!editing && targetRole) {
     return (
-      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex items-start gap-2 text-sm text-muted-foreground">
-          <Compass className="mt-0.5 size-4 shrink-0 text-primary" />
-          <span>
-            Searching for <span className="font-medium text-foreground">{targetRole}</span> roles
-            {changingCareer ? ", as a career change: jobs like the ones you've done before are left out." : "."}
-          </span>
-        </p>
-        <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(true)} className="self-start sm:self-auto">
-          <Pencil />
+      <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-muted-foreground">
+        <Compass className="size-4 shrink-0 text-primary" aria-hidden />
+        <span>
+          Searching for <span className="font-medium text-foreground">{targetRole}</span> roles
+          {changingCareer ? ", as a career change: jobs like the ones you've done before are left out." : "."}
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="inline-flex items-center gap-1 rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          <Pencil className="size-3.5" aria-hidden />
           Change
-        </Button>
-      </div>
+        </button>
+      </p>
     );
   }
 
   return (
-    <form onSubmit={save} className="flex flex-col gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+    <form onSubmit={save} className="feature-panel flex flex-col gap-3 p-4">
       <div>
         <p className="text-sm font-semibold text-foreground">What role do you want next?</p>
         <p className="text-sm text-muted-foreground">

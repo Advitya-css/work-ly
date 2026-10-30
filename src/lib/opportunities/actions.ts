@@ -84,3 +84,34 @@ export async function generateTailoredApplicationAction(opportunityId: string) {
     return { error: "Failed to generate tailored application." };
   }
 }
+
+import { analyzeJob, syncOpportunityForJob } from "@/lib/jobs/analyze-job";
+import { profileChangedAt } from "@/lib/career/profile-changed-at";
+import { getJobAnalysisByJobId } from "@/lib/db/job-analyses";
+
+/**
+ * Re-runs the fit check for one tracked job against the profile as it is
+ * now. Only allowed when the profile changed after the last check, so it
+ * can't be used to call the model in a loop.
+ */
+export async function recheckOpportunityFitAction(opportunityId: string): Promise<{ ok: true } | { error: string }> {
+  const opportunity = await requireOwnedOpportunity(opportunityId);
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  try {
+    const [analysis, changedAt] = await Promise.all([
+      getJobAnalysisByJobId(opportunity.jobId),
+      profileChangedAt(user.id),
+    ]);
+    if (analysis && changedAt && changedAt <= analysis.updatedAt) {
+      return { error: "This check already uses your latest profile." };
+    }
+    await analyzeJob(opportunity.jobId, user.id);
+    await syncOpportunityForJob(opportunity.jobId, user.id);
+  } catch {
+    return { error: "Couldn't re-check this job just now. Try again in a minute." };
+  }
+  revalidatePath(`/opportunities/${opportunityId}`);
+  revalidatePath("/opportunities");
+  return { ok: true };
+}

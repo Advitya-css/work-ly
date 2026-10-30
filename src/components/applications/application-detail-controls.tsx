@@ -27,6 +27,7 @@ import {
 import { PIPELINE_COLUMNS, APPLICATION_STATUS_LABEL } from "@/lib/applications/labels";
 import { announceStageChange } from "@/lib/guidance/stage-events";
 import type { Application, ApplicationStatus } from "@/lib/db/types";
+import { formatDay } from "@/lib/format";
 
 function toDateInput(date: Date | null): string {
   if (!date) return "";
@@ -276,7 +277,7 @@ export function InterviewsEditor({ application }: { application: Application }) 
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">
-                  {interview.kind} · {new Date(interview.date).toLocaleDateString()}
+                  {interview.kind} · {formatDay(interview.date)}
                 </p>
                 {interview.notes && (
                   <p className="text-xs text-muted-foreground">{interview.notes}</p>

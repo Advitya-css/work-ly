@@ -53,11 +53,11 @@ export function RunStudentDiscoveryButton({ type }: { type: StudentDiscoveryType
 
   if (upgradeRequired) {
     return (
-      <div className="flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+      <div className="flex flex-col gap-3 feature-panel p-4">
         <p className="text-sm text-foreground font-medium">
           You&apos;ve reached your daily limit of 3 AI discoveries.
         </p>
-        <Button className="w-fit gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90">
+        <Button className="w-fit gap-2">
           <Zap className="size-4 fill-current" />
           Unlock Unlimited Discovery
         </Button>

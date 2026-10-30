@@ -4,15 +4,6 @@ import { cn } from "@/lib/utils";
 import type { CardArea } from "@/components/ui/card";
 import type { IconProps } from "@/components/icons";
 
-const AREA_VAR: Record<CardArea, { color: string; tint: string }> = {
-  opportunity: { color: "var(--area-opportunity)", tint: "var(--area-opportunity-tint)" },
-  career: { color: "var(--area-career)", tint: "var(--area-career-tint)" },
-  pathway: { color: "var(--area-pathway)", tint: "var(--area-pathway-tint)" },
-  application: { color: "var(--area-application)", tint: "var(--area-application-tint)" },
-  discover: { color: "var(--area-discover)", tint: "var(--area-discover-tint)" },
-  dream: { color: "var(--area-dream)", tint: "var(--area-dream-tint)" },
-};
-
 interface PageHeaderProps {
   title: string;
   description?: string;
@@ -24,55 +15,19 @@ interface PageHeaderProps {
 }
 
 /**
- * The page header. Same compact shape as before, with one addition: a
- * round chip holding this area's icon in this area's colour, and a rule
- * underneath that fades from that colour into the border. It costs one line
- * of vertical space and tells you where you are before you read anything.
+ * The page header: a tight title, one muted line under it, actions on the
+ * right. No icon chip and no coloured rule: the sidebar already says where
+ * you are, and quiet headers are most of what makes a product feel calm.
+ * (`area` and `icon` are still accepted so callers don't change.)
  */
-export function PageHeader({
-  title,
-  description,
-  action,
-  area,
-  icon: Icon,
-  className,
-}: PageHeaderProps) {
-  const accent = area ? AREA_VAR[area] : null;
-
+export function PageHeader({ title, description, action, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-1 items-start sm:items-center gap-3 min-w-0">
-          {Icon && (
-            <span
-              className="area-chip size-10 shrink-0"
-              style={
-                accent
-                  ? ({ "--area-tint": accent.tint, "--area-color": accent.color } as React.CSSProperties)
-                  : undefined
-              }
-            >
-              <Icon className="size-5" />
-            </span>
-          )}
-          <div className="min-w-0">
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
-            {description && (
-              <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-            )}
-          </div>
-        </div>
-        {action && <div className="shrink-0">{action}</div>}
+    <div className={cn("flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", className)}>
+      <div className="min-w-0">
+        <h1 className="text-[22px] font-semibold leading-tight text-foreground">{title}</h1>
+        {description && <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>}
       </div>
-
-      <div
-        className="h-px w-full"
-        style={{
-          background: accent
-            ? `linear-gradient(to right, ${accent.color}, var(--border) 22%)`
-            : "var(--border)",
-        }}
-      />
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
@@ -92,7 +47,7 @@ export function SectionHeader({
   return (
     <div className={cn("flex items-start justify-between gap-6", className)}>
       <div>
-        <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
+        <h2 className="text-[15px] font-semibold text-foreground">{title}</h2>
         {description && (
           <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">{description}</p>
         )}

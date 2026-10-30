@@ -56,7 +56,7 @@ export function InteractiveDemo() {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap md:whitespace-normal",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary-solid text-primary-solid-foreground"
                     : "bg-card border border-border hover:bg-accent/50 text-muted-foreground"
                 )}
               >

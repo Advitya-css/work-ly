@@ -253,7 +253,7 @@ export function DiscoveryBoard({
   return (
     <div className="flex flex-col gap-5">
       {/* Search */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3 shadow-xs">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
           <div className="relative min-w-0 flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />

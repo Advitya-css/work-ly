@@ -4,158 +4,159 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ==========================================================================
-   Workly design system
+   Work-ly design system (Oct 2026)
 
-   Cards, rounded corners, icons and filled buttons: the structure is the
-   familiar one, because it is easy to read and easy to learn. The character
-   comes from colour rather than from layout.
+   Quiet, precise, product-first: the Linear / Vercel school. Neutral
+   surfaces with a faint plum cast, hairline borders instead of shadows,
+   one typeface (Geist) at a tight scale, and plum used where it means
+   something: the primary action, focus, the score, the brand mark.
 
-   The idea that carries the personality is the AREA ACCENT. Every part of
-   the product owns a colour, and that colour shows up in the tinted strip at
-   the top of its cards, in its icon, and in its section markers. Opportunities
-   are amber, your career is plum, the pathway is teal, applications are rose.
-   You learn after a day or two where you are without reading the heading,
-   and no two screens feel like the same grey template.
-
-   Every colour pair here is checked against WCAG AA (4.5:1 for body text).
+   Light is near-white on white cards; dark is near-black with surfaces
+   lifted a step at a time. Every text pair passes WCAG AA.
    ========================================================================== */
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.625rem;
 
-  /* Very slightly warm white. Enough to take the clinical edge off pure
-     #ffffff without reading as beige. */
-  --background: #fffdfb;
-  --foreground: #1c1a19;
+  --background: #fbfafb;
+  --foreground: #121014;
 
   --card: #ffffff;
-  --card-foreground: #1c1a19;
+  --card-foreground: #121014;
 
   --popover: #ffffff;
-  --popover-foreground: #1c1a19;
+  --popover-foreground: #121014;
 
-  /* Warm plum. Deliberately not the indigo that ships with every component
-     library, and warm enough to sit happily beside the amber and rose
-     area accents below. */
-  --primary: #7a2e55;
-  --primary-foreground: #fffdfb;
+  /* Elevated plum: deeper and cleaner than before, so it reads as a brand
+     colour rather than a theme colour. */
+  --primary: #6d2352;
+  --primary-foreground: #ffffff;
+  /* The filled-button plum, separate from plum-as-text so dark mode can have
+     a rich button with white type and a lighter plum for links. */
+  --primary-solid: #6d2352;
+  --primary-solid-foreground: #ffffff;
 
-  --secondary: #f6f3f0;
-  --secondary-foreground: #1c1a19;
+  --secondary: #f3f1f4;
+  --secondary-foreground: #121014;
 
-  --muted: #f6f3f0;
-  --muted-foreground: #6b6560;
+  --muted: #f3f1f4;
+  --muted-foreground: #66616a;
 
-  --accent: #fbf0f5;
-  --accent-foreground: #5f2342;
+  --accent: #f5eff3;
+  --accent-foreground: #4f1a3c;
 
-  --destructive: #b3261e;
-  --destructive-foreground: #fffdfb;
+  --destructive: #c0331f;
+  --destructive-foreground: #ffffff;
 
-  --success: #116149;
-  --success-foreground: #fffdfb;
-  --warning: #8a5300;
-  --warning-foreground: #fffdfb;
+  --success: #0d7350;
+  --success-foreground: #ffffff;
+  --warning: #9a5600;
+  --warning-foreground: #ffffff;
 
-  --border: #e7e1dc;
-  --input: #ded7d1;
-  --ring: #7a2e55;
+  --border: #e9e6eb;
+  --input: #dfdbe2;
+  --ring: #8b3a6c;
 
-  /* ---- Area accents -----------------------------------------------------
-     Each is a pair: a text/icon colour that passes AA on both the page and
-     on its own tint, and the tint itself for header washes. */
+  /* Area accents, kept for the few places that use them, now as quiet tints. */
   --area-opportunity: #8a5300;
-  --area-opportunity-tint: #fdf4e7;
-  --area-career: #7e2a66;
-  --area-career-tint: #faedf6;
+  --area-opportunity-tint: #fbf6ee;
+  --area-career: #6d2352;
+  --area-career-tint: #f8f1f5;
   --area-pathway: #0f6157;
-  --area-pathway-tint: #e9f5f2;
-  --area-application: #9e2a4f;
-  --area-application-tint: #fceef1;
+  --area-pathway-tint: #eef6f4;
+  --area-application: #8f2a4a;
+  --area-application-tint: #f9f0f3;
   --area-discover: #3a3a9e;
-  --area-discover-tint: #eeeefb;
+  --area-discover-tint: #f1f1fa;
   --area-dream: #5b3aa6;
-  --area-dream-tint: #f2eefb;
+  --area-dream-tint: #f4f1fa;
 
-  --chart-1: #7a2e55;
+  --chart-1: #6d2352;
   --chart-2: #8a5300;
   --chart-3: #0f6157;
   --chart-4: #3a3a9e;
-  --chart-5: #9e2a4f;
+  --chart-5: #8f2a4a;
 
-  --sidebar: #fbf8f6;
-  --sidebar-foreground: #2b2725;
-  --sidebar-primary: #7a2e55;
-  --sidebar-primary-foreground: #fffdfb;
-  --sidebar-accent: #f4eef1;
-  --sidebar-accent-foreground: #5f2342;
-  --sidebar-border: #ebe5e0;
-  --sidebar-ring: #7a2e55;
+  --sidebar: #f7f6f8;
+  --sidebar-foreground: #2a262d;
+  --sidebar-primary: #6d2352;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ecebee;
+  --sidebar-accent-foreground: #121014;
+  --sidebar-border: #e9e6eb;
+  --sidebar-ring: #8b3a6c;
+
+  /* The brand glow used on dark stages (landing hero, upgrade). */
+  --glow: 109 35 82;
 }
 
 .dark {
-  --background: #161413;
-  --foreground: #f2eeec;
+  --background: #0b0a0c;
+  --foreground: #ecebee;
 
-  --card: #1f1c1b;
-  --card-foreground: #f2eeec;
+  --card: #121114;
+  --card-foreground: #ecebee;
 
-  --popover: #1f1c1b;
-  --popover-foreground: #f2eeec;
+  --popover: #161418;
+  --popover-foreground: #ecebee;
 
-  /* The accents lighten rather than saturate in the dark theme, so they stay
-     recognisably the same colours instead of turning neon. */
-  --primary: #e39ac0;
-  --primary-foreground: #2b0f1e;
+  /* In the dark the plum lightens so it reads as text too; buttons carry
+     near-black type on it, which keeps both pairs above AA. */
+  --primary: #cf6fa6;
+  --primary-foreground: #1a0712;
+  --primary-solid: #a3407b;
+  --primary-solid-foreground: #ffffff;
 
-  --secondary: #2a2624;
-  --secondary-foreground: #f2eeec;
+  --secondary: #1b191e;
+  --secondary-foreground: #ecebee;
 
-  --muted: #2a2624;
-  --muted-foreground: #a89f99;
+  --muted: #1b191e;
+  --muted-foreground: #918c96;
 
-  --accent: #33202b;
-  --accent-foreground: #f0c2d8;
+  --accent: #211b21;
+  --accent-foreground: #f1d4e5;
 
-  --destructive: #f19188;
+  --destructive: #f0857a;
   --destructive-foreground: #2b0b08;
 
-  --success: #6fc9a9;
+  --success: #5fc79f;
   --success-foreground: #06251b;
-  --warning: #e0a94f;
+  --warning: #e3ab52;
   --warning-foreground: #2a1a02;
 
-  --border: #37312e;
-  --input: #3d3733;
-  --ring: #e39ac0;
+  --border: #242127;
+  --input: #2e2a31;
+  --ring: #cf6fa6;
 
   --area-opportunity: #e6b263;
-  --area-opportunity-tint: #2d2415;
-  --area-career: #e39ac0;
-  --area-career-tint: #2f1b28;
+  --area-opportunity-tint: #1c1712;
+  --area-career: #e09cc4;
+  --area-career-tint: #1f161c;
   --area-pathway: #6fc9b9;
-  --area-pathway-tint: #142a27;
-  --area-application: #ef93ad;
-  --area-application-tint: #2f1a20;
-  --area-discover: #9a9aec;
-  --area-discover-tint: #1f1f33;
-  --area-dream: #b49ae8;
-  --area-dream-tint: #241d33;
+  --area-pathway-tint: #121c1a;
+  --area-application: #ec9ab2;
+  --area-application-tint: #1f1619;
+  --area-discover: #a3a3ee;
+  --area-discover-tint: #16162a;
+  --area-dream: #b9a1ea;
+  --area-dream-tint: #1a1626;
 
-  --chart-1: #e39ac0;
+  --chart-1: #e09cc4;
   --chart-2: #e6b263;
   --chart-3: #6fc9b9;
-  --chart-4: #9a9aec;
-  --chart-5: #ef93ad;
+  --chart-4: #a3a3ee;
+  --chart-5: #ec9ab2;
 
-  --sidebar: #1b1817;
-  --sidebar-foreground: #ebe6e3;
-  --sidebar-primary: #e39ac0;
-  --sidebar-primary-foreground: #2b0f1e;
-  --sidebar-accent: #2d2528;
-  --sidebar-accent-foreground: #f6eef2;
-  --sidebar-border: #302a28;
-  --sidebar-ring: #e39ac0;
+  --sidebar: #0e0d10;
+  --sidebar-foreground: #d9d6dc;
+  --sidebar-primary: #cf6fa6;
+  --sidebar-primary-foreground: #1a0712;
+  --sidebar-accent: #1b191e;
+  --sidebar-accent-foreground: #ecebee;
+  --sidebar-border: #1f1d22;
+  --sidebar-ring: #cf6fa6;
+
+  --glow: 176 72 135;
 }
 
 /* ---------- Midnight: deep indigo-purple dark theme ---------- */
@@ -463,6 +464,8 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-solid: var(--primary-solid);
+  --color-primary-solid-foreground: var(--primary-solid-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -508,8 +511,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Self-hosted, so no page ever calls out to Google for a typeface. */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Hairline-first surfaces: shadows are barely there, borders do the work. */
+  --shadow-xs: 0 1px 1px rgb(16 12 20 / 0.03);
+  --shadow-sm: 0 1px 2px rgb(16 12 20 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(16 12 20 / 0.08), 0 1px 2px rgb(16 12 20 / 0.04);
+  --shadow-lg: 0 12px 32px -8px rgb(16 12 20 / 0.16), 0 2px 6px rgb(16 12 20 / 0.05);
 }
 
 @layer base {
@@ -525,6 +534,19 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "liga", "calt";
+  }
+
+  /* Display type is set tight, the way Geist is meant to be used. */
+  h1, h2, h3 {
+    letter-spacing: -0.022em;
+  }
+  h1 {
+    letter-spacing: -0.03em;
+  }
+
+  ::selection {
+    background: rgb(var(--glow) / 0.22);
   }
 
   /* Any figure that gets compared to another figure. Without this, 79 and
@@ -544,6 +566,26 @@
   .area-wash {
     background: var(--area-tint, var(--muted));
     border-bottom: 1px solid var(--border);
+  }
+
+  /**
+   * The one highlighted panel on a page (the "do this next" block). A plain
+   * card with a faint brand glow in one corner, instead of a tinted wash,
+   * so it reads as important without shouting.
+   */
+  .feature-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background-color: var(--card);
+    background-image: radial-gradient(
+      120% 140% at 0% 0%,
+      rgb(var(--glow) / 0.075),
+      transparent 55%
+    );
+    box-shadow: var(--shadow-xs);
   }
 
   /** A small uppercase label. Named to avoid Tailwind's own `overline`. */

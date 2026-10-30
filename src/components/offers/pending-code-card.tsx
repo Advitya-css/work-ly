@@ -20,7 +20,7 @@ export async function PendingCodeCard() {
   }
   if (!code) return null;
   return (
-    <div className="mb-4 flex flex-col gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mb-4 flex flex-col gap-3 feature-panel p-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="flex items-start gap-2 text-sm text-foreground">
         <KeyRound className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
         <span>

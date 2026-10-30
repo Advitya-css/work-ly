@@ -73,13 +73,13 @@ export function SidebarNav({
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   tourClassName,
-                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-all active:scale-[0.98]",
+                  "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13.5px] transition-colors duration-100",
                   isActive
                     ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
                 )}
               >
-                <Icon className="size-[18px] shrink-0" />
+                <Icon className={cn("size-4 shrink-0", isActive ? "text-primary" : "opacity-80")} />
                 {item.label}
               </Link>
             );

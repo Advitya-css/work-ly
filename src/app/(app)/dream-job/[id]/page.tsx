@@ -174,7 +174,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
       </header>
 
       {/* Readiness: where you are, where the plan takes you, one button. */}
-      <section className="grid gap-6 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.08] via-card to-card p-6 shadow-sm sm:p-8 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <section className="grid gap-6 feature-panel p-6 sm:p-8 md:grid-cols-[auto_1fr_auto] md:items-center">
         <ScoreRing value={reliable ? analysis.readinessScore : null} />
         <div className="flex min-w-0 flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">

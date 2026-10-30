@@ -48,7 +48,7 @@ export function GraderImportCard({ className, hasProfile = false }: { className?
   return (
     <section
       aria-labelledby="grader-import-title"
-      className={cn("w-full rounded-xl border border-primary/30 bg-primary/5 p-5 text-left", className)}
+      className={cn("w-full feature-panel p-5 text-left", className)}
     >
       <h2 id="grader-import-title" className="font-semibold text-foreground">
         Pick up where you left off

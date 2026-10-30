@@ -32,7 +32,7 @@ export function CareerReadinessHeader({
   const c = 2 * Math.PI * r;
 
   return (
-    <section className="flex flex-col gap-5 rounded-2xl border border-border bg-gradient-to-br from-primary/[0.07] via-card to-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <section className="flex flex-col gap-5 feature-panel p-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-4">
         <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/15 text-lg font-semibold text-primary">
           {initials}

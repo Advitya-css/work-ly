@@ -42,14 +42,14 @@ export function FollowUpTemplateCard({ application }: { application: Application
   };
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-primary">
-          <Mail className="size-5" />
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="size-4 text-primary" />
           Time to follow up
         </CardTitle>
         <CardDescription>
-          It's been over 7 days since your last update for {application.roleTitle}. Send a polite nudge to stay on their radar.
+          More than a week since your last update on {application.roleTitle}. A short, polite note puts your name back in front of them.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

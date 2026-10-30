@@ -75,7 +75,7 @@ export default async function InsightsPage() {
       <SectionTabs section="career" />
 
       {!unlocked && (
-        <section className="flex flex-col gap-3 rounded-xl border border-primary/25 bg-gradient-to-br from-primary/[0.07] via-card to-card p-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="flex flex-col gap-3 feature-panel p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 gap-3">
             <CalendarCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
             <div className="flex flex-col gap-1">

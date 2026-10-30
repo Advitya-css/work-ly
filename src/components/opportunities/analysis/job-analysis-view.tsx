@@ -45,9 +45,11 @@ export interface JobAnalysisViewProps {
   /** The tools / upgrade panel, placed right under the verdict. */
   nextStep?: ReactNode;
   backLink?: ReactNode;
+  /** Offered when the profile changed after this check. */
+  recheck?: ReactNode;
 }
 
-export function JobAnalysisView({ job, analysis, priority, actions, statusBadge, nextStep, backLink }: JobAnalysisViewProps) {
+export function JobAnalysisView({ job, analysis, priority, actions, statusBadge, nextStep, backLink, recheck }: JobAnalysisViewProps) {
   const fitBreakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const coverage = coverageOf(fitBreakdown);
   const reliable = coverage >= MIN_COVERAGE_FOR_SCORE;
@@ -118,6 +120,7 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
             <>
               <p className="text-xl font-semibold tracking-tight text-balance text-foreground">{VERDICT_HEADLINE[analysis.recommendation]}</p>
               <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{analysis.recommendationReasoning}</p>
+              {recheck}
             </>
           ) : (
             <p className="max-w-prose text-sm leading-relaxed text-foreground/90">
@@ -126,6 +129,7 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
               more to your profile, or paste the full posting.
             </p>
           )}
+          {!reliable && recheck}
         </div>
         <dl className="grid grid-cols-3 gap-4 border-t border-border pt-4 text-center md:w-72 md:grid-cols-1 md:gap-3 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-left">
           {must.length > 0 && (

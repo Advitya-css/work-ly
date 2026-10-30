@@ -2,7 +2,7 @@
 
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState } from "react";
-import { MessageSquare, Loader2, CheckCircle2 } from "lucide-react";
+import { MessageSquare, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { submitFeedbackAction } from "@/lib/feedback/actions";
 import { usePathname } from "next/navigation";
 
-export function FeedbackButton() {
+export function FeedbackButton({ variant = "floating" }: { variant?: "floating" | "sidebar" }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -49,22 +49,32 @@ export function FeedbackButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Send feedback"
-          title="Send feedback"
-          // Quiet on purpose: one loud floating button (Ask Work-ly) is enough.
-          className="fixed bottom-5 left-4 z-50 size-10 rounded-full bg-card text-muted-foreground shadow-md hover:text-foreground md:left-[264px]"
-        >
-          <MessageSquare className="size-5" />
-        </Button>
+        {variant === "sidebar" ? (
+          <button
+            type="button"
+            className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13.5px] text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+          >
+            <MessageSquare className="size-4 shrink-0 opacity-80" />
+            Send feedback
+          </button>
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Send feedback"
+            title="Send feedback"
+            // Phones only: on a desktop it lives in the sidebar.
+            className="fixed bottom-5 left-4 z-50 size-10 rounded-full bg-card text-muted-foreground shadow-md hover:text-foreground md:hidden"
+          >
+            <MessageSquare className="size-5" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Beta Feedback</DialogTitle>
+          <DialogTitle>Send feedback</DialogTitle>
           <DialogDescription>
-            Help us improve Work-ly. Found a bug or have a suggestion? Let us know.
+            Found a bug or have an idea? It goes straight to the founder.
           </DialogDescription>
         </DialogHeader>
         {success ? (

@@ -79,7 +79,7 @@ export function SavedResumeLocked({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white to-transparent" />
       </div>
 
-      <aside className="flex w-full flex-col gap-3 rounded-xl border border-primary/30 bg-primary/5 p-5 lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
+      <aside className="flex w-full flex-col gap-3 feature-panel p-5 lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
         <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Lock className="size-4 text-primary" aria-hidden />
           Your resume for {jobLabel} is saved

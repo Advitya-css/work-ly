@@ -183,7 +183,7 @@ export function UpgradeModal({
               onClick={() => setSelectedPlan("quarterly")}
               className={`relative flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${selectedPlan === "quarterly" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}
             >
-              <div className="absolute -top-2.5 left-3 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <div className="absolute -top-2.5 left-3 bg-primary-solid text-primary-solid-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                 <Star className="size-3 fill-current" /> {RECOMMENDED_BADGE}
               </div>
               <div className="flex flex-col mt-1">

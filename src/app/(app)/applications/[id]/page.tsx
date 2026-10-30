@@ -33,7 +33,7 @@ import { buildPreviewData } from "@/lib/guidance/preview-data";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getCurrentUser } from "@/lib/auth";
 import { getApplicationWithJobById } from "@/lib/applications/get-with-job";
-import { formatSalaryRange } from "@/lib/format";
+import { formatSalaryRange, formatDay } from "@/lib/format";
 import { APPLICATION_OUTCOME_LABEL } from "@/lib/applications/labels";
 
 export const metadata: Metadata = { title: "Application" };
@@ -49,7 +49,7 @@ function Milestone({ label, at }: { label: string; at: Date | null }) {
       <span className={at ? "text-foreground" : "text-muted-foreground"}>{label}</span>
       {at && (
         <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-          {new Date(at).toLocaleDateString()}
+          {formatDay(at)}
         </span>
       )}
     </div>
@@ -246,7 +246,7 @@ export default async function ApplicationDetailPage({
               </div>
               {application.closedAt && (
                 <p className="text-xs text-muted-foreground">
-                  Closed {new Date(application.closedAt).toLocaleDateString()}
+                  Closed {formatDay(application.closedAt)}
                 </p>
               )}
               {offeredSalary && (

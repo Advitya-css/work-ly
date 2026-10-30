@@ -31,8 +31,8 @@ export function TechnicalChallengeCard({
         </CardTitle>
         <CardDescription>
           {isTechnical 
-            ? "Generate a realistic, domain-specific coding challenge based on this company's exact tech stack. Get an AI code review on your solution."
-            : "Generate a realistic on-the-job scenario based on this exact role. Practice how you would handle it and get graded by the AI."}
+            ? "A realistic coding task built on this company's stack. Solve it and get a code review with what to fix."
+            : "A realistic on-the-job scenario for this role. Work through it and get a grade with what to fix."}
         </CardDescription>
       </CardHeader>
       <CardContent>

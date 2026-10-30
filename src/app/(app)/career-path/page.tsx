@@ -58,7 +58,7 @@ export default async function CareerPathPage() {
         <PageHeader title="Action plan" description="A week-by-week plan from where you are to the role you want." />
 
         <SectionTabs section="career" />
-        <section className="flex flex-col items-start gap-5 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.08] via-card to-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <section className="flex flex-col items-start gap-5 feature-panel p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div className="flex max-w-xl flex-col gap-2">
             <h2 className="text-2xl font-semibold tracking-tight text-balance text-foreground">Build your action plan</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">

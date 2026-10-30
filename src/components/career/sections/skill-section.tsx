@@ -66,14 +66,14 @@ export function SkillSection({ skills }: { skills: Skill[] }) {
                     .map((skill) => (
                       <li
                         key={skill.id}
-                        className="group inline-flex items-center gap-1 rounded-full border border-border bg-secondary/40 py-1 pl-3 pr-1 text-sm text-foreground"
+                        className="group inline-flex items-center gap-0.5 rounded-md border border-border bg-card py-1 pl-2.5 pr-2.5 text-[13px] text-foreground hover:pr-0.5 focus-within:pr-0.5 [@media(hover:none)]:pr-0.5"
                       >
                         <span>{skill.name}</span>
                         {skill.proficiency && (
                           <span className="text-xs text-muted-foreground">· {PROFICIENCY_LABEL[skill.proficiency]}</span>
                         )}
                         <SourceBadge source={skill.source} className="ml-1" />
-                        <span className="flex items-center opacity-60 transition-opacity group-hover:opacity-100 [&_button]:size-7">
+                        <span className="flex w-0 items-center overflow-hidden opacity-0 transition-all group-hover:w-auto group-hover:opacity-100 group-focus-within:w-auto group-focus-within:opacity-100 [@media(hover:none)]:w-auto [@media(hover:none)]:opacity-100 [&_button]:size-6">
                           <SkillDialog skill={skill} />
                           <DeleteSkillButton id={skill.id} label={skill.name} />
                         </span>

@@ -130,8 +130,8 @@ export function ApplicationNextStep({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.08] via-card to-card shadow-sm">
-      <ol className="flex items-center gap-2 overflow-x-auto border-b border-primary/15 px-5 py-3 text-xs sm:px-6" aria-label="Stages">
+    <section className="overflow-hidden feature-panel">
+      <ol className="flex items-center gap-2 overflow-x-auto border-b border-border px-5 py-3 text-xs sm:px-6" aria-label="Stages">
         {STAGES.map((stage, i) => {
           const isCurrent = i === current;
           return (
@@ -141,7 +141,7 @@ export function ApplicationNextStep({
                 aria-current={isCurrent ? "step" : undefined}
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium",
-                  isCurrent ? "bg-primary text-primary-foreground" : done[stage.key] ? "text-foreground" : "text-muted-foreground",
+                  isCurrent ? "bg-primary-solid text-primary-solid-foreground" : done[stage.key] ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 {done[stage.key] && !isCurrent && <Check className="size-3 text-success" aria-hidden />}

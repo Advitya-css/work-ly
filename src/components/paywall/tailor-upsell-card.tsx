@@ -24,7 +24,7 @@ export function TailorUpsellCard({ preview, resumeHref }: { preview?: PreviewDat
   return (
     <section
       aria-labelledby="tailor-upsell-title"
-      className="flex flex-col gap-4 rounded-xl border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+      className="flex flex-col gap-4 feature-panel p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
     >
       <div className="flex min-w-0 items-start gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">

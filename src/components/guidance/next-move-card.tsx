@@ -19,8 +19,7 @@ export function NextMoveCard({ move, isPro }: { move: NextMove; isPro: boolean }
     <section
       aria-labelledby="next-move-title"
       className={cn(
-        "relative overflow-hidden rounded-xl border border-primary/25 bg-card text-card-foreground shadow-sm",
-        "bg-gradient-to-br from-primary/[0.07] via-card to-card",
+        "feature-panel text-card-foreground",
       )}
     >
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
