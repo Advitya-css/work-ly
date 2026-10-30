@@ -7,8 +7,8 @@ import { RefreshCw } from "lucide-react";
 import { recheckOpportunityFitAction } from "@/lib/opportunities/actions";
 
 /**
- * Shown on a job checked before the user last edited their profile: one
- * click re-reads the job against what's on the profile now.
+ * Shown on a job checked before the user last edited their profile, or
+ * before the matching improved: one click re-reads it against the profile.
  */
 export function RecheckFit({ opportunityId }: { opportunityId: string }) {
   const router = useRouter();
@@ -17,7 +17,7 @@ export function RecheckFit({ opportunityId }: { opportunityId: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
-      <span>You&apos;ve updated your profile since this check.</span>
+      <span>Your profile or Work-ly&apos;s matching has changed since this check.</span>
       <button
         type="button"
         disabled={pending}
@@ -32,7 +32,7 @@ export function RecheckFit({ opportunityId }: { opportunityId: string }) {
         className="inline-flex items-center gap-1 rounded-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-60"
       >
         <RefreshCw className={`size-3.5 ${pending ? "animate-spin" : ""}`} aria-hidden />
-        {pending ? "Re-checking…" : "Re-check against it"}
+        {pending ? "Re-checking…" : "Re-check now"}
       </button>
       {error && (
         <span role="alert" className="text-destructive">

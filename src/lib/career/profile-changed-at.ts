@@ -23,3 +23,17 @@ export async function profileChangedAt(userId: string): Promise<Date | null> {
     return null;
   }
 }
+
+/**
+ * When the skill matching last got smarter (word forms, every skill named).
+ * A check from before then can say "no matching skill" for a skill that is
+ * on the profile, so it's offered a re-check too.
+ */
+export const MATCHING_IMPROVED_AT = new Date("2026-10-30T00:00:00Z");
+
+/** True when a fit check is older than the profile or the matching it used. */
+export function checkIsOutdated(checkedAt: Date | string, changedAt: Date | null): boolean {
+  const checked = new Date(checkedAt).getTime();
+  if (checked < MATCHING_IMPROVED_AT.getTime()) return true;
+  return Boolean(changedAt && changedAt.getTime() > checked + 1000);
+}

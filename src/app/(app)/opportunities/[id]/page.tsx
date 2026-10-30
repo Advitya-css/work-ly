@@ -18,7 +18,7 @@ import { OPPORTUNITY_STATUS_LABEL, OPPORTUNITY_STATUS_VARIANT } from "@/lib/jobs
 import { savedAtWithin, savedForJobWithin } from "@/lib/saved-outputs";
 import { previewOf } from "@/lib/saved-work-core";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
-import { profileChangedAt } from "@/lib/career/profile-changed-at";
+import { checkIsOutdated, profileChangedAt } from "@/lib/career/profile-changed-at";
 import { RecheckFit } from "@/components/opportunities/analysis/recheck-fit";
 
 export const metadata: Metadata = { title: "Opportunity" };
@@ -59,8 +59,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
     user.isPro ? getCareerProfileByUserId(user.id) : Promise.resolve(null),
     profileChangedAt(user.id),
   ]);
-  // Checked before the latest profile edit: offer to read it again.
-  const outdated = Boolean(changedAt && changedAt.getTime() > new Date(analysis.updatedAt).getTime() + 1000);
+  // Checked before the latest profile edit (or the smarter matching): offer to read it again.
+  const outdated = checkIsOutdated(analysis.updatedAt, changedAt);
   // Free accounts that built things during the trial see them, locked.
   const savedFree = user.isPro ? {} : await savedForJobWithin(user.id, ["resume", "cover", "note", "interview"], opportunity.id);
   const savedPreviews = user.isPro
