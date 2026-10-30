@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
-import { PageHeader } from "@/components/shared/page-header";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { buildPreviewData } from "@/lib/guidance/preview-data";
@@ -12,10 +10,10 @@ import { displayJobTitle } from "@/lib/format";
 import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { SavedResumeLocked } from "@/components/resume/saved-resume-locked";
 import { getCurrentUser } from "@/lib/auth";
-import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
-import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getSavedOutput } from "@/lib/saved-outputs";
 import type { TailoredResume } from "@/lib/resume/tailored-resume-core";
+import { loadKit, profilePlainText } from "@/lib/kit/kit-data";
+import { postingRequirements } from "@/lib/resume/match-score";
 
 export const metadata: Metadata = { title: "Tailored Resume" };
 // Building the resume is one model call; give it room.
@@ -34,30 +32,16 @@ export default async function TailoredResumePage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const opportunity = await getOpportunityWithJobById(user.id, id);
-  if (!opportunity || opportunity.userId !== user.id) notFound();
-
-  const job = opportunity.job;
-  const back = (
-    <Button asChild variant="ghost" size="sm" className="w-fit text-muted-foreground print:hidden">
-      <Link href={`/opportunities/${opportunity.id}`}>
-        <ArrowLeft />
-        Back to opportunity
-      </Link>
-    </Button>
-  );
+  const kit = await loadKit(user.id, id);
+  // loadKit already scopes to this user; checked again here so it reads at a glance.
+  if (!kit || kit.opportunity.userId !== user.id) notFound();
+  const { opportunity, job, profile: full } = kit;
 
   if (!user.isPro) {
-    const [full, saved] = await Promise.all([
-      getFullCareerProfile(user.id),
-      getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id),
-    ]);
-    const jobName = `${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}`;
+    const saved = await getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id);
     if (saved) {
       return (
         <div className="flex flex-col gap-6">
-          {back}
-          <PageHeader title="Tailored resume" description={`For ${jobName}. Built only from facts on your profile.`} />
           <SavedResumeLocked
             resume={saved.data}
             name={user.name ?? ""}
@@ -78,11 +62,6 @@ export default async function TailoredResumePage({
     });
     return (
       <div className="flex flex-col gap-6">
-        {back}
-        <PageHeader
-          title="Resume tailored to this job"
-          description={`For ${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}. An apply-ready resume rewritten only from facts on your profile, in about a minute.`}
-        />
         <ProPreview
           intro={`Work-ly would reorder and rewrite ${
             preview.roleCount > 0 ? `your ${preview.roleCount} role${preview.roleCount === 1 ? "" : "s"}` : "your experience"
@@ -109,21 +88,22 @@ export default async function TailoredResumePage({
     );
   }
 
-  const [profile, saved] = await Promise.all([
-    getFullCareerProfile(user.id),
-    getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id),
-  ]);
+  const profile = full;
+  // Read directly, not through the kit's time-boxed lookup: a slow storage
+  // call must never make a saved resume look unbuilt.
+  const saved = await getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id);
+  const { required, preferred } = postingRequirements(job);
 
   return (
     <div className="flex flex-col gap-6">
-      {back}
-      <div className="print:hidden">
-        <PageHeader
-          title="Tailored resume"
-          description={`For ${job.title ? displayJobTitle(job.title) : "this role"}${job.company ? ` at ${job.company}` : ""}. Built only from facts on your profile.`}
-        />
-      </div>
       <ResumeBuilder
+        posting={{
+          required,
+          preferred,
+          profileText: profilePlainText(profile),
+          profileSummary: profile.profile?.summary ?? null,
+          profileSkills: profile.skills.map((s) => s.name),
+        }}
         opportunityId={opportunity.id}
         candidate={{
           name: user.name ?? "",

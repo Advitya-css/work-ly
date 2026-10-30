@@ -588,6 +588,26 @@
     box-shadow: var(--shadow-xs);
   }
 
+  /**
+   * A printed page on screen: letters and notes in the application kit sit
+   * on real paper in both themes, so what you see is what they'll read.
+   */
+  .paper-sheet {
+    background: #fff;
+    color: #17141a;
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 1px rgb(16 12 20 / 0.06),
+      0 1px 2px rgb(16 12 20 / 0.06),
+      0 12px 32px -12px rgb(16 12 20 / 0.18);
+    color-scheme: light;
+  }
+  .dark .paper-sheet {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.06),
+      0 24px 60px -20px rgb(0 0 0 / 0.7);
+  }
+
   /** A small uppercase label. Named to avoid Tailwind's own `overline`. */
   .eyebrow {
     font-size: 0.6875rem;

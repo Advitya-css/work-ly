@@ -80,5 +80,5 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
     `\n**A stronger version:**\n${result.betterAnswer}`,
     unverified.length ? `\n_Check ${unverified.join(", ")} before using this. It isn't on your profile or in your answer._` : "",
   ].join("\n");
-  return NextResponse.json({ text, score: result.score });
+  return NextResponse.json({ text, score: result.score, result: { ...result, unverified } });
 }

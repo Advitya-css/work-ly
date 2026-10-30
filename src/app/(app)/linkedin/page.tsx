@@ -49,6 +49,7 @@ export default async function LinkedInPage() {
           initialEdited={Boolean(saved?.edited)}
           currentHeadline={currentHeadline}
           targetRole={targetRole}
+          person={{ name: user.name ?? "", location: profile.profile?.location ?? null }}
         />
       ) : saved ? (
         <div className="flex max-w-3xl flex-col gap-4">

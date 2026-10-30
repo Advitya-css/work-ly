@@ -49,14 +49,17 @@ export async function setOpportunityStatusAction(
   return { applicationId };
 }
 
-import { generateTailoredApplication } from "@/lib/ai/providers/tailor-ai";
+import { generateTailoredApplication, type LetterLength, type LetterTone } from "@/lib/ai/providers/tailor-ai";
 import { withinProAiBudget } from "@/lib/ai/career-context";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
 import { recordUsage } from "@/lib/usage";
 import { saveOutput } from "@/lib/saved-outputs";
 
-export async function generateTailoredApplicationAction(opportunityId: string) {
+export async function generateTailoredApplicationAction(
+  opportunityId: string,
+  options: { tone?: LetterTone; length?: LetterLength } = {},
+) {
   const user = await getCurrentUser();
   if (!user) return { error: "Unauthorized" };
   if (!user.isPro) return { error: "Pro required to tailor applications." };
@@ -76,7 +79,11 @@ export async function generateTailoredApplicationAction(opportunityId: string) {
     if (!profile.profile) return { error: "Please complete your career profile first." };
     await recordUsage(user.id, "tailor");
 
-    const result = await generateTailoredApplication(profile, job, { name: user.name });
+    const result = await generateTailoredApplication(profile, job, {
+      name: user.name,
+      tone: options.tone,
+      length: options.length,
+    });
     const savedAt = await saveOutput(user.id, "cover", opportunityId, result);
     return { data: result, savedAt };
   } catch (err) {

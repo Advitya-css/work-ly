@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, Check, FileText, Mail, MessagesSquare, PenLine } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { TailorApplicationButton } from "@/components/opportunities/tailor-application-button";
@@ -8,6 +8,72 @@ import { InterviewIntelButton } from "@/components/opportunities/interview-intel
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { ProPreview } from "@/components/guidance/pro-preview";
 import type { PreviewData } from "@/lib/guidance/preview-data";
+import { KIT_ITEMS, KIT_LABEL, KIT_PATH, type KitItem } from "@/lib/kit/kit-items";
+import { cn } from "@/lib/utils";
+
+const KIT_ICON: Record<KitItem, typeof FileText> = { resume: FileText, cover: PenLine, note: Mail, interview: MessagesSquare };
+const KIT_LINE: Record<KitItem, string> = {
+  resume: "Your lines, in this posting's language",
+  cover: "Their need first, then your proof",
+  note: "Email, LinkedIn request and follow-up",
+  interview: "Likely questions, answered from your history",
+};
+
+/** Pro: the four documents for this job, each one click away, marked written or not. */
+function KitSummary({ opportunityId, ready }: { opportunityId: string; ready: Partial<Record<KitItem, boolean>> }) {
+  const base = `/opportunities/${opportunityId}`;
+  const count = KIT_ITEMS.filter((k) => ready[k]).length;
+  return (
+    <section aria-labelledby="kit-title" className="feature-panel flex flex-col gap-4 p-5 sm:p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 id="kit-title" className="text-base font-semibold text-foreground">
+            {count === 4 ? "Your application kit is ready" : "Your application kit for this job"}
+          </h2>
+          <p className="max-w-prose text-sm text-muted-foreground">
+            {count === 0
+              ? "Resume, cover letter, a note to the hiring manager and interview prep, written from what's on your profile. Nothing invented."
+              : `${count} of 4 written. Open any of them to edit, download or practise.`}
+          </p>
+        </div>
+        <Button asChild size="lg" className="shrink-0 gap-2">
+          <Link href={ready.resume ? `${base}/resume` : `${base}/resume?build=1`}>
+            {count === 0 ? "Build my kit" : "Open my kit"}
+            <ArrowRight className="size-4" />
+          </Link>
+        </Button>
+      </div>
+      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {KIT_ITEMS.map((k) => {
+          const Icon = KIT_ICON[k];
+          return (
+            <li key={k}>
+              <Link
+                href={`${base}/${KIT_PATH[k]}`}
+                className="group flex h-full flex-col gap-2 rounded-lg border border-border bg-card px-3.5 py-3 transition-colors hover:border-foreground/15 hover:bg-muted/40"
+              >
+                <span className="flex items-center justify-between">
+                  <Icon className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" aria-hidden />
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 text-[11.5px] font-medium",
+                      ready[k] ? "text-success" : "text-muted-foreground",
+                    )}
+                  >
+                    {ready[k] && <Check className="size-3" strokeWidth={3} aria-hidden />}
+                    {ready[k] ? "Ready" : "Not written"}
+                  </span>
+                </span>
+                <span className="text-[13.5px] font-medium text-foreground">{KIT_LABEL[k]}</span>
+                <span className="text-[12px] leading-snug text-muted-foreground">{KIT_LINE[k]}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
 
 /**
  * THE NEXT STEP, right under the verdict: one primary action (a resume
@@ -23,6 +89,7 @@ export function JobNextStep({
   resumeReady = false,
   sender,
   saved,
+  kit,
 }: {
   opportunityId: string;
   isPro: boolean;
@@ -34,7 +101,11 @@ export function JobNextStep({
   sender?: { name: string; contact: string };
   /** Free accounts: first words of anything saved for this job during a trial. */
   saved?: { cover?: string | null; note?: string | null; interview?: string | null };
+  /** Pro: which kit documents are already written for this job. */
+  kit?: Partial<Record<KitItem, boolean>>;
 }) {
+  if (isPro) return <KitSummary opportunityId={opportunityId} ready={{ resume: resumeReady, ...kit }} />;
+
   const resumeHref = `/opportunities/${opportunityId}/resume`;
 
   const primary = !isPro && resumeReady ? (

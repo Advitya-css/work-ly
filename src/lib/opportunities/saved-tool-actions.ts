@@ -52,6 +52,7 @@ export async function saveToolEditsAction(
       ["email", 3000],
       ["subject", 200],
       ["connectionNote", 300],
+      ["followUp", 900],
     ] as const) {
       if (key in fields) next[key] = text(fields[key], max);
     }

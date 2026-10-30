@@ -58,9 +58,9 @@ export const PAID_PLANS: PaidPlan[] = [
     renews: true,
     term: "1 month, renewing until cancelled",
     features: [
-      "Tailored resumes (PDF + Word) & cover letters",
-      "Hiring-manager notes & likely interview questions",
-      "Mock interviews & practice tasks",
+      "A full application kit for every job: resume, cover letter, hiring-manager note, interview prep",
+      "Resume match score for each posting, requirement by requirement",
+      "Scored mock interviews & a LinkedIn makeover",
       "Unlimited job analyses & career plans",
     ],
   },

@@ -7,6 +7,10 @@ import {
   str,
   unsupportedNumbers,
 } from "@/lib/ai/career-context";
+import { quoteFound } from "@/lib/scoring/screen-core";
+import type { LetterLength, LetterTone } from "@/lib/ai/letter-options";
+
+export type { LetterLength, LetterTone } from "@/lib/ai/letter-options";
 import type { Application, Job } from "@/lib/db/types";
 import type { FullCareerProfile } from "@/lib/career/get-full-profile";
 
@@ -20,16 +24,33 @@ export interface TailoredApplication {
   bulletChanges?: { before: string; after: string }[];
   /** Numbers in the letter that don't appear anywhere in the candidate's profile - shown as "check before sending". */
   unverifiedNumbers?: string[];
+  /** The candidate's own lines the letter is built on, each found on the profile. */
+  proofs?: string[];
+  /** What it was written as, so a rewrite keeps the user's choice. */
+  tone?: LetterTone;
+  length?: LetterLength;
 }
 
+const TONE_RULE: Record<LetterTone, string> = {
+  direct: "TONE: direct and confident. Short sentences, active verbs, no hedging, no pleasantries.",
+  warm: "TONE: warm and human, as if writing to someone you'd like to work with. Still specific; never gushing.",
+  formal: "TONE: formal and courteous, complete sentences, no contractions, suited to a traditional employer.",
+};
+const LENGTH_RULE: Record<LetterLength, string> = {
+  short: "LENGTH: 3 short paragraphs, 110-150 words in total.",
+  standard: "LENGTH: 3 short paragraphs, 170-240 words in total.",
+};
+
 const COVER_SYSTEM = `You write ONE cover letter from this candidate to this employer, for a busy human hiring manager.
-- Plain text, 3 short paragraphs, 150-230 words in total. Open with "Dear Hiring Team," unless the JOB names the hiring manager.
+- Plain text. Open with "Dear Hiring Team," unless the JOB names the hiring manager. Follow the TONE and LENGTH given in the user message.
 - Paragraph 1: name what this team needs in the JOB's own terms (a product, problem or responsibility it actually mentions) and connect it to the candidate's real background in one or two sentences. Never open with "I am writing", "I am excited", "I was thrilled" or any line about applying.
 - Paragraph 2: the TWO strongest real proofs from the CANDIDATE section for this job's main requirements. Name the employer each happened at and keep every real number exactly. Never merge facts from different roles into one story.
 - Paragraph 3: one sentence on what they could take on first (from the JOB), then a plain request to talk.
 - End with "Best regards," and the candidate's name exactly as given in NAME on its own line.
 - Never use: passionate, results-driven, dynamic, fast-paced, synergy, leverage, thrilled, "perfect fit", "unique blend", "proven track record", "I believe".
 - If the candidate lacks something the job requires, leave it out. Never claim it, never apologise for it.
+- Write like a strong candidate who knows this work, not like a template: every sentence should be one only THIS candidate could send to THIS team.
+Also return "proofs": the 1-3 lines from the CANDIDATE section the letter is built on, each copied exactly.
 ${NO_FABRICATION_RULES}`;
 
 /**
@@ -41,28 +62,47 @@ ${NO_FABRICATION_RULES}`;
 export async function generateTailoredApplication(
   profile: FullCareerProfile,
   job: Job,
-  options: { name?: string | null } = {},
+  options: { name?: string | null; tone?: LetterTone; length?: LetterLength } = {},
 ): Promise<TailoredApplication> {
   const candidate = candidateBrief(profile);
   const name = options.name?.trim() || "[Your Name]";
+  const tone: LetterTone = options.tone && options.tone in TONE_RULE ? options.tone : "direct";
+  const length: LetterLength = options.length === "short" ? "short" : "standard";
   const result = await completeStructured({
     quality: "high",
     system: COVER_SYSTEM,
-    user: `NAME: ${name}\n\nJOB\n===\n${jobBrief(job, job.title ?? "this role", job.company)}\n\nCANDIDATE\n=========\n${candidate}`,
+    user: `NAME: ${name}\n${TONE_RULE[tone]}\n${LENGTH_RULE[length]}\n\nJOB\n===\n${jobBrief(job, job.title ?? "this role", job.company)}\n\nCANDIDATE\n=========\n${candidate}`,
     schema: {
       type: "object",
-      properties: { coverLetter: { type: "string" } },
-      required: ["coverLetter"],
+      properties: { coverLetter: { type: "string" }, proofs: { type: "array", items: { type: "string" } } },
+      required: ["coverLetter", "proofs"],
     },
     temperature: 0.4,
     validate: (raw) => {
-      const coverLetter = str((raw as Record<string, unknown>)?.coverLetter, 3000);
+      const r = raw as Record<string, unknown>;
+      const coverLetter = str(r?.coverLetter, 3000);
       // A "letter" of one line is a failed generation, not a draft.
-      return coverLetter && coverLetter.split(/\s+/).length >= 40 ? tidyLetter(coverLetter) : null;
+      if (!coverLetter || coverLetter.split(/\s+/).length < 40) return null;
+      // Only lines really on the profile are shown as "built on".
+      const proofs = Array.isArray(r?.proofs)
+        ? r.proofs
+            .map((p) => str(p, 400))
+            .filter((p): p is string => Boolean(p) && quoteFound(p as string, candidate))
+            .map((p) => p.replace(/^[\s•\-*]+/, ""))
+            .slice(0, 3)
+        : [];
+      return { letter: tidyLetter(coverLetter), proofs };
     },
   });
   if (!result) throw new Error("Failed to generate tailored application.");
-  return { coverLetter: result, resumeBullets: [], unverifiedNumbers: unsupportedNumbers(result, candidate) };
+  return {
+    coverLetter: result.letter,
+    resumeBullets: [],
+    unverifiedNumbers: unsupportedNumbers(result.letter, candidate),
+    proofs: result.proofs,
+    tone,
+    length,
+  };
 }
 
 /** Normalises spacing: one blank line between paragraphs, no trailing spaces. */

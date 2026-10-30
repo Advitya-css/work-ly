@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type ElementType } from "react";
-import { AlertTriangle, Check, Copy, Download, FileText, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, Check, CircleDashed, Copy, Download, FileText, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { AiProgress } from "@/components/shared/ai-progress";
+import { WritingState } from "@/components/kit/writing-state";
+import { MatchMeter } from "@/components/kit/match-meter";
+import { matchResume, untailoredText } from "@/lib/resume/match-score";
 import { generateTailoredResumeDocAction, saveTailoredResumeEditsAction } from "@/lib/resume/actions";
 import {
   RESUME_LAYOUTS,
@@ -28,6 +32,23 @@ interface Candidate {
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+/** What the live match is measured against. */
+export interface PostingContext {
+  required: string[];
+  preferred: string[];
+  profileText: string;
+  profileSummary: string | null;
+  profileSkills: string[];
+}
+
+const BUILD_STEPS = [
+  "Reading the job",
+  "Picking your most relevant experience",
+  "Rewriting each line in the job's language",
+  "Ordering your skills by what it asks for",
+  "Checking every fact against your profile",
+];
 type Path = (string | number)[];
 
 function ago(iso: string | null): string | null {
@@ -162,9 +183,11 @@ export function ResumeBuilder({
   initial = null,
   initialSavedAt = null,
   initialEdited = false,
+  posting = null,
 }: {
   opportunityId: string;
   candidate: Candidate;
+  posting?: PostingContext | null;
   jobLabel: string;
   /** Start building straight away (arriving from "Open my tailored resume"). */
   autoStart?: boolean;
@@ -172,6 +195,7 @@ export function ResumeBuilder({
   initialSavedAt?: string | null;
   initialEdited?: boolean;
 }) {
+  const router = useRouter();
   const [resume, setResume] = useState<TailoredResume | null>(initial);
   const [rev, setRev] = useState(0);
   const draft = useRef<TailoredResume | null>(initial ? structuredClone(initial) : null);
@@ -205,6 +229,8 @@ export function ResumeBuilder({
         setSaveState("idle");
         // The first look should show the work: every rewritten line with the original under it.
         setShowChanges(true);
+        // The kit header (match score, what's written) reads the saved copy.
+        router.refresh();
       }
     } catch {
       setError("Network problem. Check your connection and try again.");
@@ -379,33 +405,21 @@ export function ResumeBuilder({
   }
 
   if (!resume) {
+    if (loading) return <WritingState steps={BUILD_STEPS} stepSeconds={8} lines={18} />;
     return (
-      <section className="flex flex-col items-start gap-5 feature-panel p-6 sm:p-8">
+      <section className="feature-panel flex flex-col items-start gap-5 p-6 sm:p-8">
         <div className="flex max-w-xl flex-col gap-2">
           <h2 className="text-xl font-semibold tracking-tight text-foreground">A resume written for this job, from your real experience</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             Your most relevant lines first, in this posting&apos;s language, with every number kept. Nothing is added
-            that isn&apos;t on your profile, and you can edit any word before you download.
+            that isn&apos;t on your profile, you see every line that changed, and you can edit any word before you
+            download.
           </p>
         </div>
-        {loading ? (
-          <AiProgress
-            steps={[
-              "Reading the job",
-              "Picking your most relevant experience",
-              "Rewriting each line in the job's language",
-              "Ordering your skills by what it asks for",
-              "Checking every fact against your profile",
-            ]}
-            stepSeconds={8}
-            note="Usually 30-45 seconds. It's saved once it's built."
-          />
-        ) : (
-          <Button onClick={generate} size="lg" className="gap-2">
-            <FileText className="size-4" />
-            Build my resume
-          </Button>
-        )}
+        <Button onClick={generate} size="lg" className="gap-2">
+          <FileText className="size-4" />
+          Build my resume
+        </Button>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </section>
     );
@@ -417,6 +431,20 @@ export function ResumeBuilder({
   const dense = style.density === "compact";
   const gap = dense ? "mt-2.5" : "mt-4";
   const coverageTotal = resume.keywordsCovered.length + resume.keywordsMissing.length;
+  // Measured live from the page as it stands, edits included.
+  const current = draft.current ?? resume;
+  const fallbackHeader = { name: candidate.name, headline: candidate.headline, contact: "" };
+  const live = posting && posting.required.length + posting.preferred.length > 0
+    ? matchResume({ required: posting.required, preferred: posting.preferred, resumeText: resumeAsText(current, fallbackHeader), profileText: posting.profileText })
+    : null;
+  const liveBefore = live && posting
+    ? matchResume({
+        required: posting.required,
+        preferred: posting.preferred,
+        resumeText: untailoredText(current, { summary: posting.profileSummary, skills: posting.profileSkills }),
+        profileText: posting.profileText,
+      }).score
+    : null;
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -598,7 +626,7 @@ export function ResumeBuilder({
       </div>
 
       <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80 lg:shrink-0 print:hidden">
-        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
           <Button onClick={download} size="lg" className="gap-2">
             <Download className="size-4" />
             Download PDF
@@ -624,9 +652,9 @@ export function ResumeBuilder({
           </p>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="text-sm font-semibold text-foreground">Look</h3>
+            <h3 className="text-[13px] font-semibold text-foreground">Look</h3>
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 text-xs font-medium",
@@ -670,8 +698,8 @@ export function ResumeBuilder({
           )}
         </section>
 
-        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-foreground">What changed for this job</h3>
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
+          <h3 className="text-[13px] font-semibold text-foreground">What changed for this job</h3>
           <dl className="grid grid-cols-3 gap-2 text-center">
             {[
               { n: stats.rewritten, label: "lines rewritten" },
@@ -721,10 +749,38 @@ export function ResumeBuilder({
           </section>
         )}
 
-        {coverageTotal > 0 && (
-          <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        {live ? (
+          <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
+            <h3 className="text-[13px] font-semibold text-foreground">What the posting asks for</h3>
+            <MatchMeter score={live.score} before={liveBefore} mustShown={live.mustShown} mustTotal={live.mustTotal} size="sm" />
+            <ul className="flex flex-col divide-y divide-border border-t border-border">
+              {live.items.map((item) => (
+                <li key={item.text} className="flex gap-2.5 py-2 text-[12.5px] leading-snug">
+                  {item.state === "resume" ? (
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-success" aria-hidden />
+                  ) : item.state === "profile" ? (
+                    <CircleDashed className="mt-0.5 size-3.5 shrink-0 text-warning" aria-hidden />
+                  ) : (
+                    <span className="mt-[5px] size-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden />
+                  )}
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className={item.state === "missing" ? "text-muted-foreground" : "text-foreground"}>
+                      {item.text}
+                      {!item.required && <span className="text-muted-foreground"> · nice to have</span>}
+                    </span>
+                    {item.state === "profile" && (
+                      <span className="text-muted-foreground">On your profile, not in this resume yet. Say it in a line.</span>
+                    )}
+                    {item.state === "missing" && <span className="text-muted-foreground/80">Not on your profile, so left out.</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : coverageTotal > 0 ? (
+          <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-xs">
             <div className="flex items-baseline justify-between gap-3">
-              <h3 className="text-sm font-semibold text-foreground">The job&apos;s key terms</h3>
+              <h3 className="text-[13px] font-semibold text-foreground">The job&apos;s key terms</h3>
               <span className="text-xs tabular-nums text-muted-foreground">
                 {resume.keywordsCovered.length} of {coverageTotal} covered
               </span>
@@ -752,7 +808,7 @@ export function ResumeBuilder({
               </div>
             )}
           </section>
-        )}
+        ) : null}
 
         <div className="flex flex-col gap-2 px-1">
           {confirmRebuild ? (

@@ -15,7 +15,7 @@ import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getCurrentUser } from "@/lib/auth";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import { OPPORTUNITY_STATUS_LABEL, OPPORTUNITY_STATUS_VARIANT } from "@/lib/jobs/labels";
-import { savedAtWithin, savedForJobWithin } from "@/lib/saved-outputs";
+import { savedForJobWithin } from "@/lib/saved-outputs";
 import { previewOf } from "@/lib/saved-work-core";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { checkIsOutdated, profileChangedAt } from "@/lib/career/profile-changed-at";
@@ -54,8 +54,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       });
 
   // A resume already built for this job opens instantly; say so on the button.
-  const [resumeSavedAt, careerProfile, changedAt] = await Promise.all([
-    user.isPro ? savedAtWithin(user.id, "resume", opportunity.id) : Promise.resolve(null),
+  const [kitSaved, careerProfile, changedAt] = await Promise.all([
+    user.isPro ? savedForJobWithin(user.id, ["resume", "cover", "note", "interview"], opportunity.id) : Promise.resolve({}),
     user.isPro ? getCareerProfileByUserId(user.id) : Promise.resolve(null),
     profileChangedAt(user.id),
   ]);
@@ -103,7 +103,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <Badge variant={OPPORTUNITY_STATUS_VARIANT[opportunity.status]}>{OPPORTUNITY_STATUS_LABEL[opportunity.status]}</Badge>
         ) : undefined
       }
-      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean(resumeSavedAt) || Boolean(savedFree.resume)} sender={sender} saved={savedPreviews} />}
+      nextStep={<JobNextStep opportunityId={opportunity.id} isPro={user.isPro ?? false} preview={toolPreview} company={opportunity.job.company} resumeReady={Boolean((kitSaved as Record<string, unknown>).resume) || Boolean(savedFree.resume)} kit={Object.fromEntries(Object.keys(kitSaved).map((k) => [k, true]))} sender={sender} saved={savedPreviews} />}
     />
   );
 }
