@@ -44,7 +44,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   ]);
 
   return (
-    <TourProvider>
+    <TourProvider hasResume={Boolean(profile?.resumeUploadedAt || profile?.currentRole)}>
       {profile?.isSampleData && <SampleDataBanner />}
       <AppShell user={user} student={profile?.isStudent ?? false}>
         {onTrial && user.proUntil && (

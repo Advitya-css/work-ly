@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SendHorizonal } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { RobotTip } from "@/components/tour/robot-tip";
 import { IconApplication } from "@/components/icons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ApplicationsBoard } from "@/components/applications/applications-board";
@@ -43,6 +44,10 @@ export default async function ApplicationsPage() {
         />
       ) : (
         <>
+          <RobotTip id="applications" title="Everything you've applied to, by stage">
+            Move a card when something happens. The right help opens up as it moves: a follow-up after a week with no
+            reply, mock interviews at the interview stage, a counter-offer when there&apos;s an offer.
+          </RobotTip>
           <AnalyticsPanel summary={summary} insights={insights} />
           <ApplicationsBoard applications={applications} university={profile?.university ?? null} isFreelanceMode={profile?.isFreelanceMode ?? false} />
         </>

@@ -20,6 +20,7 @@ import { previewOf } from "@/lib/saved-work-core";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
 import { checkIsOutdated, profileChangedAt } from "@/lib/career/profile-changed-at";
 import { RecheckFit } from "@/components/opportunities/analysis/recheck-fit";
+import { RobotTip } from "@/components/tour/robot-tip";
 
 export const metadata: Metadata = { title: "Opportunity" };
 // Re-analysis and the AI tools on this page call the model.
@@ -77,6 +78,12 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       job={job}
       analysis={analysis}
       recheck={outdated ? <RecheckFit opportunityId={opportunity.id} /> : undefined}
+      tip={
+        <RobotTip id="job" title="This is your straight answer for this job">
+          The label says apply, stretch or skip. Under it, every requirement shows the line from your resume that proves
+          it, or what&apos;s missing. If it&apos;s worth applying, open the application kit and I&apos;ll write it.
+        </RobotTip>
+      }
       priority={{ score: opportunity.priorityScore, breakdown: opportunity.priorityBreakdown ?? null }}
       backLink={
         <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">

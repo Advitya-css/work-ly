@@ -11,6 +11,7 @@ import { KitTabs } from "@/components/kit/kit-tabs";
 import { KitBuildAll } from "@/components/kit/kit-build-all";
 import { KitLabel } from "@/components/kit/kit-parts";
 import { MatchMeter } from "@/components/kit/match-meter";
+import { RobotTip } from "@/components/tour/robot-tip";
 
 /**
  * THE APPLICATION KIT for one job: the resume, cover letter, note to the
@@ -83,6 +84,11 @@ export default async function KitLayout({ children, params }: { children: ReactN
           </div>
         </div>
       </header>
+
+      <RobotTip id="kit" title="Your application kit for this one job">
+        Four documents, one per tab. Everything comes from your profile, nothing is invented. Click any text to change
+        it; your edits save on their own. The match score shows how much of the posting your resume answers.
+      </RobotTip>
 
       <div className="print:hidden">
         <KitTabs

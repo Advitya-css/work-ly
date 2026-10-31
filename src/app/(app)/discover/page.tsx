@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Bookmark } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { RobotTip } from "@/components/tour/robot-tip";
 import { SectionTabs } from "@/components/shared/section-tabs";
 import { IconDiscover } from "@/components/icons";
 import { DiscoveryBoard, DiscoverySourcesCard } from "@/components/discovery/discovery-board";
@@ -133,6 +134,11 @@ export default async function DiscoverPage() {
       />
 
       <SectionTabs section="jobs" />
+
+      <RobotTip id="discover" title="Jobs I found for you">
+        Each one is scored against your profile, best fits first. &ldquo;Analyze &amp; track&rdquo; opens the full answer
+        for that job; &ldquo;Not for me&rdquo; hides it. Change the role I search for any time, just below.
+      </RobotTip>
 
       <div className="-mt-1 flex flex-col gap-1.5">
         {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}

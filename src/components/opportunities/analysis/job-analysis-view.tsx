@@ -47,9 +47,11 @@ export interface JobAnalysisViewProps {
   backLink?: ReactNode;
   /** Offered when the profile changed after this check. */
   recheck?: ReactNode;
+  /** A one-time note for someone opening their first job. */
+  tip?: ReactNode;
 }
 
-export function JobAnalysisView({ job, analysis, priority, actions, statusBadge, nextStep, backLink, recheck }: JobAnalysisViewProps) {
+export function JobAnalysisView({ job, analysis, priority, actions, statusBadge, nextStep, backLink, recheck, tip }: JobAnalysisViewProps) {
   const fitBreakdown = analysis.scoreBreakdown as ScoreBreakdown;
   const coverage = coverageOf(fitBreakdown);
   const reliable = coverage >= MIN_COVERAGE_FOR_SCORE;
@@ -105,6 +107,8 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
           )}
         </p>
       </header>
+
+      {tip}
 
       {/* Verdict */}
       <section aria-label="Verdict" className="grid gap-6 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6 md:grid-cols-[auto_1fr_auto] md:items-center">

@@ -688,6 +688,17 @@
     animation: shimmer 1.6s infinite;
   }
 
+  /* The robot's idle bob: small, slow, only when motion is welcome. */
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
   /* A score ring filling up from empty when a verdict lands. */
   @keyframes ring {
     from {

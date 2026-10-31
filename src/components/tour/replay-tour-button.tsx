@@ -1,26 +1,18 @@
 "use client";
 
+import Image from "next/image";
+
 import { useTour } from "@/components/tour/tour-provider";
 import { Button } from "@/components/ui/button";
 
-/**
- * The tour only runs at the `md` breakpoint and up (see tour-provider.tsx -
- * below that, the sidebar it points at isn't rendered). Hiding the trigger
- * itself on small screens means there's never a button here that quietly
- * does nothing when pressed.
- */
+/** Opens the four-card welcome again, on any screen size. */
 export function ReplayTourButton() {
   const { startTour } = useTour();
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={startTour}
-      className="hidden md:inline-flex"
-    >
-      Replay the tour
+    <Button type="button" variant="outline" size="sm" onClick={startTour} className="gap-2">
+      <Image src="/workly-bot-face.png" alt="" width={18} height={18} className="size-[18px] object-contain" />
+      Replay the welcome
     </Button>
   );
 }

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, ChevronDown, GraduationCap, Settings as SettingsIcon } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IconGuide, IconProfile, IconOpportunity, IconApplication, IconPathway } from "@/components/icons";
+import { IconGuide } from "@/components/icons";
 import { ReplayTourButton } from "@/components/tour/replay-tour-button";
+import { BUSINESS } from "@/lib/business";
 import { getCurrentUser } from "@/lib/auth";
 import { listApplicationsByUserId } from "@/lib/db/applications";
 import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
-import { APPLICATION_TOOL_IDS, TOOLS, applicationToolHref, type Tool, type ToolId } from "@/lib/guidance/tools";
+import { TOOLS, applicationToolHref, type Tool, type ToolId } from "@/lib/guidance/tools";
 import type { Application, ApplicationStatus } from "@/lib/db/types";
 
 export const metadata: Metadata = { title: "Guide" };
@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: "Guide" };
 const PLACE_LABEL: Record<Tool["place"], string> = {
   career: "My career",
   jobs: "Jobs",
-  opportunity: "A job's analysis page",
+  opportunity: "A job's application kit",
   application: "An application",
   insights: "Insights (under My career)",
 };
@@ -72,8 +72,10 @@ function named(app: Application): string {
  * screen. People open a guide with a question ("I've got an interview on
  * Friday - what now?"), not to read a tour of the menus, so each situation
  * names the tools for it and links straight to the right place - their own
- * interview, their own offer - when there is one. The screen-by-screen
- * reference is still here, folded away at the bottom.
+ * interview, their own offer - when there is one. Then the honest answers
+ * to the questions people actually ask, and a short map of where things
+ * live. (A button-by-button reference used to sit at the bottom; it had
+ * drifted from the app and is gone.)
  */
 export default async function GuidePage() {
   const user = await getCurrentUser();
@@ -103,7 +105,7 @@ export default async function GuidePage() {
     {
       key: "found",
       title: "I found a job I like",
-      body: "Check whether it's worth your time, then send an application written for it.",
+      body: "Get a straight answer on whether it's worth your time. If it is, open its application kit and have it written.",
       tools: ["analyze-job", "tailored-resume", "cover-letter", "hiring-manager"],
       cta: { label: "Check a job", href: "/analyze-job" },
     },
@@ -154,6 +156,51 @@ export default async function GuidePage() {
 
   const allTools = Object.values(TOOLS);
 
+  const LOOP = [
+    { title: "Add your resume", body: "Once. Everything Work-ly checks and writes comes from it." },
+    { title: "Check a job", body: "Paste one, or let Work-ly find some. You get apply, stretch or skip, with proof." },
+    { title: "Get it written", body: "For the jobs worth it: resume, cover letter, a note to the hiring manager, interview prep." },
+  ];
+
+  const FAQ: { q: string; a: string }[] = [
+    {
+      q: "Does Work-ly ever make things up?",
+      a: "No. A requirement only counts as met when Work-ly can quote the line on your resume that proves it. Everything it writes is built from your profile, and any new wording or number it can't trace back to you is flagged for you to check before you send it.",
+    },
+    {
+      q: "Why did it tell me to skip a job?",
+      a: "Because the posting asks for things your resume doesn't show yet, usually a must-have. Better to know before you spend an evening on it. Each gap comes with what would close it. If you do have that experience, add it to your profile and re-check the job.",
+    },
+    {
+      q: "How is the score worked out?",
+      a: "Each requirement in the posting is checked against your profile: shown, partly shown or not shown, with must-haves counting more. Open any job and press \u201cHow the score is worked out\u201d to see every part of it.",
+    },
+    {
+      q: "Can I change what it writes?",
+      a: "Yes, all of it. Click any text in your resume, letter or note and type; your edits save on their own. Download as PDF or Word when you're happy.",
+    },
+    {
+      q: "What's free and what's Pro?",
+      a: "Free: checking jobs (up to 15 AI checks a day), finding matches, tracking applications, one dream-job analysis, and follow-up and counter-offer emails. Pro adds the application kit for every job (resume, cover letter, hiring-manager note, interview prep), mock interviews, practice tasks and the LinkedIn makeover.",
+    },
+    {
+      q: "How do I change the role it searches for?",
+      a: "On Discover, press Change next to \u201cSearching for\u2026\u201d. Or set your target role under My career, then Goals.",
+    },
+    {
+      q: "Is my data private?",
+      a: "Work-ly runs on Google Gemini's paid API, which doesn't train on what you send. You can export or delete everything any time from Settings.",
+    },
+  ];
+
+  const MAP: { place: string; href: string; what: string; inside?: string }[] = [
+    { place: "Home", href: "/dashboard", what: "Your next move, your best matches and where your applications stand." },
+    { place: "Jobs", href: "/opportunities", what: "Every job you're looking at.", inside: "Opportunities, Discover, Analyze a job" },
+    { place: "My career", href: "/career-profile", what: "Your resume, your goals and where you're heading.", inside: "Profile, Goals, LinkedIn, Dream job, Action plan, Career change, Insights" },
+    { place: "Applications", href: "/applications", what: "What you've sent, by stage, with the right help at each stage." },
+    { place: "Settings", href: "/settings", what: "Your plan, locations, student or freelance mode, and privacy." },
+  ];
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-12 pb-24">
       <PageHeader
@@ -163,6 +210,32 @@ export default async function GuidePage() {
         area="career"
         action={<ReplayTourButton />}
       />
+
+      {/* The whole idea, in three steps, with the robot. */}
+      <section aria-labelledby="loop-title" className="feature-panel flex flex-col gap-5 p-6 sm:p-7">
+        <div className="flex items-center gap-4">
+          <Image src="/workly-bot-face.png" alt="" width={56} height={56} className="size-14 shrink-0 object-contain" />
+          <div className="flex flex-col gap-0.5">
+            <h2 id="loop-title" className="text-lg font-semibold text-foreground">
+              How Work-ly works
+            </h2>
+            <p className="text-sm text-muted-foreground">Three steps. Everything else in the app is one of these, in more detail.</p>
+          </div>
+        </div>
+        <ol className="grid gap-3 sm:grid-cols-3">
+          {LOOP.map((step, i) => (
+            <li key={step.title} className="flex gap-3 rounded-xl border border-border bg-card p-4">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                {i + 1}
+              </span>
+              <span className="flex flex-col gap-0.5">
+                <span className="text-sm font-semibold text-foreground">{step.title}</span>
+                <span className="text-[13px] leading-snug text-muted-foreground">{step.body}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section aria-labelledby="situations-title" className="flex flex-col gap-4">
         <h2 id="situations-title" className="text-lg font-semibold text-foreground">
@@ -199,33 +272,65 @@ export default async function GuidePage() {
         </ul>
       </section>
 
-      <section aria-labelledby="tools-title" className="flex flex-col gap-4">
+      <section aria-labelledby="faq-title" className="flex flex-col gap-4">
+        <h2 id="faq-title" className="text-lg font-semibold text-foreground">
+          Questions people ask
+        </h2>
+        <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {FAQ.map((item) => (
+            <details key={item.q} className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+                {item.q}
+                <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+              </summary>
+              <p className="max-w-3xl px-5 pb-5 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="map-title" className="flex flex-col gap-4">
         <div>
-          <h2 id="tools-title" className="text-lg font-semibold text-foreground">
-            Every tool at a glance
+          <h2 id="map-title" className="text-lg font-semibold text-foreground">
+            Where things live
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">The sidebar has four places. Some have tabs along the top.</p>
+        </div>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {MAP.map((m) => (
+            <li key={m.place}>
+              <Link
+                href={m.href}
+                className="group flex h-full flex-col gap-1 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/30"
+              >
+                <span className="flex items-center justify-between text-[15px] font-semibold text-foreground">
+                  {m.place}
+                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </span>
+                <span className="text-sm text-muted-foreground">{m.what}</span>
+                {m.inside && <span className="text-xs text-muted-foreground/90">Tabs: {m.inside}</span>}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <details className="group rounded-xl border border-border bg-card shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+          Every tool at a glance
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <div className="border-t border-border">
+          <p className="px-5 pt-4 text-sm text-muted-foreground">
             Where each one lives and when it appears. Tools on an application open up as it moves through the stages.
           </p>
-        </div>
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="hidden grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_5.5rem] gap-4 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-            <span>Tool</span>
-            <span>What it does</span>
-            <span>Where</span>
-            <span>When</span>
-            <span>Plan</span>
-          </div>
-          <ul className="divide-y divide-border">
+          <ul className="mt-3 divide-y divide-border border-t border-border">
             {allTools.map((tool) => (
               <li
                 key={tool.id}
-                className="grid grid-cols-1 gap-1 px-4 py-3 text-sm md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_5.5rem] md:gap-4"
+                className="grid grid-cols-1 gap-1 px-5 py-3 text-sm md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_5.5rem] md:gap-4"
               >
-                <span className="flex flex-col">
-                  <span className="font-medium text-foreground">{tool.name}</span>
-                  {tool.brand && <span className="text-xs text-muted-foreground">{tool.brand}</span>}
-                </span>
+                <span className="font-medium text-foreground">{tool.name}</span>
                 <span className="text-muted-foreground">{tool.blurb}</span>
                 <span className="text-xs text-muted-foreground md:text-sm">
                   <span className="md:hidden">Where: </span>
@@ -240,298 +345,14 @@ export default async function GuidePage() {
             ))}
           </ul>
         </div>
-      </section>
-
-      <details className="group rounded-xl border border-border bg-card shadow-sm">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-          Every screen, button by button
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
-        </summary>
-        <div className="border-t border-border px-4 pt-5 pb-5 sm:px-5">
-          <div>
-            <Tabs defaultValue="career" className="gap-6">
-              <TabsList className="h-auto flex-wrap">
-                <TabsTrigger value="career">My Career</TabsTrigger>
-                <TabsTrigger value="jobs">Discover &amp; Jobs</TabsTrigger>
-                <TabsTrigger value="applications">Applications</TabsTrigger>
-                <TabsTrigger value="path">Career Path</TabsTrigger>
-                <TabsTrigger value="student">Student Mode</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="career" className="flex flex-col gap-4">
-                <Card area="career">
-                  <CardHeader>
-                    <CardTitle>
-                      <IconProfile className="size-5 text-[var(--area-color)]" />
-                      Career Profile
-                    </CardTitle>
-                    <CardDescription>
-                      The single source of truth Work-ly checks everything else against.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      <span className="font-medium text-foreground">Resume</span> — drag a PDF or DOCX
-                      (up to 10MB) onto the card, or browse for one. Work-ly reads it and drafts your
-                      profile automatically; each upload shows as Parsing, Parsed, or Failed to parse,
-                      and can be removed. If it finds a location in the file, it asks once whether to
-                      save it to your profile.
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">Facts about you</span> — headline,
-                      location, current role and company, years of experience, and a short summary.
-                      <span className="font-medium text-foreground"> Save profile</span> commits changes.
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">
-                        Experience, Education, Projects, Skills, Certifications, and Achievements
-                      </span>{" "}
-                      each work the same way: an <span className="font-medium text-foreground">Add</span> button
-                      opens a form, and every existing entry has a pencil to edit and a trash icon to
-                      delete (with a confirmation step first). Entries the AI is unsure about carry a
-                      small <span className="font-medium text-foreground">Confirm</span> button and an
-                      “Unconfirmed” badge until you clear it. Every entry is also labelled with where it
-                      came from — from your CV, added by you, or AI inferred — so nothing is silently
-                      invented.
-                    </p>
-                    <p>
-                      The Skills section will sometimes suggest a transferable skill it noticed in your
-                      experience; <span className="font-medium text-foreground">Yes, that&apos;s me</span> accepts
-                      it, <span className="font-medium text-foreground">Dismiss</span> discards it.
-                      <span className="font-medium text-foreground"> Work Values</span> is read-only — it
-                      shows values the AI inferred from your CV with a confidence score and the sentence
-                      that suggested it; there is nothing to add, only to re-parse by uploading a newer
-                      resume.
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">Share Profile</span>, at the top of
-                      the page, generates a public read-only link to your profile — the same button
-                      becomes <span className="font-medium text-foreground">Copy Public Link</span> once
-                      it&apos;s on, and <span className="font-medium text-foreground">Make Private</span> turns
-                      it back off.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card area="career" variant="flat" className="border-dashed">
-                  <CardHeader>
-                    <CardTitle className="text-base">Goals and Dream Job</CardTitle>
-                    <CardDescription>Reached from the tabs at the top of My Career.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
-                    <p>
-                      <span className="font-medium text-foreground">Career Goals</span> — a running list
-                      of what you&apos;re working toward, each with a status (active, achieved, paused,
-                      archived) and its own edit and delete controls.
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">Dream Job</span> — paste a posting
-                      for a role you actually want and Work-ly scores how close you already are (Pro for
-                      unlimited use; your first one is free), then lays out what you already have, the
-                      biggest gaps, and a concrete next step. Every past analysis is saved and stays one
-                      click away.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="jobs" className="flex flex-col gap-4">
-                <Card area="discover">
-                  <CardHeader>
-                    <CardTitle>Discover</CardTitle>
-                    <CardDescription>Curated from across the web, scored against your profile.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      Four search modes sit above the results: <span className="font-medium text-foreground">Standard
-                      Search</span> (keyword and seniority), <span className="font-medium text-foreground">Brainstorm
-                      / Explore</span> (describe an interest, not a title), <span className="font-medium text-foreground">Target
-                      Company</span> (a specific employer), and <span className="font-medium text-foreground">Search
-                      by Major</span> (built for students). Each changes the search field&apos;s
-                      placeholder and the button&apos;s label, but they all feed the same results below.
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">Match my Values</span> cross-checks
-                      results against the values inferred from your profile and gives aligned jobs a
-                      fit boost. The <span className="font-medium text-foreground">+</span> button beside
-                      the search bar adds a public RSS feed as your own custom source.
-                    </p>
-                    <p>
-                      Results can be filtered to a priority band — Apply Now, Strong, Stretch, or Low
-                      Priority — and sorted by Top Matches, Candidate Fit, or Recently Found. On each
-                      card, <span className="font-medium text-foreground">Analyze &amp; track</span> pulls
-                      it into your pipeline, and <span className="font-medium text-foreground">Not
-                      relevant</span> dismisses it; <span className="font-medium text-foreground">View
-                      original</span> always links back to the real source.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card area="opportunity">
-                  <CardHeader>
-                    <CardTitle>
-                      <IconOpportunity className="size-5 text-[var(--area-color)]" />
-                      Jobs (Opportunities)
-                    </CardTitle>
-                    <CardDescription>Everything you&apos;ve analyzed, ordered by what&apos;s worth your time.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      Filter tabs across the top (All, Apply Now, High Priority, Stretch, Saved,
-                      Analyzed, Applied) narrow the list at a glance; the{" "}
-                      <span className="font-medium text-foreground">Filters</span> button opens a fuller
-                      panel — role, location, industry, country, seniority, work mode, employment type,
-                      and minimum salary, fit, or priority. Sort by priority, fit, deadline, date found,
-                      or salary.
-                    </p>
-                    <p>
-                      The bookmark icon on a card saves it for later; the priority bar and fit score
-                      are always visible without opening it. <span className="font-medium text-foreground">View
-                      analysis</span> opens the full breakdown, where you can mark a role as preparing or
-                      applied, or reset it back to just discovered.
-                    </p>
-                    <p>
-                      Once you&apos;ve opened a specific job, the{" "}
-                      <span className="font-medium text-foreground">Tools for this job</span> card under its scores
-                      offers a resume tailored to it, a cover letter, a message to the hiring manager, and the
-                      interview questions it&apos;s likely to ask you (all Pro).
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="applications" className="flex flex-col gap-4">
-                <Card area="application">
-                  <CardHeader>
-                    <CardTitle>
-                      <IconApplication className="size-5 text-[var(--area-color)]" />
-                      Applications
-                    </CardTitle>
-                    <CardDescription>What you&apos;ve applied to, what happened, and what that tells you.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      <span className="font-medium text-foreground">Log an application</span> adds one by
-                      hand (role, company, industry, location, and starting stage) — most of the time
-                      you&apos;ll arrive here instead by tracking a job from Discover or Jobs. Switch
-                      between <span className="font-medium text-foreground">Pipeline</span> (a Kanban
-                      board you drag cards across) and <span className="font-medium text-foreground">Table</span> view,
-                      or move a card&apos;s stage from its own dropdown if dragging isn&apos;t convenient.
-                    </p>
-                    <p>
-                      Opening an application lets you fill in the CV version you sent, the date applied,
-                      salary offered, your cover letter, and private notes, plus add interviews and
-                      contacts as they happen.
-                    </p>
-                    <p className="font-medium text-foreground">The tools that open up as the application moves forward:</p>
-                    <ul className="ml-4 list-disc space-y-1.5 marker:text-[var(--area-color)]">
-                      {APPLICATION_TOOL_IDS.map((id) => (
-                        <li key={id}>
-                          <span className="font-medium text-foreground">{TOOLS[id].name}</span>
-                          {TOOLS[id].brand ? ` (${TOOLS[id].brand})` : ""} - {whenLabel(TOOLS[id]).toLowerCase()}
-                          {TOOLS[id].pro ? ", Pro" : ", free"}. {TOOLS[id].blurb}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="path" className="flex flex-col gap-4">
-                <Card area="pathway">
-                  <CardHeader>
-                    <CardTitle>
-                      <IconPathway className="size-5 text-[var(--area-color)]" />
-                      Career Path
-                    </CardTitle>
-                    <CardDescription>A practical, ordered pathway from where you are to where you want to be.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      This starts from a Dream Job analysis. Once you have one,{" "}
-                      <span className="font-medium text-foreground">Build My Dream Pathway</span> (Pro)
-                      turns its gaps into an ordered set of steps and a 30/60/90-day action plan; you can
-                      regenerate it later without losing the old one, which is archived rather than
-                      deleted.
-                    </p>
-                    <p>
-                      Every step and action can be marked <span className="font-medium text-foreground">Complete</span>,{" "}
-                      <span className="font-medium text-foreground">Skip</span>, or{" "}
-                      <span className="font-medium text-foreground">Reopen</span>ed if you change your
-                      mind, and each has its own <span className="font-medium text-foreground">Edit</span> and{" "}
-                      <span className="font-medium text-foreground">Add note</span> for anything private
-                      you want to remember about it. A step that unlocks new roles links straight to
-                      Jobs or a pre-filled Discover search.
-                    </p>
-                    <p>
-                      A weekly check-in banner asks whether you&apos;re making progress or need to
-                      adjust. Further down, <span className="font-medium text-foreground">What-if
-                      simulation</span> lets you test a hypothetical change — a new skill, a different
-                      target — without touching your real profile; results are always labelled as a
-                      simulation and never saved automatically.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="student" className="flex flex-col gap-4">
-                <Card className="border-t-4 border-t-purple-500">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <GraduationCap className="size-5 text-purple-500" />
-                      Student Mode
-                    </CardTitle>
-                    <CardDescription>Tailored tools for campus jobs, internships, and university requirements.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      Work-ly adapts completely when you turn on <span className="font-medium text-foreground">Student Mode</span> from Settings. It changes the scoring engine to focus on coursework and side projects rather than years of enterprise experience.
-                    </p>
-                    <p>
-                      You get a dedicated <span className="font-medium text-foreground">Student Home</span> tab to manage on-campus jobs, off-campus roles, and internships.
-                    </p>
-                    <ul className="ml-4 list-disc space-y-1.5 marker:text-purple-500">
-                      <li><span className="font-medium text-foreground">University Feeds</span> — Add your university's public job board feed directly into Work-ly, and Work-ly adds its campus jobs to your Discovery queue.</li>
-                      <li><span className="font-medium text-foreground">Legal Limits Tracking</span> — Input your student country, and Work-ly automatically warns you if an off-campus job exceeds your visa's permitted working hours.</li>
-                      <li><span className="font-medium text-foreground">Auto-Classification</span> — The AI instantly categorizes new roles into On-Campus, Off-Campus, and Internships.</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* ---------------------------------------------------------- */}
-              <TabsContent value="settings" className="flex flex-col gap-4">
-                <Card className="border-t-4 border-t-slate-500">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <SettingsIcon className="size-5 text-slate-500" />
-                      Settings & Preferences
-                    </CardTitle>
-                    <CardDescription>Control how Work-ly's discovery and scoring engines behave.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5 text-sm text-muted-foreground">
-                    <p>
-                      Settings is where you steer the underlying AI models by setting your <span className="font-medium text-foreground">Locations</span>, and configuring the engine for specific working styles.
-                    </p>
-                    <ul className="ml-4 list-disc space-y-1.5 marker:text-slate-500">
-                      <li><span className="font-medium text-foreground">Part-Time & Shift Work</span> — Optimize the discovery engine for hourly work, shift availability, and retail/service sector parsing.</li>
-                      <li><span className="font-medium text-foreground">Freelance & Gig Economy</span> — Tailor Work-ly for contractors and freelancers, focusing the AI on finding contract roles and parsing portfolios over traditional CVs.</li>
-                      <li><span className="font-medium text-foreground">Student Mode Toggle</span> — Instantly swap the app between full-time career tracking and student-focused discovery.</li>
-                      <li><span className="font-medium text-foreground">Privacy Controls</span> — Manage your data, export your profile, or completely delete your account. Work-ly keeps you in control.</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
       </details>
+
+      <p className="flex flex-col items-center gap-1 text-center text-sm text-muted-foreground">
+        <span>Still stuck? Ask Work-ly in the corner of any page, or email</span>
+        <a href={`mailto:${BUSINESS.supportEmail}`} className="font-medium text-primary underline-offset-4 hover:underline">
+          {BUSINESS.supportEmail}
+        </a>
+      </p>
     </div>
   );
 }
