@@ -79,9 +79,14 @@ export function shortDeadline(iso: string | null): string | null {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 }
 
-/** "40% off for founding members · 23 of 50 spots left · ends 27 Oct" */
+/**
+ * "40% off for founding members · 23 of 50 spots left · ends 27 Oct", or,
+ * for a discount that never runs out (Polar duration "forever"):
+ * "50% off for life · 7 of 10 spots left".
+ */
 export function foundingSummary(offer: PublicFoundingOffer, { forWhom = true }: { forWhom?: boolean } = {}): string {
-  const parts = [`${offer.percentOff}% off${forWhom ? " for founding members" : ""}`];
+  const life = offer.duration === "forever";
+  const parts = [`${offer.percentOff}% off${life ? " for life" : ""}${forWhom ? " for founding members" : ""}`];
   if (offer.spotsLeft != null && offer.spotsTotal != null) parts.push(`${offer.spotsLeft} of ${offer.spotsTotal} spots left`);
   const deadline = shortDeadline(offer.endsAt);
   if (deadline) parts.push(`ends ${deadline}`);
@@ -91,6 +96,7 @@ export function foundingSummary(offer: PublicFoundingOffer, { forWhom = true }: 
 /** "Founding price: $89.99" / "Founding price: $11.99 for your first month" */
 export function foundingPriceLine(plan: { priceUsd: number; renews: boolean }, offer: PublicFoundingOffer): string {
   const price = discountedPrice(plan.priceUsd, offer.percentOff);
-  if (!plan.renews || offer.duration === "forever") return `Founding price: ${price}${plan.renews ? "/mo" : ""}`;
+  if (plan.renews && offer.duration === "forever") return `Founding price: ${price}/mo, for as long as you stay`;
+  if (!plan.renews) return `Founding price: ${price}`;
   return `Founding price: ${price} for your ${renewingDiscountTerm(offer)}`;
 }

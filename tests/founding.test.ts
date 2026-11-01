@@ -58,3 +58,13 @@ describe("advertised guarantee", () => {
     expect(RECOMMENDED_BADGE).not.toMatch(/popular/i);
   });
 });
+
+describe("a founding discount for life", () => {
+  it("says so, and what it means for each plan", async () => {
+    const { foundingSummary, foundingPriceLine } = await import("@/lib/payments/founding-core");
+    const offer = { percentOff: 50, duration: "forever" as const, durationInMonths: null, spotsTotal: 10, spotsLeft: 7, endsAt: null };
+    expect(foundingSummary(offer, { forWhom: false })).toBe("50% off for life · 7 of 10 spots left");
+    expect(foundingPriceLine({ priceUsd: 19.99, renews: true }, offer)).toBe("Founding price: $9.99/mo, for as long as you stay");
+    expect(foundingPriceLine({ priceUsd: 49.99, renews: false }, offer)).toBe("Founding price: $24.99");
+  });
+});

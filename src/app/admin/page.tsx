@@ -22,6 +22,9 @@ import { PRO_SOURCE_ORDER, PRO_SOURCE_TITLE, proSource, type ProSourceKind } fro
 import { isDisposableEmail } from "@/lib/disposable-email";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 import { OutboxForm } from "./outbox-form";
+import { FoundingTenQueue } from "./founding-ten-queue";
+import { foundingTenQueue } from "@/lib/founding-ten";
+import { HEAT_LABEL, HEAT_ORDER } from "@/lib/founding-ten-core";
 import { recentOutreach } from "@/lib/outreach";
 import { OUTREACH_DAILY_CAP, addressLooksComplete } from "@/lib/outreach-core";
 
@@ -79,6 +82,7 @@ export default async function AdminDashboard({
   const reportFor = typeof searchParams.report === "string" && isGroupCode(searchParams.report) ? searchParams.report : null;
   const usage = reportFor ? await seatUsageReport(reportFor).catch(() => null) : null;
   const sentRecently = await recentOutreach(30).catch(() => []);
+  const queue = await foundingTenQueue(60).catch(() => ({ rows: [], offer: null }));
   const sentToday = sentRecently.filter((r) => r.day === new Date().toISOString().slice(0, 10)).length;
   const emailTo = typeof searchParams.to === "string" ? searchParams.to.slice(0, 200) : "";
   const dollars = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -263,6 +267,25 @@ export default async function AdminDashboard({
               </table>
             </div>
           )}
+        </section>
+
+        <section id="founding-ten" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-semibold text-white">Founding ten: personal emails</h2>
+            <p className="text-sm text-zinc-400">
+              Free accounts worth a personal note, hottest first, each with an email already written from what they did. Open
+              one, read it, edit if you like, press Send. {sentToday} of {OUTREACH_DAILY_CAP} sent today; aim for 15-20 a day
+              and answer every reply the same day.
+              {queue.offer ? "" : " No founding offer is live in Polar, so the emails don't mention one."}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {HEAT_ORDER.map((h) => `${HEAT_LABEL[h]}: ${queue.rows.filter((r) => r.heat === h).length}`).join(" · ")}
+            </p>
+          </div>
+          <FoundingTenQueue
+            adminKey={key as string}
+            items={queue.rows.map((r) => ({ ...r, signedUp: r.signedUp.toISOString() }))}
+          />
         </section>
 
         <section id="outbox" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">

@@ -108,6 +108,12 @@ export default async function PricingPage() {
         </p>
         {sale && <SaleBanner sale={sale} href={null} className="mt-2" />}
         <FoundingBanner offer={offer} href={null} className="mt-2" />
+        {offer?.duration === "forever" && (
+          <p className="max-w-lg text-balance text-xs text-muted-foreground">
+            &ldquo;For life&rdquo; means a Monthly plan stays at half price for as long as you stay subscribed. A pass is half
+            price when you buy it.
+          </p>
+        )}
       </header>
 
       <section aria-label="Plans" className="@container">
