@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Settings, ChevronsUpDown } from "lucide-react";
+import { LogOut, Settings, ChevronsUpDown, Gift } from "lucide-react";
 
 import { signOutAction } from "@/lib/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,6 +62,12 @@ export function UserMenu({ user, compact = false }: { user: AuthUser; compact?: 
           <Link href="/settings">
             <Settings />
             Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings#invite">
+            <Gift />
+            Invite a friend: 2 weeks each
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

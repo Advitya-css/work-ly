@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { authProvider } from "@/lib/auth";
 import { signInSchema, signUpSchema } from "@/lib/validations/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { REF_COOKIE } from "@/lib/referral-core";
 
 export interface AuthActionState {
   error?: string;
@@ -82,8 +83,11 @@ export async function signUpAction(
     await recordSignup(result.user.id);
   }
 
-  const refCode = formData.get("refCode");
-  if (refCode && typeof refCode === "string" && result.user?.id) {
+  // From the signup link (?ref=) or a friend's invite link opened earlier (cookie).
+  const refField = formData.get("refCode");
+  const refCode =
+    (typeof refField === "string" && refField.trim()) || (await cookies()).get(REF_COOKIE)?.value || "";
+  if (refCode && result.user?.id) {
     // Recorded only - rewards are granted when this account activates
     // (first parsed resume). See recordReferral for why.
     const { recordReferral } = await import("@/lib/db/users");

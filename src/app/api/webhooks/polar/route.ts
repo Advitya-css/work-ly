@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 
+import { bankedBonusDays, clearBankedDays } from "@/lib/referrals";
 import { pool } from "@/lib/db/pool";
 import { planForProduct } from "@/lib/payments/polar-plans";
 import { grantForOrder, normalizeOrder, userIdForOrder } from "@/lib/payments/polar-grant";
@@ -126,10 +127,15 @@ export async function POST(req: Request) {
         const sub = normalizeOrder(event.data);
         const userId = sub ? await userIdForOrder(sub) : null;
         if (userId) {
-          await pool.query(
-            `UPDATE users SET "isPro" = false, "proUntil" = now(), "updatedAt" = now() WHERE id = $1 AND "proPlan" = 'monthly'`,
-            [userId],
+          // Referral bonus days (lib/referrals.ts) are still theirs: Pro
+          // runs that much longer, then the bonus is used up.
+          const bonus = await bankedBonusDays(pool, userId);
+          const { rowCount } = await pool.query(
+            `UPDATE users SET "isPro" = $2 > 0, "proUntil" = now() + make_interval(days => $2), "updatedAt" = now()
+              WHERE id = $1 AND "proPlan" = 'monthly'`,
+            [userId, bonus],
           );
+          if (rowCount) await clearBankedDays(pool, userId);
         }
         break;
       }

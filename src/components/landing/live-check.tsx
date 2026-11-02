@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, CircleDashed, CircleSlash, Play, Quote, RotateCcw } from "lucide-react";
@@ -8,7 +8,10 @@ import { ArrowRight, CheckCircle2, CircleDashed, CircleSlash, Play, Quote, Rotat
 import { Button } from "@/components/ui/button";
 import { AiProgress } from "@/components/shared/ai-progress";
 import { WorklyLoader } from "@/components/shared/workly-loader";
-import { scoreResumeAction } from "@/app/free-grader/actions";
+import { previewOpeningAction, scoreResumeAction } from "@/app/free-grader/actions";
+import { ShareVerdictButton } from "@/components/share/share-verdict-button";
+import { foundingSummary, type PublicFoundingOffer } from "@/lib/payments/founding-core";
+import type { OpeningPreview } from "@/lib/resume/opening-preview";
 import { importFromGraderAction } from "@/lib/onboarding/grader-import";
 import { clearGraderDraft, saveGraderDraft } from "@/lib/grader-draft";
 import { cn } from "@/lib/utils";
@@ -21,6 +24,10 @@ interface Result {
   rows: Row[];
   signedIn: boolean;
   sample?: boolean;
+  /** Signed share-card token (lib/share). */
+  share?: string | null;
+  /** One free look at the top of the tailored resume, after a yes. */
+  previewTicket?: string | null;
 }
 
 /**
@@ -109,8 +116,11 @@ function Ring({ value, tone }: { value: number; tone: string }) {
  * point proven with a line from your own resume. Or watch it on a real
  * example first.
  */
-export function LiveCheck() {
+export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null }) {
   const router = useRouter();
+  const [preview, setPreview] = useState<OpeningPreview | null>(null);
+  const [previewNote, setPreviewNote] = useState<string | null>(null);
+  const [writing, startWriting] = useTransition();
   const [job, setJob] = useState("");
   const [resume, setResume] = useState("");
   const [result, setResult] = useState<Result | null>(null);
@@ -133,7 +143,11 @@ export function LiveCheck() {
       if (!("data" in res) || !res.data) return;
       const d = res.data;
       saveGraderDraft({ resumeText: resume, jobText: job });
+      setPreview(null);
+      setPreviewNote(null);
       setResult({
+        share: d.share ?? null,
+        previewTicket: d.previewTicket ?? null,
         score: d.score,
         recommendation: d.recommendation ?? null,
         headline: d.headline ?? "",
@@ -150,6 +164,19 @@ export function LiveCheck() {
       });
     });
   }
+
+  // A yes: write the top of their resume for this job straight away, while they're reading the verdict.
+  const ticket = result?.previewTicket ?? null;
+  useEffect(() => {
+    if (!ticket) return;
+    startWriting(async () => {
+      const res = await previewOpeningAction(resume, job, ticket);
+      if (res.preview) setPreview(res.preview);
+      else setPreviewNote(res.error ?? null);
+    });
+    // The ticket belongs to the texts that were checked; run once per ticket.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticket]);
 
   function openInAccount() {
     startImport(async () => {
@@ -278,6 +305,20 @@ export function LiveCheck() {
               })}
             </ul>
 
+            {!result.sample && (writing || preview) && (
+              <OpeningSheet
+                preview={preview}
+                writing={writing}
+                offer={offer}
+                signedIn={result.signedIn}
+                onOpen={openInAccount}
+                importing={importing}
+              />
+            )}
+            {!result.sample && !writing && !preview && previewNote && result.previewTicket && (
+              <p className="border-t border-border px-6 py-3 text-[13px] text-muted-foreground sm:px-8">{previewNote}</p>
+            )}
+
             <div className="flex flex-col gap-3 border-t border-border bg-secondary/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
               <p className="text-[13px] text-muted-foreground">
                 {result.sample
@@ -286,19 +327,24 @@ export function LiveCheck() {
                     ? "Better to know now. Work-ly can find jobs that fit what you've really done."
                     : "Next: the resume, cover letter and interview prep for this exact job, from your real experience."}
               </p>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                {!result.sample && result.share && (
+                  <ShareVerdictButton token={result.share} invites={result.signedIn} variant="ghost" size="default" className="text-muted-foreground" />
+                )}
                 <Button
                   variant="ghost"
                   className="gap-1.5 text-muted-foreground"
                   onClick={() => {
                     setResult(null);
                     setError(null);
+                    setPreview(null);
+                    setPreviewNote(null);
                   }}
                 >
                   <RotateCcw className="size-3.5" />
                   {result.sample ? "Try mine" : "Check another"}
                 </Button>
-                {!result.sample && result.signedIn ? (
+                {preview ? null : !result.sample && result.signedIn ? (
                   <Button onClick={openInAccount} disabled={importing} className="gap-2">
                     {importing ? <WorklyLoader className="size-4 animate-spin" /> : null}
                     Open the full report
@@ -306,7 +352,7 @@ export function LiveCheck() {
                   </Button>
                 ) : (
                   <Button asChild className="gap-2">
-                    <Link href="/signup">
+                    <Link href={result.sample ? "/signup" : "/signup?from=check"}>
                       {result.sample ? "Create a free account" : result.recommendation === "SKIP" ? "Find better-fit jobs" : "Write this application for me"}
                       <ArrowRight className="size-4" />
                     </Link>
@@ -318,5 +364,100 @@ export function LiveCheck() {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * The top of their resume for the job they just checked, written for real:
+ * the summary and their two strongest lines, each rewritten from a line
+ * that's really on their resume. The rest is shown as blurred bars (never
+ * invented text) with the way to get it.
+ */
+function OpeningSheet({
+  preview,
+  writing,
+  offer,
+  signedIn,
+  onOpen,
+  importing,
+}: {
+  preview: OpeningPreview | null;
+  writing: boolean;
+  offer: PublicFoundingOffer | null;
+  signedIn: boolean;
+  onOpen: () => void;
+  importing: boolean;
+}) {
+  const widths = ["w-11/12", "w-4/5", "w-full", "w-3/4", "w-5/6", "w-2/3"];
+  return (
+    <section aria-label="The top of your resume for this job" className="flex flex-col gap-4 border-t border-border bg-accent/40 px-6 py-6 sm:px-8">
+      <div className="flex flex-col gap-0.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">The top of your resume, for this job</p>
+        <p className="text-[13px] text-muted-foreground">
+          {writing ? "Writing it now from your own lines. About half a minute." : "Rewritten from lines already on your resume. Nothing added."}
+        </p>
+      </div>
+      <div className="relative overflow-hidden rounded-lg border border-border bg-white px-5 py-5 text-[13.5px] leading-relaxed text-neutral-900 shadow-sm sm:px-7">
+        {writing && !preview ? (
+          <div className="flex flex-col gap-2.5" aria-hidden>
+            {widths.slice(0, 5).map((w, i) => (
+              <div key={i} className={cn("h-3 animate-pulse rounded-full bg-neutral-200", w)} />
+            ))}
+          </div>
+        ) : preview ? (
+          <>
+            {preview.summary && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">Summary</p>
+                <p className="mt-1">{preview.summary}</p>
+              </div>
+            )}
+            {preview.bullets.length > 0 && (
+              <div className={preview.summary ? "mt-4" : ""}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">Experience</p>
+                <ul className="mt-1 list-disc pl-5">
+                  {preview.bullets.map((b) => (
+                    <li key={b.from}>{b.text}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mt-3 flex select-none flex-col gap-2 blur-[2px]" aria-hidden>
+              {widths.map((w, i) => (
+                <div key={i} className={cn("h-2.5 rounded-full bg-neutral-300/70", w)} />
+              ))}
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent" />
+          </>
+        ) : null}
+      </div>
+      {preview && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-foreground/85">
+            The rest of it, plus the cover letter, a note to the hiring manager and interview prep for this job.
+          </p>
+          <div className="flex shrink-0 flex-col items-stretch gap-1 sm:items-end">
+            {signedIn ? (
+              <Button onClick={onOpen} disabled={importing} className="gap-2">
+                {importing ? <WorklyLoader className="size-4 animate-spin" /> : null}
+                Write the whole application
+                <ArrowRight className="size-4" />
+              </Button>
+            ) : (
+              <Button asChild className="gap-2">
+                <Link href="/signup?from=check">
+                  Write the whole application
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            )}
+            <span className="text-center text-[11.5px] text-muted-foreground sm:text-right">
+              {signedIn ? "Opens it in your account" : "Free account · your check comes with you"}
+              {offer ? ` · founding members ${foundingSummary(offer, { forWhom: false })}` : ""}
+            </span>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

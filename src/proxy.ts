@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { REF_COOKIE, REF_COOKIE_MAX_AGE_S, cleanInviteCode } from "@/lib/referral-core";
 import { ATTR_COOKIE, ATTR_MAX_AGE_S, attributionFromRequest, decodeAttribution, encodeAttribution, shouldStore } from "@/lib/attribution-core";
 import { REDEEM_COOKIE, REDEEM_COOKIE_MAX_AGE_S, cleanRedeemCode } from "@/lib/redeem-cookie";
 import { SIGNED_IN_HINT_COOKIE } from "@/lib/auth/constants";
@@ -151,6 +152,13 @@ export async function proxy(request: NextRequest) {
     return shouldStore(existing, incoming) ? encodeAttribution(incoming) : null;
   })();
 
+  // A friend's invite link (/?invite=<their id>): kept until sign-up, first
+  // invite wins (lib/referral-core.ts). The reward comes when they buy.
+  const invite =
+    request.method === "GET" && !request.cookies.get(REF_COOKIE)?.value
+      ? cleanInviteCode(request.nextUrl.searchParams.get("invite"))
+      : null;
+
   // A seat or gift code opened from a link: kept for after sign-up (lib/redeem-cookie.ts).
   let redeemCode = pathname === "/redeem" ? cleanRedeemCode(request.nextUrl.searchParams.get("code")) : null;
 
@@ -179,6 +187,15 @@ export async function proxy(request: NextRequest) {
       });
     } else if (!hasSession && hasHint) {
       response.cookies.delete(SIGNED_IN_HINT_COOKIE);
+    }
+    if (invite) {
+      response.cookies.set(REF_COOKIE, invite, {
+        maxAge: REF_COOKIE_MAX_AGE_S,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
     }
     if (attribution) {
       response.cookies.set(ATTR_COOKIE, attribution, {

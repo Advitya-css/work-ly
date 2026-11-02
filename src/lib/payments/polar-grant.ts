@@ -5,6 +5,7 @@ import { PLAN_INTERVAL, planForProduct, type PolarPlan } from "@/lib/payments/po
 import { openRefundWindow } from "@/lib/payments/refund-window";
 import { recordPaidOrder } from "@/lib/attribution";
 import { clearCheckoutMarker } from "@/lib/lifecycle";
+import { addBankedDays, bankedBonusDays, clearBankedDays, creditReferralOnPurchase, emailReferrerReward } from "@/lib/referrals";
 
 /**
  * TURNING A POLAR ORDER INTO PRO ACCESS - the one place it happens.
@@ -120,16 +121,51 @@ export async function grantForOrder(order: PaidOrder, userId: string): Promise<P
     console.error(`[workly:polar] order ${order.id} is for an unknown product ${order.productId}`);
     return null;
   }
-  const { rowCount } = await pool.query(
-    `UPDATE users
-        SET "isPro" = true,
-            "proUntil" = GREATEST(COALESCE("proUntil", now()), $3::timestamptz + $4::interval),
-            "proPlan" = CASE WHEN "proPlan" = 'yearly' AND $2 <> 'yearly' AND "proUntil" > now() THEN 'yearly' ELSE $2 END,
-            "updatedAt" = now()
-      WHERE id = $1`,
-    [userId, plan, order.createdAt, PLAN_INTERVAL[plan]],
-  );
-  if (!rowCount) {
+
+  // Referral bonus days (lib/referrals.ts) ride on top of the paid time:
+  //   - a monthly subscriber keeps theirs past every renewal (the "bank"),
+  //     which is cleared once a subscription has lapsed, so it's used once;
+  //   - days left on a "referral" plan when someone buys aren't lost: they
+  //     join the bank (monthly) or are added to the pass.
+  // Still idempotent: the same order applied twice lands on the same date.
+  const client = await pool.connect();
+  let granted = false;
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(`SELECT "proPlan", "proUntil" FROM users WHERE id = $1 FOR UPDATE`, [userId]);
+    if (rows[0]) {
+      const until = rows[0].proUntil ? new Date(rows[0].proUntil as string) : null;
+      const orderAt = new Date(order.createdAt);
+      const carry =
+        rows[0].proPlan === "referral" && until && until.getTime() > orderAt.getTime()
+          ? Math.ceil((until.getTime() - orderAt.getTime()) / (24 * 60 * 60 * 1000))
+          : 0;
+      let extraDays = carry;
+      if (plan === "monthly") {
+        const lapsed = !until || until.getTime() < orderAt.getTime();
+        if (lapsed) await clearBankedDays(client, userId);
+        await addBankedDays(client, userId, carry);
+        extraDays = await bankedBonusDays(client, userId);
+      }
+      const { rowCount } = await client.query(
+        `UPDATE users
+            SET "isPro" = true,
+                "proUntil" = GREATEST(COALESCE("proUntil", now()), $3::timestamptz + $4::interval + make_interval(days => $5)),
+                "proPlan" = CASE WHEN "proPlan" = 'yearly' AND $2 <> 'yearly' AND "proUntil" > now() THEN 'yearly' ELSE $2 END,
+                "updatedAt" = now()
+          WHERE id = $1`,
+        [userId, plan, order.createdAt, PLAN_INTERVAL[plan], extraDays],
+      );
+      granted = Boolean(rowCount);
+    }
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+  if (!granted) {
     console.error(`[workly:polar] paid order ${order.id}: user ${userId} not found`);
     return null;
   }
@@ -142,7 +178,13 @@ export async function grantForOrder(order: PaidOrder, userId: string): Promise<P
     campaign: order.campaign,
     amountCents: order.amountCents,
   });
+  // Invited by a friend? Both get two extra weeks, once. Never blocks the grant.
+  try {
+    const reward = await creditReferralOnPurchase(userId);
+    if (reward?.referrerRewarded) await emailReferrerReward(reward.referrerId);
+  } catch (error) {
+    console.error("[workly:referral] couldn't credit the referral:", error instanceof Error ? error.message : error);
+  }
   console.log(`[workly:polar] order ${order.id} paid: ${plan} for user ${userId}`);
   return plan;
 }
-

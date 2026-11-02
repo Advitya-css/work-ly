@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { displayJobTitle } from "@/lib/format";
 import { ResumeBuilder } from "@/components/resume/resume-builder";
 import { SavedResumeLocked } from "@/components/resume/saved-resume-locked";
+import { ResumePreviewStarter } from "@/components/resume/resume-preview-starter";
+import { getFoundingOffer } from "@/lib/payments/founding";
+import { foundingSummary } from "@/lib/payments/founding-core";
 import { getCurrentUser } from "@/lib/auth";
 import { getSavedOutput } from "@/lib/saved-outputs";
 import { polishResume, type TailoredResume } from "@/lib/resume/tailored-resume-core";
@@ -25,9 +28,9 @@ export default async function TailoredResumePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ build?: string }>;
+  searchParams: Promise<{ build?: string; preview?: string }>;
 }) {
-  const { build } = await searchParams;
+  const { build, preview: previewParam } = await searchParams;
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -38,11 +41,17 @@ export default async function TailoredResumePage({
   const { opportunity, job, profile: full } = kit;
 
   if (!user.isPro) {
-    const saved = await getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id);
+    const [saved, offer] = await Promise.all([
+      getSavedOutput<TailoredResume>(user.id, "resume", opportunity.id),
+      getFoundingOffer().catch(() => null),
+    ]);
+    const offerLine = offer ? foundingSummary(offer) : null;
+    const jobLabel = job.company ?? (job.title ? displayJobTitle(job.title) : "this job");
     if (saved) {
       return (
         <div className="flex flex-col gap-6">
           <SavedResumeLocked
+            offerLine={offerLine}
             resume={saved.data}
             name={user.name ?? ""}
             headline={full.profile?.headline ?? full.profile?.currentRole ?? null}
@@ -62,6 +71,7 @@ export default async function TailoredResumePage({
     });
     return (
       <div className="flex flex-col gap-6">
+        <ResumePreviewStarter opportunityId={opportunity.id} auto={previewParam === "1"} jobLabel={jobLabel} />
         <ProPreview
           intro={`Work-ly would reorder and rewrite ${
             preview.roleCount > 0 ? `your ${preview.roleCount} role${preview.roleCount === 1 ? "" : "s"}` : "your experience"

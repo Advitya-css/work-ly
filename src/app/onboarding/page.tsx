@@ -8,7 +8,7 @@ import { UploadStep } from "@/components/onboarding/upload-step";
 import { ReviewStep } from "@/app/onboarding/review-step";
 import { MatchesStep } from "@/app/onboarding/matches-step";
 import { StudentStep } from "@/components/onboarding/student-step";
-import { GraderImportCard } from "@/components/onboarding/grader-import-card";
+import { WelcomeGate } from "@/components/onboarding/welcome-gate";
 import { IntentChoices } from "@/components/onboarding/intent-choices";
 import { completeOnboardingAction, loadSampleProfileAction } from "@/lib/onboarding/actions";
 import { parseOnboardingIntent } from "@/lib/onboarding/intent";
@@ -47,15 +47,13 @@ export default async function OnboardingPage({
       {(step === "upload" || step === "review" || step === "matches") && <StepIndicator current={stepIndex} />}
 
       {step === "welcome" && (
-        <>
+        <WelcomeGate>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
               Welcome to Work-ly{user.name ? `, ${user.name.split(" ")[0]}` : ""}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">What brings you here? This sets up your first search.</p>
           </div>
-
-          <GraderImportCard />
 
           <IntentChoices />
 
@@ -72,7 +70,7 @@ export default async function OnboardingPage({
               </PendingSubmitButton>
             </form>
           </div>
-        </>
+        </WelcomeGate>
       )}
 
       {step === "student-setup" && <StudentStep countries={await listSupportedStudentCountries()} />}

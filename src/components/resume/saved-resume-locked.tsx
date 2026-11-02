@@ -16,7 +16,10 @@ export function SavedResumeLocked({
   headline,
   contact,
   jobLabel,
+  offerLine = null,
 }: {
+  /** The founding offer in one line, when one is live. */
+  offerLine?: string | null;
   resume: TailoredResume;
   name: string;
   headline: string | null;
@@ -52,7 +55,7 @@ export function SavedResumeLocked({
               <p className="text-xs tabular-nums text-neutral-600">{firstRole.dates}</p>
             </div>
             <ul className="mt-1 list-disc pl-5">
-              {firstRole.bullets.filter(Boolean).slice(0, 1).map((b, i) => (
+              {firstRole.bullets.filter(Boolean).slice(0, 2).map((b, i) => (
                 <li key={i}>{b}</li>
               ))}
             </ul>
@@ -60,7 +63,7 @@ export function SavedResumeLocked({
         )}
         <div aria-hidden className="pointer-events-none mt-1 select-none blur-[5px]">
           <ul className="list-disc pl-5">
-            {firstRole?.bullets.filter(Boolean).slice(1).map((b, i) => <li key={i}>{b}</li>)}
+            {firstRole?.bullets.filter(Boolean).slice(2).map((b, i) => <li key={i}>{b}</li>)}
           </ul>
           {rest.map((role, i) => (
             <div key={i} className="mt-3">
@@ -82,15 +85,17 @@ export function SavedResumeLocked({
       <aside className="flex w-full flex-col gap-3 feature-panel p-5 lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
         <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Lock className="size-4 text-primary" aria-hidden />
-          Your resume for {jobLabel} is saved
+          Your resume for {jobLabel} is written
         </p>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          {lines} lines written for this job from your own experience. Pick up where you left off: edit it, download it
-          as PDF or Word, and build one for every job you apply to.
+          {lines} lines written for this job from your own experience, and nothing you haven&apos;t done. Unlock it to read
+          the rest, edit it and download it as PDF or Word. Pro writes the cover letter, the note to the hiring manager and
+          interview prep for this job too.
         </p>
-        <UpgradeModal title="Keep your tailored resumes" defaultPlan="quarterly">
+        <UpgradeModal title="Unlock your application" defaultPlan="monthly">
           <Button className="w-full">Unlock my resume</Button>
         </UpgradeModal>
+        {offerLine && <p className="text-center text-xs font-medium text-primary">Founding members: {offerLine.replace(/ for founding members/, "")}</p>}
       </aside>
     </div>
   );

@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { buildProfileFromResumeText } from "@/lib/career/parse-document";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
-import { creditReferralOnActivation, markUserOnboarded } from "@/lib/db/users";
+import { markUserOnboarded } from "@/lib/db/users";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
 import { safeMessage } from "@/lib/errors";
@@ -45,11 +45,6 @@ export async function importFromGraderAction(input: {
     const hasProfile = existing.experiences.length > 0 || existing.skills.length > 0;
     if (!hasProfile) {
       await buildProfileFromResumeText(user.id, resumeText);
-      try {
-        await creditReferralOnActivation(user.id);
-      } catch (error) {
-        console.warn("[workly:referral] credit failed:", error instanceof Error ? error.message : error);
-      }
     }
     await markUserOnboarded(user.id);
 

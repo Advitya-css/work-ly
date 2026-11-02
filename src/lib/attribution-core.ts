@@ -60,7 +60,11 @@ function sourceFromHost(host: string): string {
  */
 export function attributionFromRequest(url: URL, referer: string | null, now = new Date()): Attribution {
   const p = url.searchParams;
-  let s = clean(p.get("utm_source") ?? p.get("ref") ?? p.get("src"));
+  // A friend's invite (?invite=<id>, or the older /signup?ref=<id>) is the
+  // "invite" channel, not a channel named after someone's account id.
+  const ref = p.get("ref");
+  const invited = p.get("invite") != null || (ref != null && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(ref));
+  let s = clean(p.get("utm_source") ?? (invited ? "invite" : (ref ?? p.get("src"))));
   if (!s && referer) {
     try {
       const host = new URL(referer).hostname.toLowerCase();

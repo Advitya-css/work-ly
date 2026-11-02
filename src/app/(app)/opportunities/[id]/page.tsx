@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { JobAnalysisView } from "@/components/opportunities/analysis/job-analysis-view";
 import { JobNextStep } from "@/components/opportunities/analysis/job-next-step";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
+import { ShareVerdictButton } from "@/components/share/share-verdict-button";
 import { OpportunityStatusControls } from "@/components/opportunities/opportunity-status-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       }
       actions={
         <>
+          <ShareVerdictButton opportunityId={opportunity.id} invites />
           <OpportunityStatusControls
             id={opportunity.id}
             isSaved={opportunity.isSaved}

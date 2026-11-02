@@ -252,6 +252,11 @@ const DELIBERATELY_PUBLIC_PAGES: { path: string; mustContain: RegExp; why: strin
     mustContain: /"isPublic"\s*=\s*true/,
     why: 'the "Share Profile" feature - gated on career_profiles.isPublic, which only setProfilePublicAction (the profile\'s own owner) can ever set to true',
   },
+  {
+    path: "app/(marketing)/v/[token]/page.tsx",
+    mustContain: /verifyVerdict\(token\)/,
+    why: "a shared verdict card: no record is read at all. The card's contents are in the link, signed by the server only for its owner (shareVerdictAction checks the owner), and hold no resume text",
+  },
 ];
 
 describe("dynamic page guards", () => {

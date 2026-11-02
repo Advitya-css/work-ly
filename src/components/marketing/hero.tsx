@@ -64,7 +64,7 @@ export function Hero({ offer, sale = null }: { offer: PublicFoundingOffer | null
           </span>
           <Image src="/workly-bot-face.png" alt="" width={84} height={84} className="size-14 object-contain drop-shadow-sm sm:size-[72px]" priority />
         </div>
-        <LiveCheck />
+        <LiveCheck offer={offer} />
         <p className="mt-3 text-center text-xs text-muted-foreground">
           Free · no account needed · one check per device without signing up
         </p>

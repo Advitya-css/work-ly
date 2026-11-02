@@ -123,26 +123,13 @@ export function JobNextStep({
       </Link>
     </Button>
   ) : (
-    <UpgradeModal
-      title="Tailor your resume for this job"
-      defaultPlan="quarterly"
-      preview={
-        <ProPreview
-          facts={[
-            { label: "It would lead with", items: preview?.strengths ?? [] },
-            { label: "What the job asks for", items: (preview?.keywords ?? []).slice(0, 6) },
-            { label: "Gaps it leaves out rather than fakes", items: (preview?.gaps ?? []).slice(0, 3) },
-          ]}
-          outputLabel="Your resume, rewritten for this job"
-          lines={4}
-        />
-      }
-    >
-      <Button size="lg" className="gap-2">
-        Tailor my resume for this job
+    // Free: the first lines are written for real, free; the rest is the upgrade.
+    <Button asChild size="lg" className="gap-2">
+      <Link href={`${resumeHref}?preview=1`}>
+        Write the top of it, free
         <ArrowRight className="size-4" />
-      </Button>
-    </UpgradeModal>
+      </Link>
+    </Button>
   );
 
   return (
@@ -160,15 +147,33 @@ export function JobNextStep({
               ? "Still saved in your account. Pro opens it again for editing and download."
               : resumeReady
               ? "Saved for this job. Download it as PDF or Word, or keep refining it."
-              : "Rewritten from what's already on your profile, in this posting's language. Nothing invented."}
+              : isPro
+              ? "Rewritten from what's already on your profile, in this posting's language. Nothing invented."
+              : "See the summary and your strongest lines rewritten for this posting, free. Nothing invented."}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
           {primary}
           {!isPro && !resumeReady && (
-            <Link href={resumeHref} className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-              See what you&apos;d get first
-            </Link>
+            <UpgradeModal
+              title="Tailor your resume for this job"
+              defaultPlan="quarterly"
+              preview={
+                <ProPreview
+                  facts={[
+                    { label: "It would lead with", items: preview?.strengths ?? [] },
+                    { label: "What the job asks for", items: (preview?.keywords ?? []).slice(0, 6) },
+                    { label: "Gaps it leaves out rather than fakes", items: (preview?.gaps ?? []).slice(0, 3) },
+                  ]}
+                  outputLabel="Your resume, rewritten for this job"
+                  lines={4}
+                />
+              }
+            >
+              <button type="button" className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                Or unlock the whole application
+              </button>
+            </UpgradeModal>
           )}
         </div>
       </div>

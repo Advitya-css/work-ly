@@ -1,5 +1,4 @@
 import "server-only";
-import { creditReferralOnActivation } from "@/lib/db/users";
 import { UserFacingError } from "@/lib/errors";
 
 import { extractDocumentText } from "@/lib/ai/document-text";
@@ -147,14 +146,6 @@ export async function parseDocumentAndBuildProfile(
     const { extraction } = await buildProfileFromResumeText(userId, text);
 
     await updateDocumentStatus(documentId, "PARSED");
-
-    // Activation: a referred user's first real resume unlocks both
-    // referral rewards (once). Never allowed to fail the parse.
-    try {
-      await creditReferralOnActivation(userId);
-    } catch (error) {
-      console.warn("[workly:referral] credit failed:", error instanceof Error ? error.message : error);
-    }
 
     return {
       extraction,

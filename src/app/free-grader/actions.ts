@@ -10,6 +10,21 @@ import { getCurrentUser } from "@/lib/auth";
 import { FREE_AI_LIMIT_MESSAGE, spendAnonymousAi, spendFreeAi } from "@/lib/ai/allowance";
 import { recordFunnelStep } from "@/lib/attribution";
 import { countsInWords, graderHeadline } from "@/lib/scoring/grader-headline";
+import { parseJobSync } from "@/lib/ai/providers/job-heuristic";
+import { pickRows, type ShareRec } from "@/lib/share/verdict-core";
+import { signVerdict } from "@/lib/share/verdict-token";
+import { checkTicket, previewTicket, writeOpeningPreview, type OpeningPreview } from "@/lib/resume/opening-preview";
+
+/** The same trimming the check uses, so a preview ticket matches the texts it was given for. */
+const forCheck = (text: string) => stripPromptInjectionMarkers(String(text ?? "").slice(0, 8000));
+
+/** A job title the heuristic parser is fairly sure of, else null (a card is better with none than a wrong one). */
+function plausibleTitle(title: string | null | undefined): string | null {
+  const t = (title ?? "").replace(/\s+/g, " ").trim();
+  if (t.length < 3 || t.length > 70) return null;
+  if (/about (the|this)|job description|responsibilit|requirements|who we are|overview|apply/i.test(t)) return null;
+  return t;
+}
 
 /**
  * One free scan per device, enforced with a long-lived cookie rather than an
@@ -64,8 +79,8 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
     }
   }
 
-  const safeResume = stripPromptInjectionMarkers(resumeText.slice(0, 8000));
-  const safeJob = stripPromptInjectionMarkers(jobDescriptionText.slice(0, 8000));
+  const safeResume = forCheck(resumeText);
+  const safeJob = forCheck(jobDescriptionText);
   if (safeResume.trim().length < 200 || safeJob.trim().length < 200) {
     return { error: "Paste the full resume and the full job description (at least a few paragraphs each)." };
   }
@@ -99,8 +114,28 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
     // A free check run, counted against the visitor's channel.
     await recordFunnelStep("grader");
 
+    // A card they can share (no resume text on it), carrying their invite if signed in.
+    const parsedJob = parseJobSync(safeJob);
+    const share = reliable
+      ? signVerdict({
+          r: analysis.recommendation as ShareRec,
+          s: analysis.fitScore,
+          t: plausibleTitle(parsedJob.title),
+          c: plausibleTitle(parsedJob.company),
+          q: pickRows([
+            ...met.map((r) => ({ x: r.requirement, k: "met" as const })),
+            ...open.map((r) => ({ x: r.requirement, k: r.verdict === "partial" ? ("partial" as const) : ("missing" as const) })),
+          ]),
+          i: user?.id ?? null,
+        })
+      : null;
+
     return {
       data: {
+        /** A signed share-card token (lib/share), or null. */
+        share,
+        /** One free look at the top of their tailored resume, after a yes. */
+        previewTicket: reliable && !user?.isPro ? previewTicket(safeResume, safeJob, analysis.recommendation) : null,
         /** Signed-in visitors can open the full report in their account straight away. */
         signedIn: Boolean(user),
         /** Pro members aren't shown prices for what they already have. */
@@ -129,5 +164,39 @@ export async function scoreResumeAction(resumeText: string, jobDescriptionText: 
   } catch (error) {
     console.error("Free grader error:", error);
     return { error: "Failed to score resume. Please try again." };
+  }
+}
+
+/**
+ * The top of the visitor's resume, rewritten for the job they just checked:
+ * only after a yes, once per check (see lib/resume/opening-preview.ts).
+ */
+export async function previewOpeningAction(
+  resumeText: string,
+  jobText: string,
+  ticket: string,
+): Promise<{ preview?: OpeningPreview; error?: string }> {
+  const safeResume = forCheck(resumeText);
+  const safeJob = forCheck(jobText);
+  const id = checkTicket(String(ticket ?? ""), safeResume, safeJob);
+  if (!id) return { error: "Run the check again to see this." };
+  // One preview per ticket (and the IP cap as a backstop).
+  if (!(await checkRateLimit(`opening-preview:${id}`, 1, 60 * 60))) return { error: "You've already seen this one." };
+  const headerList = await headers();
+  const ip = headerList.get("x-real-ip")?.trim() || headerList.get("x-forwarded-for")?.split(",").pop()?.trim() || "unknown";
+  if (!(await checkRateLimit(`opening-preview-ip:${ip}`, 6, 24 * 60 * 60))) {
+    return { error: "That's today's limit from your network. Create a free account to get the whole application." };
+  }
+  const user = await getCurrentUser().catch(() => null);
+  if (!(user ? await spendFreeAi(user) : await spendAnonymousAi())) {
+    return { error: "The free writer has hit today's limit. Create a free account to get the whole application." };
+  }
+  try {
+    const preview = await writeOpeningPreview(safeResume, safeJob);
+    if (!preview) return { error: "Couldn't write it just now. The full version is one free account away." };
+    return { preview };
+  } catch (error) {
+    console.error("[workly:preview] opening preview failed:", error instanceof Error ? error.message : error);
+    return { error: "Couldn't write it just now. The full version is one free account away." };
   }
 }

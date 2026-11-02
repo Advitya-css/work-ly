@@ -1,5 +1,7 @@
 import { CheckCircle2, Clock, Crown, RotateCw, TriangleAlert, Users, Zap } from "lucide-react";
 import { CopyReferralLink } from "@/components/paywall/copy-referral-link";
+import { MAX_REFERRAL_BONUSES_PER_YEAR, inviteLink, referralLine } from "@/lib/referral-core";
+import { referralStats } from "@/lib/referrals";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,6 +104,7 @@ export async function PlanSettings({
   // Beta and referral Pro are free trials, not purchases - they can still buy.
   const canBuy = !isPro || !paidPlan;
   const refund = isPro && paidPlan ? await getRefundStatus(user.id) : null;
+  const invites = await referralStats(user.id);
   const shortDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
   return (
@@ -169,7 +172,8 @@ export async function PlanSettings({
                 </span>
               ) : isPro && proUntil ? (
                 <span className="text-sm text-muted-foreground">
-                  Your Pro access is valid until <strong className="text-foreground">{new Date(proUntil).toLocaleDateString()}</strong>.
+                  Your Pro access is valid until <strong className="text-foreground">{new Date(proUntil).toLocaleDateString()}</strong>
+                  {user.proPlan === "referral" ? ", two extra weeks from an invite. Pick a plan below to keep Pro after that" : ""}.
                 </span>
               ) : isPro ? (
                 <span className="text-sm text-muted-foreground">
@@ -185,17 +189,20 @@ export async function PlanSettings({
           </div>
 
           
-          <div className="flex flex-col gap-3 p-5 bg-primary/5 rounded-xl border border-primary/20 mt-2">
+          <div id="invite" className="mt-2 flex scroll-mt-24 flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-5">
             <div className="flex items-center gap-2">
               <Users className="size-5 text-primary" />
-              <h3 className="font-semibold text-lg text-foreground">Earn free months of Pro</h3>
+              <h3 className="text-lg font-semibold text-foreground">Give two weeks, get two weeks</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Share your personal invite link below. When a friend signs up with your link and uploads their resume, <strong>you both get 1 free month of Pro.</strong> There is no limit to how many free months you can earn!
+              Send a friend your link. It opens Work-ly&apos;s free check, so they can see what it does before signing up.{" "}
+              <strong className="text-foreground">If they buy Pro, you both get two extra weeks of Pro.</strong> It works
+              for every friend who buys, up to {MAX_REFERRAL_BONUSES_PER_YEAR} a year.
             </p>
-            <div className="mt-2">
-              <CopyReferralLink link={`https://www.work-ly.in/signup?ref=${user.id}`} />
+            <div className="mt-1">
+              <CopyReferralLink link={inviteLink("https://work-ly.in", user.id)} />
             </div>
+            {invites && referralLine(invites) && <p className="text-xs text-muted-foreground">{referralLine(invites)}</p>}
           </div>
 
           {/* Beta testers only: paying members were promised nothing like this. */}
