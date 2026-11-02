@@ -46,7 +46,7 @@ export async function foundingTenQueue(limit = 60): Promise<{ rows: QueueRow[]; 
       EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'lifecycle:checkout:' || u.id AND r.expires_at > now()) AS checkout_open,
       EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'lifecycle:sent:trial_ended:' || u.id) AS trial_ended
     FROM users u
-    WHERE (u."isPro" = false OR u."proPlan" = 'trial')
+    WHERE (u."isPro" = false OR u."proPlan" IN ('trial', 'referral'))
       AND NOT EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'email_optout:' || u.id)
       AND NOT EXISTS (SELECT 1 FROM rate_limits r WHERE r.key LIKE 'outreach:%:' || lower(u.email) AND r.expires_at > now())
       AND NOT EXISTS (SELECT 1 FROM rate_limits r WHERE r.key = 'refund_first_' || u.id)

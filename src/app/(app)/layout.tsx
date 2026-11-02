@@ -10,7 +10,7 @@ import { SampleDataBanner } from "@/components/shared/sample-data-banner";
 import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCareerProfileByUserId } from "@/lib/db/career-profile";
-import { TrialBanner } from "@/components/paywall/trial-banner";
+import { ReferralBanner, TrialBanner } from "@/components/paywall/trial-banner";
 import { summaryWithin } from "@/lib/saved-outputs";
 import { foundingOfferLine } from "@/lib/payments/founding";
 import { EMPTY_COUNTS } from "@/lib/saved-work-core";
@@ -37,10 +37,12 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // before it renders. Read here rather than in each page so the sidebar
   // never disagrees with the page it is sitting next to.
   const onTrial = Boolean(user.isPro && user.proPlan === "trial" && user.proUntil);
+  // Two weeks of Pro from an invite, not bought (lib/referrals.ts).
+  const onReferral = Boolean(user.isPro && user.proPlan === "referral" && user.proUntil);
   const [profile, trialSaved, offerLine] = await Promise.all([
     getCareerProfileByUserId(user.id),
     onTrial ? summaryWithin(user.id) : Promise.resolve(null),
-    onTrial ? foundingOfferLine().catch(() => null) : Promise.resolve(null),
+    onTrial || onReferral ? foundingOfferLine().catch(() => null) : Promise.resolve(null),
   ]);
 
   return (
@@ -50,6 +52,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         {onTrial && user.proUntil && (
           <TrialBanner endsAt={user.proUntil} saved={trialSaved?.counts ?? EMPTY_COUNTS} offerLine={offerLine} />
         )}
+        {onReferral && user.proUntil && <ReferralBanner endsAt={user.proUntil} offerLine={offerLine} />}
         <PendingCodeCard />
         {children}
         {user.isPro ? (

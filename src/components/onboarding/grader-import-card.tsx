@@ -54,7 +54,7 @@ export function GraderImportCard({ className, hasProfile = false }: { className?
         Pick up where you left off
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-        You checked your resume against <span className="font-medium text-foreground">{draftJobLabel(draft.jobText)}</span>.
+        You checked your resume against <span className="font-medium text-foreground">{draftJobLabel(draft.jobText)}</span>.{" "}
         {hasProfile
           ? "Work-ly can open the full report for that job in your account, including how to close each gap."
           : "Work-ly can build your profile from that resume and open the full report for that job, including how to close each gap."}

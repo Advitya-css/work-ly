@@ -50,7 +50,8 @@ export async function clearBankedDays(client: PoolClient | typeof pool, userId: 
 }
 
 /** Two extra weeks for one account, inside the caller's transaction. */
-async function giveBonus(client: PoolClient, userId: string, now = new Date()): Promise<boolean> {
+async function giveBonus(client: PoolClient, userId: string, { buyer = false }: { buyer?: boolean } = {}): Promise<boolean> {
+  const now = new Date();
   const { rows } = await client.query(`SELECT "isPro", "proPlan", "proUntil" FROM users WHERE id = $1 FOR UPDATE`, [userId]);
   const u = rows[0];
   if (!u) return false;
@@ -62,7 +63,9 @@ async function giveBonus(client: PoolClient, userId: string, now = new Date()): 
   // An active purchase or gift keeps its plan name; anything else (free,
   // expired, the 1-day trial) becomes a "referral" plan, which is Pro
   // without the trial's limits and still free to buy a plan on top of.
-  const keepPlan = active && plan != null && plan !== "trial";
+  // The buyer always keeps the plan they just paid for, even when the
+  // order is processed late (a delayed webhook, "Restore purchase").
+  const keepPlan = (active || buyer) && plan != null && plan !== "trial";
   await client.query(
     `UPDATE users
         SET "isPro" = true,
@@ -98,7 +101,7 @@ export async function creditReferralOnPurchase(buyerId: string): Promise<Referra
       return null;
     }
     await client.query(`UPDATE users SET "referredBy" = $2 WHERE id = $1`, [buyerId, `${ref.id}${PAID_MARKER}`]);
-    const buyerRewarded = await giveBonus(client, buyerId);
+    const buyerRewarded = await giveBonus(client, buyerId, { buyer: true });
 
     // One marker per rewarded friend, kept for a year: the yearly cap.
     const { rows: countRows } = await client.query(
@@ -117,6 +120,59 @@ export async function creditReferralOnPurchase(buyerId: string): Promise<Referra
     await client.query("COMMIT");
     console.info(`[workly:referral] ${buyerId} bought Pro; bonus for buyer=${buyerRewarded} referrer=${referrerRewarded}`);
     return { referrerId: ref.id, buyerRewarded, referrerRewarded };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/** Takes one bonus back (a refunded referral), inside the caller's transaction. */
+async function takeBackBonus(client: PoolClient, userId: string): Promise<void> {
+  const banked = await bankedBonusDays(client, userId);
+  if (banked > 0) {
+    await client.query(`UPDATE rate_limits SET count = GREATEST(count - $2, 0) WHERE key = $1`, [
+      bonusKey(userId),
+      Math.min(banked, REFERRAL_BONUS_DAYS),
+    ]);
+  }
+  await client.query(
+    `UPDATE users
+        SET "proUntil" = GREATEST(now(), "proUntil" - make_interval(days => $2)), "updatedAt" = now()
+      WHERE id = $1 AND "proUntil" IS NOT NULL`,
+    [userId, REFERRAL_BONUS_DAYS],
+  );
+}
+
+/**
+ * The invited person's purchase was refunded in full: the reward came from
+ * a sale that didn't happen, so the inviter's two weeks are taken back (a
+ * buy-and-refund loop would otherwise farm free Pro), the buyer's banked
+ * bonus goes with their access, and the referral counts as unrewarded
+ * again so a real purchase later still pays out. Safe to call repeatedly.
+ */
+export async function revokeReferralOnRefund(buyerId: string): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(`SELECT "referredBy" FROM users WHERE id = $1 FOR UPDATE`, [buyerId]);
+    const raw = (rows[0]?.referredBy as string | null | undefined) ?? null;
+    const ref = referrerOf(raw);
+    if (!ref || !raw?.endsWith(PAID_MARKER)) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    await client.query(`UPDATE users SET "referredBy" = $2 WHERE id = $1`, [buyerId, ref.id]);
+    await clearBankedDays(client, buyerId);
+    const claim = await client.query(`DELETE FROM rate_limits WHERE key = $1 RETURNING key`, [`referral_bonus:${ref.id}:${buyerId}`]);
+    if (claim.rowCount) {
+      await client.query(`SELECT 1 FROM users WHERE id = $1 FOR UPDATE`, [ref.id]);
+      await takeBackBonus(client, ref.id);
+    }
+    await client.query("COMMIT");
+    console.info(`[workly:referral] ${buyerId} refunded; referral reward taken back`);
+    return true;
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;

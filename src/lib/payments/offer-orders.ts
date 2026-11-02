@@ -63,6 +63,14 @@ export async function deliverOfferOrder(order: PaidOrder, key: OfferKey): Promis
     );
     if (!rowCount) throw new Error(`sprint order ${order.id}: user ${userId} not found`);
     await recordSprintPaid(order.id, userId, order.createdAt);
+    // The Sprint includes Pro, so it counts as buying Pro for an invite.
+    try {
+      const { creditReferralOnPurchase, emailReferrerReward } = await import("@/lib/referrals");
+      const reward = await creditReferralOnPurchase(userId);
+      if (reward?.referrerRewarded) await emailReferrerReward(reward.referrerId);
+    } catch (error) {
+      console.error("[workly:referral] couldn't credit the referral:", error instanceof Error ? error.message : error);
+    }
 
     if (await markDelivered(key, order)) {
       await recordPaidOrder({
@@ -148,6 +156,10 @@ export async function refundOfferOrder(order: PaidOrder, key: OfferKey): Promise
       await pool.query(
         `UPDATE users SET "isPro" = false, "proUntil" = now(), "updatedAt" = now() WHERE id = $1 AND "proPlan" = 'sprint'`,
         [userId],
+      );
+      const { revokeReferralOnRefund } = await import("@/lib/referrals");
+      await revokeReferralOnRefund(userId).catch((e) =>
+        console.error("[workly:referral] couldn't take back the referral reward:", e instanceof Error ? e.message : e),
       );
     }
     return;

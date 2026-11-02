@@ -49,7 +49,7 @@ export default async function AdminDashboard({
   const { rows: stats } = await pool.query(`
     SELECT 
       COUNT(*) as total_users,
-      COUNT(*) FILTER (WHERE "isPro" = true AND COALESCE("proPlan", '') <> 'trial') as pro_users,
+      COUNT(*) FILTER (WHERE "isPro" = true AND ("proUntil" IS NULL OR "proUntil" > now()) AND COALESCE("proPlan", '') NOT IN ('trial', 'referral')) as pro_users,
       (SELECT COUNT(*) FROM career_pathways) as total_pathways
     FROM users
   `);

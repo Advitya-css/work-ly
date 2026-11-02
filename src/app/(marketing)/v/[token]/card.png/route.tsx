@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-import { SHARE_COPY, type ShareState } from "@/lib/share/verdict-core";
+import { cardClip, cardText, SHARE_COPY, type ShareState } from "@/lib/share/verdict-core";
 import { verifyVerdict } from "@/lib/share/verdict-token";
 
 /**
@@ -33,6 +33,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
   const v = verifyVerdict(token);
   if (!v) return new Response("Not found", { status: 404 });
   const [regular, heavy, robot] = await fonts;
+  // One line each, so a long title or requirement can never push the card
+  // out of shape.
+  const title = cardClip(cardText(v.t), 44);
+  const company = cardClip(cardText(v.c), 60);
+  const rows = v.q
+    .map((row) => ({ ...row, x: cardClip(cardText(row.x), 52) }))
+    .filter((row): row is typeof row & { x: string } => Boolean(row.x));
   const copy = SHARE_COPY[v.r];
   const tone = TONE[copy.tone];
   const ringC = 2 * Math.PI * 70;
@@ -52,16 +59,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", fontSize: 22, fontWeight: 800, color: PLUM, letterSpacing: 2 }}>WORK-LY CHECKED THIS JOB</div>
-          {v.t && (
-            <div style={{ display: "flex", marginTop: 18, fontSize: 38, fontWeight: 800, letterSpacing: -1, lineHeight: 1.15 }}>{v.t}</div>
+          <div style={{ display: "flex", flexShrink: 0, fontSize: 22, fontWeight: 800, color: PLUM, letterSpacing: 2 }}>WORK-LY CHECKED THIS JOB</div>
+          {title && (
+            <div style={{ display: "flex", flexShrink: 0, marginTop: 18, fontSize: 38, fontWeight: 800, letterSpacing: -1, lineHeight: 1.15 }}>{title}</div>
           )}
-          {v.c && <div style={{ display: "flex", marginTop: 6, fontSize: 26, color: MUTED }}>{v.c}</div>}
-          <div style={{ display: "flex", marginTop: v.t ? 22 : 28, fontSize: 92, fontWeight: 800, letterSpacing: -4, color: tone, lineHeight: 1 }}>
+          {company && <div style={{ display: "flex", flexShrink: 0, marginTop: 6, fontSize: 26, color: MUTED }}>{company}</div>}
+          <div style={{ display: "flex", flexShrink: 0, marginTop: title ? 22 : 28, fontSize: 92, fontWeight: 800, letterSpacing: -4, color: tone, lineHeight: 1 }}>
             {copy.word}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", marginTop: 26, gap: 12 }}>
-            {v.q.map((row) => (
+          <div style={{ display: "flex", flexShrink: 0, flexDirection: "column", marginTop: 26, gap: 12 }}>
+            {rows.map((row) => (
               <div key={row.x} style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div
                   style={{
@@ -79,11 +86,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
                     <path d={STATE[row.k].path} fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <div style={{ display: "flex", fontSize: 25, lineHeight: 1.2, maxWidth: 700 }}>{row.x}</div>
+                <div style={{ display: "flex", fontSize: 25, lineHeight: 1.2, maxWidth: 760 }}>{row.x}</div>
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", marginTop: "auto", fontSize: 24, color: MUTED }}>
+          <div style={{ display: "flex", flexShrink: 0, marginTop: "auto", paddingTop: 16, fontSize: 24, color: MUTED }}>
             <span style={{ color: PLUM, fontWeight: 800 }}>work-ly.in</span>
             <span style={{ marginLeft: 12 }}>· Is it worth applying? Free check, no signup</span>
           </div>

@@ -93,6 +93,7 @@ export async function writeOpeningPreview(resumeText: string, jobText: string): 
     schema: SCHEMA,
     temperature: 0.3,
     validate: (raw) => {
+      if (!raw || typeof raw !== "object") return null;
       const r = raw as Record<string, unknown>;
       let summary = str(r.summary, 600);
       // A summary with a number the resume doesn't have is dropped, not shown.

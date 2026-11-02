@@ -81,3 +81,41 @@ export function TrialBanner({
     </div>
   );
 }
+
+/**
+ * Across the top of the app while two weeks of Pro from an invite run:
+ * how long is left, and the way to keep it. Shown only to people who
+ * haven't bought (a paying member's bonus just extends their plan).
+ */
+export function ReferralBanner({ endsAt, offerLine }: { endsAt: Date; offerLine?: string | null }) {
+  const days = Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000));
+  const final = days <= 2;
+  const left = days <= 1 ? "ends within a day" : `${days} days left`;
+  return (
+    <div
+      className={cn(
+        "mb-6 flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between",
+        final ? "border-warning/50 bg-warning/10" : "border-primary/30 bg-primary/5",
+      )}
+      role="status"
+    >
+      <div className="flex min-w-0 items-start gap-2.5 text-sm text-foreground">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+        <p className="flex flex-col gap-0.5">
+          <span>
+            <span className="font-semibold">Pro from an invite: {left}.</span>{" "}
+            <span className="text-muted-foreground">
+              Everything you build stays in your account afterwards; editing and downloading it needs Pro.
+            </span>
+          </span>
+          {final && offerLine && <span className="font-medium text-foreground">{offerLine}</span>}
+        </p>
+      </div>
+      <UpgradeModal title="Keep Work-ly Pro" defaultPlan="monthly">
+        <Button size="sm" className="shrink-0">
+          Keep Pro
+        </Button>
+      </UpgradeModal>
+    </div>
+  );
+}

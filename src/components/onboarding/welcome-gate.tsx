@@ -57,7 +57,6 @@ function AutoImport({ draft, onCancel }: { draft: GraderDraft; onCancel: () => v
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const cancelled = useRef(false);
   const job = draftJobLabel(draft.jobText);
 
   // Once per attempt, even when React runs effects twice in development:
@@ -67,15 +66,19 @@ function AutoImport({ draft, onCancel }: { draft: GraderDraft; onCancel: () => v
     if (ran.current === attempt) return;
     ran.current = attempt;
     setError(null);
-    importFromGraderAction({ resumeText: draft.resumeText, jobText: draft.jobText }).then((res) => {
-      if (cancelled.current) return;
-      if (res.opportunityId) {
-        clearGraderDraft();
-        router.push(`/opportunities/${res.opportunityId}`);
-      } else {
-        setError(res.error ?? "That didn't work. Please try again.");
-      }
-    });
+    // No "cancel" while it runs: the import can't be stopped once it has
+    // started, so offering one would leave a profile and a job behind a
+    // person who thought they'd said no. A failure offers the way out.
+    importFromGraderAction({ resumeText: draft.resumeText, jobText: draft.jobText })
+      .then((res) => {
+        if (res.opportunityId) {
+          clearGraderDraft();
+          router.push(`/opportunities/${res.opportunityId}`);
+        } else {
+          setError(res.error ?? "That didn't work. Please try again.");
+        }
+      })
+      .catch(() => setError("Couldn't reach Work-ly just now. Check your connection and try again."));
   }, [attempt, draft, router]);
 
   return (
@@ -110,16 +113,6 @@ function AutoImport({ draft, onCancel }: { draft: GraderDraft; onCancel: () => v
             ]}
             note="About a minute. You'll land on the job when it's ready."
           />
-          <button
-            type="button"
-            onClick={() => {
-              cancelled.current = true;
-              onCancel();
-            }}
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Start fresh instead
-          </button>
         </>
       )}
     </section>

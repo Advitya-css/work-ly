@@ -79,6 +79,31 @@ export function pickRows(rows: { x: string; k: ShareState | "unknown" }[], max =
   return [...metShown, ...rest].slice(0, max);
 }
 
+/**
+ * The card's font covers Latin text only. Anything else (Devanagari, emoji)
+ * would make the image renderer fetch fonts from the internet mid-request,
+ * and fail the whole picture if that fetch fails, so those characters are
+ * left off the picture. The page itself shows the text in full.
+ */
+export function cardText(text: string | null): string | null {
+  if (!text) return null;
+  const kept = text
+    .replace(/[^\u0000-\u00FF\u0131\u0152\u0153\u2000-\u206F\u20AC\u2122\u2212]/g, "")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return /[A-Za-z0-9]/.test(kept) ? kept : null;
+}
+
+/** Shortened at a word boundary to fit one line of the card ("…" when cut). */
+export function cardClip(text: string | null, max: number): string | null {
+  if (!text) return null;
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,;:.\-–—]+$/, "")}…`;
+}
+
 /** "Work-ly told me to skip this job: Senior Cloud Engineer at Acme" */
 export function shareTitle(v: SharedVerdict): string {
   const job = v.t ? `${v.t}${v.c ? ` at ${v.c}` : ""}` : null;

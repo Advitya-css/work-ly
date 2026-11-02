@@ -170,9 +170,14 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
   useEffect(() => {
     if (!ticket) return;
     startWriting(async () => {
-      const res = await previewOpeningAction(resume, job, ticket);
-      if (res.preview) setPreview(res.preview);
-      else setPreviewNote(res.error ?? null);
+      try {
+        const res = await previewOpeningAction(resume, job, ticket);
+        if (res.preview) setPreview(res.preview);
+        else setPreviewNote(res.error ?? null);
+      } catch {
+        // A dropped connection must never take the verdict down with it.
+        setPreviewNote("Couldn't write it just now. The full version is one free account away.");
+      }
     });
     // The ticket belongs to the texts that were checked; run once per ticket.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -353,7 +358,11 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
                 ) : (
                   <Button asChild className="gap-2">
                     <Link href={result.sample ? "/signup" : "/signup?from=check"}>
-                      {result.sample ? "Create a free account" : result.recommendation === "SKIP" ? "Find better-fit jobs" : "Write this application for me"}
+                      {result.sample
+                        ? "Create a free account"
+                        : result.recommendation === "SKIP" || result.recommendation === "LOW_PRIORITY"
+                          ? "Find better-fit jobs"
+                          : "Write this application for me"}
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>

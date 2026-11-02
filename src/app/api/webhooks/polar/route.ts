@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 
-import { bankedBonusDays, clearBankedDays } from "@/lib/referrals";
+import { bankedBonusDays, clearBankedDays, revokeReferralOnRefund } from "@/lib/referrals";
 import { pool } from "@/lib/db/pool";
 import { planForProduct } from "@/lib/payments/polar-plans";
 import { grantForOrder, normalizeOrder, userIdForOrder } from "@/lib/payments/polar-grant";
@@ -116,6 +116,9 @@ export async function POST(req: Request) {
             [userId, plan],
           );
           console.log(`[workly:polar] order ${order.id} refunded: ${plan} access ended for user ${userId}`);
+          await revokeReferralOnRefund(userId).catch((e) =>
+            console.error("[workly:referral] couldn't take back the referral reward:", e instanceof Error ? e.message : e),
+          );
         }
         break;
       }

@@ -50,9 +50,13 @@ export function ShareVerdictButton({
     setOpen(true);
     if (token || !opportunityId) return;
     start(async () => {
-      const res = await shareVerdictAction(opportunityId);
-      if (res.token) setToken(res.token);
-      else setError(res.error ?? "Couldn't make the card. Try again.");
+      try {
+        const res = await shareVerdictAction(opportunityId);
+        if (res.token) setToken(res.token);
+        else setError(res.error ?? "Couldn't make the card. Try again.");
+      } catch {
+        setError("Couldn't reach Work-ly just now. Try again in a moment.");
+      }
     });
   }
 
@@ -90,7 +94,7 @@ export function ShareVerdictButton({
         {label}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="gap-4 sm:max-w-lg">
+        <DialogContent className="gap-4 sm:max-w-lg [&>*]:min-w-0">
           <div className="flex flex-col gap-1">
             <DialogTitle>Share this verdict</DialogTitle>
             <DialogDescription>

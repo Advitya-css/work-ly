@@ -23,9 +23,13 @@ export function ResumePreviewStarter({ opportunityId, auto = false, jobLabel }: 
   function run() {
     setError(null);
     start(async () => {
-      const res = await buildResumePreviewAction(opportunityId);
-      if (res.ok) router.refresh();
-      else setError(res.error ?? "Couldn't write it right now. Please try again.");
+      try {
+        const res = await buildResumePreviewAction(opportunityId);
+        if (res.ok) router.refresh();
+        else setError(res.error ?? "Couldn't write it right now. Please try again.");
+      } catch {
+        setError("Couldn't reach Work-ly just now. Check your connection and try again.");
+      }
     });
   }
 

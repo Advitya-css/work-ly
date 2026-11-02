@@ -180,8 +180,8 @@ export async function previewOpeningAction(
   const safeJob = forCheck(jobText);
   const id = checkTicket(String(ticket ?? ""), safeResume, safeJob);
   if (!id) return { error: "Run the check again to see this." };
-  // One preview per ticket (and the IP cap as a backstop).
-  if (!(await checkRateLimit(`opening-preview:${id}`, 1, 60 * 60))) return { error: "You've already seen this one." };
+  // The network's daily cap and the AI allowance first, so a refusal there
+  // doesn't use up the visitor's one look.
   const headerList = await headers();
   const ip = headerList.get("x-real-ip")?.trim() || headerList.get("x-forwarded-for")?.split(",").pop()?.trim() || "unknown";
   if (!(await checkRateLimit(`opening-preview-ip:${ip}`, 6, 24 * 60 * 60))) {
@@ -191,6 +191,8 @@ export async function previewOpeningAction(
   if (!(user ? await spendFreeAi(user) : await spendAnonymousAi())) {
     return { error: "The free writer has hit today's limit. Create a free account to get the whole application." };
   }
+  // One preview per ticket.
+  if (!(await checkRateLimit(`opening-preview:${id}`, 1, 60 * 60))) return { error: "You've already seen this one." };
   try {
     const preview = await writeOpeningPreview(safeResume, safeJob);
     if (!preview) return { error: "Couldn't write it just now. The full version is one free account away." };

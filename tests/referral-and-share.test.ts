@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll, afterAll } from "vitest";
 
 import { attributionFromRequest } from "@/lib/attribution-core";
 import { cleanInviteCode, inviteLink, referralLine, referrerOf } from "@/lib/referral-core";
-import { checkLink, normalizeShared, pickRows, shareTitle } from "@/lib/share/verdict-core";
+import { cardClip, cardText, checkLink, normalizeShared, pickRows, shareTitle } from "@/lib/share/verdict-core";
 import { signVerdict, verifyVerdict } from "@/lib/share/verdict-token";
 import { checkTicket, previewTicket } from "@/lib/resume/opening-preview";
 
@@ -96,6 +96,24 @@ describe("shared verdict cards", () => {
     expect(shareTitle({ ...card, t: null })).toBe("Work-ly told me to skip this job");
     expect(checkLink(card)).toBe(`/?invite=${ID}#check`);
     expect(checkLink({ ...card, i: null })).toBe("/#check");
+  });
+});
+
+describe("what fits on the card picture", () => {
+  it("keeps Latin text, drops scripts the card font can't draw", () => {
+    expect(cardText("Data Analyst – Growth (Remote) €")).toBe("Data Analyst – Growth (Remote) €");
+    expect(cardText("डेटा विश्लेषक (Data Analyst) 📊")).toBe("(Data Analyst)");
+    expect(cardText("डेटा विश्लेषक")).toBeNull();
+    expect(cardText("📊🚀")).toBeNull();
+    expect(cardText(null)).toBeNull();
+  });
+
+  it("cuts long text at a word, with an ellipsis", () => {
+    expect(cardClip("Short title", 44)).toBe("Short title");
+    const cut = cardClip("Senior Staff Machine Learning Platform Engineer, Recommendations", 44)!;
+    expect(cut.length).toBeLessThanOrEqual(44);
+    expect(cut).toBe("Senior Staff Machine Learning Platform…");
+    expect(cardClip("Supercalifragilisticexpialidociousnessesxyzabc", 20)).toBe("Supercalifragilisti…");
   });
 });
 

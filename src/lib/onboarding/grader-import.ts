@@ -32,7 +32,7 @@ export async function importFromGraderAction(input: {
   const resumeText = stripPromptInjectionMarkers(String(input.resumeText ?? "").slice(0, 20_000)).trim();
   const jobText = stripPromptInjectionMarkers(String(input.jobText ?? "").slice(0, 20_000)).trim();
   if (resumeText.length < 200 || jobText.length < 120) {
-    return { error: "That saved resume or job is too short to use. Add your resume below instead." };
+    return { error: "That saved resume or job is too short to use. Add your resume another way instead." };
   }
 
   // Same cap as uploading a resume: each import is a full AI parse.
