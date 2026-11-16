@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, CircleDashed, CircleSlash, Play, Quote, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleDashed, CircleSlash, FileText, FileUp, Mail, MessagesSquare, PenLine, Quote, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AiProgress } from "@/components/shared/ai-progress";
@@ -111,12 +112,13 @@ function Ring({ value, tone }: { value: number; tone: string }) {
 }
 
 /**
- * THE HOMEPAGE IS THE PRODUCT. Paste a job and your resume, no account, and
- * the honest verdict builds in front of you: apply, stretch or skip, every
- * point proven with a line from your own resume. Or watch it on a real
- * example first.
+ * THE HOMEPAGE IS THE PRODUCT, and it shows before it asks. On the left,
+ * the check itself: paste a job, add a resume (a PDF or Word file works),
+ * one button. On the right, a real verdict already on screen, so a visitor
+ * sees what they'll get before doing any work. Once they run their own
+ * check, the answer takes the whole width.
  */
-export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null }) {
+export function LiveCheck({ offer = null, heading = null }: { offer?: PublicFoundingOffer | null; heading?: ReactNode }) {
   const router = useRouter();
   const [preview, setPreview] = useState<OpeningPreview | null>(null);
   const [previewNote, setPreviewNote] = useState<string | null>(null);
@@ -127,11 +129,47 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [importing, startImport] = useTransition();
+  const [reading, setReading] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // A resume file is read into text on the server and shown in the box, so
+  // the visitor can see exactly what will be checked. Nothing is stored.
+  async function readFile(file: File | undefined | null) {
+    if (!file) return;
+    setError(null);
+    if (file.size > 8 * 1024 * 1024) {
+      setError("That file is over 8MB. Paste your resume as text instead.");
+      return;
+    }
+    setReading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/resume-text", { method: "POST", body });
+      const data = (await res.json().catch(() => null)) as { text?: string; error?: string } | null;
+      if (res.ok && data?.text) {
+        setResume(data.text);
+        setFileName(file.name);
+      } else {
+        setError(data?.error ?? "Couldn't read that file. Paste your resume as text instead.");
+      }
+    } catch {
+      setError("Couldn't upload that file. Check your connection, or paste your resume as text.");
+    } finally {
+      setReading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   function run() {
     setError(null);
     if (job.trim().length < 200 || resume.trim().length < 200) {
-      setError("Paste the whole job posting and your whole resume. A few paragraphs each is enough.");
+      setError(
+        job.trim().length < 200
+          ? "Paste the whole job posting: the requirements are what Work-ly checks."
+          : "Add your whole resume: upload the file or paste the text.",
+      );
       return;
     }
     start(async () => {
@@ -195,52 +233,82 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
 
   const verdict = result?.recommendation ? VERDICT[result.recommendation] : null;
 
+  const idle = !result && !pending;
+  const words = (t: string) => (t.trim() ? `${t.trim().split(/\s+/).length} words` : "");
+
   return (
-    <div className="relative mx-auto w-full max-w-4xl text-left">
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(28_26_25/0.05),0_16px_40px_-16px_rgb(122_46_85/0.18)]">
-        {!result && !pending && (
+    <div className={cn("mx-auto grid w-full gap-10 text-left", idle ? "max-w-6xl lg:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)] lg:items-start lg:gap-14" : "max-w-4xl")}>
+      <div className="flex min-w-0 flex-col">
+      {idle && heading}
+      <div id="check" className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(28_26_25/0.05),0_16px_40px_-16px_rgb(122_46_85/0.18)]">
+        {idle && (
           <div className="flex flex-col">
-            <div className="grid divide-y divide-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-              <label className="flex flex-col">
-                <span className="flex items-center justify-between px-5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                  The job
-                  <span className="font-normal normal-case tracking-normal text-muted-foreground">{job.trim() ? `${job.trim().split(/\s+/).length} words` : ""}</span>
-                </span>
-                <textarea
-                  value={job}
-                  onChange={(e) => setJob(e.target.value)}
-                  placeholder="Paste the whole job posting…"
-                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70 sm:h-52"
+            <label className="flex flex-col border-b border-border">
+              <span className="flex items-center justify-between px-5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                1 · The job
+                <span className="font-normal normal-case tracking-normal text-muted-foreground">{words(job)}</span>
+              </span>
+              <textarea
+                value={job}
+                onChange={(e) => setJob(e.target.value)}
+                placeholder="Paste the whole job posting…"
+                className="h-24 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70 sm:h-28"
+              />
+            </label>
+            <div
+              className="flex flex-col"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                void readFile(e.dataTransfer.files?.[0]);
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 px-5 pt-3.5">
+                <label htmlFor="check-resume" className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  2 · Your resume
+                </label>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={reading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-accent px-3 py-1 text-[12.5px] font-medium text-accent-foreground transition-colors hover:border-primary/60 disabled:opacity-70"
+                >
+                  {reading ? <WorklyLoader className="size-3.5 animate-spin" /> : <FileUp className="size-3.5" aria-hidden />}
+                  {reading ? "Reading your file…" : fileName ? "Use another file" : "Upload PDF or Word"}
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  aria-label="Upload your resume as a PDF or Word file"
+                  onChange={(e) => void readFile(e.target.files?.[0])}
                 />
-              </label>
-              <label className="flex flex-col">
-                <span className="flex items-center justify-between px-5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                  Your resume
-                  <span className="font-normal normal-case tracking-normal text-muted-foreground">{resume.trim() ? `${resume.trim().split(/\s+/).length} words` : ""}</span>
-                </span>
-                <textarea
-                  value={resume}
-                  onChange={(e) => setResume(e.target.value)}
-                  placeholder="Paste your resume as text…"
-                  className="h-44 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70 sm:h-52"
-                />
-              </label>
+              </div>
+              <textarea
+                id="check-resume"
+                value={resume}
+                onChange={(e) => {
+                  setResume(e.target.value);
+                  if (!e.target.value.trim()) setFileName(null);
+                }}
+                placeholder="…or paste your resume as text"
+                className="h-20 resize-none bg-transparent px-5 py-3 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/70"
+              />
+              {fileName && resume.trim() && (
+                <p className="truncate px-5 pb-3 text-[12px] text-muted-foreground">
+                  <CheckCircle2 className="-mt-0.5 mr-1 inline size-3.5 text-success" aria-hidden />
+                  Read from {fileName} · {words(resume)}
+                </p>
+              )}
             </div>
-            <div className="flex flex-col gap-3 border-t border-border bg-secondary/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                type="button"
-                onClick={() => setResult(SAMPLE)}
-                className="inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Play className="size-3.5" aria-hidden />
-                No resume handy? Watch it on a real example
-              </button>
-              <Button size="lg" onClick={run} className="h-11 gap-2 px-6">
+            <div className="flex flex-col gap-2 border-t border-border bg-secondary/60 px-5 py-4">
+              <Button size="lg" onClick={run} disabled={reading} className="h-12 w-full gap-2 text-[15px]">
                 Should I apply?
                 <ArrowRight className="size-4" />
               </Button>
             </div>
-            {error && <p className="border-t border-border px-5 py-3 text-[13px] text-destructive">{error}</p>}
+            {error && <p role="alert" className="border-t border-border px-5 py-3 text-[13px] text-destructive">{error}</p>}
           </div>
         )}
 
@@ -347,7 +415,7 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
                   }}
                 >
                   <RotateCcw className="size-3.5" />
-                  {result.sample ? "Try mine" : "Check another"}
+                  Check another
                 </Button>
                 {preview ? null : !result.sample && result.signedIn ? (
                   <Button onClick={openInAccount} disabled={importing} className="gap-2">
@@ -372,6 +440,88 @@ export function LiveCheck({ offer = null }: { offer?: PublicFoundingOffer | null
           </div>
         )}
       </div>
+      {idle && (
+        <p className="mt-3 text-center text-xs text-muted-foreground lg:text-left">
+          Free · no signup · about 30 seconds
+        </p>
+      )}
+      </div>
+      {idle && <ExampleVerdict />}
+    </div>
+  );
+}
+
+const KIT = [
+  { icon: FileText, label: "Resume" },
+  { icon: PenLine, label: "Cover letter" },
+  { icon: Mail, label: "Note to the hiring manager" },
+  { icon: MessagesSquare, label: "Interview prep" },
+];
+
+/**
+ * What a visitor gets, on screen before they've done anything: the real
+ * example report (SAMPLE above), drawn exactly like their own answer will
+ * be, with the robot vouching for it.
+ */
+function ExampleVerdict() {
+  const v = VERDICT[SAMPLE.recommendation ?? "APPLY"];
+  return (
+    <div className="relative min-w-0 pt-10 lg:pt-12">
+      <div className="pointer-events-none absolute right-4 top-0 z-10 flex items-end gap-2" aria-hidden>
+        <span className="mb-5 rounded-2xl rounded-br-sm border border-border bg-card px-3 py-1.5 text-[13px] font-medium text-foreground shadow-sm">
+          This is what you get.
+        </span>
+        <Image src="/workly-bot-face.png" alt="" width={84} height={84} className="size-16 object-contain drop-shadow-sm motion-safe:animate-[bob_3s_ease-in-out_infinite]" priority />
+      </div>
+      <figure className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(28_26_25/0.05),0_24px_60px_-24px_rgb(122_46_85/0.28)]">
+        <figcaption className="flex flex-wrap items-center gap-x-2 border-b border-border bg-secondary/60 px-5 py-2.5 text-[11.5px] text-muted-foreground">
+          <span className="font-semibold uppercase tracking-wider text-primary">Real example</span>
+          <span>Data &amp; Analytics Engineer, checked against a sample resume</span>
+        </figcaption>
+        <div className="flex items-center gap-4 border-b border-border px-5 py-5">
+          {SAMPLE.score != null && <Ring value={SAMPLE.score} tone={v.tone} />}
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className={cn("text-[34px] font-semibold leading-none tracking-[-0.04em]", v.tone)}>{v.word}</p>
+            <p className="text-[13.5px] text-foreground/85">{v.line}</p>
+          </div>
+        </div>
+        <ul className="stagger-children flex flex-col divide-y divide-border">
+          {SAMPLE.rows.map((row) => {
+            const i = ICON[row.state];
+            return (
+              <li key={row.requirement} className="flex gap-3 px-5 py-3">
+                <i.icon className={cn("mt-0.5 size-4 shrink-0", i.tone)} aria-label={i.label} />
+                <div className="flex min-w-0 flex-col gap-1">
+                  <p className="text-[13.5px] font-medium leading-snug text-foreground">{row.requirement}</p>
+                  {row.quote && (
+                    <p className="flex gap-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+                      <Quote className="mt-1 size-2.5 shrink-0 text-primary" aria-hidden />
+                      <span>{row.quote}</span>
+                    </p>
+                  )}
+                  {row.fix && (
+                    <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+                      <span className="text-foreground/80">To close it: </span>
+                      {row.fix}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex flex-col gap-2.5 border-t border-border bg-accent/50 px-5 py-4">
+          <p className="text-[12.5px] font-medium text-foreground">If it&apos;s a yes, Work-ly writes the application for that job:</p>
+          <ul className="flex flex-wrap gap-1.5">
+            {KIT.map((k) => (
+              <li key={k.label} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] font-medium text-foreground">
+                <k.icon className="size-3.5 text-primary" aria-hidden />
+                {k.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </figure>
     </div>
   );
 }
