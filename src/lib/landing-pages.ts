@@ -121,7 +121,7 @@ export const LANDING_PAGES: Record<string, LandingPage> = {
       },
       {
         q: "What happens to my resume?",
-        a: "It's used to run your check. Work-ly uses Google's paid Gemini API, which doesn't train on what you send.",
+        a: "It's used solely to analyze your fit. Your information is never used to train AI models, sold to third parties, or shared with employers.",
       },
     ],
   },

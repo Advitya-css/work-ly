@@ -189,7 +189,7 @@ export default async function GuidePage() {
     },
     {
       q: "Is my data private?",
-      a: "Work-ly runs on Google Gemini's paid API, which doesn't train on what you send. You can export or delete everything any time from Settings.",
+      a: "Yes. Your resume and career data are completely private and never used to train AI models. You can export or delete your information at any time from Settings.",
     },
   ];
 

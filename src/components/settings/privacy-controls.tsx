@@ -2,6 +2,7 @@
 
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -137,51 +138,44 @@ function DangerAction({
 export function PrivacyControls() {
   return (
     <div className="flex flex-col gap-6">
-      {/* How data is processed. Plain language, no legalese */}
+      {/* Privacy & Data Protection */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            How your data is handled
-          </CardTitle>
-          <CardDescription>Written plainly, because you should be able to check it.</CardDescription>
+          <CardTitle>Privacy & Data Protection</CardTitle>
+          <CardDescription>How your career information and documents are protected.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+        <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
           <div>
-            <p className="font-medium text-foreground">Where it lives</p>
+            <p className="font-medium text-foreground">Private & Confidential</p>
             <p>
-              Your career profile, jobs, analyses and applications are stored in the database this
-              app is connected to. Uploaded CV files are stored outside the public web directory, so
-              they are never served to anyone who simply knows a URL.
+              Your resumes, career history, and applications are private to your account. We never sell your data,
+              share it with employers or recruiters, or use it for advertising.
             </p>
           </div>
           <div>
-            <p className="font-medium text-foreground">Who can see it</p>
+            <p className="font-medium text-foreground">Zero AI Model Training</p>
             <p>
-              Only your signed-in account. Every page and every action checks ownership before
-              returning anything, so another account cannot reach your CV, profile or applications
-              even with a direct link.
+              Your content is never used to train or improve AI models. Requests are processed on-demand over
+              encrypted connections with zero data retention for training.
             </p>
           </div>
           <div>
-            <p className="font-medium text-foreground">What is sent to AI</p>
+            <p className="font-medium text-foreground">Full Ownership & Control</p>
             <p>
-              To read your CV, check your fit for a job and write tailored material, Work-ly sends the
-              relevant text (your CV and profile, and the job posting) to Google&apos;s Gemini models.
-              Only what a feature needs is sent, at the moment you use it or when your nightly job check
-              runs. Work-ly uses Google&apos;s paid Gemini API, under which Google does not use your data to train or
-              improve its models (it keeps requests only briefly, to detect abuse), and Work-ly never trains AI models on
-              your data either. If the AI is unavailable, Work-ly falls back to built-in parsing and rules
-              so you&apos;re never blocked.
+              You maintain complete ownership of your career data. You can download a full copy of your records
+              or permanently delete your files and account at any time below.
             </p>
           </div>
-          <div>
-            <p className="font-medium text-foreground">What Work-ly never does</p>
-            <p>
-              It does not scrape sites that prohibit it, does not sell or share your data, and does
-              not estimate your chance of being hired. Every score is a stated-fact comparison, not
-              a prediction about you.
-            </p>
-          </div>
+          <p className="pt-1 text-xs text-muted-foreground">
+            For complete legal terms and our sub-processors list, view our{" "}
+            <Link href="/legal/privacy" className="text-foreground underline underline-offset-4 hover:text-primary">
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/legal/subprocessors" className="text-foreground underline underline-offset-4 hover:text-primary">
+              Sub-processors
+            </Link>.
+          </p>
         </CardContent>
       </Card>
 
