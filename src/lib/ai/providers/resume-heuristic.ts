@@ -23,42 +23,54 @@ import { detectValues } from "@/lib/values/value-graph";
  */
 
 const SECTION_HEADERS: Record<string, RegExp> = {
-  education: /^education/i,
-  experience: /^(work\s+)?experience|employment/i,
-  projects: /^projects?$/i,
-  skills: /^(technical\s+)?skills/i,
+  education: /^(?:academic\s+)?educa\s*tion/i,
+  experience: /^(?:professional|work|relevant|career|employment)?\s*(?:experience|history|employment|background)/i,
+  projects: /^(?:key\s+|recent\s+|personal\s+)?projects?$/i,
+  skills: /^(?:technical|core|key|professional|relevant)?\s*skills|areas\s+of\s+expertise|technical\s+(?:proficiencies|competencies)/i,
   certifications: /^certifications?|licenses?/i,
-  achievements: /^(achievements?|awards?|honou?rs?)/i,
+  achievements: /^(?:key\s+)?(?:achievements?|awards?|honou?rs?)/i,
   languages: /^languages?$/i,
 };
 
 type SectionName = keyof typeof SECTION_HEADERS;
 
-function splitIntoSections(text: string): Partial<Record<SectionName, string[]>> {
+function splitIntoSections(text: string): { sections: Partial<Record<SectionName, string[]>>; headerLines: string[] } {
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
 
   const sections: Partial<Record<SectionName, string[]>> = {};
+  const headerLines: string[] = [];
   let current: SectionName | null = null;
 
   for (const line of lines) {
-    const bare = line.replace(/[:：]\s*$/, "").replace(/^[*#_-]+\s*/, "").replace(/[*_]+$/, "");
+    const bare = line.replace(/[:：]\s*$/, "").replace(/^[*#_-]+\s*/, "").replace(/[*_]+$/, "").replace(/\s+/g, " ");
     const matchedSection = (Object.keys(SECTION_HEADERS) as SectionName[]).find((name) =>
       SECTION_HEADERS[name].test(bare),
     );
-    if (matchedSection && bare.length < 40) {
-      current = matchedSection;
-      sections[current] ??= [];
-      continue;
+    if (matchedSection) {
+      const match = bare.match(SECTION_HEADERS[matchedSection]);
+      const headerLength = match ? match[0].length : bare.length;
+      const remainder = bare.slice(headerLength).replace(/^[\s:–—|-]+/, "").trim();
+
+      if (bare.length < 50 || remainder.length > 0) {
+        current = matchedSection;
+        sections[current] ??= [];
+        if (remainder.length > 0) {
+          sections[current]!.push(remainder);
+        }
+        continue;
+      }
     }
     if (current) {
       sections[current]!.push(line.replace(/^[*_]+|[*_]+$/g, ""));
+    } else {
+      headerLines.push(line);
     }
   }
 
-  return sections;
+  return { sections, headerLines };
 }
 
 function firstNWords(text: string, n: number): string {
@@ -71,16 +83,22 @@ const MONTHS =
   "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?";
 
 /** One end of a range: "March 2022", "03/2022", "3-2022", "Mar '22", "2019". */
-const DATE_TOKEN = `(?:(?:${MONTHS})\\.?\\s+)?(?:\\d{1,2}[/.-])?\\s*(?:'?\\d{2}|\\d{4})`;
+const DATE_TOKEN = `(?:(?:${MONTHS})\\.?\\s+)?(?:\\d{1,2}[/.-])?\\s*(?:\\d{4}|'?\\d{2})`;
 
 /** "March 2022 - Present", "July 2019 – February 2022", "2019 to 2022", "03/2022 - 06/2024". */
-// The separator class deliberately excludes a literal space: the \s* on
-// both sides already matches any whitespace, so keeping a space inside
-// [-–,] too would let the engine split the same run of whitespace between
-// the bracket alternative and the surrounding \s* in many different ways -
-// classic overlapping-quantifier ReDoS bait on a long non-matching line.
 const DATE_RANGE = new RegExp(
   `^\\s*(${DATE_TOKEN})\\s*(?:[-–,]|to)\\s*(present|current|now|${DATE_TOKEN})\\s*$`,
+  "i",
+);
+
+/** Dates placed inline at the end of a title/company line, e.g. "Tech Lead | Finova Solutions Jan 2023 – Present" */
+const INLINE_DATE_RANGE = new RegExp(
+  `[|\\s–—,-]+(${DATE_TOKEN})\\s*(?:[-–—,]|to)\\s*(present|current|now|${DATE_TOKEN})\\s*$`,
+  "i",
+);
+
+const SINGLE_DATE = new RegExp(
+  `^\\s*(?:graduated|completed|class of)?\\s*(${DATE_TOKEN})\\s*$`,
   "i",
 );
 
@@ -98,7 +116,7 @@ function expandYear(y: string): string {
  * almost never states a day and inventing one would be a fabricated fact.
  */
 function toIsoDate(raw: string): string | null {
-  const value = raw.trim();
+  const value = raw.trim().replace(/\s+/g, " ");
   if (/^(present|current|now)$/i.test(value)) return null;
 
   const monthYear = value.match(new RegExp(`^(${MONTHS})\\.?\\s+('?\\d{2}|\\d{4})$`, "i"));
@@ -128,27 +146,36 @@ interface Block {
   detail: string[];
 }
 
+function isNewEntry(line: string, nextLine?: string): boolean {
+  if (line.match(INLINE_DATE_RANGE)) return true;
+  if (nextLine && nextLine.match(DATE_RANGE)) return true;
+  const hasSplit = /\s+[-–|]\s+|\s+\bat\b\s+/i.test(line);
+  const words = line.split(/\s+/);
+  if (hasSplit && words.length <= 8 && !/[.,;]$/.test(line)) return true;
+  return false;
+}
+
 /**
  * Groups a section's lines into one block per entry.
  *
- * The previous version treated EVERY line as its own entry, so a two-job CV
- * produced ten "Role not confidently identified" rows whose company names
- * were bullet fragments ("- Owned the weekly trading dashboard"). Bullets and
- * date lines are continuations of the entry above them, not new entries.
+ * Bullets and date lines are continuations of the entry above them, not new entries.
  */
 function groupBlocks(lines: string[]): Block[] {
   const blocks: Block[] = [];
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const nextLine = lines[i + 1];
     const isBullet = BULLET.test(line);
-    const dateMatch = line.match(DATE_RANGE);
+    const dateMatch = line.match(DATE_RANGE) || line.match(SINGLE_DATE);
     const current = blocks[blocks.length - 1];
 
     if ((isBullet || dateMatch) && current) {
       if (dateMatch && !current.dates) {
-        const endRaw = dateMatch[2];
+        const startRaw = dateMatch[1];
+        const endRaw = dateMatch[2] ?? dateMatch[1];
         current.dates = {
-          start: toIsoDate(dateMatch[1]),
+          start: toIsoDate(startRaw),
           end: toIsoDate(endRaw),
           isCurrent: /^(present|current|now)$/i.test(endRaw.trim()),
         };
@@ -158,17 +185,26 @@ function groupBlocks(lines: string[]): Block[] {
       continue;
     }
 
-    // Line continuation: if we are in the details section and this line is not a bullet/date,
-    // and it doesn't look like a new job header (e.g. starts lowercase or is long without a separator),
-    // append it to the last bullet.
-    if (!isBullet && !dateMatch && current && current.detail.length > 0) {
-      const startsWithLower = /^[a-z]/.test(line);
-      const hasHeaderSplit = /\s+[-–|]\s+|\s+\bat\b\s+/i.test(line);
-      if (startsWithLower || (!hasHeaderSplit && line.split(" ").length >= 4)) {
-        const lastIdx = current.detail.length - 1;
-        current.detail[lastIdx] = `${current.detail[lastIdx]} ${line.trim()}`;
-        continue;
-      }
+    if (current && !isNewEntry(line, nextLine)) {
+      current.detail.push(line.replace(BULLET, "").trim());
+      continue;
+    }
+
+    // Check if the header line itself carries inline date range at the end
+    const inlineDateMatch = line.match(INLINE_DATE_RANGE);
+    if (inlineDateMatch) {
+      const headerWithoutDates = line.slice(0, inlineDateMatch.index).trim().replace(/[|–—,-]+$/, "").trim();
+      const endRaw = inlineDateMatch[2];
+      blocks.push({
+        header: headerWithoutDates || line,
+        dates: {
+          start: toIsoDate(inlineDateMatch[1]),
+          end: toIsoDate(endRaw),
+          isCurrent: /^(present|current|now)$/i.test(endRaw.trim()),
+        },
+        detail: [],
+      });
+      continue;
     }
 
     blocks.push({ header: line, dates: null, detail: [] });
@@ -179,11 +215,14 @@ function groupBlocks(lines: string[]): Block[] {
 
 /** Splits "Product Analyst - Northwind Retail, London" into its parts. */
 function splitHeader(header: string): { title: string | null; company: string; location?: string } {
-  const parts = header.split(/\s+[-–, |]\s+|\s+\bat\b\s+/i).map((p) => p.trim()).filter(Boolean);
+  const parts = header
+    .split(/\s+[-–, |]\s+|\s+\bat\b\s+/i)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
 
   if (parts.length >= 2) {
     const [title, rest] = parts;
-    const segments = rest.split(",").map((s) => s.trim()).filter(Boolean);
+    const segments = rest.split(",").map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean);
     return {
       title,
       company: segments[0] ?? rest,
@@ -193,27 +232,57 @@ function splitHeader(header: string): { title: string | null; company: string; l
 
   // No separator to work with. Report the line as the company and say plainly
   // that the role could not be read, rather than guessing at a job title.
-  return { title: null, company: firstNWords(header, 8) };
+  return { title: null, company: firstNWords(header.replace(/\s+/g, " "), 8) };
 }
 
 function extractEducation(lines: string[]): ExtractedEducation[] {
   return groupBlocks(lines)
     .slice(0, 10)
     .map((block) => {
-      const segments = block.header.split(",").map((s) => s.trim()).filter(Boolean);
-      const institutionIndex = segments.findIndex((s) =>
-        /university|college|school|institute|academy/i.test(s),
+      let startDate = block.dates?.start ?? undefined;
+      let endDate = block.dates?.end ?? undefined;
+      if (!endDate) {
+        for (const d of block.detail) {
+          const singleDate = d.match(SINGLE_DATE);
+          if (singleDate) {
+            endDate = toIsoDate(singleDate[1]) ?? undefined;
+            break;
+          }
+        }
+      }
+
+      const cleanHeader = block.header.replace(/[|–—,-]+$/, "").trim();
+      const degreeMatch = cleanHeader.match(
+        /^(?:Bachelor|Master|Doctor|PhD|B\.S\.|B\.A\.|M\.S\.|M\.A\.|Associate)(?:'s)?(?:\s+of\s+[A-Za-z\s]+?(?=\s+(?:University|College|Institute|School|at\b)|$))?/i,
       );
-      const institution =
-        institutionIndex >= 0 ? segments[institutionIndex] : firstNWords(block.header, 8);
-      const degree = institutionIndex > 0 ? segments[0] : undefined;
+
+      let institution = "";
+      let degree: string | undefined = undefined;
+
+      if (degreeMatch && degreeMatch[0].length < cleanHeader.length) {
+        degree = degreeMatch[0].replace(/\s+/g, " ").trim();
+        institution = cleanHeader.slice(degreeMatch[0].length).replace(/^[\s,–—|]+/, "").replace(/\s+/g, " ").trim();
+      } else {
+        const segments = cleanHeader.split(/[,|–—]/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean);
+        const institutionIndex = segments.findIndex((s) =>
+          /university|college|school|institute|academy|polytechnic/i.test(s),
+        );
+        institution =
+          institutionIndex >= 0 ? segments[institutionIndex] : firstNWords(cleanHeader.replace(/\s+/g, " "), 8);
+        degree =
+          institutionIndex > 0
+            ? segments[0]
+            : institutionIndex === 0 && segments.length > 1
+              ? segments[1]
+              : undefined;
+      }
 
       return {
         institution,
         degree,
-        startDate: block.dates?.start ?? undefined,
-        endDate: block.dates?.end ?? undefined,
-        description: [block.header, ...block.detail].join(", ").slice(0, 500),
+        startDate,
+        endDate,
+        description: [cleanHeader, ...block.detail].join(", ").slice(0, 500),
         isUncertain: true,
       };
     });
@@ -280,8 +349,8 @@ function extractProjects(lines: string[]): ExtractedProject[] {
 function extractSkills(lines: string[], category: SkillCategory): ExtractedSkill[] {
   const joined = lines.join(", ");
   return joined
-    .split(/[,•|]/)
-    .map((s) => s.trim())
+    .split(/(?:,(?![^()]*\))|[•|])/)
+    .map((s) => s.replace(/^[A-Za-z\s&]+:\s*/, "").replace(/\s+/g, " ").trim())
     .filter((s) => s.length > 1 && s.length < 40)
     .slice(0, 40)
     .map((name) => ({
@@ -363,8 +432,10 @@ function extractLocationHint(resumeText: string): string | undefined {
   }
 
   for (const line of lines.slice(0, 8)) {
-    if (line.includes("@") || /\d/.test(line) || /https?:\/\//i.test(line)) continue;
-    const parts = line.split(",").map((p) => p.trim()).filter(Boolean);
+    if (line.includes("@") || /https?:\/\//i.test(line)) continue;
+    const cleanLine = line.replace(/\s*\([^)]*\)/g, "").replace(/\b\d{5}(?:-\d{4})?\b/g, "").trim();
+    if (/\d/.test(cleanLine)) continue;
+    const parts = cleanLine.split(",").map((p) => p.trim()).filter(Boolean);
     if (parts.length !== 2) continue;
     const [city, region] = parts;
     const looksLikePlace = (s: string) => s.length >= 2 && s.length <= 30 && /^[A-Za-z][A-Za-z.\s'-]*$/.test(s);
@@ -376,6 +447,43 @@ function extractLocationHint(resumeText: string): string | undefined {
   return undefined;
 }
 
+function extractHeadlineAndSummary(headerLines: string[]): { headline?: string; summary?: string } {
+  const candidates: string[] = [];
+  for (const line of headerLines) {
+    const trimmed = line.replace(/^[|•\s-]+|[|•\s-]+$/g, "").trim();
+    if (!trimmed) continue;
+    if (/@|https?:\/\/|www\.|\.com\b|\.io\b|\.org\b|\.dev\b/i.test(trimmed)) continue;
+    if (/\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(trimmed)) continue;
+    if (/^(?:location|based in|city)\s*[:\-]/i.test(trimmed)) continue;
+    const parts = trimmed.split(",").map((p) => p.trim());
+    if (
+      parts.length === 2 &&
+      /^[A-Za-z\s]+$/.test(parts[0]) &&
+      /^[A-Za-z\s]+$/.test(parts[1].replace(/\([^)]*\)/g, "").trim())
+    ) {
+      continue;
+    }
+
+    if (candidates.length === 0 && trimmed.split(/\s+/).length <= 4 && /^[A-Za-z\s.'-]+$/.test(trimmed)) {
+      continue;
+    }
+    candidates.push(trimmed.replace(/\s+/g, " "));
+  }
+
+  let headline: string | undefined;
+  const summaryParts: string[] = [];
+
+  for (const c of candidates) {
+    if (!headline && c.length >= 4 && c.length <= 80 && !/[.!?]$/.test(c)) {
+      headline = c;
+    } else {
+      summaryParts.push(c);
+    }
+  }
+
+  return { headline, summary: summaryParts.join(" ") || undefined };
+}
+
 // A real resume is never anywhere near this long; capping input before the
 // line-by-line regex matching below runs bounds the worst case regardless
 // of any individual pattern's own behavior on pathological input.
@@ -383,7 +491,7 @@ const MAX_HEURISTIC_CHARS = 30_000;
 
 async function run(resumeText: string): Promise<ExtractedCareerProfile> {
   const truncated = resumeText.slice(0, MAX_HEURISTIC_CHARS);
-  const sections = splitIntoSections(truncated);
+  const { sections, headerLines } = splitIntoSections(truncated);
 
   const skills = [
     ...extractSkills(sections.skills ?? [], "TECHNICAL"),
@@ -391,8 +499,11 @@ async function run(resumeText: string): Promise<ExtractedCareerProfile> {
   ];
 
   const experience = extractExperience(sections.experience ?? []);
+  const { headline, summary } = extractHeadlineAndSummary(headerLines);
 
   return {
+    headline,
+    summary,
     location: extractLocationHint(truncated),
     yearsExperience: estimateYears(experience),
     education: extractEducation(sections.education ?? []),

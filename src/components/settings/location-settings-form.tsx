@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,12 @@ const initialState: LocationActionState = {};
 export function LocationSettingsForm({ profile }: { profile: CareerProfile | null }) {
   const [state, formAction, pending] = useActionState(saveLocationPreferencesAction, initialState);
   const [openToRemote, setOpenToRemote] = useState(profile?.openToRemote ?? true);
+
+  useEffect(() => {
+    if (profile?.openToRemote !== undefined) {
+      setOpenToRemote(profile.openToRemote);
+    }
+  }, [profile?.openToRemote]);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">

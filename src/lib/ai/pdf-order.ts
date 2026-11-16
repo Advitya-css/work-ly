@@ -29,7 +29,11 @@ const squash = (s: string) => s.replace(/\s+/g, "").toLowerCase();
 
 /** The text on the page's top line and bottom line, without spaces. */
 export function pageEnds(page: PdfPageTexts): { top: string; bottom: string } | null {
-  const items = (page.Texts ?? []).filter((t) => Number.isFinite(t.y) && Number.isFinite(t.x));
+  const items = (page.Texts ?? []).filter((t) => {
+    if (!Number.isFinite(t.y) || !Number.isFinite(t.x)) return false;
+    const text = (t.R ?? []).map((r) => decode(r.T)).join("").trim();
+    return text.length > 0;
+  });
   if (items.length < 2) return null;
   const minY = Math.min(...items.map((t) => t.y));
   const maxY = Math.max(...items.map((t) => t.y));
@@ -37,7 +41,7 @@ export function pageEnds(page: PdfPageTexts): { top: string; bottom: string } | 
   const line = (y: number) =>
     squash(
       items
-        .filter((t) => Math.abs(t.y - y) < 0.2)
+        .filter((t) => Math.abs(t.y - y) < 0.35)
         .sort((a, b) => a.x - b.x)
         .map((t) => (t.R ?? []).map((r) => decode(r.T)).join(""))
         .join(""),
@@ -54,12 +58,14 @@ export function isUpsideDown(lines: string[], ends: { top: string; bottom: strin
   if (filled.length < 2) return false;
   const first = filled[0];
   const last = filled[filled.length - 1];
-  const starts = (line: string, key: string) => {
-    const n = Math.min(10, line.length, key.length);
-    return n >= 3 && line.slice(0, n) === key.slice(0, n);
+  const match = (line: string, key: string) => {
+    if (!line || !key) return false;
+    const n = Math.min(6, line.length, key.length);
+    if (n < 3) return false;
+    return line.slice(0, n) === key.slice(0, n) || line.includes(key.slice(0, 8)) || key.includes(line.slice(0, 8));
   };
-  const firstIsBottom = starts(first, ends.bottom) && !starts(first, ends.top);
-  const lastIsTop = starts(last, ends.top) && !starts(last, ends.bottom);
+  const firstIsBottom = match(first, ends.bottom) && !match(first, ends.top);
+  const lastIsTop = match(last, ends.top) && !match(last, ends.bottom);
   return firstIsBottom || lastIsTop;
 }
 

@@ -147,6 +147,15 @@ export async function parseDocumentAndBuildProfile(
 
     await updateDocumentStatus(documentId, "PARSED");
 
+    const { pool } = await import("@/lib/db/pool");
+    await pool.query(
+      `UPDATE career_profiles
+       SET "resumeFileName" = COALESCE("resumeFileName", $2),
+           "resumeUploadedAt" = COALESCE("resumeUploadedAt", now())
+       WHERE "userId" = $1`,
+      [userId, document.fileName],
+    );
+
     return {
       extraction,
       counts: {
@@ -235,8 +244,8 @@ export async function buildProfileFromResumeText(
   // back to null, and if both conditions below were true in the same
   // parse, the second call also erased the headline/summary the first
   // call had just written.
-  const nextHeadline = !profile.headline && !profile.summary && extraction.headline ? extraction.headline : profile.headline;
-  const nextSummary = !profile.headline && !profile.summary && extraction.summary ? extraction.summary : profile.summary;
+  const nextHeadline = !profile.headline && extraction.headline ? extraction.headline : profile.headline;
+  const nextSummary = !profile.summary && extraction.summary ? extraction.summary : profile.summary;
   const nextYearsExperience =
     profile.yearsExperience == null && extraction.yearsExperience != null
       ? extraction.yearsExperience
@@ -251,13 +260,18 @@ export async function buildProfileFromResumeText(
   const nextCurrentRole = profile.currentRole || currentExperience?.title || null;
   const nextCurrentCompany = profile.currentCompany || currentExperience?.company || null;
 
+  const extractedSkillNames = extraction.skills.map((s) => s.name.trim()).filter(Boolean);
+  const nextSkills = Array.from(new Set([...profile.skills, ...extractedSkillNames]));
+  const skillsChanged = nextSkills.length !== profile.skills.length;
+
   if (
     nextHeadline !== profile.headline ||
     nextSummary !== profile.summary ||
     nextYearsExperience !== profile.yearsExperience ||
     nextLocation !== profile.location ||
     nextCurrentRole !== profile.currentRole ||
-    nextCurrentCompany !== profile.currentCompany
+    nextCurrentCompany !== profile.currentCompany ||
+    skillsChanged
   ) {
     await upsertCareerProfile(userId, {
       headline: nextHeadline,
@@ -266,7 +280,7 @@ export async function buildProfileFromResumeText(
       currentRole: nextCurrentRole,
       currentCompany: nextCurrentCompany,
       yearsExperience: nextYearsExperience,
-      skills: profile.skills,
+      skills: nextSkills,
     });
   }
 

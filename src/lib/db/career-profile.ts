@@ -45,8 +45,8 @@ async function readCareerProfile(userId: string): Promise<CareerProfile | null> 
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
-/** Cached per request: the app layout and most pages both read it. */
-export const getCareerProfileByUserId = cache(readCareerProfile);
+/** Reads career profile by user ID. Direct read so Server Actions never see stale memoized values. */
+export const getCareerProfileByUserId = readCareerProfile;
 
 /**
  * Every user gets at most one CareerProfile row. CV upload can happen
@@ -215,7 +215,12 @@ export async function updateLocationPreferences(
        "updatedAt" = now()
      WHERE "userId" = $1
      RETURNING *`,
-    [userId, input.location ?? null, input.preferredLocations ?? [], input.openToRemote ?? true],
+    [
+      userId,
+      input.location ?? null,
+      input.preferredLocations ?? [],
+      input.openToRemote !== undefined ? input.openToRemote : true,
+    ],
   );
   return mapRow(rows[0]);
 }
