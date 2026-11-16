@@ -23,6 +23,7 @@ import { isDisposableEmail } from "@/lib/disposable-email";
 import { createSeatCodeAction, markSprintDeliveredAction, setSprintCapacityAction } from "./actions";
 import { OutboxForm } from "./outbox-form";
 import { FoundingTenQueue } from "./founding-ten-queue";
+import { CheckoutCheck } from "./checkout-check";
 import { foundingTenQueue } from "@/lib/founding-ten";
 import { HEAT_LABEL, HEAT_ORDER } from "@/lib/founding-ten-core";
 import { recentOutreach } from "@/lib/outreach";
@@ -267,6 +268,17 @@ export default async function AdminDashboard({
               </table>
             </div>
           )}
+        </section>
+
+        <section id="checkout-check" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-semibold text-white">Is checkout working?</h2>
+            <p className="text-sm text-zinc-400">
+              Opens a real checkout for each plan on your own account (nothing is charged; unpaid checkouts expire) and shows
+              Polar&apos;s actual answer if one fails.
+            </p>
+          </div>
+          <CheckoutCheck adminKey={key as string} />
         </section>
 
         <section id="founding-ten" className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">

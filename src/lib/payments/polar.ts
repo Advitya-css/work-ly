@@ -1,6 +1,5 @@
 "use server";
 
-import { Polar } from "@polar-sh/sdk";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth";
@@ -11,11 +10,7 @@ import { getFoundingOffer } from "@/lib/payments/founding";
 import { getSale } from "@/lib/payments/sale";
 import { currentAttribution, recordFunnelStep } from "@/lib/attribution";
 import { markCheckoutOpened } from "@/lib/lifecycle";
-
-const polar = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN,
-  // We can pass organizationId if needed, but not strictly required if using default org for the token
-});
+import { openPolarCheckout } from "@/lib/payments/checkout";
 
 const PRODUCT_IDS = POLAR_PRODUCT_IDS;
 
@@ -26,7 +21,7 @@ export async function createPolarCheckout(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      throw new Error("Must be logged in to checkout");
+      return { error: "Please sign in again, then pick your plan." };
     }
 
     // The upgrade dialog makes buyers tick the Terms / Refund policy box
@@ -50,14 +45,13 @@ export async function createPolarCheckout(
     // The channel that first brought this buyer, carried onto the order so
     // revenue can be credited to it (see lib/attribution.ts).
     const attribution = await currentAttribution();
-    const checkout = {
-      products: [productId],
-      customerEmail: user.email,
-      // Ties the Polar customer to this account, so renewals and refunds
-      // map back to the right user even without checkout metadata.
-      externalCustomerId: user.id,
+    const outcome = await openPolarCheckout({
+      productId,
+      email: user.email,
+      userId: user.id,
       // Kept on the order in Polar: proof of what the buyer agreed to, and
-      // when, if a refund or chargeback is ever disputed.
+      // when, if a refund or chargeback is ever disputed. user_id here is
+      // what credits the purchase, whatever else Polar refuses.
       metadata: {
         user_id: user.id,
         terms_accepted_at: acceptedAt,
@@ -68,33 +62,24 @@ export async function createPolarCheckout(
         landing: attribution?.l ?? "",
         first_touch: attribution?.t ?? "",
       },
-      customerMetadata: { user_id: user.id },
-      customFieldData: { user_id: user.id },
       // Polar fills in {CHECKOUT_ID}. Settings uses it to confirm the payment
       // with Polar directly, so Pro shows up at once instead of waiting on
       // the webhook.
       successUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.work-ly.in"}/settings?checkout_id={CHECKOUT_ID}`,
-    };
-
-    let result;
-    try {
-      result = await polar.checkouts.create(discountId ? { ...checkout, discountId } : checkout);
-    } catch (error) {
-      // The last founding spot (or the sale's last minute) can go between
-      // the page loading and this click. Never block a purchase over it:
-      // check out at full price.
-      if (!discountId) throw error;
-      console.warn("[workly:founding] checkout with a discount failed, retrying without it:", error);
-      result = await polar.checkouts.create(checkout);
+      discountId,
+    });
+    if (!outcome.ok) {
+      console.error(`[workly:checkout] ${plan} for ${user.id}: ${outcome.advice.adminReason}`);
+      return { error: outcome.advice.userMessage };
     }
-
-    await recordFunnelStep("checkout");
+    // Bookkeeping never blocks a buyer who already has a checkout link.
+    await recordFunnelStep("checkout").catch((e) => console.warn("[workly:checkout] funnel step:", e));
     // For the "your upgrade is still open" email if they don't finish.
-    await markCheckoutOpened(user.id, plan);
-    return { url: result.url };
-  } catch (error: any) {
+    await markCheckoutOpened(user.id, plan).catch((e) => console.warn("[workly:checkout] checkout marker:", e));
+    return { url: outcome.url };
+  } catch (error) {
     console.error("Polar checkout error:", error);
-    return { error: error.message || "Failed to create checkout" };
+    return { error: "Checkout didn't open. Please try again in a minute, or email advitya@work-ly.in and I'll sort it out for you." };
   }
 }
 

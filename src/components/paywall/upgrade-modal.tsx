@@ -105,12 +105,22 @@ export function UpgradeModal({
       const result = await createPolarCheckout(selectedPlan, { acceptedTerms: true });
       if (result.url) {
         window.location.href = result.url;
-      } else {
-        throw new Error(result.error || "Failed to generate checkout link.");
+        return;
       }
-    } catch (error: any) {
+      // The server already words this for the buyer (lib/payments/checkout-errors.ts).
+      setCheckoutError(result.error || "Checkout didn't open. Please try again in a minute.");
+      setLoading(false);
+    } catch (error) {
       console.error(error);
-      setCheckoutError("Couldn't open checkout just now. Please try again in a moment.");
+      // The call itself failed: usually a page opened before Work-ly was
+      // updated (its server code moved on), sometimes a dropped connection.
+      // A refresh fixes both.
+      const msg = error instanceof Error ? error.message : "";
+      setCheckoutError(
+        /server action|failed to find|unexpected response|fetch/i.test(msg)
+          ? "Work-ly was just updated. Refresh the page and try again."
+          : "Couldn't reach Work-ly just now. Check your connection, refresh the page and try again.",
+      );
       setLoading(false);
     }
   };
