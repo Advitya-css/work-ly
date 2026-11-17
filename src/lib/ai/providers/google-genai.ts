@@ -127,8 +127,10 @@ export const googleGenAIProvider: AIProvider = {
     // it (the stronger model); the fallback key only the backup models.
     const standardIndex = chain.indexOf(model);
     let modelIndex = 0;
+    let usingFallbackKey = false;
+    const getActiveKey = () => (usingFallbackKey ? fallbackApiKey : (modelIndex <= standardIndex ? primaryApiKey : fallbackApiKey));
     const urlFor = (m: string, key: string) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
-    const currentUrl = () => urlFor(chain[modelIndex], modelIndex <= standardIndex ? primaryApiKey : fallbackApiKey);
+    const currentUrl = () => urlFor(chain[modelIndex], getActiveKey());
     
     // Map messages
     let systemInstruction;
@@ -196,6 +198,15 @@ export const googleGenAIProvider: AIProvider = {
 
       if (!response.ok) {
         const responseBody = await response.text();
+
+        // If the key is out of credits (402) or unauthorized (401), switch to fallback key if available
+        const isKeyOrBillingProblem = response.status === 401 || response.status === 402;
+        if (isKeyOrBillingProblem && fallbackApiKey && fallbackApiKey !== primaryApiKey && !usingFallbackKey) {
+          usingFallbackKey = true;
+          console.warn(`[workly:ai] primary key unavailable (${response.status}), switching to fallback API key`);
+          continue;
+        }
+
         const modelProblem =
           response.status === 429 || response.status >= 500 || response.status === 404 || (response.status === 400 && /model/i.test(responseBody));
         if (modelProblem && modelIndex < chain.length - 1 && canRetry(attempt)) {

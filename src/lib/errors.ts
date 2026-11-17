@@ -62,6 +62,11 @@ const KNOWN: { test: RegExp; message: string }[] = [
     message: "That can't be changed because something else depends on it.",
   },
   {
+    test: /AI provider request failed \(402\)|prepayment credits are depleted/i,
+    message:
+      "Your Google AI prepayment credits are depleted. Please check billing or prepayment balance in Google AI Studio (ai.studio/projects).",
+  },
+  {
     test: /AI provider request failed \(4\d\d\)/i,
     message:
       "The AI provider rejected the request. Usually an invalid or expired API key. Work-ly has fallen back to its built-in parsing.",

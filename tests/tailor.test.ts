@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateTailoredApplication, generateFollowUpEmail } from "../src/lib/ai/providers/tailor-ai";
+import {
+  generateTailoredApplication,
+  generateFollowUpEmail,
+  buildFallbackCoverLetter,
+} from "../src/lib/ai/providers/tailor-ai";
 import { aiProvider } from "../src/lib/ai/index";
 import type { CareerProfile, Job, Application } from "../src/lib/db/types";
 
@@ -139,5 +143,19 @@ describe("AI Tailoring & Reminders", () => {
     });
 
     await expect(generateTailoredApplication(mockProfile as any, mockJob as any)).rejects.toThrow("Failed to generate tailored application.");
+  });
+
+  it("builds a grounded fallback cover letter without calling AI", () => {
+    const fallback = buildFallbackCoverLetter(mockProfile as any, mockJob as any, {
+      name: "Priya Sharma",
+      tone: "warm",
+      length: "standard",
+    });
+
+    expect(fallback.coverLetter).toContain("Dear Hiring Team at Vercel");
+    expect(fallback.coverLetter).toContain("Senior Frontend Engineer");
+    expect(fallback.coverLetter).toContain("Acme");
+    expect(fallback.coverLetter).toContain("Priya Sharma");
+    expect(fallback.proofs?.length).toBeGreaterThan(0);
   });
 });

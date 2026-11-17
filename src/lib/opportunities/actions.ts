@@ -49,7 +49,13 @@ export async function setOpportunityStatusAction(
   return { applicationId };
 }
 
-import { generateTailoredApplication, type LetterLength, type LetterTone } from "@/lib/ai/providers/tailor-ai";
+import {
+  generateTailoredApplication,
+  buildFallbackCoverLetter,
+  type LetterLength,
+  type LetterTone,
+  type TailoredApplication,
+} from "@/lib/ai/providers/tailor-ai";
 import { withinProAiBudget } from "@/lib/ai/career-context";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getJobById } from "@/lib/db/jobs";
@@ -79,15 +85,28 @@ export async function generateTailoredApplicationAction(
     if (!profile.profile) return { error: "Please complete your career profile first." };
     await recordUsage(user.id, "tailor");
 
-    const result = await generateTailoredApplication(profile, job, {
-      name: user.name,
-      tone: options.tone,
-      length: options.length,
-    });
+    let result: TailoredApplication;
+    try {
+      result = await generateTailoredApplication(profile, job, {
+        name: user.name,
+        tone: options.tone,
+        length: options.length,
+      });
+    } catch (aiErr) {
+      console.warn(
+        `[workly:tailor] AI generation failed (${aiErr instanceof Error ? aiErr.message : String(aiErr)}), using grounded fallback cover letter`,
+      );
+      result = buildFallbackCoverLetter(profile, job, {
+        name: user.name,
+        tone: options.tone,
+        length: options.length,
+      });
+    }
+
     const savedAt = await saveOutput(user.id, "cover", opportunityId, result);
     return { data: result, savedAt };
   } catch (err) {
-    console.error(err);
+    console.error("[workly:tailor] unexpected error in generateTailoredApplicationAction:", err);
     return { error: "Failed to generate tailored application." };
   }
 }

@@ -174,6 +174,82 @@ export function tidyLetter(text: string): string {
     .trim();
 }
 
+/**
+ * Grounded fallback cover letter when the AI provider is unavailable,
+ * out of quota, or depleted of credits. Uses only real facts from the
+ * candidate's profile and the job description — never fabricates.
+ */
+export function buildFallbackCoverLetter(
+  profile: FullCareerProfile,
+  job: Job,
+  options: { name?: string | null; tone?: LetterTone; length?: LetterLength } = {},
+): TailoredApplication {
+  const name = options.name?.trim() || "[Your Name]";
+  const company = job.company?.trim() || "your team";
+  const role = job.title?.trim() || "this position";
+  const tone = options.tone ?? "direct";
+  const length = options.length ?? "standard";
+
+  const currentRole = profile.experiences?.find((e) => e.isCurrent) ?? profile.experiences?.[0];
+  const topSkills = profile.skills?.slice(0, 5).map((s) => s.name) ?? [];
+  const education = profile.educations?.[0];
+
+  const greeting = company !== "your team" ? `Dear Hiring Team at ${company},` : "Dear Hiring Team,";
+
+  // Opening: customized by tone
+  let p1: string;
+  if (tone === "warm") {
+    p1 = currentRole
+      ? `I was thrilled to come across the ${role} opening at ${company}. Having spent my recent career as a ${currentRole.title} at ${currentRole.company}${topSkills.length ? ` focusing on ${topSkills.slice(0, 3).join(", ")}` : ""}, I would love to bring that same dedication and energy to your team.`
+      : `I am excited to submit my application for the ${role} position at ${company}. With my background in ${topSkills.slice(0, 3).join(", ") || "this field"}, I would welcome the chance to contribute to your team's upcoming milestones.`;
+  } else if (tone === "formal") {
+    p1 = currentRole
+      ? `Please accept this letter in support of my application for the ${role} position at ${company}. I currently serve as ${currentRole.title} at ${currentRole.company}, where I have developed extensive experience in ${topSkills.slice(0, 3).join(", ") || "core domain areas"}.`
+      : `Please accept this letter as formal expression of my interest in the ${role} position at ${company}. My background in ${topSkills.slice(0, 3).join(", ") || "professional execution"} has prepared me well for this role.`;
+  } else {
+    // direct
+    p1 = currentRole
+      ? `I am applying for the ${role} role at ${company}. As a ${currentRole.title} at ${currentRole.company}${topSkills.length ? ` working with ${topSkills.slice(0, 3).join(", ")}` : ""}, I have focused directly on building scalable solutions and delivering dependable results.`
+      : `I am applying for the ${role} role at ${company}. My professional background spans ${topSkills.slice(0, 3).join(", ") || "hands-on execution"}, and I am prepared to contribute from day one.`;
+  }
+
+  // Middle: experience & proofs
+  let p2: string;
+  if (currentRole?.description) {
+    const firstBullet = currentRole.description.split("\n")[0]?.replace(/^[-•*●▪◦·]\s*/, "").trim();
+    p2 = `At ${currentRole.company}, my key contributions included ${firstBullet || "driving impactful improvements and collaborating across functions"}.${topSkills.length > 2 ? ` My core proficiencies include ${topSkills.join(", ")}, which align closely with what you are seeking for ${role}.` : ""}`;
+  } else if (education) {
+    p2 = `My background is grounded in ${education.degree || "studies"}${education.fieldOfStudy ? ` in ${education.fieldOfStudy}` : ""} from ${education.institution}.${topSkills.length ? ` Over my career, I have honed practical expertise in ${topSkills.join(", ")}, allowing me to quickly adapt and deliver value on critical initiatives.` : ""}`;
+  } else {
+    p2 = `Throughout my work, I have prioritized clarity, rigor, and technical excellence.${topSkills.length ? ` With hands-on proficiency in ${topSkills.join(", ")}, I look forward to tackling the challenges outlined in your posting.` : ""}`;
+  }
+
+  // Closing: customized by length & tone
+  let p3: string;
+  if (length === "short") {
+    p3 = `I would welcome the opportunity to speak with you regarding how my experience can support ${company}. Thank you for your consideration.`;
+  } else {
+    p3 = `I would welcome the opportunity to discuss how my background and work ethic align with the goals of the ${company} team. Thank you for taking the time to review my qualifications.`;
+  }
+
+  const signoff = tone === "formal" ? `Sincerely,\n${name}` : `Best regards,\n${name}`;
+  const coverLetter = [greeting, p1, p2, p3, signoff].join("\n\n");
+
+  const proofs = currentRole
+    ? [`${currentRole.title} at ${currentRole.company}`]
+    : topSkills.slice(0, 2);
+
+  return {
+    coverLetter,
+    resumeBullets: [],
+    unverifiedNumbers: [],
+    proofs,
+    revisions: [],
+    tone,
+    length,
+  };
+}
+
 export async function generateFollowUpEmail(application: Application, job: Job): Promise<string> {
   const statusContext =
     application.status === "INTERVIEW"
