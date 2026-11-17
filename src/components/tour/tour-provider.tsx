@@ -3,21 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  CircleDashed,
-  CircleSlash,
-  FileText,
-  Home,
-  Briefcase,
-  Mail,
-  MessagesSquare,
-  PenLine,
-  Send,
-  UserRound,
-} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ArrowLeft, ArrowRight, CheckCircle2, CircleDashed, CircleSlash, FileText, Mail, MessagesSquare, PenLine } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -110,21 +97,80 @@ function PictureKit() {
   );
 }
 
-function PictureMap() {
-  const items = [
-    { icon: Home, label: "Home", note: "your next move" },
-    { icon: Briefcase, label: "Jobs", note: "jobs you're checking" },
-    { icon: UserRound, label: "My career", note: "your resume and goals" },
-    { icon: Send, label: "Applications", note: "what you've sent" },
+function PictureDream() {
+  return (
+    <div className="flex h-full items-center justify-center px-6">
+      <div className="w-full max-w-xs rounded-xl border border-border bg-card p-3.5 text-left shadow-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Dream job</p>
+        <p className="mt-0.5 text-[13px] font-semibold text-foreground">Head of Analytics</p>
+        <div className="mt-2.5 flex items-center gap-2">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-[58%] rounded-full bg-warning" />
+          </div>
+          <span className="text-[12px] font-semibold tabular-nums text-foreground">58%</span>
+        </div>
+        <ul className="mt-2.5 flex flex-col gap-1 text-[11.5px] text-muted-foreground">
+          <li className="flex gap-1.5"><span className="text-success">✓</span> Owns dashboards used by 120 managers</li>
+          <li className="flex gap-1.5"><span className="text-warning">~</span> Has led 1 analyst, role asks for a team</li>
+          <li className="flex gap-1.5"><span className="text-destructive">✕</span> No budget ownership yet</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function PicturePlan() {
+  const weeks = [
+    { w: "Wk 1-2", t: "Ship one forecasting model", done: true },
+    { w: "Wk 3-4", t: "Mentor the new analyst, write it up", done: true },
+    { w: "Wk 5-8", t: "Own the quarterly metrics review", done: false },
   ];
   return (
     <div className="flex h-full items-center justify-center px-6">
-      <ul className="flex w-full max-w-xs flex-col gap-1 rounded-xl border border-border bg-sidebar p-2 text-left shadow-sm">
-        {items.map((it, i) => (
-          <li key={it.label} className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5", i === 0 && "bg-sidebar-accent")}>
-            <it.icon className="size-4 text-muted-foreground" aria-hidden />
-            <span className="text-[13px] font-medium text-foreground">{it.label}</span>
-            <span className="ml-auto text-[11.5px] text-muted-foreground">{it.note}</span>
+      <ol className="w-full max-w-xs rounded-xl border border-border bg-card p-3 text-left shadow-sm">
+        {weeks.map((x) => (
+          <li key={x.w} className="flex items-start gap-2.5 py-1.5">
+            <span className={cn("mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border text-[9px]", x.done ? "border-success bg-success text-success-foreground" : "border-border")}>{x.done ? "✓" : ""}</span>
+            <span className="flex flex-col">
+              <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">{x.w}</span>
+              <span className="text-[12.5px] font-medium text-foreground">{x.t}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function PictureInterview() {
+  return (
+    <div className="flex h-full items-center justify-center px-6">
+      <div className="w-full max-w-xs rounded-xl border border-border bg-card p-3.5 text-left shadow-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Mock interview</p>
+        <p className="mt-1 text-[13px] font-medium leading-snug text-foreground">&ldquo;Tell me about a model you had to redesign.&rdquo;</p>
+        <div className="mt-2.5 rounded-lg bg-secondary p-2.5">
+          <p className="text-[11px] font-semibold text-foreground">Your answer · 7/10</p>
+          <p className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">Good: the 40+ models and the 120 managers. Missing: what broke first, and the number it moved.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PictureDiscover() {
+  const jobs = [
+    { t: "Analytics Engineer", s: 82, v: "Apply", c: "bg-success/15 text-success" },
+    { t: "Senior Data Scientist", s: 58, v: "Stretch", c: "bg-warning/15 text-warning" },
+    { t: "Cloud Platform Engineer", s: 31, v: "Skip", c: "bg-destructive/15 text-destructive" },
+  ];
+  return (
+    <div className="flex h-full items-center justify-center px-6">
+      <ul className="w-full max-w-xs overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm">
+        {jobs.map((j) => (
+          <li key={j.t} className="flex items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-[11px] font-semibold tabular-nums text-foreground">{j.s}</span>
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{j.t}</span>
+            <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold", j.c)}>{j.v}</span>
           </li>
         ))}
       </ul>
@@ -132,7 +178,8 @@ function PictureMap() {
   );
 }
 
-const SLIDES = [
+type Slide = { picture: () => ReactNode; title: string; body: string; href?: string; link?: string };
+const SLIDES: Slide[] = [
   {
     picture: PictureHello,
     title: "Hi, I'm Work-ly.",
@@ -149,9 +196,32 @@ const SLIDES = [
     body: "A resume, cover letter, a note to the hiring manager and interview prep, built from your real experience for that one job. You can edit every word.",
   },
   {
-    picture: PictureMap,
-    title: "Four places, that's all.",
-    body: "Home always shows your next move. If you're ever unsure, open the Guide in the sidebar, or ask me in the corner of any page.",
+    picture: PictureDiscover,
+    title: "I'll find jobs worth checking, too.",
+    body: "Discover looks for postings that fit what you've really done and gives each one the same straight answer, so you only open the ones worth your time.",
+    href: "/discover",
+    link: "Open Discover",
+  },
+  {
+    picture: PictureDream,
+    title: "Aiming higher? Tell me the dream job.",
+    body: "Paste the role you want in two years. I'll show how close you are today, what's missing, and which of your lines already count.",
+    href: "/dream-job",
+    link: "Try Dream job",
+  },
+  {
+    picture: PicturePlan,
+    title: "Then a plan to get there, week by week.",
+    body: "The gaps become steps in order, each one something you can finish. Changing fields? Career change rewrites your past work in the new field's language.",
+    href: "/career-path",
+    link: "See the action plan",
+  },
+  {
+    picture: PictureInterview,
+    title: "And I'll practise the interview with you.",
+    body: "Answer likely questions out loud or in text; I score each one and say what to add. Students get their own home for campus jobs and internships.",
+    href: "/guide",
+    link: "Everything in the Guide",
   },
 ];
 
@@ -168,16 +238,20 @@ const SLIDES = [
 export function TourProvider({ children, hasResume = false }: { children: ReactNode; hasResume?: boolean }) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (seen()) return;
+    // Only on Home. Someone who arrives on their first job report from the
+    // homepage check should see the verdict they came for, not a welcome
+    // on top of it; Home is the next place they'll go.
+    if (pathname !== "/dashboard" || seen()) return;
     // Let the page settle first; a dialog on the very first paint feels like an ad.
     const timer = setTimeout(() => {
       setIndex(0);
       setOpen(true);
     }, 600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [pathname]);
 
   const close = useCallback(() => {
     markSeen();
@@ -214,6 +288,16 @@ export function TourProvider({ children, hasResume = false }: { children: ReactN
               {slide.title}
             </DialogTitle>
             <DialogDescription className="text-[14.5px] leading-relaxed">{slide.body}</DialogDescription>
+            {slide.href && slide.link && (
+              <Link
+                href={slide.href}
+                onClick={close}
+                className="mt-0.5 inline-flex w-fit items-center gap-1 text-[13.5px] font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {slide.link}
+                <ArrowRight className="size-3.5" />
+              </Link>
+            )}
           </div>
           <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
             <div className="flex items-center gap-1.5" aria-label={`Card ${index + 1} of ${SLIDES.length}`}>
@@ -230,9 +314,9 @@ export function TourProvider({ children, hasResume = false }: { children: ReactN
             </div>
             <div className="flex items-center gap-2">
               {index > 0 ? (
-                <Button variant="ghost" size="sm" onClick={() => setIndex((i) => i - 1)} className="gap-1">
+                <Button variant="ghost" size="sm" onClick={() => setIndex((i) => i - 1)} className="gap-1 px-2" aria-label="Back">
                   <ArrowLeft className="size-3.5" />
-                  Back
+                  <span className="hidden sm:inline">Back</span>
                 </Button>
               ) : (
                 <Button variant="ghost" size="sm" onClick={close} className="text-muted-foreground">

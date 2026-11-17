@@ -5,9 +5,8 @@ import { ArrowLeft } from "lucide-react";
 
 import { JobAnalysisView } from "@/components/opportunities/analysis/job-analysis-view";
 import { JobNextStep } from "@/components/opportunities/analysis/job-next-step";
-import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 import { ShareVerdictButton } from "@/components/share/share-verdict-button";
-import { OpportunityStatusControls } from "@/components/opportunities/opportunity-status-controls";
+import { JobActionsMenu } from "@/components/opportunities/job-actions-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { recordFunnelStep } from "@/lib/attribution";
@@ -96,15 +95,15 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
       }
       actions={
         <>
-          <ShareVerdictButton opportunityId={opportunity.id} invites />
-          <OpportunityStatusControls
+          <ShareVerdictButton opportunityId={opportunity.id} invites variant="ghost" className="text-muted-foreground" />
+          <JobActionsMenu
             id={opportunity.id}
+            jobId={job.id}
             isSaved={opportunity.isSaved}
             status={opportunity.status}
             roleTitle={job.title}
             company={job.company}
           />
-          <DeleteJobButton id={job.id} label={job.title ?? "this opportunity"} />
         </>
       }
       statusBadge={

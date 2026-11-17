@@ -13,6 +13,11 @@ const GROUPS = [
       { href: "/free-grader", label: "Free resume grader" },
       { href: "/sprint", label: "Application Sprint" },
       { href: "/gift", label: "Gift a pass" },
+    ],
+  },
+  {
+    title: "For coaches and teams",
+    links: [
       { href: "/for-coaches", label: "For coaches" },
       { href: "/for-teams", label: "For bootcamps and career centres" },
       { href: "/partners", label: "Partner programme" },
@@ -48,7 +53,7 @@ const GROUPS = [
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border px-4 py-12 sm:px-6">
-      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">

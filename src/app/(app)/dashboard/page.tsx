@@ -36,6 +36,7 @@ import { foundingOfferLine } from "@/lib/payments/founding";
 import { Progress } from "@/components/ui/progress";
 import { GraderImportCard } from "@/components/onboarding/grader-import-card";
 import { FirstSteps } from "@/components/dashboard/first-steps";
+import { MoreWorkly } from "@/components/dashboard/more-workly";
 
 export const metadata: Metadata = { title: "Dashboard" };
 // "Pick up where you left off" builds a profile and a Fit report in one
@@ -235,6 +236,8 @@ export default async function DashboardPage({
         </Link>
       </section>
       )}
+
+      <MoreWorkly />
 
       <div className="flex justify-center">
         <EnterStudentModeButton variant="ghost" label="I'm a student: switch to student mode" />

@@ -237,6 +237,51 @@ export async function syncOpportunityForJob(jobId: string, userId: string): Prom
  * the accidental-resubmit case without ever silently merging two jobs the
  * user meant to keep apart.
  */
+/**
+ * The first half of submitParseAndAnalyzeJob: store and parse the posting,
+ * reusing an identical one. Lets a caller do other work (reading the
+ * resume) while the posting is being read.
+ */
+export async function submitAndParseJob(
+  userId: string,
+  input: SubmitJobInput,
+): Promise<{ jobId: string; opportunityId?: string; reused?: boolean } | { error: string }> {
+  const candidateText = input.inputMethod === "PASTED_TEXT" ? (input.text ?? "").trim() : null;
+  if (candidateText && candidateText.length >= 50) {
+    const existing = await findParsedJobByRawInput(userId, candidateText);
+    if (existing) {
+      const opportunity = await getOpportunityByJobId(existing.id);
+      if (opportunity) return { jobId: existing.id, opportunityId: opportunity.id, reused: true };
+      return { jobId: existing.id, reused: true };
+    }
+  }
+  const submitted = await submitJob(userId, input);
+  if ("error" in submitted) return submitted;
+  try {
+    await parseJob(submitted.job.id, userId);
+    return { jobId: submitted.job.id };
+  } catch (error) {
+    return { error: safeMessage(error, "submitAndParseJob", "Something went wrong while reading this job.") };
+  }
+}
+
+/** The second half: the screen against the profile, and the opportunity. */
+export async function analyzeSubmittedJob(
+  userId: string,
+  jobId: string,
+): Promise<{ jobId: string; opportunityId: string } | { error: string }> {
+  try {
+    const existing = await getOpportunityByJobId(jobId);
+    const analysis = await getJobAnalysisByJobId(jobId);
+    if (existing && analysis) return { jobId, opportunityId: existing.id };
+    if (!analysis) await analyzeJob(jobId, userId);
+    const opportunity = await syncOpportunityForJob(jobId, userId);
+    return { jobId, opportunityId: opportunity.id };
+  } catch (error) {
+    return { error: safeMessage(error, "analyzeSubmittedJob", "Something went wrong while analyzing this job.") };
+  }
+}
+
 export async function submitParseAndAnalyzeJob(
   userId: string,
   input: SubmitJobInput,

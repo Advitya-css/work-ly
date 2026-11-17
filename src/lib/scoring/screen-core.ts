@@ -98,7 +98,7 @@ export function buildDossier(profile: FullCareerProfile): DossierEntry[] {
     const header = `${e.title} at ${e.company}${dates ? ` (${dates}${durationLabel(e.startDate, e.endDate, e.isCurrent)})` : ""}`;
     entries.push({
       label: `E${i + 1}`,
-      where: `${e.title} at ${e.company}`,
+      where: roleWhere(e.title, e.company),
       kind: "experience",
       text: clip(`${header}\n${e.description ?? ""}`.trim()),
     });
@@ -446,15 +446,54 @@ function capRecommendation(rec: RecommendationType, cap: RecommendationType): Re
   return RANK[rec] > RANK[cap] ? cap : rec;
 }
 
+/**
+ * "Data Analyst at QuickBasket", or "your resume" when the parser couldn't
+ * tell the title or company apart (a placeholder title, a company that's
+ * really a sentence). The placeholder used to reach the page as "Evidence
+ * from Role not confidently identified at Built 40+ dbt models...".
+ */
+export function roleWhere(title: string | null | undefined, company: string | null | undefined): string {
+  // A heading like "Data Analyst, QuickBasket (2023 - present)" is often
+  // split badly by the parser, leaving dates and half-brackets in the
+  // title or company. Cut those off before deciding.
+  const clean = (v: string | null | undefined) =>
+    (v ?? "")
+      .split("(")[0]
+      .replace(/\b(19|20)\d{2}\b.*$/, "")
+      .replace(/[)\]}]/g, "")
+      .replace(/^[\s,;:·–—-]+|[\s,;:·–—-]+$/g, "")
+      .trim();
+  const junk = (v: string) =>
+    !v ||
+    /not confidently identified|^(unknown|n\/a|present|current|now|none)$/i.test(v) ||
+    v.length > 60 ||
+    v.split(/\s+/).length > 7;
+  // Only the role when the title swallowed the employer too.
+  const t = clean(title).includes(",") ? clean(clean(title).split(",")[0]) : clean(title);
+  const c = clean(company);
+  if (junk(t) && junk(c)) return "your resume";
+  if (junk(c)) return `your ${t} role`;
+  if (junk(t)) return `your time at ${c}`;
+  return `${t} at ${c}`;
+}
+
+/** The line itself when the quote already carries the proof; the place too when it adds something. */
+function quoted(where: string | null, quote: string | null): string {
+  const q = (quote ?? "").trim();
+  const w = (where ?? "").trim();
+  if (!q) return w ? `Shown in ${w}.` : "";
+  return w && w !== "your resume" ? `"${q}" (${w})` : `"${q}"`;
+}
+
 function toCheck(r: ScreenedRequirement): RequirementCheck {
   if (r.verdict === "met") {
-    return { text: r.requirement, status: "met", detail: `Evidence from ${r.evidenceWhere}: "${r.evidenceQuote}"` };
+    return { text: r.requirement, status: "met", detail: quoted(r.evidenceWhere, r.evidenceQuote) };
   }
   if (r.verdict === "partial") {
     return {
       text: r.requirement,
       status: "not-met",
-      detail: `Partial match (${r.evidenceWhere}: "${r.evidenceQuote}").${r.gapToClose ? ` To close it: ${r.gapToClose}` : ""}`,
+      detail: `Partly: ${quoted(r.evidenceWhere, r.evidenceQuote)}${r.gapToClose ? ` To close it: ${r.gapToClose}` : ""}`,
     };
   }
   if (r.verdict === "missing") {
@@ -655,10 +694,10 @@ export function combineScreen(params: {
     total.score == null ? "Insufficient data" : fitScore >= 75 ? "High" : fitScore >= 50 ? "Moderate" : "Low";
 
   // --- Strengths, risks, improvements ----------------------------------------
-  const strengths = screen.strengths.map((s) => `${s.point} (${s.evidenceWhere}: "${s.evidenceQuote}")`);
+  const strengths = screen.strengths.map((s) => `${s.point}: ${quoted(s.evidenceWhere, s.evidenceQuote)}`);
   if (strengths.length === 0) {
     const metCritical = reqs.filter((r) => r.verdict === "met" && r.importance !== "nice").slice(0, 3);
-    for (const r of metCritical) strengths.push(`${r.requirement} (${r.evidenceWhere}: "${r.evidenceQuote}")`);
+    for (const r of metCritical) strengths.push(`${r.requirement}: ${quoted(r.evidenceWhere, r.evidenceQuote)}`);
   }
 
   const risks: string[] = [];

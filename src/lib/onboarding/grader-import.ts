@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import { buildProfileFromResumeText } from "@/lib/career/parse-document";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
-import { submitParseAndAnalyzeJob } from "@/lib/jobs/analyze-job";
+import { analyzeSubmittedJob, submitAndParseJob } from "@/lib/jobs/analyze-job";
 import { markUserOnboarded } from "@/lib/db/users";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { FREE_AI_LIMIT_MESSAGE, spendFreeAi } from "@/lib/ai/allowance";
@@ -43,13 +43,19 @@ export async function importFromGraderAction(input: {
   try {
     const existing = await getFullCareerProfile(user.id);
     const hasProfile = existing.experiences.length > 0 || existing.skills.length > 0;
-    if (!hasProfile) {
-      await buildProfileFromResumeText(user.id, resumeText);
-    }
-    await markUserOnboarded(user.id);
-
     if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };
-    const result = await submitParseAndAnalyzeJob(user.id, { inputMethod: "PASTED_TEXT", text: jobText });
+
+    // Reading the resume and reading the job don't depend on each other,
+    // so they run at the same time; only the screen needs both. This used
+    // to be three model calls one after another, a minute of waiting
+    // between signing up and seeing the first report.
+    const [, submitted] = await Promise.all([
+      hasProfile ? Promise.resolve(null) : buildProfileFromResumeText(user.id, resumeText),
+      submitAndParseJob(user.id, { inputMethod: "PASTED_TEXT", text: jobText }),
+    ]);
+    if ("error" in submitted) return { error: submitted.error };
+    await markUserOnboarded(user.id);
+    const result = await analyzeSubmittedJob(user.id, submitted.jobId);
     if ("error" in result) return { error: result.error };
 
     revalidatePath("/opportunities");

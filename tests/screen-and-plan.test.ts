@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { deterministicScoringProvider as rules } from "@/lib/scoring/providers/stub";
-import { buildDossier, combineScreen, groundScreen, projectWithClosed } from "@/lib/scoring/screen-core";
+import { buildDossier, combineScreen, groundScreen, projectWithClosed, roleWhere } from "@/lib/scoring/screen-core";
 import { sanitizeBlocks } from "@/lib/dream-job/sprint-plan-core";
 import { requirementSatisfiedBy } from "@/lib/text-utils";
 import { comparePriority } from "@/lib/discovery/sort";
@@ -135,5 +135,20 @@ describe("grounded screen when the model leaves out the quote", () => {
     const airflow = screen.requirements.find((r) => r.requirement.includes("Airflow"))!;
     expect(["unclear", "partial"]).toContain(airflow.verdict);
     expect(airflow.verdict).not.toBe("met");
+  });
+});
+
+describe("where a quote came from", () => {
+  it("names the role, and falls back when the parser wasn't sure", () => {
+    expect(roleWhere("Data Analyst", "QuickBasket")).toBe("Data Analyst at QuickBasket");
+    // The resume parser's placeholder, and a "company" that is really a sentence.
+    expect(roleWhere("Role not confidently identified", "Built 40+ dbt models on BigQuery that power the dashboards")).toBe("your resume");
+    expect(roleWhere("Role not confidently identified", "QuickBasket")).toBe("your time at QuickBasket");
+    expect(roleWhere("Data Analyst", "")).toBe("your Data Analyst role");
+    expect(roleWhere(null, null)).toBe("your resume");
+    expect(roleWhere("Unknown", "N/A")).toBe("your resume");
+    // A badly split heading: "Data Analyst, QuickBasket (2023 - present)".
+    expect(roleWhere("Data Analyst, QuickBasket (2023", "present)")).toBe("your Data Analyst role");
+    expect(roleWhere("Senior Engineer (2021 - 2023)", "Acme Ltd")).toBe("Senior Engineer at Acme Ltd");
   });
 });
