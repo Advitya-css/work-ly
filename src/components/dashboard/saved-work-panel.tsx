@@ -43,7 +43,7 @@ export function SavedWorkPanel({
         {!isPro && (
           <UpgradeModal title="Keep your saved work" defaultPlan="quarterly">
             <Button size="sm" className="shrink-0">
-              Unlock my work
+              Open my saved work
             </Button>
           </UpgradeModal>
         )}

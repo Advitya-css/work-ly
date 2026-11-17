@@ -76,7 +76,7 @@ export function InterviewIntelButton({
     }
     return (
       <UpgradeModal
-        title="Unlock interview questions"
+        title="The questions this job is likely to ask"
         description="The questions this interviewer is likely to ask you, aimed at your thin spots, with what to answer from."
         preview={
           preview && (

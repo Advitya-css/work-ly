@@ -19,7 +19,7 @@ import { LegalLinks } from "@/components/legal/legal-links";
 
 export function UpgradeModal({ 
   children,
-  title = "Unlock Work-ly Pro",
+  title = "Work-ly Pro",
   description = `Every AI career tool, with a ${GUARANTEE.sentence}.`,
   defaultPlan,
   preview,

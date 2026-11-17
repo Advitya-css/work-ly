@@ -64,7 +64,7 @@ export function ApplicationStrategyCard({ applicationId, isPro = false, preview 
             outputLabel="Your pitch, resume edits and a cover letter draft"
           >
             <UpgradeModal
-              title="Unlock your angle + cover letter"
+              title="Your angle for this job, and the letter"
               description="Your strongest honest angle for this job, resume edits based on your real experience, what a screener may flag, and a cover letter draft."
             >
               <Button variant="outline" className="w-full gap-2 sm:w-auto">

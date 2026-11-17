@@ -59,7 +59,7 @@ export function DreamJobForm({ isPro = false }: { isPro?: boolean }) {
       </div>
 
       {!isPro ? (
-        <UpgradeModal title="Unlock Dream Job Analysis" description="Run a deep, AI-powered gap analysis against your ultimate dream job.">
+        <UpgradeModal title="How close are you really?" description="Work-ly checks the role you want against what your resume proves today, and names what&apos;s missing.">
           <Button type="button" className="w-fit gap-2">
             <Lock className="size-4" />
             See how close you are (Pro)

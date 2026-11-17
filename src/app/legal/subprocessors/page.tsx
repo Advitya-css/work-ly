@@ -15,18 +15,18 @@ To provide Work-ly's services, we rely on a carefully selected group of third-pa
 
 ### Infrastructure & Hosting
 
-* **Vercel Inc.** (USA) – Cloud hosting and content delivery network.
-* **Supabase** (USA) – Managed Postgres database and authentication provider.
+* **Vercel Inc.** (USA): Cloud hosting and content delivery network.
+* **Supabase** (USA): Managed Postgres database and authentication provider.
 
 ### Core Service Providers
 
-* **Resend** (USA) – Transactional email delivery (e.g., login codes, account notifications).
-* **Payment provider** – payment processing${BUSINESS.paymentProvider ? `: **${BUSINESS.paymentProvider}**${BUSINESS.providerIsMerchantOfRecord ? " (Merchant of Record: sells on our behalf and handles billing, tax and invoices)" : ""}` : " (named at checkout; this entry will name it once live)"}.
+* **Resend** (USA): Transactional email delivery (e.g., login codes, account notifications).
+* **Payment provider**: payment processing${BUSINESS.paymentProvider ? `: **${BUSINESS.paymentProvider}**${BUSINESS.providerIsMerchantOfRecord ? " (Merchant of Record: sells on our behalf and handles billing, tax and invoices)" : ""}` : " (named at checkout; this entry will name it once live)"}.
 
 ### AI & Job Data Processing
 
-* **Google LLC – Gemini API** (USA) – AI processing for resume reading, fit scoring, tailoring, interview practice and career planning. Only the text needed for the feature you use is sent, via the paid API. Under Google's paid-service terms, prompts and responses are not used to improve Google's products and are kept only for a limited period to detect abuse.
-* **Adzuna / Jooble / Remotive / Jobicy / Arbeitnow** (Global) – Job listing data providers. We use these APIs to source job information, but we do not send your personal profile data to them.
+* **Google Gemini API** (USA): AI processing for resume reading, fit scoring, tailoring, interview practice and career planning. Only the text needed for the feature you use is sent, via the paid API. Under Google's paid-service terms, prompts and responses are not used to improve Google's products and are kept only for a limited period to detect abuse.
+* **Adzuna / Jooble / Remotive / Jobicy / Arbeitnow** (Global): Job listing data providers. We use these APIs to source job information, but we do not send your personal profile data to them.
 
 ### Updates to this list
 We will update this list whenever we add or change a sub-processor.

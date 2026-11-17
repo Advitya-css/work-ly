@@ -171,7 +171,7 @@ export function JobNextStep({
               }
             >
               <button type="button" className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                Or unlock the whole application
+                Or get the whole application
               </button>
             </UpgradeModal>
           )}

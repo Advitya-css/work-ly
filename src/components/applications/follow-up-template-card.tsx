@@ -72,7 +72,7 @@ export function FollowUpTemplateCard({ application }: { application: Application
             <div className="bg-background rounded-lg p-4 text-sm whitespace-pre-wrap border border-border">
               <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground border border-accent/20">
                 <Sparkles className="size-3" />
-                AI-generated — review before use
+                Written by Work-ly. Read it before you send it.
               </div>
 
               {template}

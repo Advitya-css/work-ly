@@ -85,7 +85,7 @@ export default async function TailoredResumePage({
           className="max-w-3xl"
         >
           <UpgradeModal
-            title="Unlock tailored resumes"
+            title="Your resume, written for this job"
             description="Get an apply-ready resume for this job, rewritten from your real experience, in about a minute."
           >
             <Button className="w-full gap-2 sm:w-fit">

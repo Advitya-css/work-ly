@@ -38,7 +38,7 @@ export function InterviewPrepCard({
             ]}
             outputLabel="Questions, your scored answers, and what to fix"
           >
-            <UpgradeModal title="Unlock mock interviews" description="Practise this interview out loud with an AI hiring manager, and get a score and fixes for every answer.">
+            <UpgradeModal title="Practise this interview" description="Practise this interview out loud with an AI hiring manager, and get a score and fixes for every answer.">
               <Button className="gap-2 w-full sm:w-auto">
                 <Lock className="size-4" />
                 Start a mock interview (Pro)

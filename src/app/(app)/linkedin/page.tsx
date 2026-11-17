@@ -66,7 +66,7 @@ export default async function LinkedInPage() {
           >
             <Button className="w-full gap-2 sm:w-fit">
               <Lock className="size-4" />
-              Unlock my LinkedIn makeover
+              Write my LinkedIn (Pro)
             </Button>
           </UpgradeModal>
         </div>
@@ -83,7 +83,7 @@ export default async function LinkedInPage() {
           lines={5}
           className="max-w-3xl"
         >
-          <UpgradeModal title="Unlock the LinkedIn makeover" defaultPlan="quarterly">
+          <UpgradeModal title="Your LinkedIn, written for the job you want" defaultPlan="quarterly">
             <Button className="w-full gap-2 sm:w-fit">
               <Lock className="size-4" />
               Write my LinkedIn profile (Pro)

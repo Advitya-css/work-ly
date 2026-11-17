@@ -3,6 +3,7 @@ import {
   NO_FABRICATION_RULES,
   candidateBrief,
   completeStructured,
+  humanPunctuation,
   jobBrief,
   str,
   unsupportedNumbers,
@@ -50,6 +51,7 @@ const COVER_SYSTEM = `You write ONE cover letter from this candidate to this emp
 - Paragraph 3: one sentence on what they could take on first (from the JOB), then a plain request to talk.
 - End with "Best regards," and the candidate's name exactly as given in NAME on its own line.
 - Never use: passionate, results-driven, dynamic, fast-paced, synergy, leverage, thrilled, "perfect fit", "unique blend", "proven track record", "I believe".
+- Punctuate like a person: commas, full stops, colons. Never an em dash, and never a dash standing in for a comma.
 - If the candidate lacks something the job requires, leave it out. Never claim it, never apologise for it.
 - Write like a strong candidate who knows this work, not like a template: every sentence should be one only THIS candidate could send to THIS team.
 Also return "proofs": the 1-3 lines from the CANDIDATE section the letter is built on, each copied exactly.
@@ -121,7 +123,7 @@ const REVISE_SYSTEM = `You are the hiring manager for the JOB, reading this cand
 Return:
 - "critique": the 1-3 most damaging weaknesses, each one short sentence naming the exact problem (a sentence any candidate could send, a claim without proof, a vague verb, a slow opening, filler). If the draft is already strong, return [].
 - "coverLetter": the letter rewritten to fix exactly those weaknesses. Keep its structure, greeting, sign-off, TONE and LENGTH. Every fact, number, employer and title must come from the DRAFT or the CANDIDATE section, exactly as written there. Never add a skill, number, result or claim. Shorter and sharper beats longer.
-Never use: passionate, results-driven, dynamic, fast-paced, synergy, leverage, thrilled, "perfect fit", "unique blend", "proven track record", "I believe".
+Never use: passionate, results-driven, dynamic, fast-paced, synergy, leverage, thrilled, "perfect fit", "unique blend", "proven track record", "I believe". Never an em dash.
 ${NO_FABRICATION_RULES}`;
 
 /**
@@ -165,7 +167,7 @@ async function reviseLetter(
 
 /** Normalises spacing: one blank line between paragraphs, no trailing spaces. */
 export function tidyLetter(text: string): string {
-  return text
+  return humanPunctuation(text)
     .replace(/\r\n/g, "\n")
     .split("\n")
     .map((l) => l.trimEnd())
@@ -175,9 +177,9 @@ export function tidyLetter(text: string): string {
 }
 
 /**
- * Grounded fallback cover letter when the AI provider is unavailable,
- * out of quota, or depleted of credits. Uses only real facts from the
- * candidate's profile and the job description — never fabricates.
+ * The cover letter Work-ly falls back to when the AI provider is down,
+ * out of quota or out of credits. Built only from what the profile and
+ * the posting actually say, in plain words, and never fabricated.
  */
 export function buildFallbackCoverLetter(
   profile: FullCareerProfile,
@@ -185,59 +187,61 @@ export function buildFallbackCoverLetter(
   options: { name?: string | null; tone?: LetterTone; length?: LetterLength } = {},
 ): TailoredApplication {
   const name = options.name?.trim() || "[Your Name]";
-  const company = job.company?.trim() || "your team";
-  const role = job.title?.trim() || "this position";
+  const company = job.company?.trim() || "";
+  const role = job.title?.trim() || "this role";
   const tone = options.tone ?? "direct";
   const length = options.length ?? "standard";
 
+  const at = company ? ` at ${company}` : "";
+  const team = company ? `the ${company} team` : "your team";
   const currentRole = profile.experiences?.find((e) => e.isCurrent) ?? profile.experiences?.[0];
-  const topSkills = profile.skills?.slice(0, 5).map((s) => s.name) ?? [];
+  const skills = profile.skills?.slice(0, 5).map((s) => s.name) ?? [];
+  const few = skills.slice(0, 3).join(", ");
   const education = profile.educations?.[0];
 
-  const greeting = company !== "your team" ? `Dear Hiring Team at ${company},` : "Dear Hiring Team,";
+  const greeting = company ? `Dear Hiring Team at ${company},` : "Dear Hiring Team,";
 
-  // Opening: customized by tone
   let p1: string;
   if (tone === "warm") {
     p1 = currentRole
-      ? `I was thrilled to come across the ${role} opening at ${company}. Having spent my recent career as a ${currentRole.title} at ${currentRole.company}${topSkills.length ? ` focusing on ${topSkills.slice(0, 3).join(", ")}` : ""}, I would love to bring that same dedication and energy to your team.`
-      : `I am excited to submit my application for the ${role} position at ${company}. With my background in ${topSkills.slice(0, 3).join(", ") || "this field"}, I would welcome the chance to contribute to your team's upcoming milestones.`;
+      ? `I saw the ${role} opening${at} and wanted to write. I am a ${currentRole.title} at ${currentRole.company}${few ? `, working mostly on ${few}` : ""}, and this is the kind of work I would like to keep doing.`
+      : `I would like to apply for the ${role} role${at}. My background is in ${few || "this kind of work"}, and I would be glad to bring it to ${team}.`;
   } else if (tone === "formal") {
     p1 = currentRole
-      ? `Please accept this letter in support of my application for the ${role} position at ${company}. I currently serve as ${currentRole.title} at ${currentRole.company}, where I have developed extensive experience in ${topSkills.slice(0, 3).join(", ") || "core domain areas"}.`
-      : `Please accept this letter as formal expression of my interest in the ${role} position at ${company}. My background in ${topSkills.slice(0, 3).join(", ") || "professional execution"} has prepared me well for this role.`;
+      ? `I am writing to apply for the ${role} position${at}. I am currently ${currentRole.title} at ${currentRole.company}, where my work has centred on ${few || "the core of this role"}.`
+      : `I am writing to apply for the ${role} position${at}. My background is in ${few || "this kind of work"}, which is close to what the posting asks for.`;
   } else {
-    // direct
     p1 = currentRole
-      ? `I am applying for the ${role} role at ${company}. As a ${currentRole.title} at ${currentRole.company}${topSkills.length ? ` working with ${topSkills.slice(0, 3).join(", ")}` : ""}, I have focused directly on building scalable solutions and delivering dependable results.`
-      : `I am applying for the ${role} role at ${company}. My professional background spans ${topSkills.slice(0, 3).join(", ") || "hands-on execution"}, and I am prepared to contribute from day one.`;
+      ? `I am applying for the ${role} role${at}. I am a ${currentRole.title} at ${currentRole.company}${few ? `, working day to day with ${few}` : ""}.`
+      : `I am applying for the ${role} role${at}. My background is in ${few || "this kind of work"}, so I can start on it without a run-up.`;
   }
 
-  // Middle: experience & proofs
   let p2: string;
-  if (currentRole?.description) {
-    const firstBullet = currentRole.description.split("\n")[0]?.replace(/^[-•*●▪◦·]\s*/, "").trim();
-    p2 = `At ${currentRole.company}, my key contributions included ${firstBullet || "driving impactful improvements and collaborating across functions"}.${topSkills.length > 2 ? ` My core proficiencies include ${topSkills.join(", ")}, which align closely with what you are seeking for ${role}.` : ""}`;
+  const firstBullet = currentRole?.description
+    ?.split("\n")[0]
+    ?.replace(/^[-\u2022*\u25cf\u25aa\u25e6\u00b7]\s*/, "")
+    .replace(/[.\s]+$/, "")
+    .trim();
+  if (currentRole && firstBullet) {
+    p2 = `One line from that work: ${firstBullet}.${skills.length > 2 ? ` I also work with ${skills.join(", ")}.` : ""}`;
   } else if (education) {
-    p2 = `My background is grounded in ${education.degree || "studies"}${education.fieldOfStudy ? ` in ${education.fieldOfStudy}` : ""} from ${education.institution}.${topSkills.length ? ` Over my career, I have honed practical expertise in ${topSkills.join(", ")}, allowing me to quickly adapt and deliver value on critical initiatives.` : ""}`;
+    const degree = [education.degree, education.fieldOfStudy].filter(Boolean).join(" in ");
+    p2 = `I studied ${degree || "there"}${education.institution ? ` at ${education.institution}` : ""}.${skills.length ? ` Since then I have worked with ${skills.join(", ")}.` : ""}`;
+  } else if (skills.length) {
+    p2 = `I work with ${skills.join(", ")}, which is most of what the posting asks for.`;
   } else {
-    p2 = `Throughout my work, I have prioritized clarity, rigor, and technical excellence.${topSkills.length ? ` With hands-on proficiency in ${topSkills.join(", ")}, I look forward to tackling the challenges outlined in your posting.` : ""}`;
+    p2 = `I have kept this short because the rest is better said in a conversation.`;
   }
 
-  // Closing: customized by length & tone
-  let p3: string;
-  if (length === "short") {
-    p3 = `I would welcome the opportunity to speak with you regarding how my experience can support ${company}. Thank you for your consideration.`;
-  } else {
-    p3 = `I would welcome the opportunity to discuss how my background and work ethic align with the goals of the ${company} team. Thank you for taking the time to review my qualifications.`;
-  }
+  const p3 =
+    length === "short"
+      ? `I would be glad to talk if you think there is a fit. Thank you for reading.`
+      : `I would be glad to talk through how this lines up with what ${team} needs. Thank you for reading.`;
 
   const signoff = tone === "formal" ? `Sincerely,\n${name}` : `Best regards,\n${name}`;
   const coverLetter = [greeting, p1, p2, p3, signoff].join("\n\n");
 
-  const proofs = currentRole
-    ? [`${currentRole.title} at ${currentRole.company}`]
-    : topSkills.slice(0, 2);
+  const proofs = currentRole ? [`${currentRole.title} at ${currentRole.company}`] : skills.slice(0, 2);
 
   return {
     coverLetter,

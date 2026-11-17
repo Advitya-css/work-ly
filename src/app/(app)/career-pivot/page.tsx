@@ -8,10 +8,8 @@ import { getPivotAction } from "@/lib/pivot/actions";
 import { PivotWizard } from "./pivot-wizard";
 import { IconPathway } from "@/components/icons";
 import { EmptyState } from "@/components/shared/empty-state";
-import { UpgradeModal } from "@/components/paywall/upgrade-modal";
-import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "Career Pivot Copilot" };
+export const metadata: Metadata = { title: "Career change" };
 
 export default async function CareerPivotPage() {
   const user = await getCurrentUser();
@@ -28,9 +26,9 @@ export default async function CareerPivotPage() {
         />
         <EmptyState
           icon={Lock}
-          title="Career Pivot is a Pro feature"
-          description="Unlock the Career Pivot Copilot to get a tailored AI strategy to transition your career, map your transferable competencies, and generate a customized superpower pitch."
-          action={{ label: "Upgrade to Pro", href: "/settings" }}
+          title="Career change is part of Pro"
+          description="Work-ly reads what you've already done and writes it again in the words your new field uses, says which of your skills carry over, and names what you'd still need."
+          action={{ label: "See Pro plans", href: "/pricing" }}
         />
       </div>
     );

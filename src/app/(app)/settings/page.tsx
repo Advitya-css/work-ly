@@ -121,9 +121,9 @@ export default async function SettingsPage({
 
             <Card>
               <CardHeader>
-                <CardTitle>Part-Time Preferences</CardTitle>
+                <CardTitle>Part-time work</CardTitle>
                 <CardDescription>
-                  Optimize the discovery and scoring engines for part-time, hourly, and shift work.
+                  Tell Work-ly you want part-time, hourly or shift work, so matches and scores aim at those.
                 </CardDescription>
               </CardHeader>
               <CardContent>

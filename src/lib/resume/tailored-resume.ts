@@ -6,6 +6,7 @@ import {
   NO_FABRICATION_RULES,
   REWRITE_RULES,
   completeStructured,
+  humanPunctuation,
   jobBrief,
   str,
   unsupportedNumbers,
@@ -112,7 +113,10 @@ function groundedBullets(raw: RawBullets | undefined, lines: string[], flagged: 
   for (const b of raw.bullets) {
     const r = b as Record<string, unknown>;
     const basedOn = str(r?.basedOn, 500);
-    const text = str(r?.text, 400);
+    // The rewrite is Work-ly's prose, so it gets human punctuation; basedOn
+    // is the candidate's own line and is left exactly as they wrote it.
+    const raw = str(r?.text, 400);
+    const text = raw ? humanPunctuation(raw) : null;
     if (!basedOn || !text || !quoteFound(basedOn, source)) continue;
     // The same source line used twice reads as padding.
     const sourceKey = normalizeForMatch(basedOn);
@@ -182,8 +186,9 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
     temperature: 0.3,
     validate: (raw) => {
       const r = raw as Record<string, unknown>;
-      const summary = str(r.summary, 700);
-      if (!summary) return null;
+      const summaryRaw = str(r.summary, 700);
+      if (!summaryRaw) return null;
+      const summary = humanPunctuation(summaryRaw);
       const byId = (list: unknown, prefix: string, i: number) =>
         Array.isArray(list)
           ? (list as RawBullets[]).find((x) => typeof x?.id === "string" && x.id.replace(/[[\]\s]/g, "").toUpperCase() === `${prefix}${i + 1}`)
@@ -252,7 +257,7 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
         projects: tailoredProjects,
         skills: skills.length > 0 ? skills : skillNames.slice(0, 14),
         education: profile.educations.map((e) => ({
-          line: [[e.degree, e.fieldOfStudy].filter(Boolean).join(", "), e.institution].filter(Boolean).join(" — "),
+          line: [[e.degree, e.fieldOfStudy].filter(Boolean).join(", "), e.institution].filter(Boolean).join(", "),
           // A degree is dated by when it ended. With only a start date on the
           // profile we'd be printing the year you enrolled as if you'd
           // graduated then - leave it off rather than mislead.

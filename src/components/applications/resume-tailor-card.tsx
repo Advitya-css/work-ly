@@ -71,7 +71,7 @@ export function ResumeTailorCard({
               facts={[{ label: "Keywords from this posting (used only where your experience backs them up)", items: preview?.keywords ?? [] }]}
               outputLabel="Your rewritten bullets and keyword check"
             >
-              <UpgradeModal title="Unlock resume bullets for this job" description="Rewrite your resume for this exact job, from your real experience, so it gets past the screeners.">
+              <UpgradeModal title="Your resume lines, rewritten for this job" description="Rewrite your resume for this exact job, from your real experience, so it gets past the screeners.">
                 <Button className="w-full gap-2 sm:w-auto">
                   <Lock className="size-4" />
                   Tailor my bullets (Pro)
@@ -103,7 +103,7 @@ export function ResumeTailorCard({
             <div className="p-5 bg-muted/30 rounded-lg border shadow-sm prose dark:prose-invert max-w-none text-sm leading-relaxed">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground border border-accent/20">
                 <Sparkles className="size-3" />
-                AI-generated — review before use
+                Written by Work-ly. Read it before you send it.
               </div>
               <TypewriterMarkdown content={content} speed={8} />
             </div>

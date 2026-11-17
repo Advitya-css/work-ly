@@ -46,7 +46,7 @@ export function BuildPathwayFromDreamJobButton({
       
       {!isPro ? (
         <UpgradeModal
-          title="Unlock your step-by-step plan"
+          title="Your plan, step by step"
           description="Turn the gaps to this role into ordered steps and a 30/60/90-day action plan you can tick off."
           preview={
             gaps.length > 0 ? (

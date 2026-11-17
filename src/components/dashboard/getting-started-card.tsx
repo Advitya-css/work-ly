@@ -52,15 +52,15 @@ export function GettingStartedCard({ hasProfile, hasGoal, hasAnalyzedJob }: Gett
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>Welcome to Work-ly! Let's get you set up.</CardTitle>
+            <CardTitle>Three things first</CardTitle>
             <CardDescription>
-              Complete these {steps.length} steps to unlock the full power of the Fit Algorithm and Priority Engine.
+              Work-ly needs these before it can tell you anything useful about a job.
             </CardDescription>
           </div>
           <Button asChild variant="secondary" size="sm" className="shrink-0">
             <Link href="/guide">
               <Sparkles className="mr-2 size-4" />
-              Read the full Guide
+              Open the Guide
             </Link>
           </Button>
         </div>

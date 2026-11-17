@@ -43,7 +43,7 @@ function watchOut(job: DiscoveredJob): string | null {
 const NEXT_STEPS = [
   { title: "Track a job", body: "Get the full fit breakdown: what you match, what's missing, and whether it's worth your time." },
   { title: "Tailor your application", body: "A resume and cover letter for that job, plus a note to the hiring manager." },
-  { title: "Move it forward", body: "Mock interviews unlock when you get an interview; offer help when you get an offer." },
+  { title: "Move it forward", body: "Mock interviews appear when you get an interview; offer help when you get an offer." },
 ];
 
 /**

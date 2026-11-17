@@ -10,6 +10,7 @@ import {
   jobBrief,
   str,
   unsupportedNumbers,
+  humanPunctuation,
   withinProAiBudget,
 } from "@/lib/ai/career-context";
 import { HONESTY_RULE, stretchesClaims } from "@/lib/ai/honesty";
@@ -110,7 +111,7 @@ export async function generateOutreachEmailAction(opportunityId: string): Promis
         email: tidyLetter(email),
         subject: str(r?.subject, 120),
         // Over LinkedIn's limit it can't be sent as written, so it isn't offered.
-        connectionNote: note && note.length <= 300 ? note : null,
+        connectionNote: note && note.length <= 300 ? humanPunctuation(note) : null,
         whoToFind: str(r?.whoToFind, 120),
         followUp: (() => {
           const f = str(r?.followUp, 900);

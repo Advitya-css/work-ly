@@ -40,7 +40,8 @@ export const REWRITE_RULES = `HOW TO REWRITE A LINE FOR THIS JOB:
 - Write ONE complete, natural sentence that starts with a strong past-tense action verb for past work ("Built", "Designed", "Cut"). Never start with a keyword, a tool name or a label followed by a colon.
 - Bring forward what this JOB cares about: name the skill or outcome it asks for early in the sentence, in the job's own word when the line already shows that thing (the job says "data modeling" and the line says "built dbt models" -> "Built 40+ dbt data models ...").
 - Keep EVERY tool, product, company and number the line names. Never drop one to make room, and never leave a sentence unfinished.
-- Cut filler words only. If you can't improve the line under these rules, return it unchanged.`;
+- Cut filler words only. If you can't improve the line under these rules, return it unchanged.
+- Punctuation a person would use: commas, full stops, colons. Never an em dash or a dash standing in for a comma.`;
 
 /** The candidate, as cited evidence: every role with dates, projects, achievements, education, certifications, skills with evidence level. */
 export function candidateBrief(profile: FullCareerProfile, maxChars = 9000): string {
@@ -154,6 +155,35 @@ export async function completeStructured<T>(params: {
     console.warn(`[workly:ai] structured call failed: ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
+}
+
+/**
+ * PUNCTUATION THAT READS AS HUMAN.
+ *
+ * The em dash between words is the clearest "a machine wrote this" tell in
+ * a cover letter or a resume line, and models reach for it constantly
+ * however the prompt is worded. Everything Work-ly writes for someone to
+ * send goes through this: an em dash (or a stray en dash between words)
+ * becomes a comma, the way most people would have written it. Ranges are
+ * left alone, because "2019–2022" and "$90k–$110k" are correct.
+ *
+ * Only applied to prose the MODEL produced, never to a line copied from
+ * the person's own resume.
+ */
+export function humanPunctuation(text: string): string {
+  return text
+    // A range someone wrote with an em dash stays a range.
+    .replace(/(\d)\s*—\s*(\d)/g, "$1–$2")
+    .replace(/\s*—\s*/g, ", ")
+    // An en dash is only punctuation when ordinary words sit either side;
+    // "Jul 2017 – May 2021" and "$90k – $110k" are ranges and stay.
+    .replace(/([a-z,;:])\s+–\s+([a-z])/g, "$1, $2")
+    .replace(/,\s*,+/g, ",")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/,(\s*[.;:!?])/g, "$1")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/^[\s,]+/, "")
+    .trim();
 }
 
 /** Small validators for model output. */

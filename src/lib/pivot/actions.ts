@@ -64,7 +64,7 @@ export async function generatePivotAction(
   const user = await getCurrentUser();
   if (!user) return { error: "Not logged in" };
   // The page is Pro-gated; the action must be too, or it's a free AI call.
-  if (!user.isPro) return { error: "Career Pivot is a Pro feature." };
+  if (!user.isPro) return { error: "Career change is part of Pro." };
 
   targetRole = cleanInput(targetRole, 100);
   targetIndustry = cleanInput(targetIndustry, 100);
@@ -80,7 +80,7 @@ export async function generatePivotAction(
   try {
     await pool.query('SELECT id FROM career_pivots WHERE "userId" = $1 LIMIT 1', [user.id]);
   } catch (err) {
-    return { error: "Career Pivot isn't switched on yet. Please check back soon." };
+    return { error: "Career change isn't switched on yet. Please check back soon." };
   }
 
   // Fetch the user's current experience

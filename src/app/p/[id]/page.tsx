@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const name = user?.name ? user.name.split(" ")[0] : "Someone";
   return {
     title: `${name}'s 30-Day Pathway to ${pathway.targetStateLabel} | Work-ly`,
-    description: `A personalized AI career transition plan from ${pathway.currentStateLabel} to ${pathway.targetStateLabel}.`,
+    description: `A week-by-week plan from ${pathway.currentStateLabel} to ${pathway.targetStateLabel}.`,
   };
 }
 
@@ -135,13 +135,13 @@ export default async function PublicPathwayPage({ params }: PageProps) {
       <div className="fixed bottom-0 left-0 right-0 p-4 z-50 pointer-events-none">
         <div className="max-w-3xl mx-auto flex items-center justify-between p-4 md:px-8 md:py-5 bg-zinc-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
           <div className="hidden sm:block">
-            <p className="font-semibold text-white">Want your own action plan?</p>
-            <p className="text-sm text-zinc-400">Stop getting ghosted. AI career mapping for free.</p>
+            <p className="font-semibold text-white">Want a plan like this?</p>
+            <p className="text-sm text-zinc-400">Free to start. No card needed.</p>
           </div>
           <div className="w-full sm:w-auto flex justify-center">
             <Button asChild size="lg" className="rounded-full w-full sm:w-auto font-bold bg-white text-black hover:bg-zinc-200">
               <Link href="/signup">
-                Generate My Pathway
+                Build my plan
                 <Sparkles className="ml-2 size-4" />
               </Link>
             </Button>

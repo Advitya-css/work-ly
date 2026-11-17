@@ -59,7 +59,7 @@ export function RunStudentDiscoveryButton({ type }: { type: StudentDiscoveryType
         </p>
         <Button className="w-fit gap-2">
           <Zap className="size-4 fill-current" />
-          Unlock Unlimited Discovery
+          Find more jobs with Pro
         </Button>
       </div>
     );

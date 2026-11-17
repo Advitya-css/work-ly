@@ -62,7 +62,7 @@ const instrumentSerif = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Work-ly — Apply to fewer jobs. Get more yeses.",
+    default: "Work-ly: apply to fewer jobs, get more yeses",
     template: "%s · Work-ly",
   },
   description:

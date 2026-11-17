@@ -60,8 +60,8 @@ export default async function StudentHomePage() {
           <CardTitle>{isSetUp ? "Your details" : "Start here"}</CardTitle>
           <CardDescription>
             {isSetUp
-              ? "Update your location and university to refine AI discoveries."
-              : "Set your university and location to unlock local campus jobs."}
+              ? "Add your university and where you are, so the jobs Work-ly finds are ones you can actually take."
+              : "Add your university and location to see campus jobs near you."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

@@ -47,7 +47,7 @@ function LockedButton() {
   return (
     <UpgradeModal
       title="Plan your whole day with Pro"
-      description="Pro ranks every move worth making today, reads new matches every night, and unlocks every AI tool."
+      description="Pro ranks what to do today, reads new matches every night, and writes the whole application for any job."
     >
       <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
         <Lock className="size-3.5" aria-hidden />

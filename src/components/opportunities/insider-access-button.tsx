@@ -78,7 +78,7 @@ export function InsiderAccessButton({
     }
     return (
       <UpgradeModal
-        title="Unlock hiring manager messages"
+        title="A note to the hiring manager"
         description="A short, specific note to the person who'll actually decide, as an email and a LinkedIn request, so you're not one more resume in the pile."
         preview={
           preview && (

@@ -47,7 +47,7 @@ export default async function CareerProfilePage() {
         action={
           <div className="flex items-center gap-2">
             {!user.isPro ? (
-              <UpgradeModal title="Unlock Career Pivot" description="Get a tailored AI strategy to transition your career, map your competencies, and generate a superpower pitch.">
+              <UpgradeModal title="Moving into a new field?" description="Work-ly writes what you&apos;ve already done in the words that field uses, and says which of your skills carry over.">
                 <Button variant="outline" size="sm">
                   <Lock className="size-3.5" />
                   Plan a career change

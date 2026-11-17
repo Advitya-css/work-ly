@@ -89,10 +89,10 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
               <Unlock className="size-3.5 shrink-0" />
               <span>
                 {step.status === "COMPLETED" && step.unlockedOpportunityCount > 0 
-                  ? `You can apply to ${step.unlockedOpportunityCount} new opportunit${step.unlockedOpportunityCount === 1 ? "y" : "ies"} now!` 
+                  ? `You can apply to ${step.unlockedOpportunityCount} more job${step.unlockedOpportunityCount === 1 ? "" : "s"} now.` 
                   : step.status === "COMPLETED" 
-                  ? `You are now qualified for new roles requiring ${step.relatedSkill || 'this skill'}.`
-                  : `Completing this could unlock ${step.unlockedOpportunityCount} additional opportunit${step.unlockedOpportunityCount === 1 ? "y" : "ies"}.`}
+                  ? `Roles asking for ${step.relatedSkill || 'this skill'} are open to you now.`
+                  : `Finishing this puts ${step.unlockedOpportunityCount} more job${step.unlockedOpportunityCount === 1 ? "" : "s"} in reach.`}
               </span>
               {step.status === "COMPLETED" && step.unlockedOpportunityCount > 0 ? (
                 <Button variant="link" size="sm" className="h-auto p-0 text-green-700 underline" onClick={() => window.location.href = '/opportunities'}>

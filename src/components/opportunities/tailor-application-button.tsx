@@ -62,7 +62,7 @@ export function TailorApplicationButton({
     }
     return (
       <UpgradeModal
-        title="Unlock cover letters"
+        title="A cover letter for this job"
         description="A cover letter for this exact posting, built from your real experience, that you can edit and copy."
         preview={
           preview && (

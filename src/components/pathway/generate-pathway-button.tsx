@@ -26,10 +26,10 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
     <div className="flex flex-col items-start sm:items-end gap-2 text-left sm:text-right">
       
       {!isPro ? (
-        <UpgradeModal title="Unlock The Dream Pathway" description="Get a personalized 30-day action plan with direct Coursera links and AI coaching.">
+        <UpgradeModal title="Your plan to get there" description="A week-by-week plan from where you are now to the role you want, with a named course or project for each gap.">
           <Button type="button" variant="default" size="sm" className="shrink-0 bg-primary/90 hover:bg-primary gap-2 ">
             <Lock className="size-4" />
-            Build Pathway (Pro)
+            Build my plan (Pro)
           </Button>
         </UpgradeModal>
       ) : (
@@ -41,7 +41,7 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
         disabled={pending}
       >
         {pending ? <WorklyLoader className="animate-spin" /> : hasExisting ? <RefreshCw /> : <Route />}
-        {pending ? "Building your pathway…" : hasExisting ? "Regenerate Action Plan" : "Build my pathway"}
+        {pending ? "Working out your plan…" : hasExisting ? "Build it again" : "Build my plan"}
       </Button>
       )}
   

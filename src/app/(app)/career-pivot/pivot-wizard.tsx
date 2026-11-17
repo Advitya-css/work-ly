@@ -11,6 +11,25 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generatePivotAction, type PivotData } from "@/lib/pivot/actions";
 
+/** The robot, while Work-ly reads. No aura, no bold pulsing promise. */
+function Thinking() {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="flex flex-col items-center gap-4 px-6 text-center">
+        <Image
+          src="/workly-bot.png"
+          alt=""
+          width={120}
+          height={120}
+          className="size-28 object-contain motion-safe:animate-[bob_3s_ease-in-out_infinite]"
+        />
+        <p className="text-lg font-semibold text-foreground">Reading your experience…</p>
+        <p className="text-sm text-muted-foreground">About 20 to 40 seconds.</p>
+      </div>
+    </div>
+  );
+}
+
 export function PivotWizard({ initialData }: { initialData: PivotData | null }) {
   const [targetRole, setTargetRole] = useState(initialData?.targetRole || "");
   const [targetIndustry, setTargetIndustry] = useState(initialData?.targetIndustry || "");
@@ -65,46 +84,29 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
     return (
     <>
 
-      {pending && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-32 h-32 flex items-center justify-center">
-              {/* The AI Aura */}
-              <div className="absolute inset-0 bg-primary/40 blur-3xl rounded-full animate-pulse mix-blend-screen scale-150" />
-              <div className="absolute inset-2 bg-blue-500/30 blur-2xl rounded-full animate-pulse delay-75 mix-blend-screen scale-125" />
-
-              {/* The Bot */}
-              <div className="relative w-full h-full animate-float">
-                <Image src="/workly-bot.png" alt="Thinking Bot" fill sizes="160px" className="object-contain drop-shadow-2xl" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
-            <p className="text-sm text-muted-foreground">This usually takes 20-40 seconds.</p>
-          </div>
-        </div>
-      )}
+      {pending && <Thinking />}
 
       <Card className="max-w-xl mx-auto mt-8 border-primary/20">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Start Your Transition</CardTitle>
-          <CardDescription>We will deeply translate your current Career Profile into a new industry's language.</CardDescription>
+          <CardTitle className="text-2xl">Which field are you moving into?</CardTitle>
+          <CardDescription>Work-ly reads what you&apos;ve already done and writes it again in the words that field uses.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleGenerate} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="targetRole">Target Role</Label>
+              <Label htmlFor="targetRole">The role you want</Label>
               <Input id="targetRole" placeholder="e.g. Product Manager" required value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="targetIndustry">Target Industry</Label>
-              <Input id="targetIndustry" placeholder="e.g. EdTech or Fintech" required value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
+              <Label htmlFor="targetIndustry">The field you're moving into</Label>
+              <Input id="targetIndustry" placeholder="e.g. healthcare, fintech" required value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
             </div>
             {error && (
               <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
             )}
             <Button type="submit" className="w-full" disabled={pending}>
               {pending ? <WorklyLoader className="mr-2 animate-spin size-4" /> : <Sparkles className="mr-2 size-4" />}
-              {pending ? "Analyzing competencies..." : "Build Transition Strategy"}
+              {pending ? "Reading your experience…" : "Show me how it translates"}
             </Button>
           </form>
         </CardContent>
@@ -116,38 +118,28 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-12">
 
-      {pending && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-32 h-32 animate-pulse">
-              <Image src="/workly-bot.png" alt="Thinking Bot" fill sizes="160px" className="object-contain drop-shadow-2xl" />
-            </div>
-            <h3 className="text-xl font-bold animate-pulse text-primary">Work-ly is analyzing your competencies...</h3>
-            <p className="text-sm text-muted-foreground">This usually takes 20-40 seconds.</p>
-          </div>
-        </div>
-      )}
+      {pending && <Thinking />}
 
       {error && (
         <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
       )}
 
-      {/* Before & After Validation */}
+      {/* Before and after */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">How a recruiter would read your resume (AI estimate)</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">How a recruiter in that field would read you</h3>
             <div className="text-7xl font-bold tabular-nums text-foreground mb-4">
               {displayScore}<span className="text-3xl text-muted-foreground">/100</span>
             </div>
             <p className="text-sm text-muted-foreground">
               {showAfterScore
-                ? "AI's honest estimate after your competencies are translated - not a guarantee."
-                : "AI's honest estimate using your original wording, before translation."}
+                ? "An estimate, after the rewrite. Not a promise."
+                : "An estimate, using your resume as it reads today."}
             </p>
             {!showAfterScore && (
               <Button className="mt-6" variant="outline" onClick={() => setShowAfterScore(true)}>
-                Apply AI Translation <ArrowRight className="ml-2 size-4" />
+                See it after the rewrite <ArrowRight className="ml-2 size-4" />
               </Button>
             )}
           </CardContent>
@@ -155,8 +147,8 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Target className="size-5 text-primary" /> The Superpower Pitch</CardTitle>
-            <CardDescription>Use this narrative in your cover letter and interviews.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Target className="size-5 text-primary" /> How to introduce yourself</CardTitle>
+            <CardDescription>Two lines for a cover letter, or the answer to &ldquo;tell me about yourself&rdquo;.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-lg italic text-muted-foreground border-l-4 border-primary/50 pl-4 py-2">
@@ -166,10 +158,10 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
         </Card>
       </div>
 
-      {/* Competency Bridge */}
+      {/* What carries over */}
       {pivot.competencyMapping.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold tracking-tight">The Competency Bridge</h2>
+          <h2 className="text-xl font-semibold tracking-tight">What carries over</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {pivot.competencyMapping.map((map, i) => (
               <Card key={i}>
@@ -187,10 +179,10 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
         </div>
       )}
 
-      {/* Bullet Translation */}
+      {/* The rewritten lines */}
       {pivot.translatedBullets.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold tracking-tight">Resume Translation</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Your lines, rewritten</h2>
           <Card>
             <div className="divide-y divide-border">
               {pivot.translatedBullets.map((bullet, i) => (
@@ -203,7 +195,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
                     <div className="hidden md:block absolute -left-2 top-1/2 -translate-y-1/2 -ml-2 bg-background p-1 text-primary">
                       <ArrowRight className="size-4" />
                     </div>
-                    <h4 className="text-xs uppercase font-semibold text-primary mb-2">Translated</h4>
+                    <h4 className="text-xs uppercase font-semibold text-primary mb-2">Rewritten</h4>
                     <p className="text-sm font-medium text-foreground">{bullet.translated}</p>
                   </div>
                 </div>
@@ -213,9 +205,9 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
         </div>
       )}
 
-      {/* Hard Gaps */}
+      {/* What is still missing */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold tracking-tight">Skill Gap Action Plan</h2>
+        <h2 className="text-xl font-semibold tracking-tight">What you&apos;d still need</h2>
         {pivot.hardGaps.length > 0 ? (
           <div className="grid md:grid-cols-3 gap-4">
             {pivot.hardGaps.map((gap, i) => (
@@ -231,19 +223,19 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No major hard gaps found - your background already covers what this role typically needs.
+            Nothing major missing. What you&apos;ve done already covers what this kind of role asks for.
           </p>
         )}
       </div>
 
       <div className="flex flex-col items-center gap-2 pt-8 border-t border-border">
-        <p className="text-xs text-muted-foreground">Running this again replaces your current pivot strategy - it isn't saved separately.</p>
+        <p className="text-xs text-muted-foreground">Running this again replaces what&apos;s here. Only the latest one is kept.</p>
         <form onSubmit={handleGenerate} className="flex flex-wrap gap-4 items-center justify-center">
-            <span className="text-sm text-muted-foreground">Want to try a different industry?</span>
-            <Input className="w-48 h-8" placeholder="Target Role" required value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
-            <Input className="w-48 h-8" placeholder="Target Industry" required value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
+            <span className="text-sm text-muted-foreground">Try a different field:</span>
+            <Input className="w-48 h-8" placeholder="Role" required value={targetRole} onChange={(e) => setTargetRole(e.target.value)} />
+            <Input className="w-48 h-8" placeholder="Field" required value={targetIndustry} onChange={(e) => setTargetIndustry(e.target.value)} />
             <Button size="sm" type="submit" disabled={pending}>
-              {pending ? <WorklyLoader className="animate-spin size-4" /> : "Re-run Pivot"}
+              {pending ? <WorklyLoader className="animate-spin size-4" /> : "Run it again"}
             </Button>
          </form>
       </div>

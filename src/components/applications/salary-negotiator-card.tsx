@@ -57,7 +57,7 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
           <ToolBrand>Salary Negotiator</ToolBrand>
         </CardTitle>
         <CardDescription>
-          Enter the offer and the number you want. Work-ly drafts a professional counter-offer email built on your real leverage.
+          Put in the offer and the number you want. Work-ly writes the email, using the reasons you actually have.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -65,25 +65,25 @@ export function SalaryNegotiatorCard({ applicationId }: SalaryNegotiatorCardProp
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label>Base Offer Received</Label>
+                <Label>What they offered</Label>
                 <Input placeholder="e.g. $120,000 or ₹15,00,000" value={baseOffer} onChange={e => setBaseOffer(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label>Target Salary</Label>
+                <Label>What you want</Label>
                 <Input placeholder="e.g. $135,000 or ₹18,00,000" value={targetSalary} onChange={e => setTargetSalary(e.target.value)} />
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Leverage / Additional Context</Label>
+              <Label>Anything that strengthens your case (optional)</Label>
               <Textarea 
-                placeholder="e.g. I have another offer for 130k, or I meet 100% of the senior requirements."
+                placeholder="e.g. another offer at 130k, or you meet every senior requirement"
                 value={leverage}
                 onChange={e => setLeverage(e.target.value)}
               />
             </div>
             <Button onClick={handleGenerate} disabled={loading || !baseOffer || !targetSalary} className="w-full bg-green-600 hover:bg-green-700 text-white gap-2">
               {loading ? <WorklyLoader className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Generate Counter-Offer Email
+              Write the email
             </Button>
             {error && (
               <Alert variant="destructive">

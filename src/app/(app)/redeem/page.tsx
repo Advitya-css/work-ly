@@ -15,7 +15,7 @@ export default async function RedeemPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 pt-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Redeem a code</h1>
-        <p className="text-sm text-muted-foreground">Enter the code you were given to unlock Work-ly Pro on this account.</p>
+        <p className="text-sm text-muted-foreground">Enter the code you were given to switch on Work-ly Pro on this account.</p>
       </div>
       <RedeemForm initialCode={typeof code === "string" ? code.slice(0, 40) : ""} />
     </div>

@@ -44,7 +44,7 @@ export function TechnicalChallengeCard({
             lines={3}
           >
             <UpgradeModal
-              title={isTechnical ? "Unlock practice coding challenges" : "Unlock practice work scenarios"}
+              title={isTechnical ? "Practise the coding task" : "Practise the kind of task they set"}
               description="Rehearse the kind of task this role will set, then get honest feedback on your answer."
             >
               <Button variant="outline" className="gap-2 w-full sm:w-auto text-primary border-primary hover:bg-primary/10">

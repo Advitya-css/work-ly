@@ -11,6 +11,7 @@ import {
   completeStructured,
   str,
   unsupportedNumbers,
+  humanPunctuation,
   withinProAiBudget,
 } from "@/lib/ai/career-context";
 import { HONESTY_RULE, stretchesClaims } from "@/lib/ai/honesty";
@@ -84,12 +85,13 @@ export async function generateLinkedInMakeoverAction(): Promise<{ data: LinkedIn
     temperature: 0.5,
     validate: (raw) => {
       const r = raw as Record<string, unknown>;
-      const about = str(r.about, ABOUT_MAX);
+      const aboutRaw = str(r.about, ABOUT_MAX);
+      const about = aboutRaw ? humanPunctuation(aboutRaw) : null;
       if (!about || stretchesClaims(about)) return null;
       const headlines = (Array.isArray(r.headlines) ? r.headlines : [])
         .map((h) => {
           const o = (h ?? {}) as Record<string, unknown>;
-          return { text: (str(o.text, 400) ?? "").replace(/\s+/g, " "), angle: str(o.angle, 60) ?? "" };
+          return { text: humanPunctuation((str(o.text, 400) ?? "").replace(/\s+/g, " ")), angle: str(o.angle, 60) ?? "" };
         })
         .filter((h) => h.text && h.text.length <= HEADLINE_MAX && !stretchesClaims(h.text) && !claimsUnheldTitle(h.text, targetRole, heldTitles))
         .slice(0, 3);

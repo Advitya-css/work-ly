@@ -92,8 +92,8 @@ export function SavedResumeLocked({
           the rest, edit it and download it as PDF or Word. Pro writes the cover letter, the note to the hiring manager and
           interview prep for this job too.
         </p>
-        <UpgradeModal title="Unlock your application" defaultPlan="monthly">
-          <Button className="w-full">Unlock my resume</Button>
+        <UpgradeModal title="The rest of your resume" defaultPlan="monthly">
+          <Button className="w-full">Open my resume</Button>
         </UpgradeModal>
         {offerLine && <p className="text-center text-xs font-medium text-primary">Founding members: {offerLine.replace(/ for founding members/, "")}</p>}
       </aside>

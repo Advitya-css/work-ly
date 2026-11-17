@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, createHmac, timingSafeEqual } from "crypto";
 
-import { NO_FABRICATION_RULES, REWRITE_RULES, completeStructured, str, unsupportedNumbers } from "@/lib/ai/career-context";
+import { NO_FABRICATION_RULES, REWRITE_RULES, completeStructured, humanPunctuation, str, unsupportedNumbers } from "@/lib/ai/career-context";
 import { safeRewrite } from "@/lib/resume/tense";
 import { quoteFound } from "@/lib/scoring/screen-core";
 
@@ -96,6 +96,7 @@ export async function writeOpeningPreview(resumeText: string, jobText: string): 
       if (!raw || typeof raw !== "object") return null;
       const r = raw as Record<string, unknown>;
       let summary = str(r.summary, 600);
+      if (summary) summary = humanPunctuation(summary);
       // A summary with a number the resume doesn't have is dropped, not shown.
       if (summary && unsupportedNumbers(summary, resume).length > 0) summary = null;
       const bullets: OpeningPreview["bullets"] = [];
@@ -107,7 +108,7 @@ export async function writeOpeningPreview(resumeText: string, jobText: string): 
         seen.add(basedOn);
         const invented = unsupportedNumbers(text, basedOn).length > 0;
         const lost = unsupportedNumbers(basedOn, text).length > 0;
-        bullets.push({ text: invented || lost ? basedOn : safeRewrite(text, basedOn), from: basedOn });
+        bullets.push({ text: invented || lost ? basedOn : humanPunctuation(safeRewrite(text, basedOn)), from: basedOn });
         if (bullets.length === 2) break;
       }
       if (!summary && bullets.length === 0) return null;
