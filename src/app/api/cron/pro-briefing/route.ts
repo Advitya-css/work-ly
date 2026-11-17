@@ -64,8 +64,8 @@ export async function GET(req: Request) {
       await Promise.all(
         userIds.slice(i, i + CONCURRENCY).map(async (userId) => {
           try {
-            await runDiscovery(userId, { limitPerSource: 12, aiScreenLimit: 4, timeBudgetMs: 30_000 });
-            const result = await screenTopDiscovered(userId, { limit: 6, window: 12, budgetMs: 30_000 });
+            await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: 2, timeBudgetMs: 30_000 });
+            const result = await screenTopDiscovered(userId, { limit: 2, window: 8, budgetMs: 25_000 });
             screened += result.screened;
             checked++;
           } catch (error) {

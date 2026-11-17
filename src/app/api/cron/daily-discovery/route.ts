@@ -89,14 +89,13 @@ export async function GET(req: Request) {
         );
 
         // One smart run per user. With no query, runDiscovery searches the
-        // user's own target role first plus AI-suggested adjacent titles
-        // (see the SMART DEFAULT block in lib/discovery/run.ts) - it used to
-        // be called once per suggested title here, which multiplied source
-        // calls and, now that runs include an AI screen, AI cost by 4x.
-        // Free accounts share the daily free AI total; over it, the run still
-        // finds and rule-scores listings, just without the AI read.
-        const aiAllowed = await spendFreeAi({ id: userId, isPro: Boolean(row.isPro) });
-        const result = await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: aiAllowed ? 6 : 0, timeBudgetMs: 40_000 });
+        // user's own target role first.
+        // Free accounts rely on the instant, rule-based scoring engine (0 tokens, $0.00 cost)
+        // in background crons so inactive users don't burn AI spend.
+        // Active Pro users get background AI screening, capped at 2 to preserve tokens.
+        const isProUser = Boolean(row.isPro);
+        const aiAllowed = isProUser && (await spendFreeAi({ id: userId, isPro: true }));
+        const result = await runDiscovery(userId, { limitPerSource: 10, aiScreenLimit: aiAllowed ? 2 : 0, timeBudgetMs: 40_000 });
         totalNewJobs += result.newJobs;
         userNewJobs += result.newJobs;
         userHighPriority += result.newHighPriority;

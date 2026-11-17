@@ -263,15 +263,17 @@ export async function runDiscovery(
     );
 
     // SMART DEFAULT: no query typed. Search for what this person is actually
-    // after - their stated target role FIRST, always, then AI-suggested
-    // adjacent titles for reach. The AI titles used to replace the target
-    // role outright, so someone targeting "Software Engineer" could get a
-    // default feed that never searched "Software Engineer" at all.
+    // after - their stated target role FIRST, always.
+    // The AI titles are only generated when expandSearch is explicitly requested,
+    // avoiding burning LLM tokens on every automated background run.
     if (!query) {
       const targetRole = careerGoal?.primaryTargetRole?.trim() || careerGoal?.targetRole?.trim() || null;
       const currentRole =
         profile.profile?.currentRole?.trim() || profile.experiences.find((e) => e.isCurrent)?.title?.trim() || null;
-      const idealTitles = await suggestIdealJobSearches(profileText, targetRole, profile.profile?.location ?? null);
+      const idealTitles =
+        options.expandSearch && options.aiScreenLimit !== 0
+          ? await suggestIdealJobSearches(profileText, targetRole, profile.profile?.location ?? null)
+          : [];
       const seen = new Set<string>();
       // The current role goes second: roles like the one you already do are
       // where you're strongest ("Apply now"), while the target role alone

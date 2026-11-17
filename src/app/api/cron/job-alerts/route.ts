@@ -53,7 +53,9 @@ export async function GET(req: Request) {
       const targetRole = row.primaryTargetRole as string;
 
       try {
-        const result = await runDiscovery(userId, { query: targetRole, limitPerSource: 20, aiScreenLimit: 6, timeBudgetMs: 40_000 });
+        // Discovery uses the fast, deterministic rules engine (0 tokens, $0.00 cost)
+        // to detect high-priority new matches for email digests.
+        const result = await runDiscovery(userId, { query: targetRole, limitPerSource: 15, aiScreenLimit: 0, timeBudgetMs: 40_000 });
         
         // We only email them if the algorithm flagged at least one of the new jobs as a STRONG match
         if (result.newHighPriority > 0) {

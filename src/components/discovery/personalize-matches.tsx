@@ -7,7 +7,7 @@ import { CheckCircle2, Sparkles } from "lucide-react";
 import { WorklyLoader } from "@/components/shared/workly-loader";
 import { screenTopMatchesAction } from "@/lib/discovery/actions";
 
-const MAX_ROUNDS = 3;
+const MAX_ROUNDS = 1;
 
 function alreadyTried(key: string): boolean {
   try {

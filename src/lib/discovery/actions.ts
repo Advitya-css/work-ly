@@ -184,9 +184,9 @@ export async function screenTopMatchesAction(): Promise<DeepScreenResult & { err
 
   try {
     const result = await screenTopDiscovered(user.id, {
-      limit: user.isPro ? 10 : 5,
-      window: user.isPro ? 15 : 8,
-      budgetMs: 45_000,
+      limit: user.isPro ? 4 : 2,
+      window: user.isPro ? 8 : 4,
+      budgetMs: 35_000,
     });
     if (result.screened > 0) {
       revalidateDiscoveryViews();

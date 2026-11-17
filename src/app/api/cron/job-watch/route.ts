@@ -96,8 +96,8 @@ export async function GET(req: Request) {
       const userId = user.id as string;
       const minFit = Number(user.watchMinFit ?? 85);
       try {
-        const run = await runDiscovery(userId, { limitPerSource: 15, aiScreenLimit: 6, timeBudgetMs: 40_000 });
-        await screenTopDiscovered(userId, { limit: 8, window: 12, budgetMs: 40_000 });
+        const run = await runDiscovery(userId, { limitPerSource: 12, aiScreenLimit: 2, timeBudgetMs: 40_000 });
+        await screenTopDiscovered(userId, { limit: 2, window: 8, budgetMs: 30_000 });
         const matches = await exceptionalMatches(userId, run.startedAt, minFit);
         if (matches.length > 0 && user.email) {
           await sendJobWatchEmail(user.email, matches, minFit);
