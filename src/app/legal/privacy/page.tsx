@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
         Work-ly (work-ly.in) is operated by Advitya Bansal, based in India. Work-ly is used by people around the
         world, so this policy is written to address the EU/UK GDPR, India&apos;s Digital Personal Data Protection
         Act 2023 (DPDPA), the California Consumer Privacy Act (CCPA/CPRA), Canada&apos;s PIPEDA, and Australia&apos;s
-        Privacy Act &mdash; whichever applies to you.
+        Privacy Act, whichever applies to you.
       </p>
       <p>
         <strong className="text-foreground">Privacy &amp; grievance contact:</strong>{" "}
@@ -23,13 +23,13 @@ export default function PrivacyPolicy() {
       </p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">1. What we collect</h2>
-      <p><strong className="text-foreground">Account data:</strong> your name, email, and password (stored as a salted hash) &mdash; or, if you sign in with Google, the basic profile information Google shares.</p>
-      <p><strong className="text-foreground">Career data:</strong> your uploaded résumé/CV and its extracted contents, plus anything you add or edit yourself &mdash; work history, education, skills, career goals, and (in Student Mode) visa/work-hour preferences.</p>
+      <p><strong className="text-foreground">Account data:</strong> your name, email, and password (stored as a salted hash). If you sign in with Google, we store the basic profile information Google shares.</p>
+      <p><strong className="text-foreground">Career data:</strong> your uploaded résumé/CV and its extracted contents, plus anything you add or edit yourself: work history, education, skills, career goals, and (in Student Mode) visa/work-hour preferences.</p>
       <p><strong className="text-foreground">Application data:</strong> jobs you save, apply to, or track, and any notes you add.</p>
       <p><strong className="text-foreground">Usage &amp; device data:</strong> pages visited, features used, IP address, and similar technical data, used for security (like rate-limiting) and diagnostics.</p>
       <p>
         Please don&apos;t include government ID numbers, payment details, or health information in your résumé or
-        notes unless it&apos;s unavoidably part of your work history &mdash; we don&apos;t ask for or want sensitive
+        notes unless it&apos;s unavoidably part of your work history. We don&apos;t ask for or want sensitive
         personal data.
       </p>
 
@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
       <h2 className="text-2xl font-bold text-foreground mt-4">3. Automated scoring &amp; AI features</h2>
       <p>
         Fit/Priority scores and career suggestions are generated automatically from your profile and job data.
-        They&apos;re informational only &mdash; no employer receives or relies on a Work-ly score as part of their
+        They&apos;re informational only. No employer receives or relies on a Work-ly score as part of their
         hiring process, and you&apos;re never subject to a solely-automated decision with a legal or similarly
         significant effect on you. You can review, correct, or delete the underlying profile data anytime in
         Settings.
@@ -60,7 +60,7 @@ export default function PrivacyPolicy() {
       <h2 className="text-2xl font-bold text-foreground mt-4">4. Who we share information with</h2>
       <ul className="list-disc pl-6 flex flex-col gap-2">
         <li><strong className="text-foreground">Service providers</strong> who process data on our behalf under confidentiality obligations: our cloud hosting/database provider, our email-delivery provider, and our AI model provider (Google, for Gemini), which receives only the text a feature needs. We use Google&apos;s paid Gemini API: under Google&apos;s terms for paid services, Google does not use your prompts or the responses to train or improve its products, and keeps them only for a limited period to detect abuse.</li>
-        <li><strong className="text-foreground">Job-data providers</strong> (Adzuna, Reed, Remotive, Jobicy, and similar) &mdash; we send search terms to fetch listings, not your résumé or identity.</li>
+        <li><strong className="text-foreground">Job-data providers</strong> (Adzuna, Reed, Remotive, Jobicy, and similar): we send search terms to fetch listings, not your résumé or identity.</li>
         <li><strong className="text-foreground">Payments</strong> are processed by our payment provider (named at checkout, and on our Sub-processors page); where it acts as reseller (Merchant of Record) it receives your name, email, billing country and payment details to complete the sale and handle tax. We never see or store your full card details.</li>
         <li>Legal authorities, where required by law, or in a business transfer such as a merger or acquisition.</li>
       </ul>
@@ -85,8 +85,8 @@ export default function PrivacyPolicy() {
       <p>Email <a href="mailto:advitya@work-ly.in" className="text-foreground underline underline-offset-2">advitya@work-ly.in</a> to exercise any of these, or use Settings to delete data directly:</p>
       <ul className="list-disc pl-6 flex flex-col gap-2">
         <li><strong className="text-foreground">EU/UK (GDPR):</strong> access, correction, deletion, restriction, objection, portability, withdraw consent, and the right to complain to your local supervisory authority.</li>
-        <li><strong className="text-foreground">India (DPDPA):</strong> as a Data Principal &mdash; access a summary of your data and how it&apos;s processed, correction and erasure, grievance redressal, and the right to nominate someone to act on your behalf.</li>
-        <li><strong className="text-foreground">California (CCPA/CPRA):</strong> know, delete, and correct your personal information, and opt out of &quot;sale&quot; or &quot;sharing&quot; &mdash; we don&apos;t do either, so there&apos;s nothing to opt out of. No discrimination for exercising these rights.</li>
+        <li><strong className="text-foreground">India (DPDPA):</strong> as a Data Principal you have the right to a summary of your data and how it&apos;s processed, to correction and erasure, to grievance redressal, and to nominate someone to act on your behalf.</li>
+        <li><strong className="text-foreground">California (CCPA/CPRA):</strong> know, delete, and correct your personal information, and opt out of &quot;sale&quot; or &quot;sharing&quot;. We don&apos;t do either, so there&apos;s nothing to opt out of. No discrimination for exercising these rights.</li>
         <li><strong className="text-foreground">Canada (PIPEDA):</strong> access, correction, and withdrawal of consent, and the right to complain to the Office of the Privacy Commissioner of Canada.</li>
         <li><strong className="text-foreground">Australia (Privacy Act):</strong> access and correction, and the right to complain, including to the OAIC.</li>
       </ul>
@@ -102,7 +102,7 @@ export default function PrivacyPolicy() {
       <h2 className="text-2xl font-bold text-foreground mt-4">9. Children</h2>
       <p>
         Work-ly isn&apos;t directed at anyone under 18, and we don&apos;t knowingly collect data from anyone under
-        18. If we learn we have, we&apos;ll delete it &mdash; contact us if you believe this has happened.
+        18. If we learn we have, we&apos;ll delete it. Contact us if you believe this has happened.
       </p>
 
       <h2 className="text-2xl font-bold text-foreground mt-4">10. Changes &amp; contact</h2>

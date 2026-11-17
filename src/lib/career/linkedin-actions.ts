@@ -50,7 +50,7 @@ ${NO_FABRICATION_RULES}`;
 export async function generateLinkedInMakeoverAction(): Promise<{ data: LinkedInMakeover; savedAt: string | null } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
-  if (!user.isPro) return { error: "The LinkedIn makeover is a Pro feature." };
+  if (!user.isPro) return { error: "The LinkedIn profile rewrite is part of Pro." };
   if (!(await withinProAiBudget(user.id))) {
     return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
   }
@@ -115,7 +115,7 @@ export async function generateLinkedInMakeoverAction(): Promise<{ data: LinkedIn
 export async function saveLinkedInEditsAction(fields: Record<string, unknown>): Promise<{ savedAt: string } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
-  if (!user.isPro) return { error: "This is a Pro feature." };
+  if (!user.isPro) return { error: "This is part of Pro." };
   const saved = await getSavedOutput<LinkedInMakeover>(user.id, "linkedin", PROFILE_KEY);
   if (!saved) return { error: "Nothing to save yet." };
   const next = cleanMakeoverEdits(saved.data, fields);

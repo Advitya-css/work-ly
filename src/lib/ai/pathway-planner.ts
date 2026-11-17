@@ -27,7 +27,7 @@ Current context: "${action.description}"
 Your task: Rewrite this milestone's description into a highly actionable, premium, step-by-step masterclass.
 
 CRITICAL REQUIREMENT (FEATURE 3): You MUST recommend a specific free or cheap resource for them to use. 
-Name an exact course (e.g., 'Coursera: Meta Front-End Developer', 'Udemy: 100 Days of Code'), a specific certification, or a highly specific project idea that they can build. Do not just say "take a course" — name the exact course and platform.
+Name an exact course (e.g., 'Coursera: Meta Front-End Developer', 'Udemy: 100 Days of Code'), a specific certification, or a highly specific project idea that they can build. Do not just say "take a course": name the exact course and platform.
 
 FORMAT REQUIREMENTS (Must use Markdown):
 - Write a 2-sentence highly encouraging intro.

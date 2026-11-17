@@ -44,7 +44,7 @@ export async function analyzeDreamJobAction(
   // form already enforces this - checked here too so the rule doesn't live
   // only in the browser.
   if (!user.isPro && (await listDreamJobsByUserId(user.id)).some((dj) => dj.status === "PARSED")) {
-    return { error: "Your free dream-job analysis has been used. Upgrade to Pro to analyze more." };
+    return { error: "You have used your free dream-job check. Pro checks as many as you like." };
   }
 
   if (!(await spendFreeAi(user))) return { error: FREE_AI_LIMIT_MESSAGE };

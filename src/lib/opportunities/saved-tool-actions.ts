@@ -36,7 +36,7 @@ export async function saveToolEditsAction(
 ): Promise<{ savedAt: string } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
-  if (!user.isPro) return { error: "This is a Pro feature." };
+  if (!user.isPro) return { error: "This is part of Pro." };
   const opp = await getOpportunityWithJobById(user.id, opportunityId);
   if (!opp || opp.userId !== user.id) return { error: "Opportunity not found." };
 

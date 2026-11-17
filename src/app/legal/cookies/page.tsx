@@ -26,7 +26,7 @@ export default function CookiePolicy() {
       <ul className="list-disc pl-6 flex flex-col gap-2">
         <li>
           <strong className="text-foreground">Strictly necessary:</strong> a session cookie that keeps you signed
-          in, set as HttpOnly (not readable by page scripts) and Secure (HTTPS only). Essential &mdash; disabling it
+          in, set as HttpOnly (not readable by page scripts) and Secure (HTTPS only). Essential: disabling it
           will prevent you from signing in or using most of Work-ly.
         </li>
         <li>
@@ -48,7 +48,7 @@ export default function CookiePolicy() {
         </li>
         <li>
           <strong className="text-foreground">Payments:</strong> our payment provider may set its own cookies on its
-          checkout pages to process your purchase and prevent fraud. We don&apos;t control these &mdash; see the
+          checkout pages to process your purchase and prevent fraud. We don&apos;t control these, so see the
           provider&apos;s own privacy and cookie policy, linked from its checkout.
         </li>
       </ul>
@@ -60,8 +60,8 @@ export default function CookiePolicy() {
       <h2 className="text-2xl font-bold text-foreground mt-4">3. Your choices</h2>
       <p>
         The strictly necessary cookie can&apos;t be disabled without breaking sign-in, since it&apos;s what makes
-        your session possible. You can control other cookies through your browser settings &mdash; to view, block,
-        or delete them &mdash; and where legally required (for example, for EU/UK visitors), we&apos;ll add an
+        your session possible. You can control other cookies through your browser settings, which let you view, block
+        or delete them. Where legally required (for example, for EU/UK visitors), we&apos;ll add an
         on-site consent option before setting any future non-essential cookie beyond what&apos;s described here.
       </p>
 

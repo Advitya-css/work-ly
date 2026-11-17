@@ -109,7 +109,7 @@ export async function withinProAiBudget(
 /** Standard gate for Pro API routes: 401 / 403 / 429, or null when the call may proceed. */
 export async function proApiGate(user: { id: string; isPro?: boolean } | null): Promise<NextResponse | null> {
   if (!user) return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
-  if (!user.isPro) return NextResponse.json({ error: "This is a Pro feature.", upgradeRequired: true }, { status: 403 });
+  if (!user.isPro) return NextResponse.json({ error: "This is part of Pro.", upgradeRequired: true }, { status: 403 });
   if (!(await withinProAiBudget(user.id))) {
     return NextResponse.json({ error: "You've used a lot of AI tools this hour. Try again in a little while." }, { status: 429 });
   }

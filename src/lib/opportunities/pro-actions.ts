@@ -31,7 +31,7 @@ type Result<T> = { data: T } | { error: string };
 async function requireOwnedOpportunity(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." } as const;
-  if (!user.isPro) return { error: "This is a Pro feature." } as const;
+  if (!user.isPro) return { error: "This is part of Pro." } as const;
   if (!(await withinProAiBudget(user.id))) {
     return { error: "You've used a lot of AI tools this hour. Try again in a little while." } as const;
   }

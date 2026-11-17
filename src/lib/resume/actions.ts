@@ -16,7 +16,7 @@ export async function generateTailoredResumeDocAction(
 ): Promise<{ data: TailoredResume; savedAt: string | null } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
-  if (!user.isPro) return { error: "The tailored resume is a Pro feature." };
+  if (!user.isPro) return { error: "The tailored resume is part of Pro." };
   if (!(await withinProAiBudget(user.id))) {
     return { error: "You've used a lot of AI tools this hour. Try again in a little while." };
   }
@@ -60,7 +60,7 @@ export async function saveTailoredResumeEditsAction(
 ): Promise<{ savedAt: string } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." };
-  if (!user.isPro) return { error: "The tailored resume is a Pro feature." };
+  if (!user.isPro) return { error: "The tailored resume is part of Pro." };
   const opp = await getOpportunityWithJobById(user.id, opportunityId);
   if (!opp || opp.userId !== user.id) return { error: "Opportunity not found." };
   const resume = cleanEditedResume(edited);
