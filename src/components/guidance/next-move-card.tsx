@@ -31,7 +31,7 @@ export function NextMoveCard({ move, isPro }: { move: NextMove; isPro: boolean }
             <Compass className="size-5" />
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <p className="flex flex-wrap items-center gap-2 text-[13px] font-medium text-primary">
+            <p className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
               Your next move
               <span className="font-medium normal-case tracking-normal text-muted-foreground">· {move.reason}</span>
               {showPro && (

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { LogOut, MessageSquare, Settings, ChevronsUpDown, Gift } from "lucide-react";
+import { LogOut, Settings, ChevronsUpDown, Gift } from "lucide-react";
 
 import { signOutAction } from "@/lib/auth/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FeedbackDialog } from "@/components/shared/feedback-button";
 import type { AuthUser } from "@/lib/auth/types";
 
 function initials(name: string | null, email: string) {
@@ -28,10 +26,7 @@ function initials(name: string | null, email: string) {
 }
 
 export function UserMenu({ user, compact = false }: { user: AuthUser; compact?: boolean }) {
-  const [feedback, setFeedback] = useState(false);
-
   return (
-    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -76,25 +71,11 @@ export function UserMenu({ user, compact = false }: { user: AuthUser; compact?: 
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={(e) => {
-            // The dialog has to open after the menu has closed, or Radix
-            // returns focus to a trigger that is no longer on the page.
-            e.preventDefault();
-            setFeedback(true);
-          }}
-        >
-          <MessageSquare />
-          Send feedback
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={() => signOutAction()}>
           <LogOut />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    <FeedbackDialog open={feedback} onOpenChange={setFeedback} />
-    </>
   );
 }

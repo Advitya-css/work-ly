@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  Compass,
   Search,
   Loader2,
   ExternalLink,
@@ -355,7 +354,7 @@ export function DiscoveryBoard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by match">
           <FilterChip active={activeBucket === null} onClick={() => setActiveBucket(null)} label="Best matches" />
-          {BUCKETS.filter((bucket) => counts[bucket.key] > 0 || activeBucket === bucket.key).map((bucket) => (
+          {BUCKETS.map((bucket) => (
             <FilterChip
               key={bucket.key}
               active={activeBucket === bucket.key}
@@ -397,29 +396,17 @@ export function DiscoveryBoard({
       )}
 
       {visible.length === 0 && topPicks.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border px-6 py-12 text-center">
-          <div className="relative size-20 opacity-80">
-            <Image src="/workly-bot.png" alt="" fill sizes="80px" className="object-contain" />
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border px-6 py-14 text-center">
+          <div className="relative size-24 opacity-80">
+            <Image src="/workly-bot.png" alt="" fill sizes="96px" className="object-contain" />
           </div>
           <p className="max-w-sm text-sm text-muted-foreground">
             {jobs.length === 0
-              ? "Nothing here yet. Work-ly can search the boards for roles that fit what you have done."
+              ? "No jobs yet. Press Find new jobs and Work-ly searches the boards for roles that fit you."
               : activeBucket == null && searchResult.results.length > 0
-                ? "Nothing strong in this search. Try another role, or look at the weaker matches."
+                ? "No strong matches in this search. Check Low priority, or search again."
                 : "Nothing matches this filter."}
           </p>
-          {jobs.length === 0 ? (
-            <Button type="button" onClick={discover} disabled={pending}>
-              {pending ? <WorklyLoader className="animate-spin" /> : <Compass />}
-              {pending ? "Searching… about a minute" : "Find jobs for me"}
-            </Button>
-          ) : (
-            activeBucket !== null && (
-              <Button type="button" variant="outline" size="sm" onClick={() => setActiveBucket(null)}>
-                Show every match
-              </Button>
-            )
-          )}
         </div>
       ) : (
         visible.length > 0 && (

@@ -140,11 +140,7 @@ export default async function DiscoverPage() {
         for that job; &ldquo;Not for me&rdquo; hides it. Change the role I search for any time, just below.
       </RobotTip>
 
-      {/* What Work-ly is searching for, and what it has not read yet. Two
-          sentences that used to float loose above the controls; together in
-          one quiet strip they read as the page's status rather than as two
-          more things to deal with. */}
-      <div className="-mt-1 flex flex-col gap-2 rounded-[var(--radius)] bg-[var(--surface-2)]/60 px-4 py-3">
+      <div className="-mt-1 flex flex-col gap-1.5">
         {!profile.profile?.isStudent && <TargetRoleCard targetRole={targetRole} changingCareer={changingCareer} />}
         <PersonalizeMatches key={latestRun?.id ?? "none"} pending={pendingScreens} runKey={latestRun?.id ?? "none"} />
       </div>

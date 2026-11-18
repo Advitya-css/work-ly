@@ -147,7 +147,7 @@ export default async function CareerPathPage() {
               <MapPin className="size-4 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[13px] text-muted-foreground">Current</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Current</p>
               <p className="text-sm font-medium text-foreground">{pathway.currentStateLabel}</p>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default async function CareerPathPage() {
               <Flag className="size-4 text-primary" />
             </div>
             <div>
-              <p className="text-[13px] text-muted-foreground">Target</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Target</p>
               <p className="text-sm font-medium text-primary">{pathway.targetStateLabel}</p>
             </div>
           </div>
@@ -238,7 +238,7 @@ function CareerExplorer({
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {careers.map((career) => (
-          <article key={career.role} className="flex flex-col gap-3 surface p-5 ">
+          <article key={career.role} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h3 className="truncate text-base font-semibold text-foreground">{displayJobTitle(career.role)}</h3>

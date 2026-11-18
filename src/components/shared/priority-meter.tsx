@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * One score as a filled bar rather than a ring.
+ * The Priority score as a filled bar rather than a ring.
  *
  * A ring is a nice object on its own but a poor thing to compare: twenty of
  * them down a page, each at a slightly different angle, and you cannot tell
@@ -25,7 +25,7 @@ function band(value: number) {
 
 export function PriorityMeter({
   value,
-  label = "Fit",
+  label = "Priority",
   className,
 }: {
   value: number;
@@ -38,7 +38,9 @@ export function PriorityMeter({
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[13px] text-muted-foreground">{label}</span>
+        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {label}
+        </span>
         <span className={cn("text-sm font-semibold tabular-nums", colour.text)}>
           {clamped}
           <span className="text-xs font-normal text-muted-foreground">/100</span>
