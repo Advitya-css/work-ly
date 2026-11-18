@@ -155,7 +155,7 @@ export function ApplicationNextStep({
       {step && (
         <div className="flex flex-col gap-5 p-5 sm:p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex max-w-xl flex-col gap-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">{step.eyebrow}</p>
+            <p className="text-[13px] font-medium text-primary">{step.eyebrow}</p>
             <h2 className="text-xl font-semibold tracking-tight text-balance text-foreground">{step.title}</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">{step.body}</p>
           </div>

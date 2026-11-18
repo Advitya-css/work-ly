@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { TourProvider } from "@/components/tour/tour-provider";
 import { StageMomentHost } from "@/components/guidance/stage-moment-host";
-import { FeedbackButton } from "@/components/shared/feedback-button";
 import { SampleDataBanner } from "@/components/shared/sample-data-banner";
 import { Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -55,13 +54,14 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         {onReferral && user.proUntil && <ReferralBanner endsAt={user.proUntil} offerLine={offerLine} />}
         <PendingCodeCard />
         {children}
-        {user.isPro ? (
-          <FeedbackButton />
-        ) : (
-          <div className="mt-8 flex w-full justify-center pt-8 border-t border-border/40">
-            <a href="mailto:advitya@work-ly.in" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-muted/50 px-4 py-2 rounded-full border border-border/50">
+        {!user.isPro && (
+          <div className="mt-2 flex w-full justify-center border-t border-border/40 pt-8">
+            <a
+              href="mailto:advitya@work-ly.in"
+              className="flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
               <Mail className="size-4" />
-              Contact us: advitya@work-ly.in
+              Stuck on something? advitya@work-ly.in
             </a>
           </div>
         )}

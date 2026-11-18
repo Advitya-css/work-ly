@@ -168,9 +168,9 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="t-display text-foreground">
             {isNew ? "Welcome" : "Welcome back"}
             {firstName ? `, ${firstName}` : ""}
           </h1>
@@ -211,24 +211,26 @@ export default async function DashboardPage({
       <section className="grid gap-4 md:grid-cols-2">
         <Link
           href="/career-profile"
-          className="group flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/30"
+          className="surface surface-hover group flex min-w-0 flex-col gap-3 overflow-hidden p-5 sm:p-6"
         >
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-base font-semibold text-foreground">Your profile</span>
-            <span className="text-sm font-semibold tabular-nums text-foreground">{profileCompleteness.percentage}%</span>
+            <span className="t-section text-foreground">Your profile</span>
+            <span className="t-figure text-[1.375rem] text-foreground">{profileCompleteness.percentage}%</span>
           </div>
           <Progress value={profileCompleteness.percentage} label="Profile completeness" />
-          <span className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span className="truncate">{topMissing ? `Next: ${topMissing.hint}` : "Complete. Matches use all of it."}</span>
-            <ChevronRight className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          <span className="flex items-start justify-between gap-3 text-sm text-muted-foreground">
+            <span className="line-clamp-2">{topMissing ? `Next: ${topMissing.hint}` : "Complete. Matches use all of it."}</span>
+            <ChevronRight className="mt-0.5 size-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
           </span>
         </Link>
         <Link
           href="/career-goals"
-          className="group flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/30"
+          className="surface surface-hover group flex min-w-0 flex-col gap-3 overflow-hidden p-5 sm:p-6"
         >
-          <span className="text-base font-semibold text-foreground">Your target</span>
-          <span className="truncate text-lg font-medium text-foreground">{targetRole ?? "Not set yet"}</span>
+          <span className="t-section text-foreground">Your target</span>
+          <span className="truncate font-serif text-[1.375rem] leading-tight text-foreground">
+            {targetRole ?? "Not set yet"}
+          </span>
           <span className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
             <span>{targetRole ? "Discover searches for this role." : "Set the role you want so matches aim for it."}</span>
             <ChevronRight className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />

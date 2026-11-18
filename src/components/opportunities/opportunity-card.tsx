@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { Bookmark, MapPin } from "lucide-react";
+import { ArrowUp, Bookmark, MapPin } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,9 @@ import { classifyStudentJob } from "@/lib/student/legal-limits";
 import { IconStudent } from "@/components/icons";
 import type { OpportunityWithJob } from "@/lib/db/types";
 
+/** Priority at or above this is called out in words rather than a number. */
+const DO_FIRST_THRESHOLD = 75;
+
 /**
  * One opportunity, cut to what you actually decide on and given something
  * to look at.
@@ -39,9 +42,16 @@ import type { OpportunityWithJob } from "@/lib/db/types";
  *   The monogram. A stable colour and initial per employer, so the same
  *   company looks the same everywhere and a list becomes scannable.
  *
- *   The priority meter. A bar rather than a ring, because bars share a
+ *   The fit meter. A bar rather than a ring, because bars share a
  *   baseline and can be compared down a column at a glance, which is the
  *   actual task on this screen.
+ *
+ * One number, not two. The card used to print Priority out of 100 and Fit
+ * out of 100 next to each other, which asked the reader to reconcile two
+ * scales before deciding anything. Fit is the one the verdict is built
+ * from and the one the job page shows, so it is the one that stays.
+ * Priority still orders the list, and when it is high the card says so in
+ * words.
  *
  * Everything else still lives on the analysis page.
  */
@@ -111,12 +121,18 @@ export function OpportunityCard({ opportunity, university }: { opportunity: Oppo
           </Button>
         </div>
 
-        <PriorityMeter value={opportunity.priorityScore} />
+        <PriorityMeter value={opportunity.fitScore} label="Fit" />
 
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant={RECOMMENDATION_VARIANT[opportunity.recommendation]}>
             {RECOMMENDATION_LABEL[opportunity.recommendation]}
           </Badge>
+          {opportunity.priorityScore >= DO_FIRST_THRESHOLD && (
+            <Badge variant="outline" className="gap-1 border-primary/40 bg-primary/5 text-primary">
+              <ArrowUp className="size-3" aria-hidden />
+              Do this first
+            </Badge>
+          )}
           {isStudentBadge && (
             <Badge variant="outline" className="border-primary/50 text-primary bg-primary/5 gap-1 shadow-sm"><IconStudent className="size-3" />{studentKind === "on-campus" ? "On-Campus" : studentKind === "internship" ? "Internship" : "Off-Campus"}</Badge>
           )}
@@ -125,10 +141,7 @@ export function OpportunityCard({ opportunity, university }: { opportunity: Oppo
               {OPPORTUNITY_STATUS_LABEL[opportunity.status]}
             </Badge>
           )}
-          <span className="ml-auto text-xs text-muted-foreground">
-            Fit {opportunity.fitScore}
-            {salary ? ` · ${salary}` : ""}
-          </span>
+          {salary && <span className="ml-auto text-xs text-muted-foreground">{salary}</span>}
         </div>
 
         {reason && (

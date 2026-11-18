@@ -193,7 +193,10 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
                 </div>
 
                 {items.length === 0 ? (
-                  <p className="px-1 py-4 text-center text-xs text-muted-foreground/70">Empty</p>
+                  // A column with nothing in it is a place to drop something,
+                  // not a thing to read. The word "Empty" five times across
+                  // the board was five labels saying the same nothing.
+                  <div aria-hidden className="mx-1 h-16 rounded-lg border border-dashed border-border/70" />
                 ) : (
                   items.map((application) => (
                     <div
@@ -284,7 +287,7 @@ export function ApplicationsBoard({ university, applications, isFreelanceMode = 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="border-b border-border text-left">
-                  <tr className="text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr className="text-[13px] text-muted-foreground">
                     <th className="px-4 py-3 font-medium">Role</th>
                     <th className="px-4 py-3 font-medium">Company</th>
                     <th className="px-4 py-3 font-medium">Status</th>

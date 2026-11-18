@@ -61,11 +61,9 @@ function NextMoveHero({ move }: { move: NextMove }) {
   return (
     <div className="flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Your next move · {move.reason}</p>
-        <h2 className="max-w-xl text-2xl font-semibold leading-tight tracking-tight text-balance text-foreground sm:text-[28px]">
-          {move.title}
-        </h2>
-        <p className="max-w-lg text-sm leading-relaxed text-muted-foreground line-clamp-2">{move.body}</p>
+        <p className="text-[13px] font-medium text-primary">Your next move · {move.reason}</p>
+        <h2 className="t-title max-w-xl text-balance text-foreground">{move.title}</h2>
+        <p className="max-w-lg text-[15px] leading-relaxed text-muted-foreground line-clamp-2">{move.body}</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button asChild size="lg" className="gap-2">
@@ -88,7 +86,7 @@ function LaterMove({ move, locked }: { move: NextMove; locked: boolean }) {
   return (
     <li className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
       <div className={cn("min-w-0", locked && "select-none opacity-60")}>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{move.reason}</p>
+        <p className="text-xs text-muted-foreground">{move.reason}</p>
         <p className="text-sm font-medium leading-snug text-foreground line-clamp-2">{move.title}</p>
       </div>
       {locked ? (
@@ -104,16 +102,21 @@ function LaterMove({ move, locked }: { move: NextMove; locked: boolean }) {
   );
 }
 
+/**
+ * One number and its label. These used to be four separate bordered boxes,
+ * which gave four small facts the same visual weight as the one thing you
+ * are meant to do next. They are now cells in a single strip, divided by a
+ * hairline, with the figures set in the display serif so a column of
+ * numbers reads as a tally rather than as four widgets.
+ */
 function Kpi({ label, value, href, accent = false }: { label: string; value: number; href: string; accent?: boolean }) {
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-1 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm transition-colors hover:border-primary/30"
+      className="group flex flex-col gap-1 px-4 py-4 transition-colors hover:bg-[var(--surface-2)] sm:px-5"
     >
-      <span className={cn("text-3xl font-semibold tabular-nums leading-none", accent && value > 0 ? "text-primary" : "text-foreground")}>
-        {value}
-      </span>
-      <span className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-foreground">
+      <span className={cn("t-figure text-[2rem]", accent && value > 0 ? "text-primary" : "text-foreground")}>{value}</span>
+      <span className="flex items-center gap-1 text-[13px] text-muted-foreground transition-colors group-hover:text-foreground">
         {label}
         <ChevronRight className="size-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
       </span>
@@ -126,7 +129,7 @@ function MatchRow({ match }: { match: BriefingMatch }) {
   return (
     <li>
       <Link href={match.href} className="group flex items-center gap-4 py-3 transition-colors">
-        <span className={cn("w-9 shrink-0 text-right text-xl font-semibold tabular-nums", bucket?.tone)}>
+        <span className={cn("t-figure w-9 shrink-0 text-right text-[1.375rem]", bucket?.tone)}>
           {match.fitScore ?? "–"}
         </span>
         <span className="min-w-0 flex-1">
@@ -145,9 +148,9 @@ function MatchRow({ match }: { match: BriefingMatch }) {
 
 function Panel({ title, action, children }: { title: string; action?: { label: string; href: string }; children: React.ReactNode }) {
   return (
-    <section className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-5 shadow-sm">
-      <div className="mb-2 flex items-baseline justify-between gap-3">
-        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+    <section className="surface flex h-full min-w-0 flex-col p-5 sm:p-6">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3 className="t-section text-foreground">{title}</h3>
         {action && (
           <Link href={action.href} className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
             {action.label}
@@ -181,12 +184,12 @@ export function CommandCenter({
       {lead && (
         <section
           aria-label="Your next move"
-          className="grid overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.09] via-card to-card shadow-sm lg:grid-cols-[1fr_320px]"
+          className="surface grid overflow-hidden border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card lg:grid-cols-[1fr_320px]"
         >
           <NextMoveHero move={lead} />
           {later.length > 0 && (
-            <div className="border-t border-primary/15 bg-card/60 p-6 lg:border-l lg:border-t-0">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Then</p>
+            <div className="border-t border-hairline bg-[var(--surface-2)]/60 p-6 lg:border-l lg:border-t-0">
+              <p className="mb-3 text-[13px] font-medium text-muted-foreground">Then</p>
               <ul className="flex flex-col divide-y divide-border/60">
                 {later.slice(0, 3).map((move, i) => (
                   <LaterMove key={`${move.id}-${i}`} move={move} locked={!isPro} />
@@ -197,7 +200,7 @@ export function CommandCenter({
         </section>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="surface grid grid-cols-2 divide-x divide-y divide-hairline overflow-hidden md:grid-cols-4 md:divide-y-0">
         <Kpi label="Strong matches" value={matchCount} href="/discover" accent />
         <Kpi label="Jobs tracked" value={kpis.tracked} href="/opportunities" />
         <Kpi label="Applications" value={kpis.applications} href="/applications" />
@@ -212,11 +215,23 @@ export function CommandCenter({
                 No strong matches yet. {isPro ? "The nightly check keeps looking." : "Search Discover for new listings."}
               </p>
             ) : (
-              <ul className="flex flex-col divide-y divide-border/60">
-                {briefing.matches.map((m) => (
-                  <MatchRow key={m.id} match={m} />
-                ))}
-              </ul>
+              <>
+                <ul className="flex flex-col divide-y divide-border/60">
+                  {briefing.matches.map((m) => (
+                    <MatchRow key={m.id} match={m} />
+                  ))}
+                </ul>
+                {briefing.matches.length < 3 && (
+                  <p className="mt-auto border-t border-border/60 pt-4 text-sm text-muted-foreground">
+                    {isPro
+                      ? "Work-ly checks the boards again tonight. "
+                      : "Work-ly can check the boards for you every night. "}
+                    <Link href="/discover" className="font-medium text-primary underline-offset-4 hover:underline">
+                      Look now
+                    </Link>
+                  </p>
+                )}
+              </>
             )}
           </Panel>
         </div>
@@ -253,7 +268,7 @@ export function CommandCenter({
       </div>
 
       {!isPro && (
-        <div className="flex flex-col gap-3 rounded-xl border border-dashed border-primary/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-[var(--radius)] border border-dashed border-primary/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
             <span>

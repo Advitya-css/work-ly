@@ -10,7 +10,7 @@ import { INSIGHT_THRESHOLDS } from "@/lib/applications/insights";
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-[13px] text-muted-foreground">{label}</p>
       <p className="text-2xl font-bold tabular-nums text-foreground">{value}</p>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>

@@ -41,11 +41,11 @@ const HIGH_PRIORITY_THRESHOLD = 75;
 type SortKey = "priority" | "fit" | "deadline" | "discovered" | "salary";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "priority", label: "Priority" },
-  { key: "fit", label: "Fit" },
-  { key: "deadline", label: "Deadline" },
-  { key: "discovered", label: "Date discovered" },
-  { key: "salary", label: "Salary" },
+  { key: "priority", label: "Worth your time" },
+  { key: "fit", label: "Best fit" },
+  { key: "deadline", label: "Closing soonest" },
+  { key: "discovered", label: "Newest" },
+  { key: "salary", label: "Highest paid" },
 ];
 
 const ALL = "__all__";
@@ -230,12 +230,20 @@ export function OpportunitiesBoard({ university,
         invalid ARIA value and which a screen reader would follow to nothing.
         aria-pressed says what these actually are: a set of toggles.
       */}
+      {/* Chips, filters and sort on one line. They were three stacked rows,
+          which meant three rows of controls stood between the heading and
+          the first job.
+
+          A chip with a count of zero filters to an empty page, so it is not
+          a choice, it is a label. Only the ones that would show you
+          something are drawn, plus whichever one you are standing on. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
       <div
         role="group"
         aria-label="Filter opportunities"
         className="inline-flex w-fit flex-wrap items-center gap-0.5 rounded-lg bg-muted p-[3px]"
       >
-        {TABS.map((t) => (
+        {TABS.filter((t) => t.key === "all" || tabCounts[t.key] > 0 || tab === t.key).map((t) => (
           <button
             key={t.key}
             type="button"
@@ -279,27 +287,24 @@ export function OpportunitiesBoard({ university,
             Match my locations
           </Button>
         )}
-        <div className="ml-auto flex items-center gap-2">
-          <Label htmlFor="opp-sort" className="text-xs text-muted-foreground">
-            Sort by
-          </Label>
-          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger id="opp-sort" className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((s) => (
-                <SelectItem key={s.key} value={s.key}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+          <SelectTrigger id="opp-sort" size="sm" aria-label="Sort jobs by" className="w-[13.5rem] gap-1.5">
+            <span className="shrink-0 text-muted-foreground">Sort</span>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((s) => (
+              <SelectItem key={s.key} value={s.key}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       </div>
 
       {showFilters && (
-        <div className="grid gap-3 rounded-xl border border-border bg-card p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div className="surface grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="f-role">Role or company</Label>
             <Input

@@ -41,7 +41,7 @@ export function ProPreview({
 
   return (
     <div className={cn("flex flex-col gap-4 rounded-lg border border-dashed border-primary/30 bg-primary/[0.03] p-4", className)}>
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+      <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
         <Eye className="size-3.5" aria-hidden />
         {heading}
       </div>

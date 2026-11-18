@@ -38,7 +38,7 @@ export function ScoreReadout({
   if (!reliable) {
     return (
       <div className={cn("flex flex-col items-center gap-1.5 text-center", className)}>
-        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+        <p className="text-[13px] text-muted-foreground">{label}</p>
         <AlertCircle className="size-6 text-muted-foreground" />
         <p className="text-sm font-medium text-foreground">Not enough information</p>
         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -57,7 +57,7 @@ export function ScoreReadout({
 
   return (
     <div className={cn("flex flex-col items-center gap-1 text-center", className)}>
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+      <p className="text-[13px] text-muted-foreground">{label}</p>
       <p className={cn("text-4xl font-bold tabular-nums", colorFor(value))}>
         {value}
         <span className="text-lg font-medium text-muted-foreground">/100</span>

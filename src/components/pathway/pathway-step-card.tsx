@@ -108,7 +108,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
 
           {actions && actions.length > 0 ? (
             <div className="mt-3 flex flex-col gap-3">
-              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-primary">
                 <FolderKanban className="size-3.5" />
                 Real-World Action Items
               </p>
@@ -120,7 +120,7 @@ export function PathwayStepCard({ step, isLast, actions = [] }: { step: PathwayS
             </div>
           ) : project && (
             <div className="mt-1 flex flex-col gap-1 rounded-lg bg-secondary/50 px-3 py-2.5">
-              <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
                 <FolderKanban className="size-3.5" />
                 Suggested project
               </p>
