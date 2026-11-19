@@ -128,6 +128,11 @@ async function panelIn(page) {
   const opened = new URL(popup.url());
   await popup.close();
   check("the button opens Work-ly's analyzer", opened.hostname === WORKLY && opened.pathname === "/analyze-job", popup.url().slice(0, 80));
+  check(
+    "the link is tagged so the extension is its own channel",
+    opened.searchParams.get("utm_source") === "extension",
+    opened.search,
+  );
   const decoded = decodeCapture(opened.hash);
   check("the payload decodes with Work-ly's own decoder", Boolean(decoded), "decode returned null");
   check(

@@ -133,7 +133,10 @@
   }
 
   function open(job) {
-    const link = `${origin}/analyze-job#capture=${window.__worklyExtract.encodeCapture(job)}`;
+    // Tagged so the extension shows up as its own channel in the funnel
+    // report rather than as direct traffic. It is the only way to tell
+    // whether the extension is bringing anyone.
+    const link = `${origin}/analyze-job?utm_source=extension#capture=${window.__worklyExtract.encodeCapture(job)}`;
     // chrome.tabs needs a permission; a plain window.open does not, and the
     // user gesture is right here.
     window.open(link, "_blank", "noopener");
