@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Work-ly</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        width: 272px;
+        margin: 0;
+        padding: 16px;
+        font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: #1c1a19;
+        background: #fffdfb;
+      }
+      h1 { margin: 0 0 2px; font-size: 15px; }
+      p { margin: 0 0 12px; color: #6b6360; font-size: 12.5px; }
+      a.cta {
+        display: block;
+        padding: 9px 12px;
+        border-radius: 9px;
+        background: #7a2e55;
+        color: #fffdfb;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+      }
+      ul { margin: 0 0 12px; padding-left: 18px; color: #6b6360; font-size: 12.5px; }
+      li { margin-bottom: 3px; }
+      @media (prefers-color-scheme: dark) {
+        body { background: #1c1a19; color: #f5f1ee; }
+        p, ul { color: #a8a09c; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Work-ly</h1>
+    <p>Open a job posting and a panel appears in the corner with one question on it.</p>
+    <ul>
+      <li>LinkedIn, Naukri, Indeed</li>
+      <li>Instahyre, Wellfound</li>
+      <li>Greenhouse, Lever, Ashby, Workday</li>
+    </ul>
+    <a class="cta" id="open" href="https://work-ly.in/dashboard" target="_blank" rel="noopener">Open Work-ly</a>
+    <script src="popup.js"></script>
+  </body>
+</html>
