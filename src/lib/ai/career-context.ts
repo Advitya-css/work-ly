@@ -201,12 +201,35 @@ export function intInRange(value: unknown, min: number, max: number): number | n
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-/** Words in a generated text that look like numbers the candidate never wrote - used to flag possible fabrication. */
+/** Every number written in a text, normalised: "1,200" and "1200" are the same number. */
+function numberTokens(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const match of text.matchAll(/\d[\d,]*(?:\.\d+)?/g)) {
+    const normalised = match[0].replace(/,/g, "").replace(/\.$/, "");
+    if (normalised) out.add(normalised);
+  }
+  return out;
+}
+
+/**
+ * Numbers in a generated text that the candidate never wrote - the check
+ * behind "Work-ly never invents a figure".
+ *
+ * It compares whole numbers, not substrings. The substring version passed
+ * anything whose digits appeared anywhere in the resume, and every resume
+ * carries dates: "2015" contains "5", "1", "15", "20", "201" and "2015", so
+ * "led a team of 5", "a budget of 19 lakh" and "shipped 201 models" all
+ * read as supported on a CV that merely says Jan 2015. Small invented
+ * numbers - the ones a model actually makes up - were the exact set this
+ * let through.
+ */
 export function unsupportedNumbers(generated: string, candidateText: string): string[] {
-  const source = candidateText.toLowerCase();
-  const found = generated.match(/\b\d[\d,.]*\s?(%|x|k|m|\+)?/gi) ?? [];
+  const known = numberTokens(candidateText);
+  // The unit suffix must be a unit, not the first letter of the next word:
+  // "201 models" is 201, not "201 m".
+  const found = generated.match(/\b\d[\d,]*(?:\.\d+)?(?:\s?(?:[%+]|[xkm](?![a-z])))?/gi) ?? [];
   return Array.from(new Set(found.map((f) => f.trim()))).filter((n) => {
-    const digits = n.replace(/[^\d.]/g, "");
-    return digits.length > 0 && !source.includes(digits);
+    const digits = n.replace(/[^\d.,]/g, "").replace(/,/g, "").replace(/\.$/, "");
+    return digits.length > 0 && !known.has(digits);
   });
 }

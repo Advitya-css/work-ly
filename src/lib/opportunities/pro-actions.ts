@@ -32,15 +32,18 @@ async function requireOwnedOpportunity(opportunityId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Please sign in again." } as const;
   if (!user.isPro) return { error: "This is part of Pro." } as const;
-  if (!(await withinProAiBudget(user.id))) {
-    return { error: "You've used a lot of AI tools this hour. Try again in a little while." } as const;
-  }
   const [profile, opp] = await Promise.all([
     getFullCareerProfile(user.id),
     getOpportunityWithJobById(user.id, opportunityId),
   ]);
   if (!opp || opp.userId !== user.id) return { error: "Opportunity not found." } as const;
-  return { profile, opp } as const;
+  // Budget last. Spending it takes one of the hour's forty Pro tool uses and
+  // counts toward the money-back guarantee, so a request for a job that
+  // isn't theirs must not be charged for.
+  if (!(await withinProAiBudget(user.id))) {
+    return { error: "You've used a lot of AI tools this hour. Try again in a little while." } as const;
+  }
+  return { profile, opp, user } as const;
 }
 
 export interface HiringManagerNote {
@@ -82,7 +85,7 @@ ${NO_FABRICATION_RULES}`;
 export async function generateOutreachEmailAction(opportunityId: string): Promise<Result<HiringManagerNote> & { savedAt?: string | null }> {
   const ctx = await requireOwnedOpportunity(opportunityId);
   if ("error" in ctx) return { error: ctx.error as string };
-  const user = await getCurrentUser();
+  const user = ctx.user;
   const candidate = candidateBrief(ctx.profile, 5000);
 
   const result = await completeStructured({
@@ -218,7 +221,7 @@ export async function generateInterviewPrepAction(
     },
   });
   if (!questions) return { error: "Couldn't prepare questions right now. Please try again." };
-  const user = await getCurrentUser();
+  const user = ctx.user;
   const data = { questions };
   const savedAt = user ? await saveOutput(user.id, "interview", opportunityId, data) : null;
   return { data, savedAt };
