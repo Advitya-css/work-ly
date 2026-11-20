@@ -47,9 +47,11 @@ export async function signUpAction(
   }
 
   
+  // The form asks once: "I'm 18 or older and I agree to the Terms and
+  // Privacy Policy". That single box is both confirmations.
   const agreeTerms = formData.get("agreeTerms") === "on";
-  const agreeAge = formData.get("agreeAge") === "on";
-  if (!agreeTerms || !agreeAge) {
+  const agreeAge = agreeTerms;
+  if (!agreeTerms) {
     return { 
       error: "You must agree to the Terms of Service and confirm you are 18 or older.",
       values: { 

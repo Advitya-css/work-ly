@@ -354,7 +354,9 @@ export function DiscoveryBoard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by match">
           <FilterChip active={activeBucket === null} onClick={() => setActiveBucket(null)} label="Best matches" />
-          {BUCKETS.map((bucket) => (
+          {/* A band with nothing in it filters to an empty page. On a first
+              visit that was four chips reading 0 above an empty state. */}
+          {BUCKETS.filter((bucket) => counts[bucket.key] > 0 || activeBucket === bucket.key).map((bucket) => (
             <FilterChip
               key={bucket.key}
               active={activeBucket === bucket.key}

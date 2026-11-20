@@ -81,15 +81,20 @@ export async function loadSampleProfileAction(): Promise<void> {
          "isSampleData" = true,
          "updatedAt" = now()
      WHERE id = $2`,
-    [JSON.stringify(["Product Strategy", "Agile Methodologies", "User Research", "A/B Testing", "Go-to-Market Strategy", "SQL", "Jira"]), profile.id]
+    // skills is text[]. pg turns a JS array into a Postgres array itself; a
+    // JSON string is not an array literal, and Postgres refused it, so
+    // "Try with a sample profile" ended on an error page.
+    [["Product Strategy", "Agile Methodologies", "User Research", "A/B Testing", "Go-to-Market Strategy", "SQL", "Jira"], profile.id]
   );
   
   // Create a target goal too so discovery works beautifully
   const { rows: goals } = await pool.query(`SELECT id FROM career_goals WHERE "userId" = $1`, [user.id]);
   if (goals.length === 0) {
     await pool.query(
-      `INSERT INTO career_goals (id, "userId", status, "primaryTargetRole", "updatedAt")
-       VALUES (gen_random_uuid(), $1, 'ACTIVE', 'Senior Product Manager', now())`,
+      // title is NOT NULL on career_goals; leaving it out was the second
+      // thing that stopped the sample profile from ever loading.
+      `INSERT INTO career_goals (id, "userId", title, status, "primaryTargetRole", "updatedAt")
+       VALUES (gen_random_uuid(), $1, 'Senior Product Manager', 'ACTIVE', 'Senior Product Manager', now())`,
       [user.id]
     );
   } else {

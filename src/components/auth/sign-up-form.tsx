@@ -112,33 +112,26 @@ export function SignUpForm() {
       </div>
 
       
-      <div className="flex flex-col gap-3 my-2">
-        <div className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            id="agreeTerms"
-            name="agreeTerms"
-            required
-            defaultChecked={state.values?.agreeTerms as boolean | undefined}
-            className="mt-1 size-4 rounded border-border accent-primary"
-          />
-          <Label htmlFor="agreeTerms" className="text-sm font-normal text-muted-foreground leading-snug">
-            I agree to the <Link href="/legal/terms" className="underline hover:text-foreground">Terms of Service</Link> and <Link href="/legal/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
-          </Label>
-        </div>
-        <div className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            id="agreeAge"
-            name="agreeAge"
-            required
-            defaultChecked={state.values?.agreeAge as boolean | undefined}
-            className="mt-1 size-4 rounded border-border accent-primary"
-          />
-          <Label htmlFor="agreeAge" className="text-sm font-normal text-muted-foreground leading-snug">
-            I confirm I am at least 18 years old
-          </Label>
-        </div>
+      {/* One box, one sentence. It used to be two boxes that had to be
+          ticked separately, which is the same promise asked for twice. */}
+      <div className="my-1 flex items-start gap-2">
+        <input
+          type="checkbox"
+          id="agreeTerms"
+          name="agreeTerms"
+          required
+          defaultChecked={state.values?.agreeTerms as boolean | undefined}
+          className="mt-1 size-4 rounded border-border accent-primary"
+        />
+        <Label htmlFor="agreeTerms" className="block text-sm font-normal leading-snug text-muted-foreground">
+          {/* Label is a flex row; one span keeps the sentence flowing as text
+              instead of splitting it into columns around the links. */}
+          <span>
+            I&apos;m 18 or older and I agree to the{" "}
+            <Link href="/legal/terms" className="underline hover:text-foreground">Terms</Link> and{" "}
+            <Link href="/legal/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+          </span>
+        </Label>
       </div>
 
       <Button type="submit" className="mt-1 w-full" disabled={pending}>
