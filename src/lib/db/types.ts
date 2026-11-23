@@ -331,6 +331,13 @@ export interface RequirementCheck {
   text: string;
   status: RequirementStatus;
   detail: string;
+  /**
+   * Shown in part: related work that doesn't fully cover it. Still counted
+   * as not met; drawn amber instead of as a red cross. Optional, so reports
+   * saved before it existed still read; those are recognised by the
+   * "Partly:" their detail starts with.
+   */
+  partial?: boolean;
 }
 
 export interface JobAnalysis {

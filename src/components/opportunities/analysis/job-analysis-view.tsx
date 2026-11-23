@@ -290,6 +290,10 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
+function isPartial(req: RequirementCheck): boolean {
+  return req.status === "not-met" && (req.partial === true || req.detail.startsWith("Partly:"));
+}
+
 function RequirementList({ title, items, strict = false }: { title: string; items: RequirementCheck[]; strict?: boolean }) {
   return (
     <div className="flex flex-col gap-2">
@@ -299,6 +303,10 @@ function RequirementList({ title, items, strict = false }: { title: string; item
           <li key={i} className="flex items-start gap-3 px-3 py-2.5 text-sm">
             {req.status === "met" ? (
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-label="Shown on your profile" />
+            ) : isPartial(req) ? (
+              /* Partly shown is not the same as missing: a strong candidate
+                 used to see a column of red crosses under "Worth applying". */
+              <CircleDashed className="mt-0.5 size-4 shrink-0 text-warning" aria-label="Partly shown on your profile" />
             ) : req.status === "not-met" ? (
               <XCircle
                 className={cn("mt-0.5 size-4 shrink-0", strict ? "text-destructive" : "text-muted-foreground")}

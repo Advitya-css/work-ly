@@ -14,6 +14,7 @@ import {
   Calendar,
   ExternalLink,
   HelpCircle,
+  CircleDashed,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -277,6 +278,8 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
                     <li key={i} className="flex items-start gap-2 text-sm">
                       {req.status === "met" ? (
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      ) : req.status === "not-met" && (req.partial || req.detail.startsWith("Partly:")) ? (
+                        <CircleDashed className="mt-0.5 size-4 shrink-0 text-warning" aria-label="Partly shown on your profile" />
                       ) : req.status === "not-met" ? (
                         <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
                       ) : (
@@ -312,6 +315,8 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
                     <li key={i} className="flex items-start gap-2 text-sm">
                       {req.status === "met" ? (
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      ) : req.status === "not-met" && (req.partial || req.detail.startsWith("Partly:")) ? (
+                        <CircleDashed className="mt-0.5 size-4 shrink-0 text-warning" aria-label="Partly shown on your profile" />
                       ) : req.status === "not-met" ? (
                         <XCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                       ) : (

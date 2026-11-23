@@ -493,7 +493,8 @@ function toCheck(r: ScreenedRequirement): RequirementCheck {
     return {
       text: r.requirement,
       status: "not-met",
-      detail: `Partly: ${quoted(r.evidenceWhere, r.evidenceQuote)}${r.gapToClose ? ` To close it: ${r.gapToClose}` : ""}`,
+      partial: true,
+      detail: `Partly: ${quoted(r.evidenceWhere, r.evidenceQuote)}${r.gapToClose ? `. To close it: ${r.gapToClose}` : ""}`,
     };
   }
   if (r.verdict === "missing") {
@@ -666,7 +667,13 @@ export function combineScreen(params: {
     screen.roleRelevance === "unrelated",
   );
   let recommendation = built.recommendation;
-  let reasoning = screen.summary ? `${screen.summary} ${built.reasoning}` : built.reasoning;
+  // The AI's summary speaks to the person in plain words. The rules
+  // engine's sentence ("Counting partial matches as half, you meet 4.5 of
+  // the 6 mandatory requirements Work-ly could check...") used to be glued
+  // on after it, which put a second, differently counted tally right under
+  // the first and read like two authors. It is the fallback now, for when
+  // there is no summary to show.
+  let reasoning = screen.summary || built.reasoning;
   if (criticalMissing.length > 0 && (screen.roleRelevance === "transferable" || screen.roleRelevance === "unrelated")) {
     // A different kind of role AND a must-have you don't show: the screen
     // itself says you'd be filtered out, so it isn't worth recommending -
@@ -694,7 +701,11 @@ export function combineScreen(params: {
     total.score == null ? "Insufficient data" : fitScore >= 75 ? "High" : fitScore >= 50 ? "Moderate" : "Low";
 
   // --- Strengths, risks, improvements ----------------------------------------
-  const strengths = screen.strengths.map((s) => `${s.point}: ${quoted(s.evidenceWhere, s.evidenceQuote)}`);
+  // The point is usually a full sentence; drop its full stop before the
+  // colon, or it reads "...this role owns.: "Built 40+ dbt models..."".
+  const strengths = screen.strengths.map(
+    (s) => `${s.point.replace(/[\s.!;:,]+$/, "")}: ${quoted(s.evidenceWhere, s.evidenceQuote)}`,
+  );
   if (strengths.length === 0) {
     const metCritical = reqs.filter((r) => r.verdict === "met" && r.importance !== "nice").slice(0, 3);
     for (const r of metCritical) strengths.push(`${r.requirement}: ${quoted(r.evidenceWhere, r.evidenceQuote)}`);
