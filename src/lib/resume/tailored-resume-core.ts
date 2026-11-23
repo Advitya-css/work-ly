@@ -382,3 +382,37 @@ export function lacksResult(bullet: string): boolean {
   if (/\d/.test(b)) return false;
   return !/\b(so that|resulting|which|cutting|saving|raising|lifting|reducing|increasing|improving|adopted|used by|now|replac|enabl|led to|won|launched|grew|doubled|halved)\w*/i.test(b);
 }
+
+/** Short words whose full stop belongs to them, not to the sentence. */
+const KEEPS_ITS_STOP = /(?:\b(?:etc|inc|ltd|co|corp|jr|sr|vs|approx)|\b[a-z]\.[a-z])\.$/i;
+
+/**
+ * ONE FULL-STOP HABIT PER RESUME.
+ *
+ * Work-ly's rewrites come back as sentences with a full stop. The lines it
+ * keeps exactly as the person wrote them usually have none, because most
+ * resumes are written without. Side by side in the file a recruiter opens,
+ * that reads as careless: half the bullets end in a full stop and half
+ * don't.
+ *
+ * So Work-ly's own lines take the person's habit, whichever it is - the
+ * majority of their own lines decides, and a tie means no full stop. The
+ * person's own lines are never changed: they are recognised exactly and
+ * left as they are.
+ */
+export function matchBulletEndings<S extends { bullets: string[] }>(sections: S[], ownLines: string[]): S[] {
+  const own = ownLines.map((l) => l.trim()).filter(Boolean);
+  if (own.length === 0) return sections;
+  const withStop = own.filter((l) => /[.!?]$/.test(l)).length;
+  const useStop = withStop * 2 > own.length;
+  const verbatim = new Set(own);
+  return sections.map((section) => ({
+    ...section,
+    bullets: section.bullets.map((bullet) => {
+      const text = bullet.trim();
+      if (!text || verbatim.has(text)) return bullet;
+      if (useStop) return /[.!?:;]$/.test(text) ? text : `${text}.`;
+      return text.endsWith(".") && !text.endsWith("..") && !KEEPS_ITS_STOP.test(text) ? text.slice(0, -1) : text;
+    }),
+  }));
+}

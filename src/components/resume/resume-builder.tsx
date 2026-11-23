@@ -470,6 +470,16 @@ export function ResumeBuilder({
           #resume-print-root { display: block !important; }
           #resume-print-root > div { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; width: 100% !important; }
           #resume-print-root [data-empty="true"] { display: none !important; }
+          /* On screen a blue bullet marks a line Work-ly rewrote. In the file
+             a recruiter opens, three blue bullets and two black ones read as
+             a formatting mistake, so every bullet prints the same. */
+          #resume-print-root li::marker { color: inherit !important; }
+          /* When a resume runs to a second page: a section heading never
+             sits alone at the foot of a page (EDUCATION used to, with its one
+             line by itself on page two), and one job's bullets stay
+             together. */
+          #resume-print-root h2 { break-after: avoid; page-break-after: avoid; }
+          #resume-print-root [data-resume-block] { break-inside: avoid; page-break-inside: avoid; }
         }
         #resume-print-root { display: none; }
       `}</style>
@@ -533,7 +543,7 @@ export function ResumeBuilder({
               <SectionTitle className={look.title}>Experience</SectionTitle>
               <div className={cn("mt-1 flex flex-col", dense ? "gap-2" : "gap-3")}>
                 {resume.roles.map((role, i) => (
-                  <div key={i}>
+                  <div key={i} data-resume-block>
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                       <p className="font-semibold">
                         <Editable value={role.title} label="Job title" onCommit={(t) => commit(["roles", i, "title"], t)} />
@@ -577,7 +587,7 @@ export function ResumeBuilder({
               <SectionTitle className={look.title}>Projects</SectionTitle>
               <div className="mt-1 flex flex-col gap-2">
                 {resume.projects.map((p, i) => (
-                  <div key={i}>
+                  <div key={i} data-resume-block>
                     <Editable as="p" value={p.name} label="Project name" onCommit={(t) => commit(["projects", i, "name"], t)} className="block font-semibold" />
                     <ul className="list-disc pl-5">
                       {p.bullets.map((b, j) => (

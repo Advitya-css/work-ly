@@ -57,7 +57,7 @@ describe("words a rewrite added", () => {
   });
 });
 
-import { lacksResult, polishResume, tidyEducationLine, tidySkill } from "@/lib/resume/tailored-resume-core";
+import { lacksResult, matchBulletEndings, polishResume, tidyEducationLine, tidySkill } from "@/lib/resume/tailored-resume-core";
 
 describe("resume finishing touches", () => {
   it("drops a field of study already in the degree", () => {
@@ -82,5 +82,43 @@ describe("resume finishing touches", () => {
     expect(lacksResult("Shipped two client-facing web products from prototype to launch.")).toBe(true);
     expect(lacksResult("Secured and administered a $200,000 grant for a heat-mitigation project.")).toBe(false);
     expect(lacksResult("Automated weekly reporting in Python, saving the ops team 6 hours a week.")).toBe(false);
+  });
+});
+
+describe("matchBulletEndings", () => {
+  const own = [
+    "Built 40+ dbt models on BigQuery that power the delivery-ops dashboards used by 120 city managers",
+    "Mentored 2 junior analysts through their first quarter on the team",
+    "Presented findings to client VPs every fortnight",
+  ];
+
+  it("gives Work-ly's rewrites the person's habit of no full stop", () => {
+    const [role] = matchBulletEndings(
+      [{ bullets: ["Built 40+ dbt data models on BigQuery behind the delivery-ops dashboards.", own[1]] }],
+      own,
+    );
+    expect(role.bullets).toEqual(["Built 40+ dbt data models on BigQuery behind the delivery-ops dashboards", own[1]]);
+  });
+
+  it("adds the full stop when the person writes with one", () => {
+    const withStops = own.map((l) => `${l}.`);
+    const [role] = matchBulletEndings([{ bullets: ["Ran weekly business reviews in SQL and Looker", withStops[2]] }], withStops);
+    expect(role.bullets).toEqual(["Ran weekly business reviews in SQL and Looker.", withStops[2]]);
+  });
+
+  it("never changes a line the person wrote, even one that breaks their own habit", () => {
+    const mixed = [...own, "Owned the weekly reviews."];
+    const [role] = matchBulletEndings([{ bullets: ["Owned the weekly reviews."] }], mixed);
+    expect(role.bullets).toEqual(["Owned the weekly reviews."]);
+  });
+
+  it("leaves a full stop that belongs to an abbreviation", () => {
+    const [role] = matchBulletEndings([{ bullets: ["Ran pricing, churn, cohorts etc.", "Launched across the U.S."] }], own);
+    expect(role.bullets).toEqual(["Ran pricing, churn, cohorts etc.", "Launched across the U.S."]);
+  });
+
+  it("does nothing without any lines of the person's own to go by", () => {
+    const sections = [{ bullets: ["Built a thing."] }];
+    expect(matchBulletEndings(sections, [])).toBe(sections);
   });
 });

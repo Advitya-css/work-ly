@@ -1,6 +1,6 @@
 import "server-only";
 import { isCosmeticRewrite, safeRewrite } from "@/lib/resume/tense";
-import { addedWords, polishResume, resumeDateRange, type TailoredResume, type TailoredResumeRole } from "@/lib/resume/tailored-resume-core";
+import { addedWords, matchBulletEndings, polishResume, resumeDateRange, type TailoredResume, type TailoredResumeRole } from "@/lib/resume/tailored-resume-core";
 
 import {
   NO_FABRICATION_RULES,
@@ -251,10 +251,11 @@ export async function buildTailoredResume(profile: FullCareerProfile, job: Job):
       const list = (v: unknown, max: number) =>
         Array.isArray(v) ? v.map((x) => str(x, 80)).filter((x): x is string => Boolean(x)).slice(0, max) : [];
 
+      const ownLines = [...roleLines.flat(), ...projectLines.flat()];
       return {
         summary,
-        roles: tailoredRoles,
-        projects: tailoredProjects,
+        roles: matchBulletEndings(tailoredRoles, ownLines),
+        projects: matchBulletEndings(tailoredProjects, ownLines),
         skills: skills.length > 0 ? skills : skillNames.slice(0, 14),
         education: profile.educations.map((e) => ({
           line: [[e.degree, e.fieldOfStudy].filter(Boolean).join(", "), e.institution].filter(Boolean).join(", "),
