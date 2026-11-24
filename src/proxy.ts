@@ -93,6 +93,7 @@ const PROTECTED_PATHS = [
   "/insights",
   "/linkedin",
   "/applications",
+  "/my-pro",
   "/settings",
   "/onboarding",
   "/redeem",

@@ -8,6 +8,7 @@ import {
   IconOpportunity,
   IconPathway,
   IconProfile,
+  IconPro,
   IconSettings,
   IconGuide,
   IconInsight,
@@ -51,6 +52,9 @@ export const navGroups: NavGroup[] = [
       { label: "Jobs", href: "/opportunities", icon: IconOpportunity, area: "opportunity" },
       { label: "My career", href: "/career-profile", icon: IconProfile, area: "career" },
       { label: "Applications", href: "/applications", icon: IconApplication, area: "application" },
+      // Everything Pro does, in one place: a hub for members, the honest
+      // "here's what you'd get" for everyone else.
+      { label: "My Pro", href: "/my-pro", icon: IconPro, area: "career" },
     ],
   },
 ];

@@ -52,6 +52,16 @@ export function IconDashboard(props: IconProps) {
   );
 }
 
+/** My Pro: a crown, three points on a level band. */
+export function IconPro(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 8.5 8 12l4-6 4 6 4-3.5-1.5 9.5h-13z" />
+      <path d="M6.5 21h11" />
+    </Svg>
+  );
+}
+
 /** Discover: a sweep, looking outward for things you have not seen. */
 export function IconDiscover(props: IconProps) {
   return (
