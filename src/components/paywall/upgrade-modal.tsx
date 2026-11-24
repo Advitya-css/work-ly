@@ -162,8 +162,8 @@ export function UpgradeModal({
           )}
           <ul className="space-y-3 text-sm font-medium pb-2">
             {[
-              "A resume rewritten for every job, as PDF or Word",
-              "Cover letters and notes to the hiring manager",
+              "New jobs that fit you, with your resume, cover letter and note written overnight",
+              "A resume rewritten for any job you add, as PDF or Word",
               "Likely interview questions and scored mock interviews",
               "Your LinkedIn headline and About, rewritten",
               "Unlimited job analyses and a plan to your dream job",

@@ -37,6 +37,8 @@ import { Progress } from "@/components/ui/progress";
 import { GraderImportCard } from "@/components/onboarding/grader-import-card";
 import { FirstSteps } from "@/components/dashboard/first-steps";
 import { MoreWorkly } from "@/components/dashboard/more-workly";
+import { MorningList, MorningPreview } from "@/components/dashboard/morning-list";
+import { morningPreview, readMorning } from "@/lib/morning/morning";
 
 export const metadata: Metadata = { title: "Dashboard" };
 // "Pick up where you left off" builds a profile and a Fit report in one
@@ -159,6 +161,13 @@ export default async function DashboardPage({
     : [null, null];
   const hasSavedWork = Boolean(savedWork && (savedWork.items.length > 0 || savedWork.counts.linkedin > 0));
 
+  // Ready to apply: what the night wrote for a member, or for a free
+  // account, the jobs it would have written for.
+  const [morning, preview] = user
+    ? await Promise.all([isPro ? readMorning(user.id) : Promise.resolve(null), isPro ? Promise.resolve([]) : morningPreview(user.id)])
+    : [null, []];
+  const opportunityStatuses = Object.fromEntries(opportunities.map((o) => [o.id, o.status]));
+
   const firstName = user?.name ? user.name.split(" ")[0] : null;
   const topMissing = profileCompleteness.missing[0] ?? null;
   const target = goals.find((g) => g.status === "ACTIVE") ?? goals[0] ?? null;
@@ -185,6 +194,9 @@ export default async function DashboardPage({
       </header>
 
       <GraderImportCard hasProfile={hasProfile} />
+
+      {isPro && hasProfile && <MorningList morning={morning} statuses={opportunityStatuses} targetRole={targetRole} />}
+      {!isPro && hasProfile && preview.length > 0 && <MorningPreview items={preview} offerLine={hasSavedWork ? null : savedOffer} />}
 
       {/* After a trial, the saved work is the first thing on Home; for Pro it sits below the day's moves. */}
       {!isPro && savedWork && hasSavedWork && (

@@ -104,6 +104,8 @@ export async function saveOutput<T>(
 
 /** Removes every saved output for this user (account or career-data deletion). */
 export async function deleteSavedOutputs(userId: string): Promise<void> {
+  // The overnight ready-to-apply list (lib/morning) lives beside these.
+  await storageProvider.delete(`generated/${userId.replace(/[^\w-]/g, "")}/morning.json`).catch(() => undefined);
   await Promise.all(
     SAVED_KINDS.map(async (kind) => {
       try {

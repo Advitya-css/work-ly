@@ -57,8 +57,17 @@ export interface ProToolGroup {
 
 export const PRO_TOOL_GROUPS: ProToolGroup[] = [
   {
+    id: "nightly",
+    title: "Done for you",
+    line: "Work-ly keeps looking while you get on with your day.",
+    tools: [
+      { name: "Ready to apply", line: "New jobs that fit you, checked in full, with your resume, cover letter and note written overnight.", icon: "nightly", access: "pro", href: "/dashboard" },
+      { name: "More searches", line: "Thirty searches a day instead of five, with more matches read in full.", icon: "search", access: "limited", freeNote: "5 a day", href: "/discover" },
+    ],
+  },
+  {
     id: "job",
-    title: "For a job you want",
+    title: "For any job you add",
     line: "The application kit, written for that one job from your real experience.",
     tools: [
       { name: "Resume for this job", line: "Your lines, in the posting's own words. Nothing invented.", icon: "resume", access: "pro", href: "/opportunities", perJob: true },
@@ -87,15 +96,6 @@ export const PRO_TOOL_GROUPS: ProToolGroup[] = [
       { name: "Action plan", line: "The gaps, as weekly steps you can finish.", icon: "plan", access: "pro", href: "/career-path" },
       { name: "Career change", line: "Your past work, in the new field's words.", icon: "pivot", access: "pro", href: "/career-pivot" },
       { name: "LinkedIn rewrite", line: "Headlines, an About section and the skills to pin.", icon: "linkedin", access: "pro", href: "/linkedin" },
-    ],
-  },
-  {
-    id: "nightly",
-    title: "Done for you",
-    line: "Work-ly keeps looking while you get on with your day.",
-    tools: [
-      { name: "Nightly check", line: "Every night it searches for your target role and reads the best new matches in full.", icon: "nightly", access: "pro", href: "/discover" },
-      { name: "More searches", line: "Thirty searches a day instead of five, with more matches read in full.", icon: "search", access: "limited", freeNote: "5 a day", href: "/discover" },
     ],
   },
 ];

@@ -20,6 +20,7 @@ const FREE = [
 ];
 
 const PRO = [
+  "New jobs that fit you, with the application written overnight",
   "The whole resume, rewritten for every job you apply to",
   "Cover letter and a note to the hiring manager, per job",
   "Likely interview questions and scored practice interviews",

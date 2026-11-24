@@ -4,19 +4,17 @@ import { getCurrentUser } from "@/lib/auth";
 import { getFullCareerProfile } from "@/lib/career/get-full-profile";
 import { getOpportunityWithJobById } from "@/lib/opportunities/get-with-job";
 import {
-  NO_FABRICATION_RULES,
   candidateBrief,
   completeStructured,
   jobBrief,
   str,
   unsupportedNumbers,
-  humanPunctuation,
   withinProAiBudget,
 } from "@/lib/ai/career-context";
 import { HONESTY_RULE, stretchesClaims } from "@/lib/ai/honesty";
 import { quoteFound } from "@/lib/scoring/screen-core";
-import { tidyLetter } from "@/lib/ai/providers/tailor-ai";
 import { saveOutput } from "@/lib/saved-outputs";
+import { writeHiringManagerNote, type HiringManagerNote } from "@/lib/opportunities/outreach-core";
 
 /**
  * Pro AI actions on the Opportunity page.
@@ -46,17 +44,8 @@ async function requireOwnedOpportunity(opportunityId: string) {
   return { profile, opp, user } as const;
 }
 
-export interface HiringManagerNote {
-  email: string;
-  subject: string | null;
-  /** A LinkedIn connection request: LinkedIn caps these at 300 characters. */
-  connectionNote: string | null;
-  /** Who to look for, e.g. "Analytics Manager or Head of Analytics". */
-  whoToFind: string | null;
-  /** A short nudge to send if there's no reply in about a week. */
-  followUp?: string | null;
-  unverifiedNumbers: string[];
-}
+export type { HiringManagerNote };
+
 
 export interface InterviewQuestion {
   question: string;
@@ -72,63 +61,12 @@ export interface InterviewQuestion {
   outline: string[];
 }
 
-const OUTREACH_SYSTEM = `You write a short first message from a candidate to the person who would most likely manage this role.
-Return:
-- "message": an email, plain text, max 5 sentences after "Hi,". Sentence 1 names something specific from the JOB (a product, problem or responsibility it mentions), never flattery. Then ONE real proof from the CANDIDATE section that matches that need, with its employer and any real number kept exactly. Close by asking for a 15-minute conversation, then sign off with the candidate's name exactly as given in NAME. Never "I'm writing to express my interest", "I hope this finds you well", "passionate".
-- "subject": an email subject under 9 words built on that proof and the role. Not "Application for ...".
-- "connectionNote": the same idea as a LinkedIn connection request, under 280 characters including spaces, no greeting name, no sign-off.
-- "whoToFind": the job title(s) of the person most likely to manage this role, judged from the JOB (team, level, function), e.g. "Analytics Manager or Head of Analytics". Max 2 titles joined with " or ".
-- "followUp": a follow-up to send if there's no reply after a week: 2-3 sentences, adds ONE new real detail (a different proof) rather than repeating the first message, no guilt-tripping ("just checking in", "bumping this"). Sign off with the name from NAME.
-${HONESTY_RULE}
-${NO_FABRICATION_RULES}`;
-
 export async function generateOutreachEmailAction(opportunityId: string): Promise<Result<HiringManagerNote> & { savedAt?: string | null }> {
   const ctx = await requireOwnedOpportunity(opportunityId);
   if ("error" in ctx) return { error: ctx.error as string };
-  const user = ctx.user;
-  const candidate = candidateBrief(ctx.profile, 5000);
-
-  const result = await completeStructured({
-    // A paying user judges Work-ly on what it writes: the stronger model.
-    quality: "high",
-    system: OUTREACH_SYSTEM,
-    user: `NAME: ${user?.name?.trim() || "[Your Name]"}\n\nJOB\n===\n${jobBrief(ctx.opp.job, ctx.opp.job.title ?? "this role", ctx.opp.job.company, 4000)}\n\nCANDIDATE\n=========\n${candidate}`,
-    schema: {
-      type: "object",
-      properties: {
-        message: { type: "string" },
-        subject: { type: "string" },
-        connectionNote: { type: "string" },
-        whoToFind: { type: "string" },
-        followUp: { type: "string" },
-      },
-      required: ["message", "subject", "connectionNote", "whoToFind", "followUp"],
-    },
-    temperature: 0.5,
-    validate: (raw) => {
-      const r = raw as Record<string, unknown>;
-      const email = str(r?.message, 1500);
-      if (!email) return null;
-      const note = str(r?.connectionNote, 400);
-      return {
-        email: tidyLetter(email),
-        subject: str(r?.subject, 120),
-        // Over LinkedIn's limit it can't be sent as written, so it isn't offered.
-        connectionNote: note && note.length <= 300 ? humanPunctuation(note) : null,
-        whoToFind: str(r?.whoToFind, 120),
-        followUp: (() => {
-          const f = str(r?.followUp, 900);
-          return f ? tidyLetter(f) : null;
-        })(),
-        unverifiedNumbers: [] as string[],
-      } satisfies HiringManagerNote;
-    },
-  });
+  const result = await writeHiringManagerNote(ctx.profile, ctx.opp.job, ctx.user?.name);
   if (!result) return { error: "Couldn't write the message right now. Please try again." };
-  // "a 15-minute conversation" is the ask, not a claim about the candidate.
-  const claims = `${result.email} ${result.connectionNote ?? ""} ${result.subject ?? ""} ${result.followUp ?? ""}`.replace(/\b\d+[\s-]?min(ute)?s?\b/gi, "");
-  result.unverifiedNumbers = unsupportedNumbers(claims, candidate);
-  const savedAt = user ? await saveOutput(user.id, "note", opportunityId, result) : null;
+  const savedAt = ctx.user ? await saveOutput(ctx.user.id, "note", opportunityId, result) : null;
   return { data: result, savedAt };
 }
 

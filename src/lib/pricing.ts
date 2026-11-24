@@ -24,6 +24,7 @@ export interface PaidPlan {
 }
 
 export const PRO_FEATURES = [
+  "Every morning, up to 3 new jobs that fit you, checked in full, with your resume, cover letter and note already written",
   "A resume rewritten for every job you apply to, as PDF or Word, saved and editable",
   "Cover letters and notes to the hiring manager (email and LinkedIn), saved per job",
   "Likely interview questions, and mock interviews scored answer by answer",
@@ -58,6 +59,7 @@ export const PAID_PLANS: PaidPlan[] = [
     renews: true,
     term: "1 month, renewing until cancelled",
     features: [
+      "New jobs that fit you, with the application written overnight",
       "A full application kit for every job: resume, cover letter, hiring-manager note, interview prep",
       "Resume match score for each posting, requirement by requirement",
       "Scored mock interviews & a LinkedIn makeover",

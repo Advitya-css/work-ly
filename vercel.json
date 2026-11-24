@@ -14,7 +14,11 @@
     },
     {
       "path": "/api/cron/pro-briefing",
-      "schedule": "0 5 * * *"
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/ready-to-apply",
+      "schedule": "30 23 * * *"
     },
     {
       "path": "/api/cron/lifecycle",
