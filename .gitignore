@@ -47,3 +47,6 @@ _to_delete/
 
 # prospect lists and other private growth notes - never committed
 growth-private/
+
+# Built for the Chrome Web Store from extension/; rebuild instead of committing.
+extension/store/*.zip

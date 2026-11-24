@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="flex flex-col gap-6 text-muted-foreground">
       <h1 className="font-serif text-4xl text-foreground mb-4">Privacy Policy</h1>
-      <p className="text-sm italic">Last updated: September 26, 2026</p>
+      <p className="text-sm italic">Last updated: November 24, 2026</p>
 
       <p>
         Work-ly (work-ly.in) is operated by Advitya Bansal, based in India. Work-ly is used by people around the
@@ -27,6 +27,7 @@ export default function PrivacyPolicy() {
       <p><strong className="text-foreground">Career data:</strong> your uploaded résumé/CV and its extracted contents, plus anything you add or edit yourself: work history, education, skills, career goals, and (in Student Mode) visa/work-hour preferences.</p>
       <p><strong className="text-foreground">Application data:</strong> jobs you save, apply to, or track, and any notes you add.</p>
       <p><strong className="text-foreground">Usage &amp; device data:</strong> pages visited, features used, IP address, and similar technical data, used for security (like rate-limiting) and diagnostics.</p>
+      <p><strong className="text-foreground">The Work-ly browser extension:</strong> on the job sites it supports, it reads the job posting on the page you are viewing so it can show the &quot;Should I apply?&quot; button. It collects nothing and sends nothing by itself. Only when you press the button does it open Work-ly with that posting filled in, carried in the link&apos;s fragment (the part after #), which your browser never sends to any server. Nothing reaches us until you review the form and press Analyze. It has no analytics, and it keeps only a setting for which Work-ly address to open and, in the page&apos;s own session storage, which postings you hid.</p>
       <p>
         Please don&apos;t include government ID numbers, payment details, or health information in your résumé or
         notes unless it&apos;s unavoidably part of your work history. We don&apos;t ask for or want sensitive
