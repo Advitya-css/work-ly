@@ -86,7 +86,7 @@ export default async function StudentHomePage() {
       )}
 
       {isSetUp && (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 two-up:grid-cols-3">
           <SummaryTile
             href="/student/jobs"
             label="On campus"

@@ -174,7 +174,7 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
       </header>
 
       {/* Readiness: where you are, where the plan takes you, one button. */}
-      <section className="grid gap-6 feature-panel p-6 sm:p-8 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <section className="grid gap-6 feature-panel p-6 sm:p-8 lg:grid-cols-[auto_1fr_auto] lg:items-center">
         <ScoreRing value={reliable ? analysis.readinessScore : null} />
         <div className="flex min-w-0 flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
@@ -191,12 +191,12 @@ export default async function DreamJobAnalysisPage({ params }: { params: Promise
               : `Not enough to score this fairly yet (Work-ly could check ${Math.round(coverageOf(analysis.scoreBreakdown) * 100)}% of it). Add more to your profile.`}
           </p>
         </div>
-        <div className="md:justify-self-end">
+        <div className="lg:justify-self-end">
           <BuildPathwayFromDreamJobButton dreamJobId={id} isPro={user.isPro} gaps={topGaps.map((g) => g.title)} />
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 two-up:grid-cols-2">
         <Panel title="You already have">
           {alreadyHave.length === 0 && analysis.strengths.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nothing clearly matched yet.</p>

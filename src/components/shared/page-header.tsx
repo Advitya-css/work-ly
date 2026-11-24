@@ -41,8 +41,11 @@ export function PageHeader({
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-1 items-start sm:items-center gap-3 min-w-0">
+      {/* Wraps rather than squeezes: the title keeps at least 18rem, and when
+          the actions don't fit beside it they drop underneath instead of
+          crushing the title into a column one word wide. */}
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div className="flex min-w-0 flex-[1_1_18rem] items-start gap-3 sm:items-center">
           {Icon && (
             <span
               className="area-chip size-10 shrink-0"
@@ -62,7 +65,7 @@ export function PageHeader({
             )}
           </div>
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="min-w-0 max-w-full">{action}</div>}
       </div>
 
       <div

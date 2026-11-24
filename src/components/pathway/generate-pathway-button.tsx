@@ -23,8 +23,7 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
   }
 
   return (
-    <div className="flex flex-col items-start sm:items-end gap-2 text-left sm:text-right">
-      
+    <div className="flex max-w-[13.5rem] flex-col items-start gap-1.5 text-left">
       {!isPro ? (
         <UpgradeModal title="Your plan to get there" description="A week-by-week plan from where you are now to the role you want, with a named course or project for each gap.">
           <Button type="button" variant="default" size="sm" className="shrink-0 bg-primary/90 hover:bg-primary gap-2 ">
@@ -44,11 +43,9 @@ export function GeneratePathwayButton({ hasExisting, isPro = false }: { hasExist
         {pending ? "Working out your plan…" : hasExisting ? "Build it again" : "Build my plan"}
       </Button>
       )}
-  
       {hasExisting && (
-        <p className="text-xs text-muted-foreground max-w-[320px]">
-          Regenerating starts a fresh plan from your current profile. Your previous pathway is archived,
-          not deleted.
+        <p className="text-xs text-muted-foreground">
+          Starts a fresh plan from your current profile. This one is archived, not deleted.
         </p>
       )}
       {error && (

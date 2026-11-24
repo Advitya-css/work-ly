@@ -233,7 +233,7 @@ export function ContactsEditor({ application }: { application: Application }) {
         </ul>
       )}
 
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 two-up:grid-cols-3">
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
         <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Role" />
         <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
@@ -298,7 +298,7 @@ export function InterviewsEditor({ application }: { application: Application }) 
         </ul>
       )}
 
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 two-up:grid-cols-3">
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <Input value={kind} onChange={(e) => setKind(e.target.value)} placeholder="e.g. Technical" />
         <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />

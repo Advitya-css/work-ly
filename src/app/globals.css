@@ -3,6 +3,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* "two-up": the main column is wide enough for side-by-side cards.
+   The viewport alone can't tell you that, because from 768px the sidebar
+   takes 240px: at 800px the column is only ~500px wide, narrower than a
+   700px phone in landscape. So this is the main column being at least
+   ~560px, written as the viewport widths where that is true. Use it
+   instead of sm:/md: for grids inside the app. Three or more columns want
+   lg: (a column of 720px and up). It sorts after lg: and xl:, so when a
+   larger breakpoint should take over, write max-xl:two-up:. */
+@custom-variant two-up {
+  @media (width >= 38rem) and (width < 48rem) {
+    @slot;
+  }
+  @media (width >= 54rem) {
+    @slot;
+  }
+}
+
 /* ==========================================================================
    Workly design system
 

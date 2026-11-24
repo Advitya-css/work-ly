@@ -130,7 +130,7 @@ export function PrepStudio({ opportunityId, applicationId }: { opportunityId: st
                     {q.why && <p className="text-[13px] leading-relaxed text-muted-foreground">{q.why}</p>}
                   </div>
 
-                  <div className="grid gap-px border-t border-border bg-border md:grid-cols-[1.25fr_1fr]">
+                  <div className="grid gap-px border-t border-border bg-border two-up:grid-cols-[1.25fr_1fr]">
                     <div className="flex flex-col gap-3 bg-card px-5 py-4">
                       <KitLabel>{q.answerFrom ? "Answer from your history" : "No line on your profile fits yet"}</KitLabel>
                       {q.answerFrom ? (

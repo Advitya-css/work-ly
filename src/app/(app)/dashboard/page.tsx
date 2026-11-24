@@ -208,7 +208,7 @@ export default async function DashboardPage({
 
       {/* What Work-ly works from: the profile and the target role, in one line each. */}
       {!isNew && (
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 two-up:grid-cols-2">
         <Link
           href="/career-profile"
           className="group flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/30"

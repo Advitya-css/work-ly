@@ -30,13 +30,13 @@ export function SharePathwayButton({ pathwayId }: { pathwayId: string }) {
   };
 
   return (
-    <div className="flex flex-col items-start gap-1">
-      <Button variant="outline" onClick={handleShare} disabled={state === "working"} className="gap-2">
+    <div className="flex max-w-[13.5rem] flex-col items-start gap-1.5">
+      <Button variant="outline" size="sm" onClick={handleShare} disabled={state === "working"} className="gap-2">
         {state === "copied" ? <Check className="size-4 text-success" /> : <Share2 className="size-4" />}
         {state === "copied" ? "Link copied" : "Share Pathway"}
       </Button>
       <span className="text-xs text-muted-foreground">
-        {state === "error" ? "Couldn't create a share link. Try again." : "Anyone with the link can view this plan. Turn sharing off from your profile."}
+        {state === "error" ? "Couldn't create a share link. Try again." : "Anyone with the link can see this plan. Turn sharing off in your profile."}
       </span>
     </div>
   );

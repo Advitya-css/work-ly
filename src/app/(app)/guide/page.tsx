@@ -222,7 +222,7 @@ export default async function GuidePage() {
             <p className="text-sm text-muted-foreground">Three steps. Everything else in the app is one of these, in more detail.</p>
           </div>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-3">
+        <ol className="grid gap-3 two-up:grid-cols-3">
           {LOOP.map((step, i) => (
             <li key={step.title} className="flex gap-3 rounded-xl border border-border bg-card p-4">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
@@ -241,7 +241,7 @@ export default async function GuidePage() {
         <h2 id="situations-title" className="text-lg font-semibold text-foreground">
           What do you need right now?
         </h2>
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-4 max-xl:two-up:grid-cols-2 xl:grid-cols-3">
           {situations.map((s) => (
             <li key={s.key} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-sm">
               <div className="flex flex-col gap-1.5">
@@ -328,7 +328,7 @@ export default async function GuidePage() {
             {allTools.map((tool) => (
               <li
                 key={tool.id}
-                className="grid grid-cols-1 gap-1 px-5 py-3 text-sm md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_5.5rem] md:gap-4"
+                className="grid grid-cols-1 gap-1 px-5 py-3 text-sm lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_5.5rem] lg:gap-4"
               >
                 <span className="font-medium text-foreground">{tool.name}</span>
                 <span className="text-muted-foreground">{tool.blurb}</span>

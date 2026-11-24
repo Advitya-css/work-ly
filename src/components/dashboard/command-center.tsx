@@ -197,7 +197,7 @@ export function CommandCenter({
         </section>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Strong matches" value={matchCount} href="/discover" accent />
         <Kpi label="Jobs tracked" value={kpis.tracked} href="/opportunities" />
         <Kpi label="Applications" value={kpis.applications} href="/applications" />

@@ -109,7 +109,7 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
       </header>
 
       {/* Verdict: the answer comes before anything that explains or files it. */}
-      <section aria-label="Verdict" className="grid gap-6 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <section aria-label="Verdict" className="grid gap-6 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
         <ScoreRing value={reliable ? analysis.fitScore : null} />
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -133,7 +133,7 @@ export function JobAnalysisView({ job, analysis, priority, actions, statusBadge,
           )}
           {!reliable && recheck}
         </div>
-        <dl className="grid grid-cols-3 gap-4 border-t border-border pt-4 text-center md:w-72 md:grid-cols-1 md:gap-3 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-left">
+        <dl className="grid grid-cols-3 gap-4 border-t border-border pt-4 text-center lg:w-72 lg:grid-cols-1 lg:gap-3 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0 lg:text-left">
           {must.length > 0 && (
             <Stat label="Must-haves met" value={`${mustMet} of ${mustKnown || must.length}`} />
           )}

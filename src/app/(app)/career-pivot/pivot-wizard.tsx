@@ -125,7 +125,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
       )}
 
       {/* Before and after */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid two-up:grid-cols-2 gap-6">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="flex flex-col items-center justify-center p-8 text-center">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">How a recruiter in that field would read you</h3>
@@ -162,7 +162,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
       {pivot.competencyMapping.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold tracking-tight">What carries over</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid two-up:grid-cols-3 gap-4">
             {pivot.competencyMapping.map((map, i) => (
               <Card key={i}>
                 <CardContent className="p-5 flex flex-col gap-3">
@@ -186,7 +186,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
           <Card>
             <div className="divide-y divide-border">
               {pivot.translatedBullets.map((bullet, i) => (
-                <div key={i} className="p-5 grid md:grid-cols-2 gap-4">
+                <div key={i} className="p-5 grid two-up:grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-xs uppercase font-semibold text-muted-foreground mb-2">Original</h4>
                     <p className="text-sm text-muted-foreground">{bullet.original}</p>
@@ -209,7 +209,7 @@ export function PivotWizard({ initialData }: { initialData: PivotData | null }) 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">What you&apos;d still need</h2>
         {pivot.hardGaps.length > 0 ? (
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid lg:grid-cols-3 gap-4">
             {pivot.hardGaps.map((gap, i) => (
               <Card key={i} className="border-destructive/20 bg-destructive/5">
                 <CardContent className="p-5 flex flex-col gap-2">

@@ -94,7 +94,7 @@ export default async function CareerPathPage() {
         title="Action plan"
         description="Your steps from where you are to the role you want, in order."
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-start gap-3">
             <SharePathwayButton pathwayId={pathway.id} />
             <GeneratePathwayButton hasExisting isPro={user.isPro} />
           </div>
@@ -236,7 +236,7 @@ function CareerExplorer({
           </Link>
         </Button>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 two-up:grid-cols-2">
         {careers.map((career) => (
           <article key={career.role} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">

@@ -66,7 +66,7 @@ export function GettingStartedCard({ hasProfile, hasGoal, hasAnalyzedJob }: Gett
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {steps.map((step, i) => {
             const Icon = step.icon;
             return (

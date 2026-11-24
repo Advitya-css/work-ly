@@ -33,7 +33,7 @@ export function AnalyticsPanel({
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-5 two-up:grid-cols-4">
             <Stat label="Applications" value={String(summary.applications)} hint="actually sent" />
             <Stat label="Interviews" value={String(summary.interviews)} />
             <Stat label="Offers" value={String(summary.offers)} />

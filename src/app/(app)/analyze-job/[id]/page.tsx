@@ -156,7 +156,7 @@ export default async function JobAnalysisPage({ params }: { params: Promise<{ id
       <PageHeader title={displayJobTitle(job.title)} description={jobDetailLine || undefined} />
 
       {/* Headline: Candidate Fit, Competitiveness, Recommendation */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 two-up:grid-cols-3">
         <Card>
           <CardContent className="px-5 py-6">
             <ScoreReadout
