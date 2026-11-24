@@ -34,7 +34,7 @@ function ResumeRewrite() {
         <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a2e55]">Rewritten for this job</p>
         <p className="mt-1 text-[15px] font-medium leading-relaxed">
           Built <mark className="rounded-sm bg-[#f6d6e6] px-0.5 text-inherit">40+ dbt data models</mark> on BigQuery behind the
-          delivery-ops dashboards <mark className="rounded-sm bg-[#f6d6e6] px-0.5 text-inherit">120 city managers</mark> use daily.
+          delivery-ops dashboards that <mark className="rounded-sm bg-[#f6d6e6] px-0.5 text-inherit">120 city managers</mark> use.
         </p>
         <p className="mt-4 flex items-center gap-1.5 text-[12.5px] text-neutral-600">
           <CheckCircle2 className="size-3.5 text-[#116149]" aria-hidden />
