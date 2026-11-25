@@ -38,6 +38,12 @@ export interface NextMoveInput {
   hasDreamJob: boolean;
   hasPathway: boolean;
   pathwayNext: string | null;
+  /**
+   * Jobs (opportunity ids) whose note to the hiring manager came with a
+   * follow-up already written. A quiet application for one of these goes
+   * straight to that follow-up instead of drafting a new one.
+   */
+  writtenFollowUps?: ReadonlySet<string>;
   now?: Date;
 }
 
@@ -57,6 +63,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 function at(company: string | null): string {
   return company ? ` at ${company}` : "";
+}
+
+/** Sent, then a week or more of silence: the oldest three, the ones most worth a nudge. */
+export function quietApplications<A extends NextMoveApplication>(applications: A[], at?: Date): A[] {
+  const now = (at ?? new Date()).getTime();
+  return applications
+    .filter((a) => a.status === "APPLIED" && now - lastActivity(a) >= 7 * DAY_MS)
+    .sort((a, b) => lastActivity(a) - lastActivity(b))
+    .slice(0, 3);
 }
 
 function lastActivity(app: NextMoveApplication): number {
@@ -132,12 +147,20 @@ export function listMoves(input: NextMoveInput): NextMove[] {
     });
   }
 
-  const quietOnes = input.applications
-    .filter((a) => a.status === "APPLIED" && now - lastActivity(a) >= 7 * DAY_MS)
-    .sort((a, b) => lastActivity(a) - lastActivity(b))
-    .slice(0, 3);
-  for (const quiet of quietOnes) {
+  for (const quiet of quietApplications(input.applications, input.now)) {
     const days = Math.floor((now - lastActivity(quiet)) / DAY_MS);
+    if (quiet.opportunityId && input.writtenFollowUps?.has(quiet.opportunityId)) {
+      moves.push({
+        id: "follow-up",
+        reason: `No reply in ${days} days`,
+        title: `Send your follow-up${at(quiet.company)}`,
+        body: "It's already written, with your note to the hiring manager. It adds one new detail instead of repeating the first message. Read it, copy it, send it.",
+        cta: { label: "Open my follow-up", href: `/opportunities/${quiet.opportunityId}/note#follow-up` },
+        toolId: "follow-up",
+        pro: TOOLS["follow-up"].pro,
+      });
+      continue;
+    }
     moves.push({
       id: "follow-up",
       reason: `No reply in ${days} days`,

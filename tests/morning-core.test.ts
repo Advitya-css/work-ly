@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   currentMorning,
+  homeGreeting,
+  postingUrl,
   mergeMorning,
   pickMorningCandidates,
   preparedLabel,
@@ -94,5 +96,34 @@ describe("the morning list over several nights", () => {
     expect(preparedLabel("2026-11-24T00:00:00Z", NOW)).toBe("Written overnight");
     expect(preparedLabel("2026-11-23T00:00:00Z", NOW)).toBe("Written yesterday");
     expect(preparedLabel("2026-11-20T00:00:00Z", NOW)).toBe("Written on 20 Nov");
+  });
+});
+
+describe("homeGreeting", () => {
+  const check = { when: "6 hours ago", newListings: 12, strongNew: 3 };
+  it("leads with what's ready to send", () => {
+    expect(homeGreeting({ isPro: true, ready: 2, waiting: 2, lastCheck: check })).toBe("I've got 2 applications ready for you. They're just below.");
+    expect(homeGreeting({ isPro: true, ready: 2, waiting: 1, lastCheck: check })).toBe("I've got an application ready for you. It's just below.");
+  });
+  it("notices when everything has been sent", () => {
+    expect(homeGreeting({ isPro: true, ready: 2, waiting: 0, lastCheck: check })).toBe("You've sent everything I wrote. I'll look for more tonight.");
+  });
+  it("falls back to what the last search found", () => {
+    expect(homeGreeting({ isPro: true, ready: 0, waiting: 0, lastCheck: check })).toBe("I checked 6 hours ago and found 12 new listings, 3 strong matches. I'll look again tonight.");
+    expect(homeGreeting({ isPro: false, ready: 0, waiting: 0, lastCheck: { when: "yesterday", newListings: 1, strongNew: 0 } })).toBe("I checked yesterday and found 1 new listing.");
+    expect(homeGreeting({ isPro: false, ready: 0, waiting: 0, lastCheck: { when: "yesterday", newListings: 0, strongNew: 0 } })).toBe("I checked yesterday and found nothing new.");
+  });
+  it("says what happens next before there's anything", () => {
+    expect(homeGreeting({ isPro: true, ready: 0, waiting: 0, lastCheck: null })).toBe("I'll run your first nightly check tonight.");
+    expect(homeGreeting({ isPro: false, ready: 0, waiting: 0, lastCheck: null })).toBe("Let's find your first matches.");
+  });
+});
+
+describe("postingUrl", () => {
+  it("only offers web links", () => {
+    expect(postingUrl("https://jobs.lever.co/acme/1")).toBe("https://jobs.lever.co/acme/1");
+    expect(postingUrl("javascript:alert(1)")).toBeNull();
+    expect(postingUrl("not a url")).toBeNull();
+    expect(postingUrl(null)).toBeNull();
   });
 });

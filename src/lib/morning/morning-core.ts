@@ -38,6 +38,8 @@ export interface MorningCandidate {
   matchReasons: MatchReason[] | null;
   description: string | null;
   discoveredAt: Date | string;
+  /** Where the posting lives, so the morning list can send them there. */
+  sourceUrl?: string | null;
 }
 
 /** The read that explains the fit: the AI's own line when there is one. */
@@ -98,6 +100,8 @@ export interface MorningItem {
   reason: string | null;
   /** What was written for it overnight. */
   kinds: MorningKind[];
+  /** The posting itself, where the application is sent. */
+  url?: string | null;
 }
 
 export interface MorningFile {
@@ -126,6 +130,17 @@ export function mergeMorning(previous: MorningFile | null, tonight: MorningItem[
   return { v: 1, preparedAt: (tonight.length > 0 ? now : new Date(previous?.preparedAt ?? now)).toISOString(), items };
 }
 
+/** A link worth offering: http(s) only, never a javascript: or data: URL from a scraped page. */
+export function postingUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 const KIND_LABEL: Record<MorningKind, string> = { resume: "Resume", cover: "Cover letter", note: "Note to the hiring manager" };
 
 export function kindLabel(kind: MorningKind): string {
@@ -140,4 +155,31 @@ export function preparedLabel(preparedAt: string, now: Date = new Date()): strin
   if (hours < 18) return "Written overnight";
   if (hours < 42) return "Written yesterday";
   return `Written on ${at.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+}
+
+/**
+ * What the robot says under "Welcome back" on Home, in its own voice.
+ * The morning list comes first because it's the thing to act on; failing
+ * that, what the last search found; failing that, what happens next.
+ */
+export function homeGreeting(input: {
+  isPro: boolean;
+  /** Jobs on the morning list not applied to yet. */
+  waiting: number;
+  /** Jobs on the morning list in all. */
+  ready: number;
+  lastCheck: { when: string; newListings: number; strongNew: number } | null;
+}): string {
+  const { isPro, waiting, ready, lastCheck } = input;
+  if (isPro && waiting > 0) {
+    return waiting === 1 ? "I've got an application ready for you. It's just below." : `I've got ${waiting} applications ready for you. They're just below.`;
+  }
+  if (isPro && ready > 0) return "You've sent everything I wrote. I'll look for more tonight.";
+  if (lastCheck) {
+    const listings = lastCheck.newListings === 1 ? "1 new listing" : `${lastCheck.newListings} new listings`;
+    const strong = lastCheck.strongNew === 0 ? "" : lastCheck.strongNew === 1 ? ", 1 strong match" : `, ${lastCheck.strongNew} strong matches`;
+    const found = lastCheck.newListings === 0 ? "nothing new" : `${listings}${strong}`;
+    return `I checked ${lastCheck.when} and found ${found}.${isPro ? " I'll look again tonight." : ""}`;
+  }
+  return isPro ? "I'll run your first nightly check tonight." : "Let's find your first matches.";
 }

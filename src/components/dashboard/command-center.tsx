@@ -1,10 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Lock, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { BUCKETS } from "@/lib/discovery/labels";
-import { plural, relativeTime, type Briefing, type BriefingMatch } from "@/lib/guidance/briefing";
+import { relativeTime, type Briefing, type BriefingMatch } from "@/lib/guidance/briefing";
+import { homeGreeting } from "@/lib/morning/morning-core";
 import type { NextMove } from "@/lib/guidance/next-move";
 import { cn } from "@/lib/utils";
 
@@ -20,25 +22,27 @@ import { cn } from "@/lib/utils";
  * shown as work Work-ly would do rather than as a feature list.
  */
 
-export function StatusLine({ briefing, isPro }: { briefing: Briefing; isPro: boolean }) {
+export function StatusLine({
+  briefing,
+  isPro,
+  morning,
+}: {
+  briefing: Briefing;
+  isPro: boolean;
+  /** The morning list: how many jobs are on it, and how many aren't applied to yet. */
+  morning?: { ready: number; waiting: number } | null;
+}) {
   const check = briefing.lastCheck;
-  if (!check) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {isPro ? "Your first nightly check runs tonight." : "Find your first matches to get started."}
-      </p>
-    );
-  }
+  const line = homeGreeting({
+    isPro,
+    ready: morning?.ready ?? 0,
+    waiting: morning?.waiting ?? 0,
+    lastCheck: check ? { when: relativeTime(check.at), newListings: check.newListings, strongNew: check.strongNew } : null,
+  });
   return (
-    <p className="text-sm text-muted-foreground">
-      Last check {relativeTime(check.at)} found{" "}
-      <span className="font-medium text-foreground">{plural(check.newListings, "new listing")}</span>
-      {check.strongNew > 0 && (
-        <>
-          , <span className="font-medium text-foreground">{plural(check.strongNew, "strong match")}</span>
-        </>
-      )}
-      .
+    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Image src="/workly-bot-face.png" alt="" width={24} height={24} className="size-6 shrink-0 object-contain" />
+      <span>{line}</span>
     </p>
   );
 }

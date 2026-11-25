@@ -24,7 +24,9 @@ import { isHiddenRole } from "@/lib/discovery/hidden-roles-core";
 import { listDreamJobsByUserId } from "@/lib/db/dream-jobs";
 import { getJobById } from "@/lib/db/jobs";
 import { nextUpFor } from "@/lib/pathway/get-full-pathway";
-import { listMoves } from "@/lib/guidance/next-move";
+import { listMoves, quietApplications } from "@/lib/guidance/next-move";
+import { getSavedOutput } from "@/lib/saved-outputs";
+import type { HiringManagerNote } from "@/lib/opportunities/outreach-core";
 import { buildBriefing } from "@/lib/guidance/briefing";
 import { PAID_PLANS } from "@/lib/pricing";
 import { displayJobTitle } from "@/lib/format";
@@ -128,6 +130,19 @@ export default async function DashboardPage({
       ])
     : [[], null];
   const bestDiscovered = discoveryBuckets.applyNow[0] ?? discoveryBuckets.strong[0] ?? null;
+  // Quiet applications whose follow-up was already written with the note
+  // to the hiring manager: Home sends them straight to it.
+  const writtenFollowUps = new Set<string>();
+  if (user?.isPro) {
+    await Promise.all(
+      quietApplications(applications)
+        .filter((a) => a.opportunityId)
+        .map(async (a) => {
+          const note = await getSavedOutput<HiringManagerNote>(user.id, "note", a.opportunityId as string).catch(() => null);
+          if (note?.data?.followUp?.trim()) writtenFollowUps.add(a.opportunityId as string);
+        }),
+    );
+  }
   const moves = listMoves({
     hasProfile,
     discoveredCount: discoveryBuckets.total,
@@ -150,6 +165,7 @@ export default async function DashboardPage({
     hasDreamJob: dreamJobs.length > 0,
     hasPathway: pathway != null,
     pathwayNext: pathway ? nextUpFor(pathway)?.label ?? null : null,
+    writtenFollowUps,
   });
   const briefing = buildBriefing({ moves, jobs: discovered, latestRun, applications });
   const isPro = user?.isPro ?? false;
@@ -167,6 +183,11 @@ export default async function DashboardPage({
     ? await Promise.all([isPro ? readMorning(user.id) : Promise.resolve(null), isPro ? Promise.resolve([]) : morningPreview(user.id)])
     : [null, []];
   const opportunityStatuses = Object.fromEntries(opportunities.map((o) => [o.id, o.status]));
+  const morningItems = (morning?.items ?? []).filter((i) => i.opportunityId in opportunityStatuses);
+  const morningCounts = {
+    ready: morningItems.length,
+    waiting: morningItems.filter((i) => opportunityStatuses[i.opportunityId] !== "APPLIED").length,
+  };
 
   const firstName = user?.name ? user.name.split(" ")[0] : null;
   const topMissing = profileCompleteness.missing[0] ?? null;
@@ -183,7 +204,7 @@ export default async function DashboardPage({
             {isNew ? "Welcome" : "Welcome back"}
             {firstName ? `, ${firstName}` : ""}
           </h1>
-          {!isNew && <StatusLine briefing={briefing} isPro={isPro} />}
+          {!isNew && <StatusLine briefing={briefing} isPro={isPro} morning={morningCounts} />}
         </div>
         {isPro && (
           <Badge variant="secondary" className="w-fit gap-1">

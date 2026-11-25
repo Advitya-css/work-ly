@@ -81,6 +81,15 @@ export function NoteStudio({ opportunityId, company }: { opportunityId: string; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Home's "Open my follow-up" links to #follow-up, but the note loads after
+  // the page does, so the browser's own jump finds nothing. Jump once it's here.
+  const hasFollowUp = Boolean(tool.data?.followUp);
+  useEffect(() => {
+    if (!hasFollowUp || window.location.hash !== "#follow-up") return;
+    const frame = requestAnimationFrame(() => document.getElementById("follow-up")?.scrollIntoView({ block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, [hasFollowUp]);
+
   if (tool.phase === "idle" || tool.phase === "checking" || tool.phase === "generating") {
     return (
       <WritingState
@@ -150,13 +159,15 @@ export function NoteStudio({ opportunityId, company }: { opportunityId: string; 
           )}
 
           {note.followUp && (
-            <MessageCard
-              icon={<Send className="size-4 text-primary" />}
-              label="Follow-up, if there's no reply in a week"
-              meta={<CopyButton text={note.followUp} label="Copy" variant="ghost" size="sm" />}
-            >
-              <textarea aria-label="Follow-up" value={note.followUp} onChange={(e) => tool.edit({ followUp: e.target.value })} className={cn(fieldClass, "min-h-[120px]")} />
-            </MessageCard>
+            <div id="follow-up" className="scroll-mt-24">
+              <MessageCard
+                icon={<Send className="size-4 text-primary" />}
+                label="Follow-up, if there's no reply in a week"
+                meta={<CopyButton text={note.followUp} label="Copy" variant="ghost" size="sm" />}
+              >
+                <textarea aria-label="Follow-up" value={note.followUp} onChange={(e) => tool.edit({ followUp: e.target.value })} className={cn(fieldClass, "min-h-[120px]")} />
+              </MessageCard>
+            </div>
           )}
         </div>
       }

@@ -5,7 +5,8 @@ import { ArrowRight, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UpgradeModal } from "@/components/paywall/upgrade-modal";
 import { displayJobTitle } from "@/lib/format";
-import { kindLabel, preparedLabel, type MorningFile, type MorningKind } from "@/lib/morning/morning-core";
+import { kindLabel, postingUrl, preparedLabel, type MorningFile, type MorningKind } from "@/lib/morning/morning-core";
+import { MorningActions } from "@/components/dashboard/morning-actions";
 import type { MorningPreviewItem } from "@/lib/morning/morning";
 import { cn } from "@/lib/utils";
 
@@ -91,7 +92,7 @@ export function MorningList({
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         <Header
           title={items.length === 1 ? "1 job ready to apply" : `${items.length} jobs ready to apply`}
-          line="New jobs that fit you. I checked each one in full and wrote your application. Read it through, then send."
+          line="New jobs that fit you. I checked each one in full and wrote your application. Read it through, send it from the posting, then tell me you've applied."
         />
         {morning && <span className="text-xs text-muted-foreground sm:pt-1">{preparedLabel(morning.preparedAt)}</span>}
       </div>
@@ -99,8 +100,8 @@ export function MorningList({
         {items.map((item) => {
           const applied = statuses[item.opportunityId] === "APPLIED";
           return (
-            <li key={item.opportunityId} className="flex flex-col gap-2.5 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <li key={item.opportunityId} className="flex flex-col gap-2.5 py-4 first:pt-0 last:pb-0">
+              <div className="flex min-w-0 flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-3">
                   <Link
                     href={`/opportunities/${item.opportunityId}`}
@@ -118,16 +119,12 @@ export function MorningList({
                 {item.reason && <p className="line-clamp-2 text-[13px] leading-snug text-muted-foreground">{item.reason}</p>}
                 <KindChips kinds={item.kinds} />
               </div>
-              {applied ? (
-                <span className="w-fit shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Applied</span>
-              ) : (
-                <Button asChild size="sm" className="w-fit shrink-0 gap-1.5">
-                  <Link href={`/opportunities/${item.opportunityId}/${item.kinds.includes("resume") ? "resume" : item.kinds[0] === "cover" ? "letter" : "note"}`}>
-                    Review and send
-                    <ArrowRight className="size-4" aria-hidden />
-                  </Link>
-                </Button>
-              )}
+              <MorningActions
+                opportunityId={item.opportunityId}
+                reviewHref={`/opportunities/${item.opportunityId}/${item.kinds.includes("resume") ? "resume" : item.kinds[0] === "cover" ? "letter" : "note"}`}
+                url={postingUrl(item.url)}
+                applied={applied}
+              />
             </li>
           );
         })}

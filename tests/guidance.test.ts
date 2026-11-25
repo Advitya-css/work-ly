@@ -71,6 +71,15 @@ describe("pickNextMove", () => {
     expect(move.reason).toBe("No reply in 9 days");
   });
 
+  it("sends a quiet application straight to the follow-up that's already written", () => {
+    const quiet = app({ dateApplied: daysAgo(9), updatedAt: daysAgo(9) });
+    const written = pickNextMove(input({ applications: [quiet], writtenFollowUps: new Set(["o1"]) }));
+    expect(written.title).toBe("Send your follow-up at Hevo Data");
+    expect(written.cta.href).toBe("/opportunities/o1/note#follow-up");
+    const notWritten = pickNextMove(input({ applications: [quiet], writtenFollowUps: new Set(["other"]) }));
+    expect(notWritten.cta.href).toBe("/applications/a1#tool-follow-up");
+  });
+
   it("offers tailoring for an application being prepared", () => {
     const move = pickNextMove(input({ applications: [app({ status: "PREPARING", dateApplied: null })] }));
     expect(move.id).toBe("tailor");

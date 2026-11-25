@@ -19,6 +19,7 @@ import {
   currentMorning,
   mergeMorning,
   pickMorningCandidates,
+  postingUrl,
   reasonFrom,
   type MorningCandidate,
   type MorningFile,
@@ -71,7 +72,7 @@ export async function readMorning(userId: string, timeoutMs = 700): Promise<Morn
 
 async function recentCandidates(userId: string, limit: number): Promise<MorningCandidate[]> {
   const { rows } = await pool.query(
-    `SELECT id, title, company, "fitScore", "fitCoverage", recommendation, "matchReasons", description, "discoveredAt"
+    `SELECT id, title, company, "fitScore", "fitCoverage", recommendation, "matchReasons", description, "discoveredAt", "sourceUrl"
        FROM discovered_jobs
       WHERE "userId" = $1
         AND "discoveredAt" >= now() - make_interval(days => $2)
@@ -95,6 +96,7 @@ async function recentCandidates(userId: string, limit: number): Promise<MorningC
       matchReasons: Array.isArray(r.matchReasons) ? r.matchReasons : [],
       description: r.description ?? null,
       discoveredAt: r.discoveredAt,
+      sourceUrl: r.sourceUrl ?? null,
     })),
     { limit, minCoverage: MIN_COVERAGE_FOR_SCORE },
   );
@@ -137,6 +139,7 @@ export async function prepareMorning(
       const submitted = await submitParseAndAnalyzeJob(userId, {
         inputMethod: "PASTED_TEXT",
         text: `${header}\n\n${job.description ?? ""}`,
+        url: postingUrl(job.sourceUrl) ?? undefined,
         skipAuthenticityCheck: true,
       });
       if ("error" in submitted) continue;
@@ -185,6 +188,7 @@ export async function prepareMorning(
         fitScore: opp.fitScore ?? job.fitScore,
         reason: reasonFrom(job.matchReasons),
         kinds,
+        url: postingUrl(opp.job.url) ?? postingUrl(job.sourceUrl),
       });
       result.written++;
     } catch (error) {
@@ -217,7 +221,7 @@ export interface MorningPreviewItem {
 export async function morningPreview(userId: string, limit = MORNING_LIMIT): Promise<MorningPreviewItem[]> {
   try {
     const { rows } = await pool.query(
-      `SELECT id, title, company, "fitScore", "fitCoverage", recommendation, "matchReasons", description, "discoveredAt"
+      `SELECT id, title, company, "fitScore", "fitCoverage", recommendation, "matchReasons", description, "discoveredAt", "sourceUrl"
          FROM discovered_jobs
         WHERE "userId" = $1
           AND "discoveredAt" >= now() - interval '7 days'
