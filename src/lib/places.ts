@@ -471,3 +471,51 @@ export function placeSuggestions(): string[] {
     return info.state ? `${name}, ${info.state}, ${country}` : name === country ? name : `${name}, ${country}`;
   });
 }
+
+/** ISO 3166-1 alpha-2 codes -> canonical country name for the 24 countries Work-ly covers. */
+export const COVERED_COUNTRY_CODES: Record<string, string> = {
+  IN: "India",
+  US: "United States",
+  GB: "United Kingdom",
+  CA: "Canada",
+  AU: "Australia",
+  NZ: "New Zealand",
+  SG: "Singapore",
+  DE: "Germany",
+  FR: "France",
+  NL: "Netherlands",
+  IE: "Ireland",
+  ES: "Spain",
+  IT: "Italy",
+  PL: "Poland",
+  CH: "Switzerland",
+  AT: "Austria",
+  BE: "Belgium",
+  PT: "Portugal",
+  SE: "Sweden",
+  DK: "Denmark",
+  AE: "United Arab Emirates",
+  ZA: "South Africa",
+  BR: "Brazil",
+  MX: "Mexico",
+};
+
+/** Checks whether a free-text city or country resolves to any country Work-ly covers. */
+export function isPlaceCovered(input: string | null | undefined): { covered: boolean; countries: string[] } {
+  if (!input?.trim()) return { covered: true, countries: [] };
+  const resolved = resolvePlace(input);
+  const countries = Array.from(resolved.countries);
+  return { covered: countries.length > 0, countries };
+}
+
+/** Resolves a free-text city or country (e.g. "Delhi, India") to its 2-letter ISO code (e.g. "IN"), or null. */
+export function countryCodeForPlace(input: string | null | undefined): string | null {
+  if (!input?.trim()) return null;
+  const resolved = resolvePlace(input);
+  const first = Array.from(resolved.countries)[0];
+  if (!first) return null;
+  for (const [code, label] of Object.entries(COVERED_COUNTRY_CODES)) {
+    if (label.toLowerCase() === first) return code;
+  }
+  return null;
+}

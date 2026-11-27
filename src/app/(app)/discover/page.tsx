@@ -26,6 +26,7 @@ import { unscreenedTopCount } from "@/lib/discovery/deep-screen";
 import { SOURCE_KIND_LABEL, SOURCE_STATUS_LABEL, sourceErrorHint } from "@/lib/discovery/labels";
 import { embeddingProvider, profileEmbeddingText } from "@/lib/search/embeddings";
 import { deriveCandidateSeniority, estimateYearsExperience } from "@/lib/scoring/shared";
+import { isPlaceCovered } from "@/lib/places";
 import type { SearchContext } from "@/lib/search/engine";
 
 export const metadata: Metadata = { title: "Discover" };
@@ -134,6 +135,16 @@ export default async function DiscoverPage() {
       />
 
       <SectionTabs section="jobs" />
+
+      {profile.profile?.location && !isPlaceCovered(profile.profile.location).covered && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
+          Sorry, we don&apos;t cover <span className="font-medium">{profile.profile.location}</span> for local job discovery yet — coming soon. You can still browse remote matches or{" "}
+          <Link href="/analyze-job" className="font-medium text-primary underline underline-offset-2">
+            paste any job posting
+          </Link>{" "}
+          directly.
+        </div>
+      )}
 
       <RobotTip id="discover" title="Jobs I found for you">
         Each one is scored against your profile, best fits first. &ldquo;Analyze &amp; track&rdquo; opens the full answer

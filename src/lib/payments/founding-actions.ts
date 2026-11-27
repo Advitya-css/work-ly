@@ -27,3 +27,37 @@ export async function getSaleAction(): Promise<import("@/lib/payments/sale-core"
   const { discountId: _omit, ...publicSale } = sale;
   return publicSale;
 }
+
+/**
+ * Country coverage, display currency (from "Where you are now" or IP), and
+ * regional PPP discount (without Polar ids) for the current visitor.
+ */
+export async function getPppContextAction(): Promise<import("@/lib/payments/ppp-core").PublicPppContext> {
+  const { getPppContext } = await import("@/lib/payments/ppp");
+  const { getCurrentUser } = await import("@/lib/auth");
+  const { getCareerProfileByUserId } = await import("@/lib/db/career-profile");
+  const { countryCodeForPlace } = await import("@/lib/places");
+
+  const user = await getCurrentUser().catch(() => null);
+  const profile = user ? await getCareerProfileByUserId(user.id).catch(() => null) : null;
+  const ctx = await getPppContext({ profileLocationFallback: profile?.location ?? null });
+  const displayCountryCode = countryCodeForPlace(profile?.location) ?? ctx.countryCode;
+
+  if (!ctx.offer) {
+    return {
+      covered: ctx.covered,
+      countryCode: ctx.countryCode,
+      countryName: ctx.countryName,
+      displayCountryCode,
+      offer: null,
+    };
+  }
+  const { discountId: _omit, ...publicOffer } = ctx.offer;
+  return {
+    covered: ctx.covered,
+    countryCode: ctx.countryCode,
+    countryName: ctx.countryName,
+    displayCountryCode,
+    offer: publicOffer,
+  };
+}

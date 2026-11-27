@@ -14,6 +14,7 @@ import {
 } from "@/lib/settings/location-actions";
 import type { CareerProfile } from "@/lib/db/types";
 import { LocationAutocomplete } from "@/components/career/location-autocomplete";
+import { isPlaceCovered } from "@/lib/places";
 
 const initialState: LocationActionState = {};
 
@@ -30,12 +31,15 @@ const initialState: LocationActionState = {};
 export function LocationSettingsForm({ profile }: { profile: CareerProfile | null }) {
   const [state, formAction, pending] = useActionState(saveLocationPreferencesAction, initialState);
   const [openToRemote, setOpenToRemote] = useState(profile?.openToRemote ?? true);
+  const [locationText, setLocationText] = useState(profile?.location ?? "");
 
   useEffect(() => {
     if (profile?.openToRemote !== undefined) {
       setOpenToRemote(profile.openToRemote);
     }
   }, [profile?.openToRemote]);
+
+  const locationCovered = isPlaceCovered(locationText).covered;
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -45,10 +49,17 @@ export function LocationSettingsForm({ profile }: { profile: CareerProfile | nul
           id="settings-location"
           name="location"
           defaultValue={profile?.location ?? ""}
+          onChange={setLocationText}
         />
-        <p className="text-xs text-muted-foreground">
-          Anchors location matching everywhere in Work-ly.
-        </p>
+        {locationText.trim() && !locationCovered ? (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Sorry, we don&apos;t cover &ldquo;{locationText.trim()}&rdquo; yet — coming soon. Local job discovery is limited here, though remote matching and pasting any job link still work.
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Anchors location matching everywhere in Work-ly.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">

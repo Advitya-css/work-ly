@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { knownCity, normalizePlace, placeSuggestions } from "@/lib/places";
+import { isPlaceCovered, knownCity, normalizePlace, placeSuggestions } from "@/lib/places";
 
 const LISTED = [
   "United States",
@@ -100,12 +100,22 @@ export function LocationAutocomplete({ defaultValue, name, id, onChange }: { def
                 </li>
               ))}
             </ul>
-          ) : (
+          ) : isPlaceCovered(value).covered ? (
             <div className="px-3 py-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2">
               <MapPin className="size-5 text-primary" />
               <p className="font-medium text-foreground">We&apos;ll search near &ldquo;{value.trim()}&rdquo;.</p>
               <p className="text-xs">
-                Any city works. Adding the state or country (e.g. &ldquo;Surat, India&rdquo; or &ldquo;Reno, NV, USA&rdquo;) makes the matches more accurate.
+                Adding the state or country (e.g. &ldquo;Surat, India&rdquo; or &ldquo;Reno, NV, USA&rdquo;) makes the matches more accurate.
+              </p>
+            </div>
+          ) : (
+            <div className="px-3 py-4 text-sm text-muted-foreground flex flex-col items-center justify-center text-center gap-2">
+              <MapPin className="size-5 text-muted-foreground" />
+              <p className="font-medium text-foreground">
+                Sorry, we don&apos;t cover &ldquo;{value.trim()}&rdquo; yet — coming soon.
+              </p>
+              <p className="text-xs">
+                Work-ly currently covers 24 countries (including India, US, UK, Canada, Australia, Singapore, UAE, South Africa, Brazil, Mexico, and most of Europe). You can still use remote matching and paste any job posting.
               </p>
             </div>
           )}

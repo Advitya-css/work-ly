@@ -205,6 +205,9 @@ const PUBLIC_ACTIONS = new Set([
   // The live sale (e.g. Black Friday on the Yearly Pass) - the same public
   // prices and end date the pricing page shows. No user data, no Polar ids.
   "getSaleAction",
+  // Country coverage and regional PPP discount (without Polar ids) based on
+  // the visitor's region header. Reads no user data.
+  "getPppContextAction",
   // The partner sign-up on /partners: a coach needn't have an account to get
   // a link. Guarded by a per-IP rate limit, a honeypot field, length caps and
   // the terms box; stores only what the person typed; returns their own link.

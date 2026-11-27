@@ -8,6 +8,8 @@ import { BUSINESS } from "@/lib/business";
 import { syncPolarPurchases } from "@/lib/payments/polar-sync";
 import { getFoundingOffer } from "@/lib/payments/founding";
 import { getSale } from "@/lib/payments/sale";
+import { getPppContext } from "@/lib/payments/ppp";
+import { pickBestDiscount } from "@/lib/payments/ppp-core";
 import { currentAttribution, recordFunnelStep } from "@/lib/attribution";
 import { markCheckoutOpened } from "@/lib/lifecycle";
 import { openPolarCheckout } from "@/lib/payments/checkout";
@@ -36,12 +38,28 @@ export async function createPolarCheckout(
       throw new Error("Invalid plan selected");
     }
 
-    // A sale on this plan (Black Friday) wins; otherwise the founding-member
-    // discount, while Polar says it's still open. Never both: Polar applies
-    // one discount per checkout, and the site never advertises them stacked.
-    const sale = await getSale();
-    const founding = sale && sale.plan === plan ? null : await getFoundingOffer();
-    const discountId = sale && sale.plan === plan ? sale.discountId : founding?.discountId ?? null;
+    // A sale on this plan (Black Friday) wins; otherwise whichever gives the
+    // buyer a better deal between Founding and regional PPP. Never stacked:
+    // Polar applies one discount per checkout.
+    const profileLocationFallback =
+      process.env.NODE_ENV !== "production"
+        ? await import("@/lib/db/career-profile")
+            .then((m) => m.getCareerProfileByUserId(user.id))
+            .then((p) => p?.location ?? null)
+            .catch(() => null)
+        : null;
+    const [sale, founding, ppp] = await Promise.all([
+      getSale(),
+      getFoundingOffer(),
+      getPppContext({ profileLocationFallback }),
+    ]);
+    const chosen = pickBestDiscount({
+      plan,
+      sale,
+      founding,
+      ppp: ppp.offer,
+    });
+    const discountId = chosen.discountId;
     // The channel that first brought this buyer, carried onto the order so
     // revenue can be credited to it (see lib/attribution.ts).
     const attribution = await currentAttribution();
@@ -61,6 +79,7 @@ export async function createPolarCheckout(
         campaign: attribution?.c ?? "",
         landing: attribution?.l ?? "",
         first_touch: attribution?.t ?? "",
+        ...(chosen.kind === "ppp" && ppp.countryCode ? { ppp_country: ppp.countryCode } : {}),
       },
       // Polar fills in {CHECKOUT_ID}. Settings uses it to confirm the payment
       // with Polar directly, so Pro shows up at once instead of waiting on
